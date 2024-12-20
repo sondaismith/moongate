@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import Sidebar from "./Sidebar.vue";
+import DemoSidebar from "./DemoSidebar.vue";
 
 const greetMsg = ref("");
 const name = ref("");
@@ -12,40 +14,10 @@ async function greet() {
 </script>
 
 <template>
-  <!-- <main class="container">
-    <h1>Welcome to Tauri + Vue</h1>
-
-    <div class="row">
-      <a href="https://vitejs.dev" target="_blank">
-        <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-      </a>
-      <a href="https://tauri.app" target="_blank">
-        <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-        <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-      </a>
-    </div>
-    <p>Click on the Tauri, Vite, and Vue logos to learn more.</p>
-
-    <form class="row" @submit.prevent="greet">
-      <input id="greet-input" v-model="name" placeholder="Enter a name..." />
-      <button type="submit">Greet</button>
-    </form>
-    <p>{{ greetMsg }}</p>
-  </main> -->
-  <div class="flex flex-row h-screen w-screen">
-    <!-- sidebar -->
-    <div class="bg-slate-400 flex-none w-16 p-2 space-y-1">
-      <button class="bg-blue-200 h-10 w-full"></button>
-      <button class="bg-blue-200 h-10 w-full"></button>
-      <button class="bg-blue-200 h-10 w-full place-items-end"></button>
-    </div> 
-    <!-- main content  -->
-    <div class="bg-slate-700 flex-auto" ></div>  
-  </div>
+  <Sidebar/>
+  <!-- <DemoSidebar/> -->
 </template>
-
+0
 <style scoped>
 .logo.vite:hover {
   filter: drop-shadow(0 0 2em #747bff);
