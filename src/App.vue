@@ -12,7 +12,7 @@ async function greet() {
 </script>
 
 <template>
-  <main class="container">
+  <!-- <main class="container">
     <h1>Welcome to Tauri + Vue</h1>
 
     <div class="row">
@@ -33,7 +33,17 @@ async function greet() {
       <button type="submit">Greet</button>
     </form>
     <p>{{ greetMsg }}</p>
-  </main>
+  </main> -->
+  <div class="flex flex-row h-screen w-screen">
+    <!-- sidebar -->
+    <div class="bg-slate-400 flex-none w-16 p-2 space-y-1">
+      <button class="bg-blue-200 h-10 w-full"></button>
+      <button class="bg-blue-200 h-10 w-full"></button>
+      <button class="bg-blue-200 h-10 w-full place-items-end"></button>
+    </div> 
+    <!-- main content  -->
+    <div class="bg-slate-700 flex-auto" ></div>  
+  </div>
 </template>
 
 <style scoped>
