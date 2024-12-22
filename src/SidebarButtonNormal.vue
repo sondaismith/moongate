@@ -1,11 +1,16 @@
 <template>
-    <a class="flex justify-center rounded px-2 py-1.5">
-        {{ tooltip }}
+    <a class="group relative flex justify-center rounded bg-blue-200 h-10">
+        <i-mingcute:home-4-line class="h-full text-2xl"/>
+        <span
+            class="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+        >
+            {{ tooltip }}
+        </span>
     </a>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent } from 'vue';
 
 export default defineComponent({
     props: {
