@@ -7,8 +7,25 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    FeedColumn: typeof import('./src/components/Feed/FeedColumn.vue')['default']
+    FeedPost: typeof import('./src/components/Feed/FeedPost.vue')['default']
+    'IFa6Regular:commentDots': typeof import('~icons/fa6-regular/comment-dots')['default']
     'IMdi:cactus': typeof import('~icons/mdi/cactus')['default']
+    'IMingcute:butterfly2Line': typeof import('~icons/mingcute/butterfly2-line')['default']
+    'IMingcute:heartFill': typeof import('~icons/mingcute/heart-fill')['default']
     'IMingcute:home4Line': typeof import('~icons/mingcute/home4-line')['default']
+    'IMingcute:menuLine': typeof import('~icons/mingcute/menu-line')['default']
+    'IMingcute:refresh3Fill': typeof import('~icons/mingcute/refresh3-fill')['default']
+    'IMingcute:repeatLine': typeof import('~icons/mingcute/repeat-line')['default']
+    'IMingcute:user1Line': typeof import('~icons/mingcute/user1-line')['default']
     'IMingcute:vueFill': typeof import('~icons/mingcute/vue-fill')['default']
+    'IMingcute:wechatLine': typeof import('~icons/mingcute/wechat-line')['default']
+    'ISolar:chatDotsLine': typeof import('~icons/solar/chat-dots-line')['default']
+    'ISolar:chatDotsLinear': typeof import('~icons/solar/chat-dots-linear')['default']
+    'ISolar:chatDotsLineDuotone': typeof import('~icons/solar/chat-dots-line-duotone')['default']
+    'ISolar:chatDotsOutline': typeof import('~icons/solar/chat-dots-outline')['default']
+    ISolarChatDotsLinear: typeof import('~icons/solar/chat-dots-linear')['default']
+    SidebarButtonNormal: typeof import('./src/components/Navbar/SidebarButtonNormal.vue')['default']
+    UserButton: typeof import('./src/components/Navbar/UserButton.vue')['default']
   }
 }
