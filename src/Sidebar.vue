@@ -1,10 +1,3 @@
-<script setup lang="ts">
-import { ref } from "vue";
-import SidebarButtonNormal from "./components/Navbar/SidebarButtonNormal.vue";
-import UserButton from "./components/Navbar/UserButton.vue";
-import FeedColumn from "./components/Feed/FeedColumn.vue";
-</script>
-
 <template>
     <div class="flex flex-row h-screen w-screen">
         {{ void "sidebar" }}
@@ -20,13 +13,13 @@ import FeedColumn from "./components/Feed/FeedColumn.vue";
                 
                 {{ void "Feed List + Add btn" }}
                 <div class="flex flex-col h-full space-y-2">
-                    <div class="min-h-32 flex-shrink preload-gutter overflow-x-hidden">
+                    <div class="flex-shrink preload-gutter overflow-x-hidden">
                         <div class="space-y-2 pl-2 pr-1">
                             <SidebarButtonNormal type="home" tooltip="Home"/>
-                            <SidebarButtonNormal type="art" tooltip="Good Art"/>
-                            <SidebarButtonNormal type="art" tooltip="Good Art"/>
-                            <SidebarButtonNormal type="art" tooltip="Good Art"/>
+                            <SidebarButtonNormal v-for="feeds in feedList" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/>
                             <!-- <SidebarButtonNormal type="art" tooltip="Good Art"/>
+                            <SidebarButtonNormal type="art" tooltip="Good Art"/>
+                            <SidebarButtonNormal type="art" tooltip="Good Art"/>
                             <SidebarButtonNormal type="art" tooltip="Good Art"/>
                             <SidebarButtonNormal type="art" tooltip="Good Art"/>
                             <SidebarButtonNormal type="art" tooltip="Good Art"/>
@@ -58,3 +51,41 @@ import FeedColumn from "./components/Feed/FeedColumn.vue";
         </div>  
     </div>
 </template>
+
+<script lang="ts">
+    import { defineComponent, ref } from "vue";
+    import SidebarButtonNormal from "./components/Navbar/SidebarButtonNormal.vue";
+    import UserButton from "./components/Navbar/UserButton.vue";
+    import FeedColumn from "./components/Feed/FeedColumn.vue";
+
+    interface FeedButtonData{
+        feedName: string
+        feedType: string
+        newPosts: number
+    }
+
+    export default defineComponent({
+        data(){
+            return{
+                feedList: [
+                    {feedName:'Friends', feedType:'friends', newPosts: 3},
+                    {feedName:'Local News', feedType:'news', newPosts: 5},
+                    {feedName:'Artists', feedType:'art', newPosts: 7},
+                ]
+            }
+        },
+        mounted() {
+        },
+        methods: {
+            addFeed(){
+                return 'Not implemented';
+            }
+        },
+        created(){
+        },
+        setup () {        
+            
+            return {}
+        }
+    })
+</script>
