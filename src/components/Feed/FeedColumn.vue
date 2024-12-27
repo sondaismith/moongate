@@ -18,7 +18,7 @@
                 </div>
             </div>
         </div>
-        <div class="h-full p-2 bg-slate-600 overflow-y-auto">
+        <div class="h-full py-2 pl-2 pr-1 bg-slate-600 preload-gutter overflow-y-auto">
             <FeedPost v-for="n in postCount" />
         </div>
     </div>

@@ -1,8 +1,11 @@
 <template>
     <a class="group cursor-pointer relative flex justify-center rounded-xl drop-shadow-md bg-blue-200 border border-blue-200 transition-[border] hover:border-gray-800 h-10">
-        <i-mingcute:home-4-line class="h-full text-2xl text-slate-800"/>
+        <i-mingcute:home-4-line v-if="type === 'home'" class="h-full text-2xl text-slate-800"/>
+        <i-mingcute:settings-2-line v-else-if="type === 'settings'" class="h-full text-2xl text-slate-800"/>
+        <i-mdi:playlist-add v-else-if="type === 'add'" class="h-full text-2xl text-slate-800"/>
+        <i-mdi:paint-outline v-else-if="type === 'art'" class="h-full text-2xl text-slate-800"/>
         <span
-            class="invisible absolute start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+            class="invisible absolute whitespace-nowrap start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
         >
             {{ tooltip }}
         </span>
