@@ -141,13 +141,14 @@ button {
 
 /* width */
 ::-webkit-scrollbar {
-    width: 5px;
+  height: 5px;
+  width: 5px;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-    background: #8888883a;
-    border-radius: 5px;
+  background: #8888883a;
+  border-radius: 5px;
 }
 
 /* Handle */
@@ -158,7 +159,7 @@ button {
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-    background: #969696;
+  background: #969696;
 }
 
 </style>

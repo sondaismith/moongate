@@ -5,6 +5,9 @@ export default {
     extend: {
       fontSize:{
         feedTimestamp: '0.625rem', // 10px
+      },
+      dropShadow:{
+        'md-harder': '0 4px 4px rgba(0, 0, 0, 0.75)'
       }
     },
   },
