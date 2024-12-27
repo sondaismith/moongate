@@ -29,7 +29,7 @@
                         </div>
                     </div>
                     <div class="border-t border-gray-700 px-2 py-2 flex-none">
-                        <SidebarButtonNormal type="add" tooltip="Add Feed"/>
+                        <SidebarButtonNormal type="add" tooltip="Add Feed" @click="addFeed"/>
                     </div>
                 </div>
             </div>
@@ -78,7 +78,10 @@
         },
         methods: {
             addFeed(){
-                return 'Not implemented';
+                const feedTypes = ['art','friends','news'];
+                this.feedList.push({feedName: 'AddedByBtn', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15)})
+                let newestFeed = this.feedList[this.feedList.length-1];
+                console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
             }
         },
         created(){
