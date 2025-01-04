@@ -4,6 +4,7 @@ export default {
   theme: {
     extend: {
       fontSize:{
+        feedPostName: '0.75rem',
         feedTimestamp: '0.625rem', // 10px
       },
       dropShadow:{

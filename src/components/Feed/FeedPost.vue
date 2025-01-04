@@ -13,8 +13,9 @@
                 {{ void "post content" }}
                 <div class="pl-2 w-5/6">
                     <div class="flex space-x-1 items-center">
-                        <div class="text-sm font-semibold text-nowrap">Random User</div>
+                        <div class="text-feedPostName font-semibold text-nowrap">Random User</div>
                         <div class="text-feedTimestamp truncate" title="@Random User hdahdhdaahd">@Random User hdahdhdaahd</div>
+                        <div class="text-feedTimestamp text-nowrap cursor-pointer" @click="openPostDetails">1 Jan 2024</div>
                     </div>
                     <div class="text-xs leading-4">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -46,8 +47,12 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-    setup () {
-        
+    methods:{
+        openPostDetails(){
+            console.log("(Show Post Details...)");
+        }
+    },
+    setup () {       
 
         return {}
     }

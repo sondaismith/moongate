@@ -49,7 +49,11 @@
             <FeedColumn :post-count="1" :feed-name="'The Crazy Airplane Man'" :user-handle="'airplanebozo'"/>
             <FeedColumn :post-count="5" :feed-name="'Scottish News'" :user-handle="'News'"/> -->
             <FeedColumn v-for="feeds in feedListing.feedList" :post-count="feeds.totalPosts" :feed-name="feeds.feedName" :user-handle="feeds.feedHandle"/>
-        </div>  
+        </div>
+        {{ void "Post Details Modal" }}
+        <!-- <div class="absolute z-10 flex h-screen w-screen items-center justify-center bg-yellow-200 opa">
+            <div class="bg-red-400 rounded-md h-64 w-96">Modal</div>
+        </div> -->
     </div>
 </template>
 
