@@ -174,4 +174,15 @@ button {
   /* display: block; */
 }
 
+[data-tooltip]:hover::after {
+  display: block;
+  position: absolute;
+  content: attr(data-tooltip);
+  border: 1px solid black;
+  background: #101010c0;
+  padding: .25em;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+}
+
 </style>

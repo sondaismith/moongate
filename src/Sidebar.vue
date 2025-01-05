@@ -10,7 +10,7 @@
             <div class="w-full flex flex-col flex-shrink overflow-hidden">
                 <!-- <button class="bg-blue-200 h-10 w-full"></button>
                 <button class="bg-blue-200 h-10 w-full"></button> -->
-                
+
                 {{ void "Feed List + Add btn" }}
                 <div class="flex flex-col h-full">
                     <div class="flex-shrink preload-gutter overflow-x-hidden">
@@ -41,8 +41,8 @@
                     <UserButton tooltip="[user]"/>
                 </div>
             </div>
-        </div> 
-        {{ void "main content" }} 
+        </div>
+        {{ void "main content" }}
         <div class="bg-slate-700 flex flex-1 overflow-x-scroll" >
             <!-- <FeedColumn :post-count="2" :feed-name="'Home'" :user-handle="'home'"/>
             <FeedColumn :post-count="3" :feed-name="'Awesome Art'" :user-handle="'art'"/>
@@ -52,7 +52,7 @@
         </div>
         {{ void "Post Details Modal" }}
         <div class="absolute z-10 flex h-screen w-screen items-center justify-center py-4 bg-slate-900/90">
-            <div class="bg-slate-800 border-slate-600 border rounded-sm h-full w-1/2 p-4 space-y-2">
+            <div class="flex flex-col bg-slate-800 border-slate-600 border rounded-sm h-full w-1/2 p-4 space-y-2 overflow-y-auto">
                 {{ void "User Info/Actions" }}
                 <div class="flex">
                     <div class="rounded-full bg-stone-500 aspect-square size-10 self-center">
@@ -68,39 +68,43 @@
                 </div>
                 {{ void "Post Content - Text" }}
                 <div class="text-sm">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod 
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
                     tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
                     quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                 </div>
                 {{ void "Post Metadata" }}
-                <div class="border-slate-500 divide-y divide-inherit !mt-0">
+                <div class="border-slate-600 divide-y divide-inherit !mt-0">
                     <div class="py-1">
                         <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">January 4th, 2025 at 12:42am</div>
                     </div>
                     <div class="flex text-slate-400 py-2 space-x-2 justify-between">
-                        <div class="flex">
-                            <i-solar:chat-dots-outline class="text-lg self-center"/>
-                            <div class="pl-1 self-center">6</div>
-                        </div>
-                        <div class="flex">
-                            <i-mingcute:repeat-line class="text-lg self-center"/>
-                            <div class="pl-1 self-center">12</div>
-                        </div>
-                        <div class="flex">
-                            <i-mingcute:heart-fill class="text-lg self-center"/>
-                            <div class="pl-1 self-center">42</div>
-                        </div>
-                        <div class="flex">
-                            <i-solar-share-bold class="text-lg self-center"/>
-                        </div>
-                        <div class="flex">
-                            <i-mdi-dots-horizontal class="text-lg self-center"/>
-                        </div>
+                        <PostDetailIcon :iconType="iconTypes.Comment" iconText="6"/>
+                        <PostDetailIcon :iconType="iconTypes.Reposts" iconText="12"/>
+                        <PostDetailIcon :iconType="iconTypes.Likes" iconText="42"/>
+                        <PostDetailIcon :iconType="iconTypes.Share"/>
+                        <PostDetailIcon :iconType="iconTypes.Options"/>
                     </div>
                 </div>
+                {{ void "post reply input" }}
                 <div>
                     <!-- <textarea class="block w-full p-2 rounded bg-slate-900" placeholder="Post reply..."/> -->
-                    <span class="block w-full p-2 rounded bg-slate-900 overflow-hidden resize postPlaceholder" role="text" placeholder="Post reply..." contenteditable @focusin="postInputFocusGained" @focusout="postInputFocusLost"/>
+                    <span class="block w-full p-2 rounded bg-slate-900 overflow-hidden resize max-h-36 postPlaceholder" role="text" placeholder="Post reply..." contenteditable @focusin="postInputFocusGained" @focusout="postInputFocusLost"/>
+                </div>
+                {{ void "reply container" }}
+                <!-- <div class="flex flex-col preload-gutter overflow-y-auto min-h-[255px] divide-y border-slate-600 divide-inherit"> -->
+                <div class="flex flex-col preload-gutter divide-y border-slate-600 divide-inherit">
+                    {{ void "replies" }}
+                    <div v-for="replies in postDetails.postDetailsList[0].comments" class="pt-2">
+                        <PostReply :userName="replies.userName"
+                            :userHandle="replies.userHandle" :postText="replies.postText"
+                            :totalComments="replies.totalComments" :totalReposts="replies.totalReposts"
+                            :totalLikes="replies.totalLikes"/>
+                        {{ void "displays replies to comment" }}
+                        <PostReply v-for="reply in replies.comments" :userName="reply.userName"
+                            :userHandle="reply.userHandle" :postText="reply.postText"
+                            :totalComments="reply.totalComments" :totalReposts="reply.totalReposts"
+                            :totalLikes="reply.totalLikes"/>
+                    </div>
                 </div>
             </div>
         </div>
@@ -114,6 +118,10 @@ import UserButton from "./components/Navbar/UserButton.vue";
 import FeedColumn from "./components/Feed/FeedColumn.vue";
 import { feedListing } from "./state/FeedList.vue";
 import { FeedEnums } from "./enums/FeedEnums";
+import PostDetailIcon from "./components/Post/PostDetailIcon.vue";
+import { PostEnums } from "./enums/PostEnums";
+import PostReply from "./components/Post/PostReply.vue";
+import { postDetails } from "./state/PostDetails.vue";
 
     export default defineComponent({
         data(){
@@ -123,10 +131,10 @@ import { FeedEnums } from "./enums/FeedEnums";
                 //     {feedName:'Local News', feedType:'news', newPosts: 5},
                 //     {feedName:'Artists', feedType:'art', newPosts: 7},
                 // ]
-                feedListing
+                feedListing,
+                postDetails,
+                iconTypes:PostEnums.IconTypes
             }
-        },
-        mounted() {
         },
         methods: {
             addFeed(){
@@ -134,7 +142,7 @@ import { FeedEnums } from "./enums/FeedEnums";
                 // this.feedList.push({feedName: 'AddedByBtn', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15)})
                 // let newestFeed = this.feedList[this.feedList.length-1];
                 // console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
-                
+
                 const feedTypes = [FeedEnums.Types.Art,FeedEnums.Types.Friends,FeedEnums.Types.News];
                 feedListing.feedList.push({feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
                 let newestFeed = feedListing.feedList[feedListing.feedList.length-1];
@@ -159,8 +167,8 @@ import { FeedEnums } from "./enums/FeedEnums";
         },
         created(){
         },
-        setup () {        
-            
+        setup () {
+
             return {}
         }
     })
