@@ -167,4 +167,11 @@ button {
   scrollbar-gutter: stable;
 }
 
+.postPlaceholder::before{
+  color: #94a3b8;
+  content: attr(placeholder);
+  pointer-events: none;
+  /* display: block; */
+}
+
 </style>
