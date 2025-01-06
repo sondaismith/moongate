@@ -37,9 +37,9 @@ export default defineComponent({
     props:{
         userName: String,
         userHandle: String,
-        totalComments: String, //not going to actually be in final version, just use .length
-        totalReposts: String,
-        totalLikes: String,
+        totalComments: Number, //not going to actually be in final version, just use .length
+        totalReposts: Number,
+        totalLikes: Number,
         postText: String,
         // postMedia?: String,
         // timestamp?: Date

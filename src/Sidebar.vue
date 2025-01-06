@@ -51,76 +51,15 @@
             <FeedColumn v-for="feeds in feedListing.feedList" :post-count="feeds.totalPosts" :feed-name="feeds.feedName" :user-handle="feeds.feedHandle"/>
         </div>
         {{ void "Post Details Modal" }}
-        <div class="absolute z-10 flex h-screen w-screen items-center justify-center py-4 bg-slate-900/90">
-            <div class="flex flex-col bg-slate-800 border-slate-600 border rounded-sm h-full w-1/2 p-4 space-y-2 overflow-y-auto">
-                {{ void "User Info/Actions" }}
-                <div class="flex">
-                    <div class="rounded-full bg-stone-500 aspect-square size-10 self-center">
-                        <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/>
-                    </div>
-                    <div class="self-center ml-2">
-                        <div class="font-bold leading-4">Modal</div>
-                        <div class="text-feedPostName">@modalTest.moon.social</div>
-                    </div>
-                    <div class="rounded-full self-center ml-auto py-1 px-3 bg-slate-300 font-bold hover:bg-slate-200 text-slate-800 cursor-pointer">
-                        + Follow
-                    </div>
-                </div>
-                {{ void "Post Content - Text" }}
-                <div class="text-sm">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </div>
-                {{ void "Post Metadata" }}
-                <div class="border-slate-600 divide-y divide-inherit !mt-0">
-                    <div class="py-1">
-                        <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">January 4th, 2025 at 12:42am</div>
-                    </div>
-                    <div class="flex text-slate-400 py-2 space-x-2 justify-between">
-                        <PostDetailIcon :iconType="iconTypes.Comment" iconText="6"/>
-                        <PostDetailIcon :iconType="iconTypes.Reposts" iconText="12"/>
-                        <PostDetailIcon :iconType="iconTypes.Likes" iconText="42"/>
-                        <PostDetailIcon :iconType="iconTypes.Share"/>
-                        <PostDetailIcon :iconType="iconTypes.Options"/>
-                    </div>
-                </div>
-                {{ void "post reply input" }}
-                <div>
-                    <!-- <textarea class="block w-full p-2 rounded bg-slate-900" placeholder="Post reply..."/> -->
-                    <span class="block w-full p-2 rounded bg-slate-900 overflow-hidden resize max-h-36 postPlaceholder" role="text" placeholder="Post reply..." contenteditable @focusin="postInputFocusGained" @focusout="postInputFocusLost"/>
-                </div>
-                {{ void "reply container" }}
-                <!-- <div class="flex flex-col preload-gutter overflow-y-auto min-h-[255px] divide-y border-slate-600 divide-inherit"> -->
-                <div class="flex flex-col preload-gutter divide-y border-slate-600 divide-inherit">
-                    {{ void "replies" }}
-                    <div v-for="replies in postDetails.postDetailsList[0].comments" class="pt-2">
-                        <PostReply :userName="replies.userName"
-                            :userHandle="replies.userHandle" :postText="replies.postText"
-                            :totalComments="replies.totalComments" :totalReposts="replies.totalReposts"
-                            :totalLikes="replies.totalLikes"/>
-                        {{ void "displays replies to comment" }}
-                        <PostReply v-for="reply in replies.comments" :userName="reply.userName"
-                            :userHandle="reply.userHandle" :postText="reply.postText"
-                            :totalComments="reply.totalComments" :totalReposts="reply.totalReposts"
-                            :totalLikes="reply.totalLikes"/>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <PostDetailModal v-show="postDetails.isVisible"/>
     </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import SidebarButtonNormal from "./components/Navbar/SidebarButtonNormal.vue";
-import UserButton from "./components/Navbar/UserButton.vue";
-import FeedColumn from "./components/Feed/FeedColumn.vue";
 import { feedListing } from "./state/FeedList.vue";
 import { FeedEnums } from "./enums/FeedEnums";
-import PostDetailIcon from "./components/Post/PostDetailIcon.vue";
 import { PostEnums } from "./enums/PostEnums";
-import PostReply from "./components/Post/PostReply.vue";
 import { postDetails } from "./state/PostDetails.vue";
 
     export default defineComponent({
@@ -147,22 +86,6 @@ import { postDetails } from "./state/PostDetails.vue";
                 feedListing.feedList.push({feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
                 let newestFeed = feedListing.feedList[feedListing.feedList.length-1];
                 console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
-            },
-            /**
-             * Method used to remove post message placeholder when input is in focus.
-             */
-            postInputFocusGained(event:FocusEvent){
-                (event.target as HTMLElement).classList.remove('postPlaceholder');
-            },
-            /**
-             * Method used to add post message placeholder when input loses focus and
-             * text is empty.
-             */
-            postInputFocusLost(event:FocusEvent){
-                if ((event.target as HTMLElement).textContent == ""){
-                    //textbox empty
-                    (event.target as HTMLElement).classList.add('postPlaceholder');
-                }
             }
         },
         created(){

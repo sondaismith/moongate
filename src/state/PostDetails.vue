@@ -4,9 +4,9 @@ import { reactive } from 'vue'
 interface IPostDetails{
     userName: String,
     userHandle: String,
-    totalComments: number, //not going to actually be in final version, just use .length
-    totalReposts: number,
-    totalLikes: number,
+    totalComments: Number, //not going to actually be in final version, just use .length
+    totalReposts: Number,
+    totalLikes: Number,
     postText: String,
     postMedia?: String,
     comments: IPostDetails[],
@@ -14,10 +14,18 @@ interface IPostDetails{
 }
 
 interface IPostDetailsList{
-    postDetailsList : IPostDetails[]
+    isVisible: Boolean,
+    postDetailsList : IPostDetails[],
+    showModal(): void,
+    hideModal(): void,
 }
 
 export const postDetails : IPostDetailsList = reactive({
+    // isVisible:{
+    //     type: Boolean,
+    //     default(){return false}
+    // },
+    isVisible: false,
     postDetailsList:[
         {userName:'Modal', userHandle:'modalTest.moon.social', totalComments:6, totalReposts: 12, totalLikes: 42, postText:'Test',
             comments:[
@@ -29,6 +37,12 @@ export const postDetails : IPostDetailsList = reactive({
                 {userName:'user2', userHandle:'user2', totalComments:0, totalReposts: 2, totalLikes: 1, postText:'Hello?', comments:[]},
             ]
         }
-    ]
+    ],
+    showModal(){
+        this.isVisible = true;
+    },
+    hideModal(){
+        this.isVisible = false;
+    }
 })
 </script>

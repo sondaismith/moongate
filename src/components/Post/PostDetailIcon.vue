@@ -21,7 +21,7 @@ export default defineComponent({
             type: String as PropType<PostEnums.IconTypes>,
             required: true
         },
-        iconText: String
+        iconText: Number
     },
     data(){
         return{

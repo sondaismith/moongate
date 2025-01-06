@@ -45,14 +45,20 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import { postDetails } from '../../state/PostDetails.vue';
 
 export default defineComponent({
-    methods:{
-        openPostDetails(){
-            console.log("(Show Post Details...)");
+    data(){
+        return{
+            postDetails
         }
     },
-    setup () {       
+    methods:{
+        openPostDetails(){
+            postDetails.showModal();
+        }
+    },
+    setup () {
 
         return {}
     }

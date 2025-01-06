@@ -32,6 +32,7 @@ declare module 'vue' {
     ISolarShareBold: typeof import('~icons/solar/share-bold')['default']
     ISolarSquareShareLineLinear: typeof import('~icons/solar/square-share-line-linear')['default']
     PostDetailIcon: typeof import('./src/components/Post/PostDetailIcon.vue')['default']
+    PostDetailModal: typeof import('./src/components/Post/PostDetailModal.vue')['default']
     PostReply: typeof import('./src/components/Post/PostReply.vue')['default']
     SidebarButtonNormal: typeof import('./src/components/Navbar/SidebarButtonNormal.vue')['default']
     UnreadMsgCount: typeof import('./src/components/Decorations/UnreadMsgCount.vue')['default']
