@@ -1,6 +1,6 @@
 <template>
     {{ void "feed column" }}
-    <div class="flex flex-col pr-1 h-full w-64 bg-slate-900">
+    <div :id="feedId" class="flex flex-col pr-1 h-full w-64 bg-slate-900">
         {{ void "feed title" }}
         <div class="flex h-14 w-full border-b-2 border-white pl-2 pr-1 items-center">
             <div class="flex w-full justify-between">
@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from 'vue';
+import { defineComponent } from 'vue';
 import FeedPost from './FeedPost.vue';
 
 interface FeedCollection{
@@ -48,6 +48,7 @@ export default defineComponent({
         }
     },
     props: {
+        feedId: String,
         userHandle: String,
         feedName: String,
         postCount: Number
@@ -69,8 +70,8 @@ export default defineComponent({
     created(){
         this.generateRandomDate(new Date(2012, 0, 1), new Date())
     },
-    setup () {        
-        
+    setup () {
+
         return {}
     }
 })

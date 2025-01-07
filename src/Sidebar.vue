@@ -16,7 +16,7 @@
                     <div class="flex-shrink preload-gutter overflow-x-hidden">
                         <div class="space-y-2 py-2 pl-2 pr-1">
                             <SidebarButtonNormal type="home" tooltip="Home"/>
-                            <SidebarButtonNormal v-for="feeds in feedListing.feedList" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/>
+                            <SidebarButtonNormal v-for="feeds in feedListing.feedList" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/>
                             <!-- <SidebarButtonNormal type="art" tooltip="Good Art"/>
                             <SidebarButtonNormal type="art" tooltip="Good Art"/>
                             <SidebarButtonNormal type="art" tooltip="Good Art"/>
@@ -43,12 +43,13 @@
             </div>
         </div>
         {{ void "main content" }}
-        <div class="bg-slate-700 flex flex-1 overflow-x-scroll" >
+        <div :onscroll="showScrollXPos" id="test-FeedDisplay" class="bg-slate-700 flex flex-1 overflow-x-scroll" >
             <!-- <FeedColumn :post-count="2" :feed-name="'Home'" :user-handle="'home'"/>
             <FeedColumn :post-count="3" :feed-name="'Awesome Art'" :user-handle="'art'"/>
             <FeedColumn :post-count="1" :feed-name="'The Crazy Airplane Man'" :user-handle="'airplanebozo'"/>
             <FeedColumn :post-count="5" :feed-name="'Scottish News'" :user-handle="'News'"/> -->
-            <FeedColumn v-for="feeds in feedListing.feedList" :post-count="feeds.totalPosts" :feed-name="feeds.feedName" :user-handle="feeds.feedHandle"/>
+            <FeedColumn v-for="feeds in feedListing.feedList" :feedId="feeds.feedId" :post-count="feeds.totalPosts" :feed-name="feeds.feedName" :user-handle="feeds.feedHandle"/>
+            <div class="absolute bottom-3 p-2 bg-blue-800/90">X Pos: {{ scrollXPos }}</div>
         </div>
         {{ void "Post Details Modal" }}
         <PostDetailModal v-show="postDetails.isVisible"/>
@@ -56,8 +57,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
-import { feedListing } from "./state/FeedList.vue";
+import { defineComponent } from "vue";
+import { feedListing, GenerateUniqueId } from "./state/FeedList.vue";
 import { FeedEnums } from "./enums/FeedEnums";
 import { PostEnums } from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
@@ -72,7 +73,8 @@ import { postDetails } from "./state/PostDetails.vue";
                 // ]
                 feedListing,
                 postDetails,
-                iconTypes:PostEnums.IconTypes
+                iconTypes:PostEnums.IconTypes,
+                scrollXPos : 0
             }
         },
         methods: {
@@ -83,9 +85,14 @@ import { postDetails } from "./state/PostDetails.vue";
                 // console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
 
                 const feedTypes = [FeedEnums.Types.Art,FeedEnums.Types.Friends,FeedEnums.Types.News];
-                feedListing.feedList.push({feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
+                feedListing.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
                 let newestFeed = feedListing.feedList[feedListing.feedList.length-1];
                 console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
+                this.showScrollXPos();
+            },
+            showScrollXPos(){
+                const el = document.getElementById("test-FeedDisplay");
+                this.scrollXPos = el.scrollLeft;
             }
         },
         created(){
