@@ -49,7 +49,11 @@
             <FeedColumn :post-count="1" :feed-name="'The Crazy Airplane Man'" :user-handle="'airplanebozo'"/>
             <FeedColumn :post-count="5" :feed-name="'Scottish News'" :user-handle="'News'"/> -->
             <FeedColumn v-for="feeds in feedListing.feedList" :feedId="feeds.feedId" :post-count="feeds.totalPosts" :feed-name="feeds.feedName" :user-handle="feeds.feedHandle"/>
-            <div class="absolute bottom-3 p-2 bg-blue-800/90">X Pos: {{ scrollXPos }}</div>
+            <div class="absolute bottom-3 p-2 bg-blue-800/90">
+                <div>X Pos: {{ scrollXPos }}</div>
+                <div>Viewport Width: {{ fdViewWidth }}</div>
+            </div>
+            <div class="absolute h-full w-0.5 left-1/2 bg-red-700/60"></div>
         </div>
         {{ void "Post Details Modal" }}
         <PostDetailModal v-show="postDetails.isVisible"/>
@@ -74,7 +78,8 @@ import { postDetails } from "./state/PostDetails.vue";
                 feedListing,
                 postDetails,
                 iconTypes:PostEnums.IconTypes,
-                scrollXPos : 0
+                scrollXPos : 0,
+                fdViewWidth : 0
             }
         },
         methods: {
@@ -90,15 +95,28 @@ import { postDetails } from "./state/PostDetails.vue";
                 console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
                 this.showScrollXPos();
             },
+            /**
+             * DEBUG - Displays the current x-axis scroll pos of the Feed Display.
+             */
             showScrollXPos(){
                 const el = document.getElementById("test-FeedDisplay");
                 this.scrollXPos = el.scrollLeft;
+                this.getFeedDisplayViewWidth();
+            },
+            /**
+             * DEBUG - Displays the current viewable width of the Feed Display.
+             */
+            getFeedDisplayViewWidth(){
+                const el = document.getElementById("test-FeedDisplay");
+                this.fdViewWidth = el.offsetWidth;
             }
         },
         created(){
         },
+        mounted(){
+            this.getFeedDisplayViewWidth();
+        },
         setup () {
-
             return {}
         }
     })

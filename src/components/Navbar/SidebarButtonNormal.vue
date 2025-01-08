@@ -37,7 +37,7 @@ export default defineComponent({
                 console.log(el);
             }
         },
-        scrollTo(el: Element) {
+        scrollTo(el: HTMLElement) {
             const elRight = el.offsetLeft + el.offsetWidth;
             const elLeft = el.offsetLeft;
 
@@ -51,49 +51,24 @@ export default defineComponent({
             const fdViewWidth = el.parentElement.offsetWidth;
             //The current position of the scroll bar for the Feed Display container
             const fdScrollPos = el.parentElement.scrollLeft;
-            //The relative position of the Feed Display scroll bar in relation
-            //to its full width.
-            const fdRelScrollPos = Math.round((fdScrollPos ? 1 : fdScrollPos/(fdTotalWidth-fdViewWidth))*fdTotalWidth);
-            // const fdRelScrollRatio = (fdTotalWidth-fdViewWidth);
+            const scrollWidth = fdTotalWidth - fdViewWidth;
+
+            //Padding of the element we're trying to center (not used atm).
+            const elPadLeft = getComputedStyle(el).paddingLeft;
+            const elPadRight = getComputedStyle(el).paddingRight;
 
             const elParentRight = el.parentNode.offsetLeft + el.parentNode.offsetWidth;
             const elParentLeft = el.parentNode.offsetLeft;
 
-            const elParentCenter = elParentLeft + ((elParentRight-elParentLeft)/2);
-            const elParentScrollWidth = el.parentElement.scrollWidth;
+            //Not used, kept just in case
+            const isEleLeftReachable = (elCenter - (elWidth/2)) > 0;
+            const isEleRightReachable = (elCenter + (elWidth/2)) < fdTotalWidth;
 
-            // el.parentElement.scrollBy({top:0, left:fdScrollPos-fdRelScrollPos, behavior:"smooth"});
-            const curWidthRatio = fdViewWidth/fdTotalWidth;
-            const curPercentAlongScroll = fdScrollPos/(fdTotalWidth-fdViewWidth);
-            const curPosAlongScroll = fdTotalWidth*curPercentAlongScroll;
-            var reqMovement = (elCenter-curPosAlongScroll);
-            reqMovement = (elCenter-elLeft-curPosAlongScroll)*(fdViewWidth/fdTotalWidth);
-
-            const totalScrollableWidth = fdTotalWidth-fdViewWidth;
-            const centerPosPercentAlongWidth = elCenter/fdTotalWidth;
-            const targetScrollPos = totalScrollableWidth*centerPosPercentAlongWidth;
-
-            el.parentElement.scrollBy({top:0, left:targetScrollPos-fdScrollPos, behavior:"smooth"});
-
-            // el.parentElement.scrollBy({top:0, left:reqMovement, behavior:"smooth"});
-            // if(elCenter > fdRelScrollPos){//scroll right
-            //     el.parentElement.scrollBy({top:0, left:elCenter-fdRelScrollPos, behavior:"smooth"});
-            // }
-            // else if(elCenter < fdRelScrollPos){
-            //     el.parentElement.scrollBy({top:0, left:elCenter-fdRelScrollPos, behavior:"smooth"});
-            // }
-
-            //check if right side of the element is not in view
-            // if (elRight > elParentRight + el.parentNode.scrollLeft) {
-            //     // el.parentNode.scrollLeft = elRight - elParentRight;
-            //     el.parentElement.scrollBy({top:0, left:reqMovement, behavior:"smooth"});
-            // }
-
-            // // check if left side of the element is not in view
-            // else if (elLeft < elParentLeft + el.parentNode.scrollLeft) {
-            //     // el.parentNode.scrollLeft = elLeft - elParentLeft;
-            //     el.parentElement.scrollBy({top:0, left:reqMovement, behavior:"smooth"});
-            // }
+            //The "-2" on the (elParentLeft/2)-2) is for the padding-right
+            //on the FeedColumn component. Haven't got a automatic computed solution
+            //yet.
+            const target = ((elCenter + ((fdViewWidth/2) - (elParentLeft/2)-2)) - fdTotalWidth + scrollWidth);
+            el.parentElement.scrollBy({top:0, left:target-fdScrollPos, behavior:"smooth"});
         }
     },
     setup (props) {

@@ -20,6 +20,7 @@
         </div>
         <div class="h-full py-2 pl-2 pr-1 bg-slate-600 preload-gutter overflow-y-auto">
             <FeedPost v-for="n in postCount" />
+            <div class="relative h-full w-0.5 left-1/2 bg-blue-900/60"></div>
         </div>
     </div>
 </template>
