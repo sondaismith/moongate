@@ -185,4 +185,9 @@ button {
   border-radius: 0.25rem;
 }
 
+.feed-highlight{
+  border-color: #eab308 !important;
+  /* border-color: #0ea5e9 !important; */
+}
+
 </style>

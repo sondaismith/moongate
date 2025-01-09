@@ -1,6 +1,6 @@
 <template>
     {{ void "feed column" }}
-    <div :id="feedId" class="flex flex-col pr-1 h-full w-64 bg-slate-900">
+    <div :id="feedId" class="relative flex flex-col pr-1 h-full w-64 bg-slate-900">
         {{ void "feed title" }}
         <div class="flex h-14 w-full border-b-2 border-white pl-2 pr-1 items-center">
             <div class="flex w-full justify-between">
@@ -22,6 +22,7 @@
             <FeedPost v-for="n in postCount" />
             <div class="relative h-full w-0.5 left-1/2 bg-blue-900/60"></div>
         </div>
+        <div class="absolute pointer-events-none h-full left-0 right-0 border-2 rounded-sm border-sky-500/0 transition-colors"></div>
     </div>
 </template>
 

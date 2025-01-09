@@ -20,6 +20,11 @@ import { defineComponent } from 'vue';
 import UnreadMsgCount from '../Decorations/UnreadMsgCount.vue';
 
 export default defineComponent({
+    data(){
+        return{
+            isScrolling: false
+        }
+    },
     props: {
         feedId: String,
         tooltip: String,
@@ -27,16 +32,67 @@ export default defineComponent({
         newPosts: Number,
     },
     methods:{
-        highlightFeed(){
-            //Only if it is related to a FeedDisplay
-            if(this.feedId){
-                var el = document.getElementById(this.feedId);
-                // el?.scrollIntoView
-                // if(el) el.style.backgroundColor = "red";
-                this.scrollTo(el);
-                console.log(el);
-            }
+        startScrolling(){
+            this.isScrolling = true;
         },
+        stopScrolling(){
+            this.isScrolling = false;
+        },
+        /**
+         * Method that highlights a specific `FeedColumn` by scrolling it into view
+         * and highlighting with a "flash".
+         */
+        highlightFeed(){
+            //Only if it is related to a FeedDisplay and we are not already scrolling
+            if(this.feedId && !this.isScrolling){
+                var el = document.getElementById(this.feedId);
+                this.startScrolling();
+                this.scrollTo(el);
+                // console.log(el);
+            }
+            // else{console.log("still scrolling")} //DEBUG
+        },
+        /**
+         * Function used to "flash" highlight a FeedColumn
+         * component.
+         */
+        flashElement(el : HTMLElement){
+            setTimeout(() => {
+                el.children[2].classList.add('feed-highlight');
+            }, 300);
+            setTimeout(() => {
+                el.children[2].classList.remove('feed-highlight');
+                //Allow highlight to happen again after "flash" completes.
+                this.stopScrolling();
+            }, 1050);
+        },
+        /**
+         * Function used to determine if the target scroll position
+         * has been reached, before it flashes the target element.
+         * Has a timeout function to prevent waiting indefinitely.
+         */
+        isScrollByFinished(el : HTMLElement,targetPos : number){
+            const checkIfScrollToIsFinished = setInterval(() => {
+                if (el.parentElement.scrollLeft === targetPos ||
+                el.parentElement.scrollLeft === 0 ||
+                el.parentElement.scrollLeft === el.parentElement.scrollWidth - el.parentElement.offsetWidth) {
+                    this.flashElement(el);
+                    clearInterval(checkIfScrollToIsFinished);
+                    clearTimeout(preventLoop);
+                }
+            }, 100);
+            /**
+             * Timeout function for isScrollByFinished.
+             */
+            const preventLoop = setTimeout(() => {
+                this.flashElement(el);
+                clearInterval(checkIfScrollToIsFinished);
+            }, 6000);
+        },
+        /**
+         * Function that attempts to scroll a specific element into view.
+         * @param el The element we are trying to center in the viewport/scroll to.
+         */
         scrollTo(el: HTMLElement) {
             const elRight = el.offsetLeft + el.offsetWidth;
             const elLeft = el.offsetLeft;
@@ -51,6 +107,9 @@ export default defineComponent({
             const fdViewWidth = el.parentElement.offsetWidth;
             //The current position of the scroll bar for the Feed Display container
             const fdScrollPos = el.parentElement.scrollLeft;
+            /**
+             * The scrollbar length.
+             * */
             const scrollWidth = fdTotalWidth - fdViewWidth;
 
             //Padding of the element we're trying to center (not used atm).
@@ -68,7 +127,10 @@ export default defineComponent({
             //on the FeedColumn component. Haven't got a automatic computed solution
             //yet.
             const target = ((elCenter + ((fdViewWidth/2) - (elParentLeft/2)-2)) - fdTotalWidth + scrollWidth);
+
             el.parentElement.scrollBy({top:0, left:target-fdScrollPos, behavior:"smooth"});
+
+            this.isScrollByFinished(el, target);
         }
     },
     setup (props) {
