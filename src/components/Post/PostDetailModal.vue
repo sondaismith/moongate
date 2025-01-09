@@ -34,6 +34,7 @@
                         <PostDetailIcon :iconType="iconTypes.Likes" iconText="42"/>
                         <PostDetailIcon :iconType="iconTypes.Share"/>
                         <PostDetailIcon :iconType="iconTypes.Options"/>
+                        <PostOptionsMenu/>
                     </div>
                 </div>
                 {{ void "post reply input" }}
@@ -68,6 +69,7 @@
 import { defineComponent } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { PostEnums } from '../../enums/PostEnums';
+import PostOptionsMenu from './PostOptionsMenu.vue';
 
 export default defineComponent({
     data(){

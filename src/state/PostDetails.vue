@@ -25,7 +25,7 @@ export const postDetails : IPostDetailsList = reactive({
     //     type: Boolean,
     //     default(){return false}
     // },
-    isVisible: false,
+    isVisible: true,
     postDetailsList:[
         {userName:'Modal', userHandle:'modalTest.moon.social', totalComments:6, totalReposts: 12, totalLikes: 42, postText:'Test',
             comments:[
