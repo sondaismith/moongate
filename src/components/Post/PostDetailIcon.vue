@@ -1,5 +1,5 @@
 <template>
-    <div class="flex items-center">
+    <div class="flex items-center cursor-pointer">
         <i-solar:chat-dots-outline v-if="iconType == iconTypes.Comment" class="text-lg"/>
         <i-mingcute:repeat-line v-else-if="iconType == iconTypes.Reposts" class="text-lg"/>
         <i-mingcute:heart-fill v-else-if="iconType == iconTypes.Likes" class="text-lg"/>

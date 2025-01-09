@@ -33,8 +33,10 @@
                         <PostDetailIcon :iconType="iconTypes.Reposts" iconText="12"/>
                         <PostDetailIcon :iconType="iconTypes.Likes" iconText="42"/>
                         <PostDetailIcon :iconType="iconTypes.Share"/>
-                        <PostDetailIcon :iconType="iconTypes.Options"/>
-                        <PostOptionsMenu/>
+                        <div>
+                            <PostDetailIcon @click="showPostOptionsMenu" :iconType="iconTypes.Options"/>
+                            <PostOptionsMenu @click="hidePostOptionsMenu" v-show="isPostMenuVisible"/>
+                        </div>
                     </div>
                 </div>
                 {{ void "post reply input" }}
@@ -74,6 +76,7 @@ import PostOptionsMenu from './PostOptionsMenu.vue';
 export default defineComponent({
     data(){
         return{
+            isPostMenuVisible: false,
             postDetails,
             iconTypes:PostEnums.IconTypes
         }
@@ -93,6 +96,20 @@ export default defineComponent({
             if ((event.target as HTMLElement).textContent == ""){
                 //textbox empty
                 (event.target as HTMLElement).classList.add('postPlaceholder');
+            }
+        },
+        /**
+         * Shows the "Post Options" menu.
+         */
+        showPostOptionsMenu(){
+            this.isPostMenuVisible = true;
+        },/**
+         * Hides the "Post Options" menu.
+         */
+        hidePostOptionsMenu(event:PointerEvent){
+            // if((event.target === (event.currentTarget as HTMLElement).children[1])){
+            if((event.target as HTMLElement).classList.contains('menu-closer')){
+                this.isPostMenuVisible = false;
             }
         },
         hideModal(){
