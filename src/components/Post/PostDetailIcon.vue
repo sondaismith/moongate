@@ -13,9 +13,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, FunctionalComponent } from 'vue'
+import { defineComponent } from 'vue'
 import { PostEnums } from '../../enums/PostEnums';
 import PostOptionsMenu from './PostOptionsMenu.vue';
+import { OptionIcon } from './PostInterfaces';
 
 //Menu Icons
 import MdiTranslateVariant from '~icons/mdi/translate-variant';
@@ -24,16 +25,6 @@ import MdiCode from '~icons/mdi/code';
 import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MdiHideOutline from '~icons/mdi/hide-outline';
 import MdiBlock from '~icons/mdi/block';
-
-/**
- * Interface used to specify the data needed by
- * a `PostOptionsMenuItem` component to display its
- * label and icon.
- */
-interface OptionIcon{
-    name: String,
-    icon: FunctionalComponent
-}
 
 /**
  * Collection of all the options to display on the

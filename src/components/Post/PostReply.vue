@@ -18,11 +18,7 @@
             </div>
             <div>
                 <div class="flex text-slate-400 py-2 space-x-2 justify-between">
-                    <PostDetailIcon :iconType="iconTypes.Comment" :iconText="totalComments"/>
-                    <PostDetailIcon :iconType="iconTypes.Reposts" :iconText="totalReposts"/>
-                    <PostDetailIcon :iconType="iconTypes.Likes" :iconText="totalLikes"/>
-                    <PostDetailIcon :iconType="iconTypes.Share"/>
-                    <PostDetailIcon :iconType="iconTypes.Options"/>
+                    <PostDetailIcon v-for="item in replyData" :iconDetails="item"/>
                 </div>
             </div>
         </div>
@@ -32,6 +28,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { PostEnums } from '../../enums/PostEnums';
+import { DetailIcon } from './PostInterfaces';
+import { DetailIconList } from '../../fake-data/dumPostData';
+import PostDetailIcon from './PostDetailIcon.vue';
+
+var postReplyData : DetailIcon[];
 
 export default defineComponent({
     props:{
@@ -46,8 +47,12 @@ export default defineComponent({
     },
     data(){
         return{
-            iconTypes:PostEnums.IconTypes
+            iconTypes:PostEnums.IconTypes,
+            replyData : postReplyData,
         }
+    },
+    created(){
+        this.replyData = DetailIconList
     }
 })
 </script>
