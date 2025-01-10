@@ -1,6 +1,6 @@
 <template>
     <div class="flex justify-between items-center p-2
-    rounded hover:bg-slate-500 hover:cursor-pointer">
+    rounded hover:bg-slate-500 select-none hover:cursor-pointer active:bg-slate-400">
             <div>{{ itemData?.name }}</div>
             <component :is="itemData?.icon"/>
     </div>

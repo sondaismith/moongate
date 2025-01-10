@@ -101,7 +101,8 @@ export default defineComponent({
         /**
          * Shows the "Post Options" menu.
          */
-        showPostOptionsMenu(){
+        showPostOptionsMenu(event:FocusEvent){
+            (event.target as HTMLElement).classList.add('text-white') //keep button "hover" state
             this.isPostMenuVisible = true;
         },/**
          * Hides the "Post Options" menu.
@@ -109,6 +110,8 @@ export default defineComponent({
         hidePostOptionsMenu(event:PointerEvent){
             // if((event.target === (event.currentTarget as HTMLElement).children[1])){
             if((event.target as HTMLElement).classList.contains('menu-closer')){
+                //remove button "hover" state
+                (event.target as HTMLElement).parentElement?.parentElement?.children[0].classList.remove('text-white');
                 this.isPostMenuVisible = false;
             }
         },
