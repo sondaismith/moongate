@@ -1,32 +1,92 @@
 <template>
-    <div class="group flex items-center cursor-pointer hover:text-slate-300">
-        <i-solar:chat-dots-outline v-if="iconType == iconTypes.Comment" class="pointer-events-none text-lg group-hover:text-yellow-500"/>
-        <i-mingcute:repeat-line v-else-if="iconType == iconTypes.Reposts" class="pointer-events-none text-lg group-hover:text-green-500"/>
-        <i-mingcute:heart-fill v-else-if="iconType == iconTypes.Likes" class="pointer-events-none text-lg group-hover:text-red-500"/>
-        <i-solar-share-bold v-else-if="iconType == iconTypes.Share" class="pointer-events-none text-lg group-hover:text-blue-500"/>
-        <i-mdi-dots-horizontal v-else-if="iconType == iconTypes.Options" class="pointer-events-none text-lg group-hover:text-white"/>
-        <div v-else data-tooltip="ERROR: icon not found"><i-mingcute-warning-line class="text-lg"/></div>
-        {{ void "above line handles situation where incorect iconType value has been set" }}
-        <div v-if="iconText" class="pl-1">{{ iconText }}</div>
+    <div v-if="iconDetails?.type != 'option'" class="group flex items-center cursor-pointer hover:text-slate-300">
+         <component :is="iconDetails?.icon" :class="'pointer-events-none text-lg '+iconDetails?.color"/>
+        <div class="pl-1">{{ iconDetails?.label }}</div>
+    </div>
+    <div v-else>
+        <div @click="showPostOptionsMenu" class="group flex items-center cursor-pointer hover:text-slate-300">
+            <component :is="iconDetails?.icon" :class="'pointer-events-none text-lg '+iconDetails?.color"/>
+            <div class="pl-1">{{ iconDetails?.label }}</div>
+        </div>
+        <PostOptionsMenu @click="hidePostOptionsMenu" :menuItems="OptionIconList" v-show="isPostMenuVisible"/>
     </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { defineComponent, FunctionalComponent } from 'vue'
 import { PostEnums } from '../../enums/PostEnums';
+import PostOptionsMenu from './PostOptionsMenu.vue';
+
+//Menu Icons
+import MdiTranslateVariant from '~icons/mdi/translate-variant';
+import MdiClipboard from '~icons/mdi/clipboard';
+import MdiCode from '~icons/mdi/code';
+import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
+import MdiHideOutline from '~icons/mdi/hide-outline';
+import MdiBlock from '~icons/mdi/block';
+
+/**
+ * Interface used to specify the data needed by
+ * a `PostOptionsMenuItem` component to display its
+ * label and icon.
+ */
+interface OptionIcon{
+    name: String,
+    icon: FunctionalComponent
+}
+
+/**
+ * Collection of all the options to display on the
+ * `PostOptionsMenu` component.
+ */
+const OptionIconList : OptionIcon[][] = [
+    [
+        { name:'Translate', icon:MdiTranslateVariant },
+        { name:'Copy link', icon:MdiClipboard },
+        { name:'Embed', icon:MdiCode },
+    ],
+    [
+        { name:'Mute', icon: MingcuteVolumeMuteFill }
+    ],
+    [
+        { name:'Hide', icon: MdiHideOutline }
+    ],
+    [
+        { name:'Block', icon: MdiBlock }
+    ]
+]
+
 
 export default defineComponent({
     props:{
-        iconType:{
-            type: String as PropType<PostEnums.IconTypes>,
-            required: true
-        },
-        iconText: Number
+        iconDetails: Object
     },
     data(){
         return{
-            iconTypes:PostEnums.IconTypes
+            isPostMenuVisible: false,
+            iconTypes:PostEnums.IconTypes,
+            OptionIconList
         }
+    },
+    methods:{
+        /**
+         * Shows the "Post Options" menu.
+         */
+         showPostOptionsMenu(event:FocusEvent){
+            (event.target as HTMLElement).classList.add('text-white') //keep button "hover" state
+            this.isPostMenuVisible = true;
+        },
+        /**
+         * Hides the "Post Options" menu.
+         */
+        hidePostOptionsMenu(event:PointerEvent){
+            // if((event.target === (event.currentTarget as HTMLElement).children[1])){
+            if((event.target as HTMLElement).classList.contains('menu-closer')){
+                //remove button "hover" state
+                (event.target as HTMLElement).parentElement?.parentElement?.children[0].classList.remove('text-white');
+                this.isPostMenuVisible = false;
+            }
+        },
     },
     setup () {
         return {}

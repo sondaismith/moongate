@@ -29,14 +29,7 @@
                         <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">January 4th, 2025 at 12:42am</div>
                     </div>
                     <div class="flex text-slate-400 py-2 space-x-2 justify-between">
-                        <PostDetailIcon :iconType="iconTypes.Comment" iconText="6"/>
-                        <PostDetailIcon :iconType="iconTypes.Reposts" iconText="12"/>
-                        <PostDetailIcon :iconType="iconTypes.Likes" iconText="42"/>
-                        <PostDetailIcon :iconType="iconTypes.Share"/>
-                        <div>
-                            <PostDetailIcon @click="showPostOptionsMenu" :iconType="iconTypes.Options"/>
-                            <PostOptionsMenu @click="hidePostOptionsMenu" v-show="isPostMenuVisible"/>
-                        </div>
+                        <PostDetailIcon v-for="iconData in dIconList" :iconDetails="iconData" />
                     </div>
                 </div>
                 {{ void "post reply input" }}
@@ -68,18 +61,47 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, FunctionalComponent } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { PostEnums } from '../../enums/PostEnums';
 import PostOptionsMenu from './PostOptionsMenu.vue';
+
+//Icons
+import SolarChatDotsOutline from '~icons/solar/chat-dots-outline';
+import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
+import MingcuteHeartFill from '~icons/mingcute/heart-fill';
+import SolarShareBold from '~icons/solar/share-bold';
+import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
+
+interface DetailIcon{
+    label: String,
+    type: PostEnums.IconTypes,
+    icon: FunctionalComponent,
+    color: String
+}
+
+/**In a real situation, the label values should be set when the modal is created
+ * using the post data returned from the server.
+ */
+var DetailIconList : DetailIcon[] = [
+    { label: '6', type:PostEnums.IconTypes.Comment, icon: SolarChatDotsOutline, color: 'group-hover:text-yellow-500' },
+    { label: '2', type:PostEnums.IconTypes.Reposts, icon: MingcuteRepeatLine, color: 'group-hover:text-blue-500' },
+    { label: '3', type:PostEnums.IconTypes.Likes, icon: MingcuteHeartFill, color: 'group-hover:text-red-500' },
+    { label: '', type:PostEnums.IconTypes.Share, icon: SolarShareBold, color: 'group-hover:text-blue-500' },
+    { label: '', type:PostEnums.IconTypes.Options, icon: MdiDotsHorizontal, color: 'group-hover:text-white-500' },
+]
 
 export default defineComponent({
     data(){
         return{
             isPostMenuVisible: false,
             postDetails,
+            dIconList: [] as DetailIcon[],
             iconTypes:PostEnums.IconTypes
         }
+    },
+    created(){
+        this.dIconList = DetailIconList;
     },
     methods:{
         /**
@@ -96,23 +118,6 @@ export default defineComponent({
             if ((event.target as HTMLElement).textContent == ""){
                 //textbox empty
                 (event.target as HTMLElement).classList.add('postPlaceholder');
-            }
-        },
-        /**
-         * Shows the "Post Options" menu.
-         */
-        showPostOptionsMenu(event:FocusEvent){
-            (event.target as HTMLElement).classList.add('text-white') //keep button "hover" state
-            this.isPostMenuVisible = true;
-        },/**
-         * Hides the "Post Options" menu.
-         */
-        hidePostOptionsMenu(event:PointerEvent){
-            // if((event.target === (event.currentTarget as HTMLElement).children[1])){
-            if((event.target as HTMLElement).classList.contains('menu-closer')){
-                //remove button "hover" state
-                (event.target as HTMLElement).parentElement?.parentElement?.children[0].classList.remove('text-white');
-                this.isPostMenuVisible = false;
             }
         },
         hideModal(){
