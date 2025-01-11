@@ -1,7 +1,7 @@
-import { DetailIcon } from "../components/Post/PostInterfaces";
+import { DetailIcon, OptionIcon } from "../components/Post/PostInterfaces";
 import { PostEnums } from "../enums/PostEnums";
 
-//Icons
+//DetailIcon Icons
 import SolarChatDotsOutline from '~icons/solar/chat-dots-outline';
 import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteHeartFill from '~icons/mingcute/heart-fill';
@@ -19,4 +19,33 @@ var DetailIconList : DetailIcon[] = [
     { label: '', type:PostEnums.IconTypes.Options, icon: MdiDotsHorizontal, color: 'group-hover:text-white-500' },
 ]
 
-export { DetailIconList }
+//PostOptionMenu Icons
+import MdiTranslateVariant from '~icons/mdi/translate-variant';
+import MdiClipboard from '~icons/mdi/clipboard';
+import MdiCode from '~icons/mdi/code';
+import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
+import MdiHideOutline from '~icons/mdi/hide-outline';
+import MdiBlock from '~icons/mdi/block';
+
+/**
+ * Collection of all the options to display on the
+ * `PostOptionsMenu` component.
+ */
+const OptionIconList : OptionIcon[][] = [
+    [
+        { name:'Translate', icon:MdiTranslateVariant },
+        { name:'Copy link', icon:MdiClipboard },
+        { name:'Embed', icon:MdiCode },
+    ],
+    [
+        { name:'Mute', icon: MingcuteVolumeMuteFill }
+    ],
+    [
+        { name:'Hide', icon: MdiHideOutline }
+    ],
+    [
+        { name:'Block', icon: MdiBlock }
+    ]
+]
+
+export { DetailIconList, OptionIconList }
