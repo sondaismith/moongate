@@ -33,12 +33,7 @@
                     </div>
                 </div>
                 {{ void "post reply input" }}
-                <div>
-                    <!-- <textarea class="block w-full p-2 rounded bg-slate-900" placeholder="Post reply..."/> -->
-                    <span class="block w-full p-2 rounded bg-slate-900 overflow-hidden resize
-                    max-h-36 postPlaceholder" role="text" placeholder="Post reply..."
-                    contenteditable @focusin="postInputFocusGained" @focusout="postInputFocusLost"/>
-                </div>
+                <PostReplyInput/>
                 {{ void "reply container" }}
                 <!-- <div class="flex flex-col preload-gutter overflow-y-auto min-h-[255px] divide-y border-slate-600 divide-inherit"> -->
                 <div class="flex flex-col preload-gutter divide-y border-slate-600 divide-inherit">
@@ -67,6 +62,7 @@ import { postDetails } from '../../state/PostDetails.vue';
 import { PostEnums } from '../../enums/PostEnums';
 import { DetailIcon } from './PostInterfaces';
 import { DetailIconList, OptionIconList } from '../../fake-data/dumPostData';
+import PostReplyInput from './PostReplyInput.vue';
 
 export default defineComponent({
     data(){
@@ -82,22 +78,6 @@ export default defineComponent({
         this.dIconList = DetailIconList;
     },
     methods:{
-        /**
-         * Method used to remove post message placeholder when input is in focus.
-         */
-        postInputFocusGained(event:FocusEvent){
-            (event.target as HTMLElement).classList.remove('postPlaceholder');
-        },
-        /**
-         * Method used to add post message placeholder when input loses focus and
-         * text is empty.
-         */
-        postInputFocusLost(event:FocusEvent){
-            if ((event.target as HTMLElement).textContent == ""){
-                //textbox empty
-                (event.target as HTMLElement).classList.add('postPlaceholder');
-            }
-        },
         hideModal(){
             // console.log(postDetails.isVisible + " - Hiding Modal");
             postDetails.hideModal();

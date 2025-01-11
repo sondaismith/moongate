@@ -9,6 +9,9 @@ declare module 'vue' {
   export interface GlobalComponents {
     FeedColumn: typeof import('./src/components/Feed/FeedColumn.vue')['default']
     FeedPost: typeof import('./src/components/Feed/FeedPost.vue')['default']
+    'IMdi:fileGifBox': typeof import('~icons/mdi/file-gif-box')['default']
+    'IMdi:imageOutline': typeof import('~icons/mdi/image-outline')['default']
+    'IMdi:location': typeof import('~icons/mdi/location')['default']
     'IMdi:newspaperVariantMultiple': typeof import('~icons/mdi/newspaper-variant-multiple')['default']
     'IMdi:paintOutline': typeof import('~icons/mdi/paint-outline')['default']
     'IMdi:playlistAdd': typeof import('~icons/mdi/playlist-add')['default']
@@ -28,6 +31,7 @@ declare module 'vue' {
     PostOptionsMenu: typeof import('./src/components/Post/PostOptionsMenu.vue')['default']
     PostOptionsMenuItem: typeof import('./src/components/Post/PostOptionsMenuItem.vue')['default']
     PostReply: typeof import('./src/components/Post/PostReply.vue')['default']
+    PostReplyInput: typeof import('./src/components/Post/PostReplyInput.vue')['default']
     SidebarButtonNormal: typeof import('./src/components/Navbar/SidebarButtonNormal.vue')['default']
     UnreadMsgCount: typeof import('./src/components/Decorations/UnreadMsgCount.vue')['default']
     UserButton: typeof import('./src/components/Navbar/UserButton.vue')['default']
