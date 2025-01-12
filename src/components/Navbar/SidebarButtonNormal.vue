@@ -101,6 +101,8 @@ export default defineComponent({
             const elCenter = elLeft + ((elRight-elLeft)/2);
             //Width of element we want to scroll to
             const elWidth = elRight-elLeft;
+            //The left offset of the Feed Display container - effectively the sidebar width
+            const fdOffsetLeft = el.parentElement.offsetLeft;
             //The full width of the Feed Display container
             const fdTotalWidth = el.parentElement.scrollWidth;
             //The viewable width of the Feed Display container
@@ -126,7 +128,7 @@ export default defineComponent({
             //The "-2" on the (elParentLeft/2)-2) is for the padding-right
             //on the FeedColumn component. Haven't got a automatic computed solution
             //yet.
-            const target = ((elCenter + ((fdViewWidth/2) - (elParentLeft/2)-2)) - fdTotalWidth + scrollWidth);
+            const target = ((elCenter + ((fdViewWidth/2) - elParentLeft - 2)) - fdTotalWidth + scrollWidth);
 
             el.parentElement.scrollBy({top:0, left:target-fdScrollPos, behavior:"smooth"});
 

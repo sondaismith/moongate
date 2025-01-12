@@ -20,7 +20,7 @@
         </div>
         <div class="h-full py-2 pl-2 pr-1 bg-slate-600 preload-gutter overflow-y-auto">
             <FeedPost v-for="n in postCount" />
-            <div class="relative h-full w-0.5 left-1/2 bg-blue-900/60"></div>
+            <div v-if="DebugFlags.showFeedColumnCenter" class="relative h-full w-0.5 left-1/2 bg-blue-900/60"></div>
         </div>
         <div class="absolute pointer-events-none h-full left-0 right-0 border-2 rounded-sm border-sky-500/0 transition-colors"></div>
     </div>
@@ -29,6 +29,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import FeedPost from './FeedPost.vue';
+import { DebugFlags } from '../../state/Debug.vue';
 
 interface FeedCollection{
     feedName: string
@@ -46,7 +47,8 @@ export default defineComponent({
     // },
     data(){
         return{
-            lastUpdate: new Date()
+            lastUpdate: new Date(),
+            DebugFlags,
         }
     },
     props: {

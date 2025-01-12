@@ -1,7 +1,7 @@
 <template>
     <div id="app-viewport" class="flex flex-row h-screen w-screen">
         {{ void "sidebar" }}
-        <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-slate-400 min-w-16 max-w-16 items-center">
+        <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-slate-400 min-w-16 items-center">
             {{ void "App Logo" }}
             <div class="w-full border-b border-gray-700 p-2 flex-none">
                 <!-- <i-mingcute:butterfly-2-line class="size-12"/> -->
@@ -34,20 +34,22 @@
             </div>
         </div>
         {{ void "main content" }}
-        <div :onscroll="showScrollXPos" id="test-FeedDisplay" class="bg-slate-700 flex flex-1 overflow-x-scroll" >
+        <div :onscroll="showScrollXPos" id="feedcolumnDisplay" class="bg-slate-700 flex flex-1 overflow-x-scroll" >
             <!-- <FeedColumn :post-count="2" :feed-name="'Home'" :user-handle="'home'"/>
             <FeedColumn :post-count="3" :feed-name="'Awesome Art'" :user-handle="'art'"/>
             <FeedColumn :post-count="1" :feed-name="'The Crazy Airplane Man'" :user-handle="'airplanebozo'"/>
             <FeedColumn :post-count="5" :feed-name="'Scottish News'" :user-handle="'News'"/> -->
             <FeedColumn v-for="feeds in feedListing.feedList" :feedId="feeds.feedId" :post-count="feeds.totalPosts" :feed-name="feeds.feedName" :user-handle="feeds.feedHandle"/>
-            <div class="absolute bottom-3 p-2 bg-blue-800/90">
+            <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
                 <div>X Pos: {{ scrollXPos }}</div>
                 <div>Viewport Width: {{ fdViewWidth }}</div>
             </div>
-            <div class="absolute h-full w-0.5 left-1/2 bg-red-700/60"></div>
+            {{ void "debug: main viewport center marker" }}
+            <div v-if="DebugFlags.showFeedViewportCenter" id="debug-feedViewportCenterLine" class="absolute h-full w-0.5 bg-red-700/60"></div>
         </div>
         {{ void "Post Details Modal" }}
-        <PostDetailModal v-show="postDetails.isVisible"/>
+        <!-- <PostDetailModal v-show="postDetails.isVisible"/> -->
+        <PostDetailModal/>
     </div>
 </template>
 
@@ -57,6 +59,7 @@ import { feedListing, GenerateUniqueId } from "./state/FeedList.vue";
 import { FeedEnums } from "./enums/FeedEnums";
 import { PostEnums } from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
+import { DebugFlags } from "./state/Debug.vue";
 
     export default defineComponent({
         data(){
@@ -68,6 +71,7 @@ import { postDetails } from "./state/PostDetails.vue";
                 // ]
                 feedListing,
                 postDetails,
+                DebugFlags,
                 iconTypes:PostEnums.IconTypes,
                 scrollXPos : 0,
                 fdViewWidth : 0
@@ -90,7 +94,7 @@ import { postDetails } from "./state/PostDetails.vue";
              * DEBUG - Displays the current x-axis scroll pos of the Feed Display.
              */
             showScrollXPos(){
-                const el = document.getElementById("test-FeedDisplay");
+                const el = document.getElementById("feedcolumnDisplay");
                 this.scrollXPos = el.scrollLeft;
                 this.getFeedDisplayViewWidth();
             },
@@ -98,14 +102,27 @@ import { postDetails } from "./state/PostDetails.vue";
              * DEBUG - Displays the current viewable width of the Feed Display.
              */
             getFeedDisplayViewWidth(){
-                const el = document.getElementById("test-FeedDisplay");
+                const el = document.getElementById("feedcolumnDisplay");
                 this.fdViewWidth = el.offsetWidth;
+            },
+            /**
+             * DEBUG - Positions center line for FeedColumn display viewport,
+             * taking into account the width of the sidebar.
+             */
+            placeFeedDisplayCenterLine(){
+                var feedDisplayViewport = document.getElementById('feedcolumnDisplay');
+                var centerLine = document.getElementById('debug-feedViewportCenterLine');
+                if(feedDisplayViewport && centerLine){
+                    centerLine.style.left = (feedDisplayViewport.clientWidth/2) + feedDisplayViewport.offsetLeft+"px";
+                }
+                else{console.log('There was an error positioning the `FeedColumn` display center line.')}
             }
         },
         created(){
         },
         mounted(){
             this.getFeedDisplayViewWidth();
+            this.placeFeedDisplayCenterLine();
         },
         setup () {
             return {}

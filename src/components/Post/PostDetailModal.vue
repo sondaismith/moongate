@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute z-10 flex h-screen w-screen items-center justify-center">
+    <div :class="postDetails.isVisible ? 'show' : 'hide'" class="modal absolute z-10 flex h-screen w-screen items-center justify-center">
         <div @click="hideModal" class="absolute bg-slate-900/90 h-full w-full"></div>
         <div class="z-20 flex flex-col h-full w-1/2 bg-blue-400">
         <!-- <div class="z-20 flex flex-col h-full py-4 w-1/2 bg-blue-400"> -->
@@ -88,3 +88,21 @@ export default defineComponent({
     }
 })
 </script>
+
+<style scoped>
+.modal{
+    transition: opacity 0.1s, visibility 0.1s;
+    opacity: 0;
+    visibility: hidden;
+}
+.modal.show{
+    /* animation: show 0.2s; */
+    opacity: 100;
+    visibility: visible;
+}
+.modal.hide {
+    /* animation: dismiss 0.2s forwards; */
+    opacity: 0;
+    visibility: hidden;
+}
+</style>
