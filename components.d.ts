@@ -33,6 +33,7 @@ declare module 'vue' {
     PostReply: typeof import('./src/components/Post/PostReply.vue')['default']
     PostReplyInput: typeof import('./src/components/Post/PostReplyInput.vue')['default']
     SidebarButtonNormal: typeof import('./src/components/Navbar/SidebarButtonNormal.vue')['default']
+    Tooltip: typeof import('./src/components/Decorations/Tooltip.vue')['default']
     UnreadMsgCount: typeof import('./src/components/Decorations/UnreadMsgCount.vue')['default']
     UserButton: typeof import('./src/components/Navbar/UserButton.vue')['default']
   }

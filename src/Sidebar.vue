@@ -32,6 +32,7 @@
                     <UserButton tooltip="[user]"/>
                 </div>
             </div>
+            <Tooltip id="navbar-tooltip" tooltip=""/>
         </div>
         {{ void "main content" }}
         <div :onscroll="showScrollXPos" id="feedcolumnDisplay" class="bg-slate-700 flex flex-1 overflow-x-scroll" >

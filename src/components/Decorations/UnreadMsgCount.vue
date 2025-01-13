@@ -1,6 +1,10 @@
 <template>
     <!-- Maybe add ability to customize color? -->
-    <span v-if="unreadCount > 0" class="absolute -left-2 -top-2 bg-red-500 rounded-full size-5 text-sm text-center group-hover:text-white">{{ unreadCount }}</span>
+    <span v-if="unreadCount > 0" class="absolute -left-2 -top-2
+        bg-red-500 rounded-full size-5 text-sm text-center
+        group-hover:text-white select-none">
+        {{ unreadCount }}
+    </span>
 </template>
 
 <script lang="ts">
@@ -10,7 +14,7 @@ export default defineComponent({
     props: {
         unreadCount: Number,
     },
-    setup (props) {      
+    setup (props) {
         props.unreadCount
     }
 })
