@@ -66,8 +66,10 @@ export default defineComponent({
             //Only if it is related to a FeedDisplay and we are not already scrolling
             if(this.feedId && !this.isScrolling){
                 var el = document.getElementById(this.feedId);
-                this.startScrolling();
-                this.scrollTo(el);
+                if(el){
+                    this.startScrolling();
+                    this.scrollTo(el);
+                }
                 // console.log(el);
             }
             // else{console.log("still scrolling")} //DEBUG

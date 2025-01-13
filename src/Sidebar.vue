@@ -15,12 +15,12 @@
                 <div class="flex flex-col h-full">
                     <div class="flex-shrink preload-gutter overflow-x-hidden">
                         <div class="space-y-2 py-2 pl-2 pr-1">
-                            <SidebarButtonNormal type="home" tooltip="Home"/>
-                            <SidebarButtonNormal v-for="feeds in feedListing.feedList" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/>
+                            <FeedButton type="home" tooltip="Home"/>
+                            <FeedButton v-for="feeds in feedListing.feedList" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/>
                         </div>
                     </div>
                     <div class="border-t border-gray-700 px-2 py-2 flex-none">
-                        <SidebarButtonNormal type="add" tooltip="Add Feed" @click="addFeed"/>
+                        <FeedButton type="add" tooltip="Add Feed" @click="addFeed"/>
                     </div>
                 </div>
             </div>
@@ -28,7 +28,7 @@
             <div class="w-full flex-none !mt-auto">
                 <div class="p-2 space-y-2">
                 <!-- <button class="bg-blue-200 h-10 w-full"></button> -->
-                    <SidebarButtonNormal type="settings" tooltip="App Settings"/>
+                    <FeedButton type="settings" tooltip="App Settings"/>
                     <UserButton tooltip="[user]"/>
                 </div>
             </div>
@@ -40,7 +40,7 @@
             <FeedColumn :post-count="3" :feed-name="'Awesome Art'" :user-handle="'art'"/>
             <FeedColumn :post-count="1" :feed-name="'The Crazy Airplane Man'" :user-handle="'airplanebozo'"/>
             <FeedColumn :post-count="5" :feed-name="'Scottish News'" :user-handle="'News'"/> -->
-            <FeedColumn v-for="feeds in feedListing.feedList" :feedId="feeds.feedId" :post-count="feeds.totalPosts" :feed-name="feeds.feedName" :user-handle="feeds.feedHandle"/>
+            <FeedColumn v-for="feed in feedListing.feedList" :feedData="feed" :feedId="feed.feedId" :post-count="feed.totalPosts" :feed-name="feed.feedName" :user-handle="feed.feedHandle"/>
             <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
                 <div>X Pos: {{ scrollXPos }}</div>
                 <div>Viewport Width: {{ fdViewWidth }}</div>

@@ -7,7 +7,9 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    FeedButton: typeof import('./src/components/Navbar/FeedButton.vue')['default']
     FeedColumn: typeof import('./src/components/Feed/FeedColumn.vue')['default']
+    FeedIcon: typeof import('./src/components/Feed/FeedIcon.vue')['default']
     FeedPost: typeof import('./src/components/Feed/FeedPost.vue')['default']
     'IMdi:fileGifBox': typeof import('~icons/mdi/file-gif-box')['default']
     'IMdi:imageOutline': typeof import('~icons/mdi/image-outline')['default']
@@ -32,7 +34,6 @@ declare module 'vue' {
     PostOptionsMenuItem: typeof import('./src/components/Post/PostOptionsMenuItem.vue')['default']
     PostReply: typeof import('./src/components/Post/PostReply.vue')['default']
     PostReplyInput: typeof import('./src/components/Post/PostReplyInput.vue')['default']
-    SidebarButtonNormal: typeof import('./src/components/Navbar/SidebarButtonNormal.vue')['default']
     Tooltip: typeof import('./src/components/Decorations/Tooltip.vue')['default']
     UnreadMsgCount: typeof import('./src/components/Decorations/UnreadMsgCount.vue')['default']
     UserButton: typeof import('./src/components/Navbar/UserButton.vue')['default']
