@@ -60,7 +60,7 @@
 import { defineComponent } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { PostEnums } from '../../enums/PostEnums';
-import { DetailIcon } from './PostInterfaces';
+import { IDetailIcon } from '../../interfaces/PostInterfaces';
 import { DetailIconList, OptionIconList } from '../../fake-data/dumPostData';
 import PostReplyInput from './PostReplyInput.vue';
 
@@ -70,7 +70,7 @@ export default defineComponent({
             isPostMenuVisible: false,
             postDetails,
             OptionIconList,
-            dIconList: [] as DetailIcon[],
+            dIconList: [] as IDetailIcon[],
             iconTypes:PostEnums.IconTypes
         }
     },

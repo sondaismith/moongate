@@ -28,11 +28,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { PostEnums } from '../../enums/PostEnums';
-import { DetailIcon } from './PostInterfaces';
+import { IDetailIcon } from '../../interfaces/PostInterfaces';
 import { DetailIconList } from '../../fake-data/dumPostData';
 import PostDetailIcon from './PostDetailIcon.vue';
 
-var postReplyData : DetailIcon[];
+var postReplyData : IDetailIcon[];
 
 export default defineComponent({
     props:{

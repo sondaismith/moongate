@@ -1,4 +1,12 @@
+import { FunctionalComponent } from "vue"
 import { FeedEnums } from "../enums/FeedEnums"
+
+// interface IFeedCollection{
+//     feedName: string
+//     userHandle: string
+//     postCount: number
+//     lastUpdate: Date
+// }
 
 /**
  * Shape of data returned that details the contents of a specific feed.
@@ -8,7 +16,7 @@ import { FeedEnums } from "../enums/FeedEnums"
  * @property {number} newPosts - Number of unread posts.
  * @property {number} totalPosts - The total number of posts that are part of the feed.
  */
-interface FeedData{
+interface IFeedData{
     /**The unique identifier of the Feed. */
     feedId: String
     /**The Display Name of the Feed. */
@@ -23,8 +31,13 @@ interface FeedData{
     totalPosts: number
 }
 
-interface FeedListing{
-    feedList : FeedData[]
+interface IFeedListing{
+    feedList : IFeedData[]
 }
 
-export type {FeedData, FeedListing}
+interface IFeedIconTypes{
+    name : FeedEnums.Types,
+    icon : FunctionalComponent
+}
+
+export type {IFeedData, IFeedListing, IFeedIconTypes}

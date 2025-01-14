@@ -1,33 +1,6 @@
 <script lang="ts">
 import { reactive } from 'vue'
-
-interface IPostDetails{
-    userName: String,
-    userHandle: String,
-    totalComments: Number, //not going to actually be in final version, just use .length
-    totalReposts: Number,
-    totalLikes: Number,
-    postText: String,
-    postMedia?: String,
-    comments: IPostDetails[],
-    // timestamp?: Date
-}
-
-interface IPostDetailsList{
-    isVisible: Boolean,
-    postDetailsList : IPostDetails[],
-    showModal(): void,
-    hideModal(): void,
-    isPostOptionsMenuVisible: Boolean,
-    showPostOptionsMenu(event:PointerEvent): void,
-    hidePostOptionsMenu(event:PointerEvent): void,
-    menuClickPos: number[],
-    /**
-     * Holds reference to last clicked button. Used for "Post Options"
-     * menu button only at the moment.
-     */
-    clickedElement: HTMLElement
-}
+import { IPostDetailsList } from '../interfaces/PostInterfaces';
 
 export const postDetails : IPostDetailsList = reactive({
     // isVisible:{

@@ -7,7 +7,7 @@
 <script lang="ts">
 import { reactive } from 'vue';
 import {FeedEnums} from '../enums/FeedEnums';
-import { FeedListing } from '../interfaces/IFeed';
+import { IFeedListing } from '../interfaces/FeedInterfaces';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
 function dec2hex (dec: number) {
@@ -26,7 +26,7 @@ export function GenerateUniqueId(len: number) : String{
     return newId;
 }
 
-export const feedListing : FeedListing = reactive({
+export const userFeedList : IFeedListing = reactive({
     feedList: [
         {feedId:GenerateUniqueId(10), feedName:'Friends', feedHandle:'friends', feedType:FeedEnums.Types.Friends, newPosts: 3, totalPosts: 2},
         {feedId:GenerateUniqueId(10), feedName:'Local News', feedHandle:'bbcNews', feedType:FeedEnums.Types.News, newPosts: 5, totalPosts: 3},

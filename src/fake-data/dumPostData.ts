@@ -1,4 +1,4 @@
-import { DetailIcon, OptionIcon } from "../components/Post/PostInterfaces";
+import { IDetailIcon, IOptionIcon } from "../interfaces/PostInterfaces";
 import { PostEnums } from "../enums/PostEnums";
 
 //DetailIcon Icons
@@ -11,7 +11,7 @@ import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
 /**In a real situation, the label values should be set when the modal is created
  * using the post data returned from the server.
  */
-var DetailIconList : DetailIcon[] = [
+var DetailIconList : IDetailIcon[] = [
     { label: '6', type:PostEnums.IconTypes.Comment, icon: SolarChatDotsOutline, color: 'group-hover:text-yellow-500' },
     { label: '2', type:PostEnums.IconTypes.Reposts, icon: MingcuteRepeatLine, color: 'group-hover:text-blue-500' },
     { label: '3', type:PostEnums.IconTypes.Likes, icon: MingcuteHeartFill, color: 'group-hover:text-red-500' },
@@ -31,7 +31,7 @@ import MdiBlock from '~icons/mdi/block';
  * Collection of all the options to display on the
  * `PostOptionsMenu` component.
  */
-const OptionIconList : OptionIcon[][] = [
+const OptionIconList : IOptionIcon[][] = [
     [
         { name:'Translate', icon:MdiTranslateVariant },
         { name:'Copy link', icon:MdiClipboard },

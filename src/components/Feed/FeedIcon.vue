@@ -14,11 +14,7 @@ import MingcuteMusicLine from '~icons/mingcute/music-line';
 
 import { defineComponent, FunctionalComponent } from 'vue'
 import { FeedEnums } from '../../enums/FeedEnums';
-
-interface IFeedIconTypes{
-    name : FeedEnums.Types,
-    icon : FunctionalComponent
-}
+import { IFeedIconTypes } from '../../interfaces/FeedInterfaces';
 
 var FeedIconTypes : IFeedIconTypes[] = [
     { name: FeedEnums.Types.Friends, icon: MingcuteGroup3Fill },

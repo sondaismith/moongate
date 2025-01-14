@@ -13,7 +13,6 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import PostOptionsMenuItem from './PostOptionsMenuItem.vue';
 import { postDetails } from '../../state/PostDetails.vue';
 
 export default defineComponent({

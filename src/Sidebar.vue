@@ -56,7 +56,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { feedListing, GenerateUniqueId } from "./state/FeedList.vue";
+import { userFeedList, GenerateUniqueId } from "./state/FeedList.vue";
 import { FeedEnums } from "./enums/FeedEnums";
 import { PostEnums } from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
@@ -70,7 +70,7 @@ import { DebugFlags } from "./state/Debug.vue";
                 //     {feedName:'Local News', feedType:'news', newPosts: 5},
                 //     {feedName:'Artists', feedType:'art', newPosts: 7},
                 // ]
-                feedListing,
+                feedListing: userFeedList,
                 postDetails,
                 DebugFlags,
                 iconTypes:PostEnums.IconTypes,
@@ -86,8 +86,8 @@ import { DebugFlags } from "./state/Debug.vue";
                 // console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
 
                 const feedTypes = [FeedEnums.Types.Art,FeedEnums.Types.Friends,FeedEnums.Types.News];
-                feedListing.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
-                let newestFeed = feedListing.feedList[feedListing.feedList.length-1];
+                userFeedList.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
+                let newestFeed = userFeedList.feedList[userFeedList.feedList.length-1];
                 console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
                 this.showScrollXPos();
             },

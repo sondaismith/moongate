@@ -31,17 +31,8 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import FeedPost from './FeedPost.vue';
 import { DebugFlags } from '../../state/Debug.vue';
-import { FeedData } from '../../interfaces/IFeed';
-import FeedIcon from './FeedIcon.vue';
-
-interface FeedCollection{
-    feedName: string
-    userHandle: string
-    postCount: number
-    lastUpdate: Date
-}
+import { IFeedData } from '../../interfaces/FeedInterfaces';
 
 export default defineComponent({
     // props: {
@@ -61,7 +52,7 @@ export default defineComponent({
         userHandle: String,
         feedName: String,
         postCount: Number,
-        feedData: Object as PropType<FeedData>,
+        feedData: Object as PropType<IFeedData>,
     },
     mounted() {
         this.userHandle
