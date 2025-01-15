@@ -16,8 +16,9 @@ interface IPostDetails{
 
 interface IPostDetailsList{
     isVisible: Boolean,
-    postDetailsList : IPostDetails[],
+    postData : IPostDetails,
     showModal(): void,
+    showModalPost(postToShow:IPostDetails): void,
     hideModal(): void,
     isPostOptionsMenuVisible: Boolean,
     showPostOptionsMenu(event:PointerEvent): void,

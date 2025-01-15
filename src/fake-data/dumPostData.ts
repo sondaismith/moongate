@@ -62,4 +62,6 @@ var firstPostObject:IPostDetails[] = [
     }
 ]
 
-export { DetailIconList, OptionIconList, firstPostObject }
+var emptyPostModalData:IPostDetails;
+
+export { DetailIconList, OptionIconList, firstPostObject, emptyPostModalData }

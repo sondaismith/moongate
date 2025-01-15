@@ -67,7 +67,9 @@ export default defineComponent({
     },
     methods:{
         openPostDetails(){
-            postDetails.showModal();
+            // postDetails.showModal();
+            if(this.postData)
+            postDetails.showModalPost(this.postData);
         },
     },
     setup () {

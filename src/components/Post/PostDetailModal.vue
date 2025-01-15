@@ -10,8 +10,8 @@
                         <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/>
                     </div>
                     <div class="self-center ml-2">
-                        <div class="font-bold leading-4">Modal</div>
-                        <div class="text-feedPostName">@modalTest.moon.social</div>
+                        <div class="font-bold leading-4">{{ postDetails.postData?.userName }}</div>
+                        <div class="text-feedPostName">@{{ postDetails.postData?.userHandle }}</div>
                     </div>
                     <div class="rounded-full self-center ml-auto py-1 px-3 bg-slate-300 font-bold hover:bg-slate-200 text-slate-800 cursor-pointer">
                         + Follow
@@ -38,7 +38,7 @@
                 <!-- <div class="flex flex-col preload-gutter overflow-y-auto min-h-[255px] divide-y border-slate-600 divide-inherit"> -->
                 <div class="flex flex-col preload-gutter divide-y border-slate-600 divide-inherit">
                     {{ void "replies" }}
-                    <div v-for="replies in postDetails.postDetailsList[0].comments" class="pt-2">
+                    <div v-for="replies in postDetails.postData?.comments" class="pt-2">
                         <PostReply :userName="replies.userName"
                             :userHandle="replies.userHandle" :postText="replies.postText"
                             :totalComments="replies.totalComments" :totalReposts="replies.totalReposts"

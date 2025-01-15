@@ -1,19 +1,25 @@
 <script lang="ts">
 import { reactive } from 'vue'
-import { IPostDetailsList } from '../interfaces/PostInterfaces';
+import { IPostDetails, IPostDetailsList } from '../interfaces/PostInterfaces';
 import { PostTypes } from '../enums/PostEnums';
-import { firstPostObject } from '../fake-data/dumPostData';
+import { emptyPostModalData, firstPostObject } from '../fake-data/dumPostData';
 
-export const postDetails : IPostDetailsList = reactive({
+// export const postDetails : IPostDetailsList = reactive({
+export const postDetails :IPostDetailsList = reactive({
     // isVisible:{
     //     type: Boolean,
     //     default(){return false}
     // },
     isVisible: false,
     menuClickPos: [0, -500],
-    postDetailsList: firstPostObject,
+    postData: emptyPostModalData,
+    // modalPostData: [],
     showModal(){
         this.isVisible = true;
+    },
+    showModalPost(postToShow:IPostDetails){
+        this.isVisible = true;
+        this.postData = updatePostDetails(postToShow);
     },
     hideModal(){
         this.isVisible = false;
@@ -60,4 +66,8 @@ export const postDetails : IPostDetailsList = reactive({
     },
     clickedElement: document.children[0].children[1].children[1] as HTMLElement,
 })
+
+function updatePostDetails(postToOpen:IPostDetails):IPostDetails{
+    return postToOpen;
+}
 </script>
