@@ -1,5 +1,5 @@
-import { IDetailIcon, IOptionIcon } from "../interfaces/PostInterfaces";
-import { PostEnums } from "../enums/PostEnums";
+import { IDetailIcon, IOptionIcon, IPostDetails } from "../interfaces/PostInterfaces";
+import * as PostEnums from "../enums/PostEnums";
 
 //DetailIcon Icons
 import SolarChatDotsOutline from '~icons/solar/chat-dots-outline';
@@ -26,6 +26,7 @@ import MdiCode from '~icons/mdi/code';
 import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MdiHideOutline from '~icons/mdi/hide-outline';
 import MdiBlock from '~icons/mdi/block';
+import { PostTypes } from "../enums/PostEnums";
 
 /**
  * Collection of all the options to display on the
@@ -48,4 +49,17 @@ const OptionIconList : IOptionIcon[][] = [
     ]
 ]
 
-export { DetailIconList, OptionIconList }
+var firstPostObject:IPostDetails[] = [
+    {userName:'Modal', userHandle:'modalTest.moon.social', totalComments:6, totalReposts: 12, totalLikes: 42, postType:PostTypes.Text, postText:'Test',
+        comments:[
+            {userName:'angry-man', userHandle:'angryangry', totalComments:6, totalReposts: 0, totalLikes: 4, postType:PostTypes.Text, postText:'Hello. I am an angry robot!',
+                comments:[
+                    {userName:'robot', userHandle:'happyhappy', totalComments:0, totalReposts: 12, totalLikes: 42, postType:PostTypes.Text, postText:'Why are you angry?', comments:[]},
+                ]},
+            {userName:'user1', userHandle:'user1', totalComments:0, totalReposts: 12, totalLikes: 22, postType:PostTypes.Text, postText:'Hi?', comments:[]},
+            {userName:'user2', userHandle:'user2', totalComments:0, totalReposts: 2, totalLikes: 1, postType:PostTypes.Text, postText:'Hello?', comments:[]},
+        ]
+    }
+]
+
+export { DetailIconList, OptionIconList, firstPostObject }

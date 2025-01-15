@@ -58,7 +58,7 @@
 import { defineComponent } from "vue";
 import { userFeedList, GenerateUniqueId } from "./state/FeedList.vue";
 import { FeedEnums } from "./enums/FeedEnums";
-import { PostEnums } from "./enums/PostEnums";
+import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { DebugFlags } from "./state/Debug.vue";
 

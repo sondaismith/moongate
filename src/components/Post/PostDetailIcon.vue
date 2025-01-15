@@ -14,7 +14,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { PostEnums } from '../../enums/PostEnums';
+import * as PostEnums from "../../enums/PostEnums";
 import { OptionIconList } from '../../fake-data/dumPostData';
 import { postDetails } from '../../state/PostDetails.vue';
 

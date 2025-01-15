@@ -23,6 +23,7 @@ declare module 'vue' {
     'IMingcute:heartFill': typeof import('~icons/mingcute/heart-fill')['default']
     'IMingcute:home4Line': typeof import('~icons/mingcute/home4-line')['default']
     'IMingcute:menuLine': typeof import('~icons/mingcute/menu-line')['default']
+    'IMingcute:plusFill': typeof import('~icons/mingcute/plus-fill')['default']
     'IMingcute:refresh3Fill': typeof import('~icons/mingcute/refresh3-fill')['default']
     'IMingcute:repeatLine': typeof import('~icons/mingcute/repeat-line')['default']
     'IMingcute:settings2Line': typeof import('~icons/mingcute/settings2-line')['default']

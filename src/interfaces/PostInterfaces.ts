@@ -1,5 +1,5 @@
 import { FunctionalComponent } from "vue";
-import { PostEnums } from "../enums/PostEnums";
+import * as PostEnums from "../enums/PostEnums";
 
 interface IPostDetails{
     userName: String,
@@ -8,6 +8,7 @@ interface IPostDetails{
     totalReposts: Number,
     totalLikes: Number,
     postText: String,
+    postType: PostEnums.PostTypes
     postMedia?: String,
     comments: IPostDetails[],
     // timestamp?: Date
@@ -46,4 +47,4 @@ interface IOptionIcon{
     icon: FunctionalComponent
 }
 
-export type {IPostDetailsList, IDetailIcon, IOptionIcon}
+export type {IPostDetails, IPostDetailsList, IDetailIcon, IOptionIcon}

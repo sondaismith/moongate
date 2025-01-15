@@ -59,7 +59,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
-import { PostEnums } from '../../enums/PostEnums';
+import * as PostEnums from "../../enums/PostEnums";
 import { IDetailIcon } from '../../interfaces/PostInterfaces';
 import { DetailIconList, OptionIconList } from '../../fake-data/dumPostData';
 import PostReplyInput from './PostReplyInput.vue';

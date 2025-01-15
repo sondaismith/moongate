@@ -1,6 +1,8 @@
 <script lang="ts">
 import { reactive } from 'vue'
 import { IPostDetailsList } from '../interfaces/PostInterfaces';
+import { PostTypes } from '../enums/PostEnums';
+import { firstPostObject } from '../fake-data/dumPostData';
 
 export const postDetails : IPostDetailsList = reactive({
     // isVisible:{
@@ -9,18 +11,7 @@ export const postDetails : IPostDetailsList = reactive({
     // },
     isVisible: false,
     menuClickPos: [0, -500],
-    postDetailsList:[
-        {userName:'Modal', userHandle:'modalTest.moon.social', totalComments:6, totalReposts: 12, totalLikes: 42, postText:'Test',
-            comments:[
-                {userName:'angry-man', userHandle:'angryangry', totalComments:6, totalReposts: 0, totalLikes: 4, postText:'Hello. I am an angry robot!',
-                    comments:[
-                        {userName:'robot', userHandle:'happyhappy', totalComments:0, totalReposts: 12, totalLikes: 42, postText:'Why are you angry?', comments:[]},
-                    ]},
-                {userName:'user1', userHandle:'user1', totalComments:0, totalReposts: 12, totalLikes: 22, postText:'Hi?', comments:[]},
-                {userName:'user2', userHandle:'user2', totalComments:0, totalReposts: 2, totalLikes: 1, postText:'Hello?', comments:[]},
-            ]
-        }
-    ],
+    postDetailsList: firstPostObject,
     showModal(){
         this.isVisible = true;
     },
@@ -37,9 +28,11 @@ export const postDetails : IPostDetailsList = reactive({
         this.clickedElement = event.currentTarget;
 
         var el = document.getElementById('post-option-menu');
+        var appViewport = document.getElementById('app-viewport')
         setTimeout(() => {
-            var menuHeight = el?.clientHeight;
-            var viewportHeight = document.getElementById('app-viewport').offsetHeight;
+            if(!el || !appViewport) return;
+            var menuHeight = el.clientHeight;
+            var viewportHeight = appViewport.offsetHeight;
             this.menuClickPos = [event.clientX, event.clientY];
             var menuClearence = viewportHeight - (menuHeight+postDetails.menuClickPos[1]);
 
