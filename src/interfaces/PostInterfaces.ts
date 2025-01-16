@@ -28,7 +28,9 @@ interface IPostDetailsList{
      * Holds reference to last clicked button. Used for "Post Options"
      * menu button only at the moment.
      */
-    clickedElement: HTMLElement
+    clickedElement: HTMLElement,
+    postDetailIconValues: IDetailIcon[],
+    updatePostDetailIconValues(omments:string, reposts:string, likes:string): void,
 }
 
 interface IDetailIcon{

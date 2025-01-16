@@ -17,9 +17,9 @@
                 {{ postText }}
             </div>
             <div>
-                <div class="flex text-slate-400 py-2 space-x-2 justify-between">
-                    <PostDetailIcon v-for="item in replyData" :iconDetails="item"/>
-                </div>
+                <!-- <div class="flex flex-col text-slate-400 py-2 space-x-2 justify-between"> -->
+                    <PostInteractionIcons :numComments="totalComments" :numShares="totalReposts" :numLikes="totalLikes"/>
+                <!-- </div> -->
             </div>
         </div>
     </div>
@@ -30,6 +30,7 @@ import { defineComponent } from 'vue'
 import * as PostEnums from "../../enums/PostEnums";
 import { IDetailIcon } from '../../interfaces/PostInterfaces';
 import { DetailIconList } from '../../fake-data/dumPostData';
+import PostInteractionIcons from './PostInteractionIcons.vue';
 
 var postReplyData : IDetailIcon[];
 

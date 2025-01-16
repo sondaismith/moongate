@@ -1,8 +1,15 @@
 <script lang="ts">
 import { reactive } from 'vue'
 import { IPostDetails, IPostDetailsList } from '../interfaces/PostInterfaces';
-import { PostTypes } from '../enums/PostEnums';
+import { IconTypes } from '../enums/PostEnums';
 import { emptyPostModalData, firstPostObject } from '../fake-data/dumPostData';
+
+//DetailIcon Icons
+import SolarChatDotsOutline from '~icons/solar/chat-dots-outline';
+import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
+import MingcuteHeartFill from '~icons/mingcute/heart-fill';
+import SolarShareBold from '~icons/solar/share-bold';
+import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
 
 // export const postDetails : IPostDetailsList = reactive({
 export const postDetails :IPostDetailsList = reactive({
@@ -65,6 +72,18 @@ export const postDetails :IPostDetailsList = reactive({
         }
     },
     clickedElement: document.children[0].children[1].children[1] as HTMLElement,
+    postDetailIconValues: [
+        { label: 'N/A', type:IconTypes.Comment, icon: SolarChatDotsOutline, color: 'group-hover:text-yellow-500' },
+        { label: 'N/A', type:IconTypes.Reposts, icon: MingcuteRepeatLine, color: 'group-hover:text-blue-500' },
+        { label: 'N/A', type:IconTypes.Likes, icon: MingcuteHeartFill, color: 'group-hover:text-red-500' },
+        { label: '', type:IconTypes.Share, icon: SolarShareBold, color: 'group-hover:text-blue-500' },
+        { label: '', type:IconTypes.Options, icon: MdiDotsHorizontal, color: 'group-hover:text-white-500' },
+    ],
+    updatePostDetailIconValues(comments:string = "", reposts:string = "", likes:string = ""){
+        if(comments) this.postDetailIconValues[0].label = comments;
+        if(reposts) this.postDetailIconValues[1].label = reposts;
+        if(likes) this.postDetailIconValues[2].label = likes;
+    }
 })
 
 function updatePostDetails(postToOpen:IPostDetails):IPostDetails{

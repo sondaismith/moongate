@@ -1,14 +1,14 @@
 import { PostTypes } from '../enums/PostEnums';
 import {IPostDetails} from '../interfaces/PostInterfaces';
 
-export function createPost(maxNumComments : number):IPostDetails{
+export function createPost(maxNumComments : number, hasReplies = false):IPostDetails{
     var numReposts = Math.floor(Math.random()*31);
     var numLikes = Math.floor(Math.random()*101);
     var numComments = Math.floor(Math.random()*maxNumComments);
     var postComments : IPostDetails[] = [];
     var contentType = returnPartialPostType();
 
-    if(numComments>0)
+    if(numComments>0)//If this post is supposed to have comments, make them
     {
         for (let num = 0; num < numComments; num++) {
             //Make all comments not have replies for now

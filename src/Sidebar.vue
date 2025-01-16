@@ -50,6 +50,7 @@
         </div>
         {{ void "Post Details Modal" }}
         <!-- <PostDetailModal v-show="postDetails.isVisible"/> -->
+        <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
     </div>
 </template>
@@ -61,6 +62,7 @@ import { FeedEnums } from "./enums/FeedEnums";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { DebugFlags } from "./state/Debug.vue";
+import { OptionIconList } from "./fake-data/dumPostData";
 
     export default defineComponent({
         data(){
@@ -75,7 +77,8 @@ import { DebugFlags } from "./state/Debug.vue";
                 DebugFlags,
                 iconTypes:PostEnums.IconTypes,
                 scrollXPos : 0,
-                fdViewWidth : 0
+                fdViewWidth : 0,
+                OptionIconList,
             }
         },
         methods: {

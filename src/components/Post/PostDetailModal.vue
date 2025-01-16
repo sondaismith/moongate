@@ -3,7 +3,7 @@
         <div @click="hideModal" class="absolute bg-slate-900/90 h-full w-full"></div>
         <div class="z-20 flex flex-col h-full w-1/2 bg-blue-400">
         <!-- <div class="z-20 flex flex-col h-full py-4 w-1/2 bg-blue-400"> -->
-            <div class="z-20 flex flex-col bg-slate-800 border-slate-600 border rounded-sm h-full p-4 space-y-2 overflow-y-auto">
+            <div class="z-20 flex flex-col bg-slate-800 border-slate-600 border rounded-sm h-full p-4 pr-3 overflow-y-auto preload-gutter">
                 {{ void "User Info/Actions" }}
                 <div class="flex">
                     <div class="rounded-full bg-stone-500 aspect-square size-10 self-center">
@@ -18,7 +18,7 @@
                     </div>
                 </div>
                 {{ void "Post Content - Text" }}
-                <div class="text-sm">
+                <div class="text-sm pt-2">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
                     tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
                     quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -28,9 +28,8 @@
                     <div class="py-1">
                         <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">January 4th, 2025 at 12:42am</div>
                     </div>
-                    <div class="flex text-slate-400 py-2 space-x-2 justify-between">
-                        <PostDetailIcon v-for="iconData in dIconList" :iconDetails="iconData" />
-                    </div>
+                    <PostInteractionIcons :numComments="postDetails.postData?.comments.length"
+                        :numShares="postDetails.postData?.totalReposts" :numLikes="postDetails.postData?.totalLikes"/>
                 </div>
                 {{ void "post reply input" }}
                 <PostReplyInput/>
@@ -52,7 +51,7 @@
                 </div>
             </div>
         </div>
-        <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
+        <!-- <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/> -->
     </div>
 </template>
 
@@ -62,7 +61,7 @@ import { postDetails } from '../../state/PostDetails.vue';
 import * as PostEnums from "../../enums/PostEnums";
 import { IDetailIcon } from '../../interfaces/PostInterfaces';
 import { DetailIconList, OptionIconList } from '../../fake-data/dumPostData';
-import PostReplyInput from './PostReplyInput.vue';
+import PostInteractionIcons from './PostInteractionIcons.vue';
 
 export default defineComponent({
     data(){
