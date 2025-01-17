@@ -45,16 +45,23 @@ export const postDetails :IPostDetailsList = reactive({
         setTimeout(() => {
             if(!el || !appViewport) return;
             var menuHeight = el.clientHeight;
+            var menuWidth = el.clientWidth;
             var viewportHeight = appViewport.offsetHeight;
+            var viewportWidth = appViewport.offsetWidth;
             this.menuClickPos = [event.clientX, event.clientY];
-            var menuClearence = viewportHeight - (menuHeight+postDetails.menuClickPos[1]);
+            var xTarget = this.menuClickPos[0];
+            var yTarget = this.menuClickPos[1];
+            var menuYClearence = viewportHeight - (menuHeight+yTarget);
+            var menuXClearence = viewportWidth - (menuWidth+xTarget);
 
-            if(menuClearence < 0){
-                this.menuClickPos = [event.clientX, event.clientY-menuHeight];
+            if(menuYClearence < 0){
+                // this.menuClickPos = [event.clientX, event.clientY-menuHeight];
+                yTarget = event.clientY-menuHeight;
             }
-            else{
-                this.menuClickPos = [event.clientX, event.clientY];
+            if(menuXClearence < 0){
+                xTarget = event.clientX-menuWidth;
             }
+            this.menuClickPos = [xTarget, yTarget];
         }, 100);
     },
     /**

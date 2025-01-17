@@ -4,13 +4,9 @@
         <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-slate-400 min-w-16 items-center">
             {{ void "App Logo" }}
             <div class="w-full border-b border-gray-700 p-2 flex-none">
-                <!-- <i-mingcute:butterfly-2-line class="size-12"/> -->
                 <UserButton tooltip="[logo here]"/>
             </div>
             <div class="w-full flex flex-col flex-shrink overflow-hidden">
-                <!-- <button class="bg-blue-200 h-10 w-full"></button>
-                <button class="bg-blue-200 h-10 w-full"></button> -->
-
                 {{ void "Feed List + Add btn" }}
                 <div class="flex flex-col h-full">
                     <div class="flex-shrink preload-gutter overflow-x-hidden">
@@ -35,18 +31,16 @@
             <Tooltip id="navbar-tooltip" tooltip=""/>
         </div>
         {{ void "main content" }}
-        <div :onscroll="showScrollXPos" id="feedcolumnDisplay" class="bg-slate-700 flex flex-1 overflow-x-scroll" >
-            <!-- <FeedColumn :post-count="2" :feed-name="'Home'" :user-handle="'home'"/>
-            <FeedColumn :post-count="3" :feed-name="'Awesome Art'" :user-handle="'art'"/>
-            <FeedColumn :post-count="1" :feed-name="'The Crazy Airplane Man'" :user-handle="'airplanebozo'"/>
-            <FeedColumn :post-count="5" :feed-name="'Scottish News'" :user-handle="'News'"/> -->
-            <FeedColumn v-for="feed in feedListing.feedList" :feedData="feed" :feedId="feed.feedId" :post-count="feed.totalPosts" :feed-name="feed.feedName" :user-handle="feed.feedHandle"/>
-            <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
-                <div>X Pos: {{ scrollXPos }}</div>
-                <div>Viewport Width: {{ fdViewWidth }}</div>
+        <div :onscroll="showScrollXPos" id="feedcolumnDisplay" class="bg-slate-700 flex overflow-y-hidden" >
+            <div class="flex">
+                <FeedColumn v-for="feed in feedListing.feedList" :feedData="feed" :feedId="feed.feedId" :post-count="feed.totalPosts" :feed-name="feed.feedName" :user-handle="feed.feedHandle"/>
+                <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
+                    <div>X Pos: {{ scrollXPos }}</div>
+                    <div>Viewport Width: {{ fdViewWidth }}</div>
+                </div>
+                {{ void "debug: main viewport center marker" }}
+                <div v-if="DebugFlags.showFeedViewportCenter" id="debug-feedViewportCenterLine" class="absolute h-full w-0.5 bg-red-700/60"></div>
             </div>
-            {{ void "debug: main viewport center marker" }}
-            <div v-if="DebugFlags.showFeedViewportCenter" id="debug-feedViewportCenterLine" class="absolute h-full w-0.5 bg-red-700/60"></div>
         </div>
         {{ void "Post Details Modal" }}
         <!-- <PostDetailModal v-show="postDetails.isVisible"/> -->

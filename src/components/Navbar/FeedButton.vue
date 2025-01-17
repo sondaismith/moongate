@@ -37,7 +37,10 @@ export default defineComponent({
         displayButtonTooltip(event:PointerEvent){
             var tooltip = document.getElementById('navbar-tooltip');
             var button = (event.currentTarget as HTMLElement);
-            var buttonCenter = button.offsetTop + button.offsetHeight/2;
+            //If the element below does not have a scroll, or cannot be found
+            //it should fail gracefully and still work correctly.
+            var containerScrollPos = button.parentElement?.parentElement?.scrollTop;
+            var buttonCenter = button.offsetTop - containerScrollPos + button.offsetHeight/2;
             if(tooltip){
                 tooltip.style.top = buttonCenter+'px';
                 if(this.$props.tooltip){
@@ -95,9 +98,11 @@ export default defineComponent({
          */
         isScrollByFinished(el : HTMLElement,targetPos : number){
             const checkIfScrollToIsFinished = setInterval(() => {
-                if (el.parentElement.scrollLeft === targetPos ||
-                el.parentElement.scrollLeft === 0 ||
-                el.parentElement.scrollLeft === el.parentElement.scrollWidth - el.parentElement.offsetWidth) {
+                //Make sure we're accessing the same element as set up in
+                //scrollTo() so the flash doesn't happen until we reach the target
+                if (el.parentElement?.parentElement.scrollLeft === targetPos ||
+                el.parentElement?.parentElement.scrollLeft === 0 ||
+                el.parentElement?.parentElement.scrollLeft === el.parentElement?.parentElement.scrollWidth - el.parentElement?.parentElement.offsetWidth) {
                     this.flashElement(el);
                     clearInterval(checkIfScrollToIsFinished);
                     clearTimeout(preventLoop);
@@ -119,18 +124,20 @@ export default defineComponent({
             const elRight = el.offsetLeft + el.offsetWidth;
             const elLeft = el.offsetLeft;
 
+            const scrollContainer = el.parentElement?.parentElement;
+
             //Center position of element we want to center on screen
             const elCenter = elLeft + ((elRight-elLeft)/2);
             //Width of element we want to scroll to
             const elWidth = elRight-elLeft;
             //The left offset of the Feed Display container - effectively the sidebar width
-            const fdOffsetLeft = el.parentElement.offsetLeft;
+            const fdOffsetLeft = scrollContainer.offsetLeft;
             //The full width of the Feed Display container
-            const fdTotalWidth = el.parentElement.scrollWidth;
+            const fdTotalWidth = scrollContainer.scrollWidth;
             //The viewable width of the Feed Display container
-            const fdViewWidth = el.parentElement.offsetWidth;
+            const fdViewWidth = scrollContainer.offsetWidth;
             //The current position of the scroll bar for the Feed Display container
-            const fdScrollPos = el.parentElement.scrollLeft;
+            const fdScrollPos = scrollContainer.scrollLeft;
             /**
              * The scrollbar length.
              * */
@@ -152,7 +159,8 @@ export default defineComponent({
             //yet.
             const target = ((elCenter + ((fdViewWidth/2) - elParentLeft - 2)) - fdTotalWidth + scrollWidth);
 
-            el.parentElement.scrollBy({top:0, left:target-fdScrollPos, behavior:"smooth"});
+            //If the scroll ends up breaking, check that the correct element is being accessed
+            scrollContainer.scrollBy({top:0, left:target-fdScrollPos, behavior:"smooth"});
 
             this.isScrollByFinished(el, target);
         }

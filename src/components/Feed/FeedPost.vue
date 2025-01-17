@@ -12,7 +12,7 @@
                     </div>
                 </div>
                 {{ void "post content" }}
-                <div class="flex flex-col pl-2 overflow-hidden">
+                <div class="flex flex-col px-2 overflow-hidden">
                     <div class="flex items-center">
                         <div class="text-feedPostName font-semibold text-nowrap">{{ postData?.userName }}</div>
                         <div class="text-feedTimestamp pl-1 truncate" title="@Random User hdahdhdaahd">@{{ postData?.userHandle }}</div>
@@ -44,7 +44,6 @@
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
-import PostInteractionIcons from '../Post/PostInteractionIcons.vue';
 
 export default defineComponent({
     props:{

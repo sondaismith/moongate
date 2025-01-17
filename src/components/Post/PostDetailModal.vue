@@ -61,7 +61,6 @@ import { postDetails } from '../../state/PostDetails.vue';
 import * as PostEnums from "../../enums/PostEnums";
 import { IDetailIcon } from '../../interfaces/PostInterfaces';
 import { DetailIconList, OptionIconList } from '../../fake-data/dumPostData';
-import PostInteractionIcons from './PostInteractionIcons.vue';
 
 export default defineComponent({
     data(){

@@ -1,6 +1,6 @@
 <template>
     {{ void "feed column" }}
-    <div :id="feedId" class="relative flex flex-col pr-1 h-full w-64 bg-slate-900">
+    <div :id="feedId" class="relative flex flex-col pr-1 h-full w-72 bg-slate-900">
         {{ void "feed title" }}
         <div class="flex h-14 w-full border-b-2 border-white pl-2 pr-1 items-center">
             <FeedIcon :icon="feedData?.feedType"/>
