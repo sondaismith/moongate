@@ -9,7 +9,7 @@ interface IPostDetails{
     totalLikes: Number,
     postText: String,
     postType: PostEnums.PostTypes
-    postMedia?: String,
+    postMedia?: String[],
     comments: IPostDetails[],
     // timestamp?: Date
 }

@@ -26,9 +26,7 @@
                     </div>
                     <!-- <div class="text-xs leading-4 pb-2">{{ postData?.postText }}</div> -->
                     {{ void "image-type media" }}
-                    <div v-if="postData?.postType === 'image'" class="flex w-fit border border-slate-700 rounded">
-                         <img class="w-fit" :src="postData.postMedia"/>
-                    </div>
+                    <ImageContainer v-if="postData?.postType === 'image'" :imagesToDisplay="postData?.postMedia"/>
                     <div class="flex flex-row h-8">
                         <PostInteractionIcons class="text-slate-50 text-s" :noShareButton="true"
                             :numComments="postData?.comments.length" :numShares="postData?.totalReposts"
@@ -44,6 +42,7 @@
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
+import ImageContainer from '../Utilities/ImageContainer.vue';
 
 export default defineComponent({
     props:{

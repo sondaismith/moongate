@@ -23,12 +23,17 @@ export function createPost(maxNumComments : number, hasReplies = false):IPostDet
         totalLikes: numLikes,
         postText: 'test',
         postType: returnPartialPostType(),
+        postMedia: [],
         comments: postComments,
         totalComments: postComments.length
     }
 
     if(newPost.postType == PostTypes.Image){
-        newPost.postMedia = getImageUrl(getRandomImageNum());
+        // newPost.postMedia = getImageUrl(getRandomImageNum());
+        var numImages = Math.floor(Math.random() * 4)+1;
+        for (let i = 0; i < numImages; i++) {
+            newPost.postMedia?.push(getImageUrl(getRandomImageNum()));
+        }
     }
 
     return newPost;
@@ -83,6 +88,5 @@ function getImageUrl(num:String){
 
 function getRandomImageNum(){
     var imageNum = (Math.floor(Math.random()*8)+1);
-    console.log(imageNum);
     return "0"+imageNum;
 }
