@@ -1,6 +1,6 @@
 <template>
-    <div :class="postDetails.isVisible ? 'show' : 'hide'" class="modal absolute z-10 flex h-screen w-screen items-center justify-center">
-        <div @click="hideModal" class="absolute bg-slate-900/90 h-full w-full"></div>
+    <div data-test="post-detail-modal-div" :class="postDetails.isVisible ? 'show' : 'hide'" class="modal absolute z-10 flex h-screen w-screen items-center justify-center">
+        <div data-test="hide-modal-button"  @click="hideModal" class="absolute bg-slate-900/90 h-full w-full"></div>
         <div class="z-20 flex flex-col h-full w-1/2 bg-blue-400">
         <!-- <div class="z-20 flex flex-col h-full py-4 w-1/2 bg-blue-400"> -->
             <div class="z-20 flex flex-col bg-slate-800 border-slate-600 border rounded-sm h-full p-4 pr-3 overflow-y-auto preload-gutter">

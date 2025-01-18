@@ -17,8 +17,16 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 
-// var ro = new ResizeObserver(console.log).observe()
+
+export function calculateImageContainerMinHeight(elWidth:number):number{
+    if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
+    const aspectRatio = 9/16;
+    var newMinHeight = Math.floor(elWidth*aspectRatio);
+    return newMinHeight;
+}
+
 export default defineComponent({
+    name:'ImageContainer',
     props:{
         imagesToDisplay: Object as PropType<string[]>,
     },
@@ -30,7 +38,8 @@ export default defineComponent({
         setImageContainerHeight(){
             var component = (this.$refs.imageContainer as HTMLElement);
             const aspectRatio = 9/16;
-            component.style.minHeight = Math.floor(component.clientWidth*aspectRatio)+'px';
+            var newMinHeight = Math.floor(component.clientWidth*aspectRatio);
+            component.style.minHeight = newMinHeight+'px';
         },
     },
     mounted(){

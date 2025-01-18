@@ -16,7 +16,7 @@
                     <div class="flex items-center">
                         <div class="text-feedPostName font-semibold text-nowrap">{{ postData?.userName }}</div>
                         <div class="text-feedTimestamp pl-1 truncate" title="@Random User hdahdhdaahd">@{{ postData?.userHandle }}</div>
-                        <div class="text-feedTimestamp text-nowrap cursor-pointer ml-auto" @click="openPostDetails">1 Jan 2024</div>
+                        <div data-test="post-timestamp" class="text-feedTimestamp text-nowrap cursor-pointer ml-auto" @click="openPostDetails()">1 Jan 2024</div>
                     </div>
                     <div class="text-xs leading-4 pb-2">
                         Lorem ipsum dolor sit amet,

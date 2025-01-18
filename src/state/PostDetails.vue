@@ -2,7 +2,7 @@
 import { reactive } from 'vue'
 import { IPostDetails, IPostDetailsList } from '../interfaces/PostInterfaces';
 import { IconTypes } from '../enums/PostEnums';
-import { emptyPostModalData, firstPostObject } from '../fake-data/dumPostData';
+import { emptyPostModalData } from '../fake-data/dumPostData';
 
 //DetailIcon Icons
 import SolarChatDotsOutline from '~icons/solar/chat-dots-outline';

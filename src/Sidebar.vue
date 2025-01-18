@@ -1,5 +1,5 @@
 <template>
-    <div id="app-viewport" class="flex flex-row h-screen w-screen">
+    <div data-test="app-viewport" id="app-viewport" class="flex flex-row h-screen w-screen">
         {{ void "sidebar" }}
         <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-slate-400 min-w-16 items-center">
             {{ void "App Logo" }}
@@ -31,7 +31,7 @@
             <Tooltip id="navbar-tooltip" tooltip=""/>
         </div>
         {{ void "main content" }}
-        <div :onscroll="showScrollXPos" id="feedcolumnDisplay" class="bg-slate-700 flex overflow-y-hidden" >
+        <div data-test="feed-viewport" :onscroll="showScrollXPos" id="feedcolumnDisplay" class="bg-slate-700 flex overflow-y-hidden" >
             <div class="flex">
                 <FeedColumn v-for="feed in feedListing.feedList" :feedData="feed" :feedId="feed.feedId" :post-count="feed.totalPosts" :feed-name="feed.feedName" :user-handle="feed.feedHandle"/>
                 <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
@@ -59,6 +59,7 @@ import { DebugFlags } from "./state/Debug.vue";
 import { OptionIconList } from "./fake-data/dumPostData";
 
     export default defineComponent({
+        name:'Sidebar',
         data(){
             return{
                 // feedList: [
@@ -77,11 +78,6 @@ import { OptionIconList } from "./fake-data/dumPostData";
         },
         methods: {
             addFeed(){
-                // const feedTypes = ['art','friends','news'];
-                // this.feedList.push({feedName: 'AddedByBtn', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15)})
-                // let newestFeed = this.feedList[this.feedList.length-1];
-                // console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
-
                 const feedTypes = [FeedEnums.Types.Art,FeedEnums.Types.Friends,FeedEnums.Types.News];
                 userFeedList.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
                 let newestFeed = userFeedList.feedList[userFeedList.feedList.length-1];
@@ -101,7 +97,10 @@ import { OptionIconList } from "./fake-data/dumPostData";
              */
             getFeedDisplayViewWidth(){
                 const el = document.getElementById("feedcolumnDisplay");
-                this.fdViewWidth = el.offsetWidth;
+                if(el)
+                    this.fdViewWidth = el.offsetWidth;
+                else
+                    return "feedcolumnDisplay could not be found.";
             },
             /**
              * DEBUG - Positions center line for FeedColumn display viewport,
@@ -113,7 +112,7 @@ import { OptionIconList } from "./fake-data/dumPostData";
                 if(feedDisplayViewport && centerLine){
                     centerLine.style.left = (feedDisplayViewport.clientWidth/2) + feedDisplayViewport.offsetLeft+"px";
                 }
-                else{console.log('There was an error positioning the `FeedColumn` display center line.')}
+                else if(!feedDisplayViewport){console.log('There was an error positioning the `FeedColumn` display center line.')}
             }
         },
         created(){
