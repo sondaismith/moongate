@@ -12,7 +12,6 @@ declare module 'vue' {
     FeedIcon: typeof import('./src/components/Feed/FeedIcon.vue')['default']
     FeedPost: typeof import('./src/components/Feed/FeedPost.vue')['default']
     ImageContainer: typeof import('./src/components/Utilities/ImageContainer.vue')['default']
-    'ImageContainer.test': typeof import('./src/components/Utilities/ImageContainer.test.vue')['default']
     'IMdi:dotsHorizontal': typeof import('~icons/mdi/dots-horizontal')['default']
     'IMdi:newspaperVariantMultiple': typeof import('~icons/mdi/newspaper-variant-multiple')['default']
     'IMdi:paintOutline': typeof import('~icons/mdi/paint-outline')['default']

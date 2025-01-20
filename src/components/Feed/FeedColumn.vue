@@ -1,6 +1,6 @@
 <template>
     {{ void "feed column" }}
-    <div :id="feedId" class="relative flex flex-col pr-1 h-full w-72 bg-slate-900">
+    <div :id="feedId" class="relative flex flex-col h-full w-72 bg-slate-900 overflow-hidden min-w-72 max-w-[600px]">
         {{ void "feed title" }}
         <div class="flex h-14 w-full border-b-2 border-white pl-2 pr-1 items-center">
             <FeedIcon :icon="feedData?.feedType"/>
@@ -28,6 +28,7 @@
         </div>
         <div class="absolute pointer-events-none h-full left-0 right-0 border-2 rounded-sm border-sky-500/0 transition-colors"></div>
     </div>
+    <div data-test="feedColumn-resizer" draggable="true" @drag="resizeColumn()" class="bg-blue-900 w-1 cursor-ew-resize"></div>
 </template>
 
 <script lang="ts">
@@ -36,6 +37,8 @@ import { DebugFlags } from '../../state/Debug.vue';
 import { IFeedData } from '../../interfaces/FeedInterfaces';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
 import { createPost } from '../../fake-data/PostFactory'
+
+var isDragging = true;
 
 export default defineComponent({
     // props: {
@@ -76,6 +79,21 @@ export default defineComponent({
         },
         refreshFeed(){
             this.addNewPost();
+        },
+        startDrag(){
+            console.log('Drag start');
+            isDragging = true;
+            document.addEventListener('pointermove', this.resizeColumn);
+        },
+        resizeColumn(){
+            if(isDragging){
+                console.log('Dragging');
+            }
+        },
+        endDrag(){
+            console.log('Drag end');
+            // isDragging = false;
+            document.removeEventListener('mousemove', this.endDrag);
         }
     },
     created(){
