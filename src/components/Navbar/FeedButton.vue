@@ -93,10 +93,10 @@ export default defineComponent({
          */
         flashElement(el : HTMLElement){
             setTimeout(() => {
-                el.children[2].classList.add('feed-highlight');
+                el.querySelectorAll("[data-test='feedColumn-highlight']")[0].classList.add('feed-highlight');
             }, 300);
             setTimeout(() => {
-                el.children[2].classList.remove('feed-highlight');
+                el.querySelectorAll("[data-test='feedColumn-highlight']")[0].classList.remove('feed-highlight');
                 //Allow highlight to happen again after "flash" completes.
                 this.stopScrolling();
             }, 1050);
