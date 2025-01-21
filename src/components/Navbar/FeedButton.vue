@@ -21,6 +21,16 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 
+/**
+ * Method that ensures that the target position the FeedColumn display wants to
+ * is valid and can actually be reached. This should actually be the entire calculation
+ * process, but because I don't know how to test DOM elements we just have the modulo.
+ * @param target The calculated x-axis target value.
+ */
+export function calculateValidTargetPos(target:number):number{
+    return Math.floor(target);
+}
+
 export default defineComponent({
     data(){
         return{
@@ -157,7 +167,7 @@ export default defineComponent({
             //The "-2" on the (elParentLeft/2)-2) is for the padding-right
             //on the FeedColumn component. Haven't got a automatic computed solution
             //yet.
-            const target = ((elCenter + ((fdViewWidth/2) - elParentLeft - 2)) - fdTotalWidth + scrollWidth);
+            const target = calculateValidTargetPos(((elCenter + ((fdViewWidth/2) - elParentLeft - 2)) - fdTotalWidth + scrollWidth));
 
             //If the scroll ends up breaking, check that the correct element is being accessed
             scrollContainer.scrollBy({top:0, left:target-fdScrollPos, behavior:"smooth"});

@@ -26,10 +26,10 @@
             <!-- <FeedPost v-for="n in feedData?.totalPosts" /> -->
             <FeedPost v-for="n in PostCollection" :postData="n" />
             <div v-if="DebugFlags.showFeedColumnCenter" class="relative h-full w-0.5 left-1/2 bg-blue-900/60"></div>
-            <div class="absolute left-0 top-16 px-2 py-1 bg-orange-500/80 content-center">
+            <div v-if="DebugFlags.showFeedColumnDragResizeStats" class="absolute left-0 top-16 px-2 py-1 bg-orange-500/80 content-center">
                 <div>Dragging?: {{ isDragging }}</div>
                 <div>MousePos: {{ mousePosition }}</div>
-                <div>OriginalWidth: {{ originalWidth }}</div>
+                <div>OriginalWidth: {{ columnWidth }}</div>
             </div>
         </div>
         <div class="absolute pointer-events-none h-full left-0 right-0 border-2 rounded-sm border-sky-500/0 transition-colors"></div>
@@ -61,7 +61,7 @@ export default defineComponent({
             PostCollection: [] as IPostDetails[],
             isDragging: false,
             mousePosition: [0,0],
-            originalWidth: 0,
+            columnWidth: 0,
         }
     },
     props: {
@@ -91,30 +91,30 @@ export default defineComponent({
             this.addNewPost();
         },
         startDrag(e: MouseEvent){
-            console.log('Drag start');
-            this.isDragging = true;
             if(!this.feedId) return;
             const column = document.getElementById(this.feedId);
             if(column){
-                // this.originalWidth = column?.clientWidth;
                 colElement = column;
-                this.originalWidth = colElement.clientWidth;
+                if(DebugFlags.showFeedColumnDragResizeStats){
+                    this.isDragging = true;
+                    this.columnWidth = colElement.clientWidth;
+                }
             }
-            // this.originalWidth = e.clientX;
             document.addEventListener('mousemove', this.resizeColumn);
             document.addEventListener('mouseup', this.endDrag);
         },
         resizeColumn(e:MouseEvent){
-            // if(this.isDragging){
-            //     console.log('Dragging');
-            // }
-            this.mousePosition = [e.clientX,e.clientY];
             (colElement as HTMLElement).style.width = ((colElement as HTMLElement).clientWidth+e.movementX)+"px";
+            if(DebugFlags.showFeedColumnDragResizeStats){
+                this.mousePosition = [e.clientX,e.clientY];
+                this.columnWidth = colElement.clientWidth;
+            }
         },
         endDrag(){
-            console.log('Drag end');
-            this.isDragging = false;
-            this.mousePosition = [0,0];
+            if(DebugFlags.showFeedColumnDragResizeStats){
+                this.isDragging = false;
+                this.mousePosition = [0,0];
+            }
             document.removeEventListener('mousemove', this.resizeColumn);
             document.removeEventListener('mouseup', this.endDrag);
         }
