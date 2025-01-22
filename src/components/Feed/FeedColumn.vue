@@ -17,15 +17,17 @@
                     <div class="flex items-center">
                         <!-- <div title="Add - DEBUG" @click="addNewPost" class="cursor-pointer hover:text-cyan-400"><i-mingcute:plus-fill/></div> -->
                         <div title="Refresh" @click="generateRandomDate(new Date(2012, 0, 1), new Date)"><i-mingcute:refresh-3-fill class="text-xl cursor-pointer hover:text-cyan-400"/></div>
-                        <div title="Options" @click="showFeedColumnOptions()" class="text-xl cursor-pointer hover:text-cyan-400"><i-mingcute:settings-6-fill/></div>
+                        <div title="Options" @click="toggleFeedColumnOptionsMenu()" class="text-xl cursor-pointer hover:text-cyan-400"><i-mingcute:settings-6-fill/></div>
                         <div title="Reorder"><i-mingcute:menu-line title="Reorder" class="text-xl cursor-grab hover:text-cyan-400"/></div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="flex flex-col px-2 py-1 bg-slate-800">
-            <div class="max-h-6 overflow-hidden select-none feedOptionCategory">
-                <div @click="toggleFeedColumnOptionCategory" class="flex h-6 justify-between items-centers cursor-pointer">
+        <div data-test="feedcolumn-options-menu" :class="[{'hide' : !feedOptionsShown}]" class="flex flex-col px-2 py-1 bg-slate-800 feedOptions">
+            <div @click="toggleFeedColumnContentCategory"
+            :class="[{'show' : feedOptionContentSettingsShown}]"
+            class="max-h-6 overflow-hidden select-none feedOptionCategory">
+                <div class="flex h-6 justify-between items-centers cursor-pointer">
                     <div class="flex items-center">
                         <i-mdi:magnify-scan/>
                         <div class="pl-1">Feed Content</div>
@@ -34,8 +36,10 @@
                 </div>
                 <div class="h-6 bg-red-500">TBA</div>
             </div>
-            <div class="max-h-6 overflow-hidden select-none feedOptionCategory">
-                <div @click="toggleFeedColumnOptionCategory" class="flex h-6 justify-between items-centers cursor-pointer">
+            <div @click="toggleFeedColumnAuthorsCategory"
+            :class="[{'show' : feedOptionAuthorSettingsShown}]"
+            class="max-h-6 overflow-hidden select-none feedOptionCategory">
+                <div class="flex h-6 justify-between items-centers cursor-pointer">
                     <div class="flex items-center">
                         <i-mingcute:user-add-fill/>
                         <div class="pl-1">Feed Authors</div>
@@ -44,8 +48,10 @@
                 </div>
                 <div class="h-6 bg-red-500">TBA</div>
             </div>
-            <div class="max-h-6 overflow-hidden select-none feedOptionCategory">
-                <div @click="toggleFeedColumnOptionCategory" class="flex h-6 justify-between items-centers cursor-pointer">
+            <div @click="toggleFeedColumnPreferencesCategory"
+            :class="[{'show' : feedOptionPreferencesShown}]"
+            class="max-h-6 overflow-hidden select-none feedOptionCategory">
+                <div class="flex h-6 justify-between items-centers cursor-pointer">
                     <div class="flex items-center">
                         <i-mdi:gear-box/>
                         <div class="pl-1">Preferences</div>
@@ -129,6 +135,10 @@ export default defineComponent({
             mousePosition: [0,0],
             columnWidth: 0,
             selectedWidthSetting: 0,
+            feedOptionsShown: false,
+            feedOptionContentSettingsShown: false,
+            feedOptionAuthorSettingsShown: false,
+            feedOptionPreferencesShown: false,
         }
     },
     props: {
@@ -185,17 +195,35 @@ export default defineComponent({
             document.removeEventListener('mousemove', this.resizeColumn);
             document.removeEventListener('mouseup', this.endDrag);
         },
-        showFeedColumnOptions(){
-            console.log('Column '+this.feedId+' options shown');
+        /**
+         * Method that toggles the displaying of the FeedColumn's "Options Menu".
+         */
+        toggleFeedColumnOptionsMenu(){
+            this.feedOptionsShown = !this.feedOptionsShown;
+            if(!this.feedOptionsShown){
+                //if options menu is hidden, collapse all option categories
+                this.feedOptionContentSettingsShown = false;
+                this.feedOptionAuthorSettingsShown = false;
+                this.feedOptionPreferencesShown = false;
+            }
         },
-        toggleFeedColumnOptionCategory(e:MouseEvent){
-            var categoryDiv = ((e.currentTarget as HTMLElement).parentElement as HTMLElement);
-            if(categoryDiv.classList.contains('show')){
-                categoryDiv.classList.remove('show');
-            }
-            else{
-                categoryDiv.classList.add('show');
-            }
+        /**
+         * Toggles display of FeedColumn "Options Menu - Content Category".
+         */
+        toggleFeedColumnContentCategory(){
+            this.feedOptionContentSettingsShown = !this.feedOptionContentSettingsShown;
+        },
+        /**
+         * Toggles display of FeedColumn "Options Menu - Authors Category".
+         */
+         toggleFeedColumnAuthorsCategory(){
+            this.feedOptionAuthorSettingsShown = !this.feedOptionAuthorSettingsShown;
+        },
+        /**
+         * Toggles display of FeedColumn "Options Menu - Preferences Category".
+         */
+         toggleFeedColumnPreferencesCategory(){
+            this.feedOptionPreferencesShown = !this.feedOptionPreferencesShown;
         },
         getFeedElement():HTMLElement{
             return document.getElementById(this.feedId) as HTMLElement;
@@ -239,6 +267,17 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.feedOptions{
+    transition: padding-top 0.2s, padding-bottom 0.2s, max-height 0.2s;
+    max-height: 400px; /**This max-height results in a non-smooth transition, since
+    the height value is not acurate. Need to create a calulated value solution using
+    height. */
+}
+.feedOptions.hide{
+    max-height: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
 .feedOptionCategory{
     transition: max-height 0.2s;
 }
