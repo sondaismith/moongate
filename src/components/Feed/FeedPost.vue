@@ -26,7 +26,9 @@
                     </div>
                     <!-- <div class="text-xs leading-4 pb-2">{{ postData?.postText }}</div> -->
                     {{ void "image-type media" }}
-                    <ImageContainer v-if="postData?.postType === 'image'" :imagesToDisplay="postData?.postMedia"/>
+                    <ImageContainer v-if="postData?.postType === 'image'"
+                    :imagesToDisplay="postData?.postMedia"
+                    @media-click="(i:number) => openFocusDetails(i)"/>
                     <div class="flex flex-row h-8">
                         <PostInteractionIcons class="text-slate-50 text-s" :noShareButton="true"
                             :numComments="postData?.comments.length" :numShares="postData?.totalReposts"
@@ -55,13 +57,19 @@ export default defineComponent({
     },
     methods:{
         openPostDetails(){
-            // postDetails.showModal();
             if(this.postData){
                 postDetails.showModalPost(this.postData);
                 //update `PostDetailIcons` in `Post` State
                 postDetails.updatePostDetailIconValues(this.postData.comments.length.toString(),this.postData.totalReposts.toString(),this.postData.totalLikes.toString());
             }
         },
+        openFocusDetails(mediaIndex:number){
+            if(this.postData){
+                postDetails.showFocusModal(this.postData, mediaIndex);
+                //update `PostDetailIcons` in `Post` State
+                postDetails.updatePostDetailIconValues(this.postData.comments.length.toString(),this.postData.totalReposts.toString(),this.postData.totalLikes.toString());
+            }
+        }
     },
     setup () {
         return {}

@@ -13,12 +13,15 @@ import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
 
 // export const postDetails : IPostDetailsList = reactive({
 export const postDetails :IPostDetailsList = reactive({
-    // isVisible:{
-    //     type: Boolean,
-    //     default(){return false}
-    // },
     isVisible: false,
-    isFocusVisible: true,
+    isFocusVisible: false,
+    clickedMediaIndex: 0,
+    getClickedMediaIndex() {
+        return this.clickedMediaIndex;
+    },
+    setClickedMediaIndex(newVal:number) {
+        this.clickedMediaIndex = newVal;
+    },
     menuClickPos: [0, -500],
     postData: emptyPostModalData,
     // modalPostData: [],
@@ -36,8 +39,10 @@ export const postDetails :IPostDetailsList = reactive({
      * Method that shows "Focus" modal - media on left with comments
      * in right sidebar.
      */
-    showFocusModal(){
+    showFocusModal(postToShow:IPostDetails, mediaIndex:number){
         postDetails.isFocusVisible = true;
+        this.clickedMediaIndex = mediaIndex;
+        this.postData = updatePostDetails(postToShow)
     },
     /**
      * Method that hides "Focus" modal - media on left with comments

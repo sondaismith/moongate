@@ -4,7 +4,7 @@
         {{ void "Media Section" }}
         <div class="flex flex-col w-full">
             {{ void "Close Button" }}
-            <div @click="postDetails.hideFocusModal" class="flex shrink-0 ml-auto bg-blue-300 py-2 w-10
+            <div @click="hideModal" class="flex shrink-0 ml-auto bg-blue-300 py-2 w-10
                 justify-center text-2xl cursor-pointer">
                 <i-mingcute:close-fill/>
             </div>
@@ -12,17 +12,24 @@
             <div class="flex items-center h-full">
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
                     <div @click="decreaseCurrentMediaIndex"
-                    v-if="currentMediaIndex != 0 && currentMediaIndex>=0"
+                    v-if="postDetails.postData?.postMedia &&
+                    postDetails.clickedMediaIndex != 0 &&
+                    postDetails.clickedMediaIndex>=0"
                     class="cursor-pointer">
                         <i-mingcute:left-fill/>
                     </div>
                 </div>
-                <div class="border border-slate-800 rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
-                    :style="{'background-image' : 'url('+imageCollection[currentMediaIndex]+')'}">
+                <div v-if="postDetails.postData?.postMedia" class="border border-slate-800 rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
+                    :style="{'background-image' : 'url('+postDetails.postData.postMedia[postDetails.clickedMediaIndex]+')'}">
+                </div>
+                <div v-else class="w-full">
+                    {{ void "button spacer" }}
                 </div>
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
                     <div @click="increaseCurrentMediaIndex"
-                    v-if="currentMediaIndex+1 != imageCollection.length && currentMediaIndex>=0"
+                    v-if="postDetails.postData?.postMedia &&
+                    postDetails.clickedMediaIndex+1 != postDetails.postData?.postMedia.length &&
+                    postDetails.clickedMediaIndex>=0"
                     class="cursor-pointer">
                         <i-mingcute:right-fill/>
                     </div>
@@ -102,7 +109,6 @@ export default defineComponent({
     },
     data(){
         return{
-            currentMediaIndex: 0,
             imageCollection: [
                 'src/assets/test-media/posts/image04.png',
                 'src/assets/test-media/posts/image01.png',
@@ -114,14 +120,18 @@ export default defineComponent({
     },
     methods:{
         increaseCurrentMediaIndex(){
-            if(this.currentMediaIndex+1 < this.imageCollection.length)
-                this.currentMediaIndex++;
+            if(postDetails.clickedMediaIndex+1 < this.imageCollection.length)
+                postDetails.setClickedMediaIndex(postDetails.getClickedMediaIndex()+1);
         },
         decreaseCurrentMediaIndex(){
-            if(this.currentMediaIndex-1 >= 0)
-                this.currentMediaIndex--;
+            if(postDetails.clickedMediaIndex-1 >= 0)
+                postDetails.setClickedMediaIndex(postDetails.getClickedMediaIndex()-1);
+        },
+        hideModal(){
+            postDetails.hideFocusModal();
         }
-
+    },
+    mounted(){
     }
 })
 </script>

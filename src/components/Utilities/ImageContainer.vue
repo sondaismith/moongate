@@ -1,7 +1,7 @@
 <template>
     <div ref="imageContainer" class="grid grid-cols-2 grid-flow-col grid-rows-2 w-full gap-0.5 border
         border-slate-500 rounded overflow-hidden">
-        <div v-for="(image, index) in imagesToDisplay" @click="postDetails.showFocusModal" class="overflow-hidden cursor-pointer"
+        <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" class="overflow-hidden cursor-pointer"
             :class="[
                         (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2':''),
                         (imagesToDisplay?.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
@@ -42,6 +42,9 @@ export default defineComponent({
             var newMinHeight = Math.floor(component.clientWidth*aspectRatio);
             component.style.minHeight = newMinHeight+'px';
         },
+        showMediaFocusModal(index:number){
+            this.$emit('media-click', index);
+        }
     },
     data(){
         return{
