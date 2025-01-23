@@ -16,10 +16,13 @@ interface IPostDetails{
 
 interface IPostDetailsList{
     isVisible: Boolean,
+    isFocusVisible: Boolean,
     postData : IPostDetails,
     showModal(): void,
     showModalPost(postToShow:IPostDetails): void,
     hideModal(): void,
+    showFocusModal(): void,
+    hideFocusModal(): void,
     isPostOptionsMenuVisible: Boolean,
     showPostOptionsMenu(event:PointerEvent): void,
     hidePostOptionsMenu(event:PointerEvent): void,

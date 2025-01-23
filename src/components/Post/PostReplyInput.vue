@@ -3,7 +3,7 @@
         <span class="block w-full py-2 pl-2 rounded bg-slate-900 overflow-hidden
         max-h-36 postPlaceholder" role="text" placeholder="Post reply..."
         contenteditable @focusin="postInputFocusGained" @focusout="postInputFocusLost"/>
-        <div id="post-buttons" class="hide flex justify-between px-1 py-2 h-11">
+        <div class="post-buttons hide flex justify-between px-1 py-2 h-11">
             <div class="flex space-x-1 overflow-hidden">
                 <div v-for="icon in postButtonIcons" class="flex rounded-full aspect-square h-7 items-center justify-center cursor-pointer bg-blue-900 hover:bg-blue-600">
                     <component :is="icon" class="h-full"/>
@@ -34,7 +34,7 @@ export default defineComponent({
          */
         postInputFocusGained(event:FocusEvent){
             (event.target as HTMLElement).classList.remove('postPlaceholder');
-            document.getElementById('post-buttons')?.classList.remove('hide');
+            ((event.currentTarget as HTMLElement).nextSibling as HTMLElement).classList.remove('hide');
         },
         /**
          * Method used to add post message placeholder when input loses focus and
@@ -44,7 +44,7 @@ export default defineComponent({
             if ((event.target as HTMLElement).textContent == ""){
                 //textbox empty
                 (event.target as HTMLElement).classList.add('postPlaceholder');
-                document.getElementById('post-buttons')?.classList.add('hide');
+                ((event.currentTarget as HTMLElement).nextSibling as HTMLElement).classList.add('hide');
             }
         }
     },
@@ -60,10 +60,10 @@ export default defineComponent({
 </script>
 
 <style scoped>
-    #post-buttons{
+    .post-buttons{
         transition: height 0.2s ease;
     }
-    #post-buttons.hide{
+    .post-buttons.hide{
         height: 0;
         padding-top: 0;
         padding-bottom: 0;

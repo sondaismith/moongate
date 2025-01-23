@@ -18,6 +18,7 @@ export const postDetails :IPostDetailsList = reactive({
     //     default(){return false}
     // },
     isVisible: false,
+    isFocusVisible: true,
     menuClickPos: [0, -500],
     postData: emptyPostModalData,
     // modalPostData: [],
@@ -30,6 +31,20 @@ export const postDetails :IPostDetailsList = reactive({
     },
     hideModal(){
         this.isVisible = false;
+    },
+    /**
+     * Method that shows "Focus" modal - media on left with comments
+     * in right sidebar.
+     */
+    showFocusModal(){
+        postDetails.isFocusVisible = true;
+    },
+    /**
+     * Method that hides "Focus" modal - media on left with comments
+     * in right sidebar.
+     */
+    hideFocusModal(){
+        postDetails.isFocusVisible = false;
     },
     isPostOptionsMenuVisible: false,
     /**

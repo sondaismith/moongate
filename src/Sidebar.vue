@@ -46,6 +46,7 @@
         <!-- <PostDetailModal v-show="postDetails.isVisible"/> -->
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
+        <PostFocusModal/>
     </div>
 </template>
 
@@ -57,6 +58,7 @@ import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { DebugFlags } from "./state/Debug.vue";
 import { OptionIconList } from "./fake-data/dumPostData";
+import PostFocusModal from "./components/Post/PostFocusModal.vue";
 
     export default defineComponent({
         name:'Sidebar',

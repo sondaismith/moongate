@@ -1,7 +1,7 @@
 <template>
     <div ref="imageContainer" class="grid grid-cols-2 grid-flow-col grid-rows-2 w-full gap-0.5 border
         border-slate-500 rounded overflow-hidden">
-        <div v-for="(image, index) in imagesToDisplay" class="overflow-hidden cursor-pointer"
+        <div v-for="(image, index) in imagesToDisplay" @click="postDetails.showFocusModal" class="overflow-hidden cursor-pointer"
             :class="[
                         (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2':''),
                         (imagesToDisplay?.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
@@ -16,6 +16,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
+import { postDetails } from '../../state/PostDetails.vue';
 
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
@@ -41,6 +42,11 @@ export default defineComponent({
             var newMinHeight = Math.floor(component.clientWidth*aspectRatio);
             component.style.minHeight = newMinHeight+'px';
         },
+    },
+    data(){
+        return{
+            postDetails,
+        }
     },
     mounted(){
         this.setImageContainerHeight();
