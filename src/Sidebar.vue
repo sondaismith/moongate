@@ -43,7 +43,15 @@
             </div>
         </div>
         {{ void "Post Details Modal" }}
-        <!-- <PostDetailModal v-show="postDetails.isVisible"/> -->
+        <div class="absolute z-10 p-4 space-y-1 w-72">
+            <div @click="getBSkyAPIData" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2">Get Posts</div>
+            <div class="p-4 bg-slate-950/90">
+                Posts here:
+                <div v-for="(data, index) in APIResponse.data?.feeds">
+                    {{ index }} - {{ data.displayName }}
+                </div>
+            </div>
+        </div>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
         <PostFocusModal/>
@@ -59,6 +67,8 @@ import { postDetails } from "./state/PostDetails.vue";
 import { DebugFlags } from "./state/Debug.vue";
 import { OptionIconList } from "./fake-data/dumPostData";
 import PostFocusModal from "./components/Post/PostFocusModal.vue";
+//Remove ASAP
+import {agent} from "./lib/api.ts"
 
     export default defineComponent({
         name:'Sidebar',
@@ -76,6 +86,7 @@ import PostFocusModal from "./components/Post/PostFocusModal.vue";
                 scrollXPos : 0,
                 fdViewWidth : 0,
                 OptionIconList,
+                APIResponse: {},
             }
         },
         methods: {
@@ -115,6 +126,11 @@ import PostFocusModal from "./components/Post/PostFocusModal.vue";
                     centerLine.style.left = (feedDisplayViewport.clientWidth/2) + feedDisplayViewport.offsetLeft+"px";
                 }
                 else if(!feedDisplayViewport){console.log('There was an error positioning the `FeedColumn` display center line.')}
+            },
+            /**DEBUG - Test getting data through Bluesky API */
+            async getBSkyAPIData(){
+                const feedResults = await agent.app.bsky.unspecced.getPopularFeedGenerators({limit:15})
+                this.APIResponse = feedResults;
             }
         },
         created(){
