@@ -43,7 +43,7 @@
             </div>
         </div>
         {{ void "Comments Section" }}
-        <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-yellow-300/40 bg-slate-950">
+        <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-slate-950">
             {{ void "User Info/Actions" }}
             <div class="p-4">
                 <div class="flex">
