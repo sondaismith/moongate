@@ -51,6 +51,7 @@
                     {{ index }} - {{ data.displayName }}
                 </div>
             </div>
+            <FeedPost/>
         </div>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
@@ -69,6 +70,8 @@ import { OptionIconList } from "./fake-data/dumPostData";
 import PostFocusModal from "./components/Post/PostFocusModal.vue";
 //Remove ASAP
 import {agent} from "./lib/api.ts"
+import { AppBskyFeedDefs } from "@atproto/api/dist/client";
+import { IPostDetails } from "./interfaces/PostInterfaces";
 
     export default defineComponent({
         name:'Sidebar',
@@ -131,6 +134,35 @@ import {agent} from "./lib/api.ts"
             async getBSkyAPIData(){
                 const feedResults = await agent.app.bsky.unspecced.getPopularFeedGenerators({limit:15})
                 this.APIResponse = feedResults;
+                this.getExamplePost();
+            },
+            /**DEBUG - Get example post data */
+            async getExamplePost(){
+                // var did = await agent.app.bsky.actor.getProfile({actor:"mega64official.bsky.social"});
+                const EXAMPLE_POST = "at://did:plc:7kf37yk3wjqjv6zjlryjypn4/app.bsky.feed.post/3lgj4pe5uz22o"
+                const thread = await agent.app.bsky.feed.getPostThread({
+                    uri: EXAMPLE_POST,
+                });
+
+                if (!AppBskyFeedDefs.isThreadViewPost(thread.data.thread))
+                    throw new Error("Expected a thread view post");
+
+                var postData = thread.data.thread.post;
+                var post : IPostDetails = {
+                    userName : postData.author.displayName ? postData.author.displayName : "",
+                    userHandle: postData.author.handle,
+                    postText: postData.record.text,
+                    postType: PostEnums.PostTypes.Image,
+                    // postMedia: [postData.embed?.images[0] ? postData.embed?.images[0].fullSize : ""],
+                    postMedia: [postData.embed?.images[0].fullsize],
+                    // postMedia: [postData.author.avatar ? postData.author.avatar : ""],
+                    comments: [],
+                    totalComments: postData.replyCount ? postData.replyCount : 0,
+                    totalLikes: postData.likeCount ? postData.likeCount : 0,
+                    totalReposts: postData.repostCount ? postData.repostCount : 0,
+                }
+                console.log(thread.data);
+                postDetails.showFocusModal(post, 0);
             }
         },
         created(){

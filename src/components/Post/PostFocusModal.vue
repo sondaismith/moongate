@@ -60,16 +60,14 @@
                 </div>
                 {{ void "Post Content - Text" }}
                 <div class="text-sm pt-2">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    {{ postDetails.postData.postText }}
                 </div>
                 {{ void "Post Metadata" }}
                 <div class="border-slate-600 divide-y divide-inherit !mt-0">
                     <div class="py-1">
                         <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">January 4th, 2025 at 12:42am</div>
                     </div>
-                    <PostInteractionIcons :numComments="postDetails.postData?.comments.length"
+                    <PostInteractionIcons :numComments="postDetails.postData?.totalComments"
                         :numShares="postDetails.postData?.totalReposts" :numLikes="postDetails.postData?.totalLikes"/>
                 </div>
             </div>

@@ -21,7 +21,7 @@ export function createPost(maxNumComments : number, hasReplies = false):IPostDet
         userHandle: createHandle(),
         totalReposts: numReposts,
         totalLikes: numLikes,
-        postText: 'test',
+        postText: loremText,
         postType: returnPartialPostType(),
         postMedia: [],
         comments: postComments,
@@ -68,6 +68,8 @@ function createHandle():String{
     var n2 = handles[Math.floor(Math.random()*handles.length)];
     return n1+n2;
 }
+
+const loremText = "Lorem ipsum dolor sit amet, sed ut labore among us magna aliqua. Quis nostrud exercitation ullamco laboris."
 
 var names : string[] = [
     "Bob","Sam","James","Sunny","Alice","Jessica",

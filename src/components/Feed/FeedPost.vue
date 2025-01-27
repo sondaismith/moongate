@@ -19,10 +19,7 @@
                         <div data-test="post-timestamp" class="text-feedTimestamp text-nowrap cursor-pointer ml-auto" @click="openPostDetails()">1 Jan 2024</div>
                     </div>
                     <div class="text-xs leading-4 pb-2">
-                        Lorem ipsum dolor sit amet,
-                        sed ut labore among us magna
-                        aliqua. Quis nostrud exercitation
-                        ullamco laboris.
+                        {{ postData?.postText }}
                     </div>
                     <!-- <div class="text-xs leading-4 pb-2">{{ postData?.postText }}</div> -->
                     {{ void "image-type media" }}
@@ -44,7 +41,6 @@
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
-import ImageContainer from '../Utilities/ImageContainer.vue';
 
 export default defineComponent({
     props:{
