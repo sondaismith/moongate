@@ -28,6 +28,7 @@ interface IPostDetailsList{
     showModalPost(postToShow:IPostDetails): void,
     hideModal(): void,
     showFocusModal(postToShow:IPostDetails,mediaIndex:number): void,
+    showFocusModalIndex(mediaIndex:number): void,
     hideFocusModal(): void,
     isPostOptionsMenuVisible: Boolean,
     showPostOptionsMenu(event:PointerEvent): void,

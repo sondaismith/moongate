@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    copy: typeof import('./src/components/Post/PostFocusModal copy.vue')['default']
     FeedButton: typeof import('./src/components/Navbar/FeedButton.vue')['default']
     FeedColumn: typeof import('./src/components/Feed/FeedColumn.vue')['default']
     FeedIcon: typeof import('./src/components/Feed/FeedIcon.vue')['default']
@@ -39,6 +40,7 @@ declare module 'vue' {
     PostDetailIcon: typeof import('./src/components/Post/PostDetailIcon.vue')['default']
     PostDetailModal: typeof import('./src/components/Post/PostDetailModal.vue')['default']
     PostFocusModal: typeof import('./src/components/Post/PostFocusModal.vue')['default']
+    PostFocusModal_test: typeof import('./src/components/Post/PostFocusModal_test.vue')['default']
     PostInteractionIcons: typeof import('./src/components/Post/PostInteractionIcons.vue')['default']
     PostOptionsMenu: typeof import('./src/components/Post/PostOptionsMenu.vue')['default']
     PostOptionsMenuItem: typeof import('./src/components/Post/PostOptionsMenuItem.vue')['default']

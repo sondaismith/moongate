@@ -171,7 +171,8 @@ import { getBlueskyPostThread } from "./lib/api/Post";
                 console.log(postThread);
                 // postDetails.postThread = thread.data.thread;
                 postDetails.postThread = postThread.thread;
-                postDetails.showFocusModal(post, 0);
+                // postDetails.showFocusModal(post, 0);
+                postDetails.showFocusModalIndex(0);
             }
         },
         created(){

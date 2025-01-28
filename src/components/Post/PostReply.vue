@@ -1,8 +1,9 @@
 <template>
     <div class="flex">
         <div class="flex flex-col">
-            <div class="rounded-full bg-stone-500 aspect-square size-10">
-                <i-mdi-robot-angry class="h-full w-full p-2"/>
+            <div class="rounded-full overflow-hidden flex-shrink-0 bg-stone-500 aspect-square size-10">
+                <i-mdi-robot-angry v-if="!avatar" class="h-full w-full p-2"/>
+                <div v-if="avatar" class="h-full bg-contain" :style="{'background-image' : 'url('+avatar+')'}"></div>
             </div>
             {{ void "below is connector for replies" }}
             <div v-if="(replyThreadIndex!=undefined && totalThreadReplies && replyThreadIndex<totalThreadReplies)" class="h-full bg-slate-700 w-0.5 m-auto"></div>
@@ -38,6 +39,7 @@ export default defineComponent({
     props:{
         userName: String,
         userHandle: String,
+        avatar: String,
         totalComments: Number, //not going to actually be in final version, just use .length
         totalReposts: Number,
         totalLikes: Number,

@@ -53,12 +53,22 @@ export const postDetails :IPostDetailsList = reactive({
     },
     /**
      * Method that shows "Focus" modal - media on left with comments
-     * in right sidebar.
+     * in right sidebar. This is the initial version created that used
+     * dummy data.
      */
     showFocusModal(postToShow:IPostDetails, mediaIndex:number){
         postDetails.isFocusVisible = true;
         this.clickedMediaIndex = mediaIndex;
         this.postData = updatePostDetails(postToShow)
+    },
+    /**
+     * Method that shows "Focus" modal - media on left with comments
+     * in right sidebar. This is the live version that accesses the
+     * Bluesky API
+     */
+    showFocusModalIndex(mediaIndex:number){
+        postDetails.isFocusVisible = true;
+        this.clickedMediaIndex = mediaIndex;
     },
     /**
      * Method that hides "Focus" modal - media on left with comments

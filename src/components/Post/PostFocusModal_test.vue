@@ -12,23 +12,23 @@
             <div class="flex items-center h-full">
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
                     <div @click="decreaseCurrentMediaIndex"
-                    v-if="postDetails.postThread.post.embed?.images &&
+                    v-if="postDetails.postData?.postMedia &&
                     postDetails.clickedMediaIndex != 0 &&
                     postDetails.clickedMediaIndex>=0"
                     class="cursor-pointer">
                         <i-mingcute:left-fill/>
                     </div>
                 </div>
-                <div v-if="postDetails.postThread.post.embed?.images" class="border border-slate-800 rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
-                    :style="{'background-image' : 'url('+postDetails.postThread.post.embed.images[postDetails.clickedMediaIndex].fullsize+')'}">
+                <div v-if="postDetails.postData?.postMedia" class="border border-slate-800 rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
+                    :style="{'background-image' : 'url('+postDetails.postData.postMedia[postDetails.clickedMediaIndex]+')'}">
                 </div>
                 <div v-else class="w-full">
                     {{ void "button spacer" }}
                 </div>
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
                     <div @click="increaseCurrentMediaIndex"
-                    v-if="postDetails.postThread.post.embed?.images &&
-                    postDetails.clickedMediaIndex+1 != postDetails.postThread.post.embed?.images.length &&
+                    v-if="postDetails.postData?.postMedia &&
+                    postDetails.clickedMediaIndex+1 != postDetails.postData?.postMedia.length &&
                     postDetails.clickedMediaIndex>=0"
                     class="cursor-pointer">
                         <i-mingcute:right-fill/>
@@ -47,13 +47,12 @@
             {{ void "User Info/Actions" }}
             <div class="p-4">
                 <div class="flex">
-                    <div class="rounded-full overflow-hidden bg-stone-500 aspect-square size-10 self-center">
-                        <!-- <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/> -->
-                        <div class="h-full w-full bg-contain" :style="{'background-image' : 'url('+postDetails.postThread.post.author.avatar+')'}"></div>
+                    <div class="rounded-full bg-stone-500 aspect-square size-10 self-center">
+                        <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/>
                     </div>
                     <div class="self-center ml-2">
-                        <div class="font-bold leading-4">{{ postDetails.postThread.post.author.displayName }}</div>
-                        <div class="text-feedPostName">@{{ postDetails.postThread.post.author.handle }}</div>
+                        <div class="font-bold leading-4">{{ postDetails.postData?.userName }}</div>
+                        <div class="text-feedPostName">@{{ postDetails.postData?.userHandle }}</div>
                     </div>
                     <div class="rounded-full self-center ml-auto py-1 px-3 bg-slate-300 font-bold hover:bg-slate-200 text-slate-800 cursor-pointer">
                         + Follow
@@ -61,15 +60,15 @@
                 </div>
                 {{ void "Post Content - Text" }}
                 <div class="text-sm pt-2">
-                    {{ postDetails.postThread ? postDetails.postThread.post.record.text : "initial state - undefined" }}
+                    {{ postDetails.postData ? postDetails.postData.postText : "initial state - undefined" }}
                 </div>
                 {{ void "Post Metadata" }}
                 <div class="border-slate-600 divide-y divide-inherit !mt-0">
                     <div class="py-1">
-                        <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">{{ postDetails.postThread.post.indexedAt }}</div>
+                        <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">January 4th, 2025 at 12:42am</div>
                     </div>
-                    <PostInteractionIcons :numComments="postDetails.postThread.post.replyCount"
-                        :numShares="postDetails.postThread.post.repostCount" :numLikes="postDetails.postThread.post.likeCount"/>
+                    <PostInteractionIcons :numComments="postDetails.postData?.totalComments"
+                        :numShares="postDetails.postData?.totalReposts" :numLikes="postDetails.postData?.totalLikes"/>
                 </div>
             </div>
             {{ void "post reply input" }}
@@ -80,9 +79,22 @@
                     <!-- <div class="w-auto">No Replies</div> -->
                     <div class="flex flex-col bg-orange-400s preload-gutter divide-y border-slate-600 divide-inherit">
                         {{ void "replies" }}
+                        <div v-for="replies in postDetails.postData?.comments" class="pt-2 pr-3">
+                            <PostReply :userName="replies.userName"
+                                :userHandle="replies.userHandle" :postText="replies.postText"
+                                :totalComments="replies.totalComments" :totalReposts="replies.totalReposts"
+                                :totalLikes="replies.totalLikes"/>
+                            {{ void "displays replies to comment" }}
+                            <PostReply v-for="reply in replies.comments" :userName="reply.userName"
+                                :userHandle="reply.userHandle" :postText="reply.postText"
+                                :totalComments="reply.totalComments" :totalReposts="reply.totalReposts"
+                                :totalLikes="reply.totalLikes"/>
+                        </div>
+
+
                         <div v-for="replies in postDetails.postThread?.replies" class="pt-2 pr-3">
                             <PostReply :userName="replies.post.author.displayName"
-                                :userHandle="replies.post.author.handle" :avatar="replies.post.author.avatar" :postText="replies.post.record.text"
+                                :userHandle="replies.post.author.handle" :postText="replies.post.record.text"
                                 :totalComments="replies.post.replyCount" :totalReposts="replies.post.repostCount"
                                 :totalLikes="replies.post.likeCount" :replyThreadIndex="0" :totalThreadReplies="replies.replies.length"/>
                             {{ void "displays replies to comment" }}
