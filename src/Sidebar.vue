@@ -72,6 +72,7 @@ import PostFocusModal from "./components/Post/PostFocusModal.vue";
 import {agent} from "./lib/api.ts"
 import { AppBskyFeedDefs } from "@atproto/api/dist/client";
 import { IPostDetails } from "./interfaces/PostInterfaces";
+import { getBlueskyPostThread } from "./lib/api/Post";
 
     export default defineComponent({
         name:'Sidebar',
@@ -139,15 +140,20 @@ import { IPostDetails } from "./interfaces/PostInterfaces";
             /**DEBUG - Get example post data */
             async getExamplePost(){
                 // var did = await agent.app.bsky.actor.getProfile({actor:"mega64official.bsky.social"});
-                const EXAMPLE_POST = "at://did:plc:7kf37yk3wjqjv6zjlryjypn4/app.bsky.feed.post/3lgj4pe5uz22o"
-                const thread = await agent.app.bsky.feed.getPostThread({
-                    uri: EXAMPLE_POST,
-                });
+                // var did = await agent.app.bsky.actor.getProfile({actor:"qqqewie.bsky.social"});
+                var pasDID = "did:plc:2ecumfvt54kiepru4leansvz";
+                var pasPost = "3lginbvqidk26";
+                // var eeeDID = (await agent.app.bsky.actor.getProfile({actor:"eulyin.bsky.social"})).data.did;
+                var eeePost = "3leto5w64bs2u";
+                var henkenDID = (await agent.app.bsky.actor.getProfile({actor:"henkensecond.bsky.social"})).data.did;
+                var zzzPost = "3l7d5aw7t4426";
+                var EXAMPLE_POST = "at://did:plc:7kf37yk3wjqjv6zjlryjypn4/app.bsky.feed.post/3lgj4pe5uz22o"
+                EXAMPLE_POST = "at://"+henkenDID+"/app.bsky.feed.post/"+zzzPost;
 
-                if (!AppBskyFeedDefs.isThreadViewPost(thread.data.thread))
-                    throw new Error("Expected a thread view post");
+                var postThread = await getBlueskyPostThread(henkenDID+"/app.bsky.feed.post/"+zzzPost)
 
-                var postData = thread.data.thread.post;
+                // var postData = thread.data.thread.post;
+                var postData = postThread.thread.post;
                 var post : IPostDetails = {
                     userName : postData.author.displayName ? postData.author.displayName : "",
                     userHandle: postData.author.handle,
@@ -161,7 +167,10 @@ import { IPostDetails } from "./interfaces/PostInterfaces";
                     totalLikes: postData.likeCount ? postData.likeCount : 0,
                     totalReposts: postData.repostCount ? postData.repostCount : 0,
                 }
-                console.log(thread.data);
+                // console.log(thread.data);
+                console.log(postThread);
+                // postDetails.postThread = thread.data.thread;
+                postDetails.postThread = postThread.thread;
                 postDetails.showFocusModal(post, 0);
             }
         },

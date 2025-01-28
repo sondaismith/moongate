@@ -2,7 +2,7 @@
 import { reactive } from 'vue'
 import { IPostDetails, IPostDetailsList } from '../interfaces/PostInterfaces';
 import { IconTypes } from '../enums/PostEnums';
-import { emptyPostModalData } from '../fake-data/dumPostData';
+import { emptyPostModalData, emptyPostThread } from '../fake-data/dumPostData';
 
 //DetailIcon Icons
 import SolarChatDotsOutline from '~icons/solar/chat-dots-outline';
@@ -24,7 +24,23 @@ export const postDetails :IPostDetailsList = reactive({
     },
     menuClickPos: [0, -500],
     postData: emptyPostModalData,
-    // modalPostData: [],
+    postThread : emptyPostThread,
+    createPostData(data) {
+        var postData = data.post;
+        var post : IPostDetails = {
+            userName : postData.author.displayName ? postData.author.displayName : "",
+            userHandle: postData.author.handle,
+            postText: postData.record.text,
+            postType: PostEnums.PostTypes.Image,
+            // postMedia: [postData.embed?.images[0] ? postData.embed?.images[0].fullSize : ""],
+            postMedia: [postData.embed?.images[0].fullsize],
+            // postMedia: [postData.author.avatar ? postData.author.avatar : ""],
+            comments: [],
+            totalComments: postData.replyCount ? postData.replyCount : 0,
+            totalLikes: postData.likeCount ? postData.likeCount : 0,
+            totalReposts: postData.repostCount ? postData.repostCount : 0,
+        }
+    },
     showModal(){
         this.isVisible = true;
     },

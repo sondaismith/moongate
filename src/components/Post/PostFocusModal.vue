@@ -60,7 +60,7 @@
                 </div>
                 {{ void "Post Content - Text" }}
                 <div class="text-sm pt-2">
-                    {{ postDetails.postData.postText }}
+                    {{ postDetails.postData ? postDetails.postData.postText : "initial state - undefined" }}
                 </div>
                 {{ void "Post Metadata" }}
                 <div class="border-slate-600 divide-y divide-inherit !mt-0">
@@ -89,6 +89,25 @@
                                 :userHandle="reply.userHandle" :postText="reply.postText"
                                 :totalComments="reply.totalComments" :totalReposts="reply.totalReposts"
                                 :totalLikes="reply.totalLikes"/>
+                        </div>
+
+
+                        <div v-for="replies in postDetails.postThread?.replies" class="pt-2 pr-3">
+                            <PostReply :userName="replies.post.author.displayName"
+                                :userHandle="replies.post.author.handle" :postText="replies.post.record.text"
+                                :totalComments="replies.post.replyCount" :totalReposts="replies.post.repostCount"
+                                :totalLikes="replies.post.likeCount" :replyThreadIndex="0" :totalThreadReplies="replies.replies.length"/>
+                            {{ void "displays replies to comment" }}
+                            <div v-for="(reply, index) in replies.replies">
+                                <PostReply :userName="reply.post.author.displayName"
+                                    :userHandle="reply.userHandle" :postText="reply.post.record.text"
+                                    :totalComments="reply.post.replyCount" :totalReposts="reply.post.repostCount"
+                                    :totalLikes="reply.post.likeCount" :replyThreadIndex="index+1" :totalThreadReplies="replies.replies.length"/>
+                                <PostReply v-if="reply.replies.length == 1" :userName="'single reply'"
+                                    :userHandle="reply.userHandle" :postText="reply.post.record.text"
+                                    :totalComments="reply.post.replyCount" :totalReposts="reply.post.repostCount"
+                                    :totalLikes="reply.post.likeCount" :replyThreadIndex="index+1" :totalThreadReplies="replies.replies.length"/>
+                            </div>
                         </div>
                     </div>
                 </div>

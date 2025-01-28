@@ -5,7 +5,7 @@
                 <i-mdi-robot-angry class="h-full w-full p-2"/>
             </div>
             {{ void "below is connector for replies" }}
-            <div v-if="Number(totalComments) > 0" class="h-full bg-slate-700 w-0.5 m-auto"></div>
+            <div v-if="(replyThreadIndex!=undefined && totalThreadReplies && replyThreadIndex<totalThreadReplies)" class="h-full bg-slate-700 w-0.5 m-auto"></div>
         </div>
         <div class="w-full pl-2">
             <div class="flex leading-5 text-sm text-slate-400 items-center">
@@ -42,6 +42,8 @@ export default defineComponent({
         totalReposts: Number,
         totalLikes: Number,
         postText: String,
+        replyThreadIndex: Number,
+        totalThreadReplies: Number,
         // postMedia?: String,
         // timestamp?: Date
     },
