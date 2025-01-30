@@ -66,7 +66,7 @@
                 {{ void "Post Metadata" }}
                 <div class="border-slate-600 divide-y divide-inherit !mt-0">
                     <div class="py-1">
-                        <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">{{ postDetails.postThread.post.indexedAt }}</div>
+                        <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
                     </div>
                     <PostInteractionIcons :numComments="postDetails.postThread.post.replyCount"
                         :numShares="postDetails.postThread.post.repostCount" :numLikes="postDetails.postThread.post.likeCount"/>
@@ -82,19 +82,25 @@
                         {{ void "replies" }}
                         <div v-for="replies in postDetails.postThread?.replies" class="pt-2 pr-3">
                             <PostReply :userName="replies.post.author.displayName"
-                                :userHandle="replies.post.author.handle" :avatar="replies.post.author.avatar" :postText="replies.post.record.text"
+                                :userHandle="replies.post.author.handle" :avatar="replies.post.author.avatar"
+                                :postText="replies.post.record.text" :timestamp="replies.post.indexedAt"
                                 :totalComments="replies.post.replyCount" :totalReposts="replies.post.repostCount"
-                                :totalLikes="replies.post.likeCount" :replyThreadIndex="0" :totalThreadReplies="replies.replies.length"/>
+                                :totalLikes="replies.post.likeCount" :replyThreadIndex="0"
+                                :totalThreadReplies="replies.replies.length"/>
                             {{ void "displays replies to comment" }}
                             <div v-for="(reply, index) in replies.replies">
                                 <PostReply :userName="reply.post.author.displayName"
-                                    :userHandle="reply.userHandle" :postText="reply.post.record.text"
+                                    :userHandle="reply.post.author.handle" :avatar="reply.post.author.avatar"
+                                    :postText="reply.post.record.text" :timestamp="reply.post.indexedAt"
                                     :totalComments="reply.post.replyCount" :totalReposts="reply.post.repostCount"
-                                    :totalLikes="reply.post.likeCount" :replyThreadIndex="index+1" :totalThreadReplies="replies.replies.length"/>
-                                <PostReply v-if="reply.replies.length == 1" :userName="'single reply'"
-                                    :userHandle="reply.userHandle" :postText="reply.post.record.text"
-                                    :totalComments="reply.post.replyCount" :totalReposts="reply.post.repostCount"
-                                    :totalLikes="reply.post.likeCount" :replyThreadIndex="index+1" :totalThreadReplies="replies.replies.length"/>
+                                    :totalLikes="reply.post.likeCount" :replyThreadIndex="index+1"
+                                    :totalThreadReplies="replies.replies.length+replies.replies[0].replies.length"/>
+                                <PostReply v-if="reply.replies.length == 1" :userName="reply.replies[0].post.author.displayName"
+                                    :userHandle="reply.replies[0].post.author.handle" :avatar="reply.replies[0].post.author.avatar"
+                                    :postText="reply.replies[0].post.record.text" :timestamp="reply.replies[0].post.indexedAt"
+                                    :totalComments="reply.replies[0].post.replyCount" :totalReposts="reply.replies[0].post.repostCount"
+                                    :totalLikes="reply.replies[0].post.likeCount"
+                                    :replyThreadIndex="index+1" :totalThreadReplies="1"/>
                             </div>
                         </div>
                     </div>
@@ -107,6 +113,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
+import { convertToLongTimestamp } from '../../helpers/converters';
 
 export default defineComponent({
     setup () {
@@ -121,6 +128,7 @@ export default defineComponent({
                 'src/assets/test-media/posts/image06.png',
             ],
             postDetails,
+            convertToLongTimestamp,
         }
     },
     methods:{
