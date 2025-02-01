@@ -34,7 +34,6 @@ export function convertToShortTimestamp(ts:string = ""){
             dateFormat = getMonthNameShort(date, 'en-US')+" "+day+" "+year;
         }
 
-        console.log(dateFormat);
         return dateFormat;
     }
     catch(error){

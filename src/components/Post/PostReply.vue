@@ -12,7 +12,12 @@
             <div class="flex leading-5 text-sm text-slate-400 items-center">
                 <div class="font-bold text-white text-nowrap overflow-hidden text-ellipsis">{{ userName }}</div>
                 <div class="flex-1 text-feedPostName pl-1 min-w-[60px] text-nowrap overflow-hidden text-ellipsis">@{{ userHandle }}</div>
-                <div class="text-feedPostName px-1 ml-auto text-nowrap" :title="convertToLongTimestamp(timestamp)">{{ convertToShortTimestamp(timestamp) }}</div>
+                <div class="text-feedPostName px-1 ml-auto text-nowrap cursor-pointer hover:text-slate-300"
+                :title="convertToLongTimestamp(timestamp)"
+                @click="postDetails.setCurrentThreadView(cid, parentCID)"
+                >
+                {{ convertToShortTimestamp(timestamp) }}
+            </div>
             </div>
             <div class="text-sm">
                 {{ postText }}
@@ -33,11 +38,14 @@ import { IDetailIcon } from '../../interfaces/PostInterfaces';
 import { DetailIconList } from '../../fake-data/dumPostData';
 import PostInteractionIcons from './PostInteractionIcons.vue';
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
+import { postDetails } from '../../state/PostDetails.vue';
 
 var postReplyData : IDetailIcon[];
 
 export default defineComponent({
     props:{
+        cid: String,
+        parentCID: String,
         userName: String,
         userHandle: String,
         avatar: String,
@@ -57,6 +65,7 @@ export default defineComponent({
             replyData : postReplyData,
             convertToShortTimestamp,
             convertToLongTimestamp,
+            postDetails,
         }
     },
     created(){

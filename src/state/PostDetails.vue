@@ -10,6 +10,7 @@ import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteHeartFill from '~icons/mingcute/heart-fill';
 import SolarShareBold from '~icons/solar/share-bold';
 import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
+import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 // export const postDetails : IPostDetailsList = reactive({
 export const postDetails :IPostDetailsList = reactive({
@@ -25,6 +26,61 @@ export const postDetails :IPostDetailsList = reactive({
     menuClickPos: [0, -500],
     postData: emptyPostModalData,
     postThread : emptyPostThread,
+    currentThreadView : emptyPostThread,
+    setCurrentThreadView(cid: string, parentCID: string) {
+        var returnedThreadView = findThreadView(cid,this.postThread);
+        console.log(returnedThreadView);
+
+        const parentContext = this.postThread.replies?.find((reply) => reply.post.cid === parentCID);
+        console.log('Parent context:');
+        console.log('ParentCID '+parentCID);
+        var result;
+        if(!parentContext){
+            console.log('Reply ThreadView found through parent context failed, checking direct replies')
+            result = this.postThread.replies?.find((reply) => reply.post.cid === cid);
+        }else{
+            console.log('Reply ThreadView found through parent, succeeded');
+            result = parentContext.replies?.find((reply) => reply.post.cid === cid);
+        }
+        console.log(cid);
+        console.log('Result:');
+        console.log(result);
+        if(result){
+            this.currentThreadView = result;
+        }
+        else if(parentContext){
+            this.currentThreadView = parentContext;
+        }
+        else{
+            //go back to Post origin ThreadView
+            console.log('Finding Post ThreadView failed :(');
+            this.currentThreadView = this.postThread;
+        }
+        this.updateCurrentBreadcrumbs();
+    },
+    /**
+     * Method that resets the current ThreadView back to the Post
+     * origin.
+     */
+    returnToThreadOrigin() {
+        this.currentThreadView = this.postThread;
+        this.updateCurrentBreadcrumbs();
+    },
+    currentBreadCrumb : ["Origin"],
+    /**
+     * Method that updates currently displayed reply breadcrumb labels.
+     * Should be called any time the currentThreadView is changed.
+     */
+    updateCurrentBreadcrumbs(){
+        //If there the reply object containing the parent ref does not exist
+        if(!postDetails.currentThreadView.post.record.reply){
+            postDetails.currentBreadCrumb.splice(0, postDetails.currentBreadCrumb.length, ...["Origin"]);
+        }
+        else{
+            var breadcrumbs = [];
+            postDetails.currentBreadCrumb.splice(0, postDetails.currentBreadCrumb.length, ...["Origin", postDetails.currentThreadView.post.author.handle]);
+        }
+    },
     createPostData(data) {
         var postData = data.post;
         var post : IPostDetails = {
@@ -141,5 +197,68 @@ export const postDetails :IPostDetailsList = reactive({
 
 function updatePostDetails(postToOpen:IPostDetails):IPostDetails{
     return postToOpen;
+}
+function find2(id, array) {
+    var result;
+    array.some(o => o.id === id && (result = o) || (result = findThreadView(id, o.children || [])));
+    return result;
+}
+function findThreadView(cid:string, repliesArray:ThreadViewPost) {
+    var result;
+    var loops = 0;
+    var isResultFound = false;
+    console.log('findThreadView() start:');
+    console.log(repliesArray);
+    //Check if passed object has a "replies" array
+    if(Array.isArray(repliesArray.replies)){
+        // for(let reply of repliesArray.replies) {
+        for (let i = 0; i < repliesArray.replies.length; i++) {
+            var reply = repliesArray.replies[i];
+            // // console.log('findThreadView() start, cid value: '+cid)
+            // if(repliesArray.post === undefined) break;// return undefined;
+            // // if(repliesArray.post.cid == cid) result = repliesArray;
+            // repliesArray.post.cid === cid ? result = repliesArray :
+            // repliesArray.replies?.some(o => o.post.cid === cid && (result = o) || (result = findThreadView(cid, o.replies || [])));
+            // // repliesArray.post.cid === cid ? result = repliesArray : findThreadView(cid, repliesArray.replies);
+            // if(result != undefined) break;
+            if(isResultFound) break;
+            loops++;
+            console.log('Loop: '+loops);
+
+            // console.log('findThreadView() start, cid value: '+cid)
+            // if(reply.post === undefined) return;
+            // if(repliesArray.post.cid == cid) result = repliesArray;
+
+            // reply.post.cid === cid ? result = repliesArray :
+            // reply.replies?.some(o => o.post.cid === cid && (result = o) || (result = findThreadView(cid, o || [])));
+
+            // repliesArray.post.cid === cid ? result = repliesArray : findThreadView(cid, repliesArray.replies);
+
+            //Check Post first to see if it matches cid before moving
+            //on to replies
+            if(reply.post.cid === cid){
+                result = reply.post;
+                isResultFound = true;
+                i = repliesArray.replies.length
+                return result;
+            }
+            else{
+                result = findThreadView(cid, reply);
+            }
+
+            // if(result != undefined){
+            //     console.log('We found a record. Breaking out.');
+            //     i = repliesArray.replies.length
+            //     return result;
+            // }
+        }
+    }
+    else //If this object does not have a "replies" array, check if the "post" object has a matching cid
+    {
+        console.log('no replies, checking the "post" object')
+        repliesArray.post.cid === cid ? result = repliesArray : result = undefined;
+    }
+    console.log('Result of findThreadView() search loop '+loops+':');
+    return result;
 }
 </script>

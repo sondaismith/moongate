@@ -12,23 +12,23 @@
             <div class="flex items-center h-full">
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
                     <div @click="decreaseCurrentMediaIndex"
-                    v-if="postDetails.postThread.post.embed?.images &&
+                    v-if="postDetails.currentThreadView.post.embed?.images &&
                     postDetails.clickedMediaIndex != 0 &&
                     postDetails.clickedMediaIndex>=0"
                     class="cursor-pointer">
                         <i-mingcute:left-fill/>
                     </div>
                 </div>
-                <div v-if="postDetails.postThread.post.embed?.images" class="border border-slate-800 rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
-                    :style="{'background-image' : 'url('+postDetails.postThread.post.embed.images[postDetails.clickedMediaIndex].fullsize+')'}">
+                <div v-if="postDetails.currentThreadView.post.embed?.images" class="border border-slate-800 rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
+                    :style="{'background-image' : 'url('+postDetails.currentThreadView.post.embed.images[postDetails.clickedMediaIndex].fullsize+')'}">
                 </div>
                 <div v-else class="w-full">
                     {{ void "button spacer" }}
                 </div>
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
                     <div @click="increaseCurrentMediaIndex"
-                    v-if="postDetails.postThread.post.embed?.images &&
-                    postDetails.clickedMediaIndex+1 != postDetails.postThread.post.embed?.images.length &&
+                    v-if="postDetails.currentThreadView.post.embed?.images &&
+                    postDetails.clickedMediaIndex+1 != postDetails.currentThreadView.post.embed?.images.length &&
                     postDetails.clickedMediaIndex>=0"
                     class="cursor-pointer">
                         <i-mingcute:right-fill/>
@@ -47,65 +47,38 @@
             {{ void "User Info/Actions" }}
             <div class="p-4">
                 <div class="flex">
-                    <div class="rounded-full overflow-hidden bg-stone-500 aspect-square size-10 self-center">
+                    <div class="rounded-full shrink-0 overflow-hidden bg-stone-500 aspect-square size-10 self-center">
                         <!-- <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/> -->
-                        <div class="h-full w-full bg-contain" :style="{'background-image' : 'url('+postDetails.postThread.post.author.avatar+')'}"></div>
+                        <div class="h-full w-full bg-contain" :style="{'background-image' : 'url('+postDetails.currentThreadView.post.author.avatar+')'}"></div>
                     </div>
-                    <div class="self-center ml-2">
-                        <div class="font-bold leading-4">{{ postDetails.postThread.post.author.displayName }}</div>
-                        <div class="text-feedPostName">@{{ postDetails.postThread.post.author.handle }}</div>
+                    <div class="self-center ml-2 overflow-hidden">
+                        <div class="font-bold leading-4 text-ellipsis overflow-hidden">{{ postDetails.currentThreadView.post.author.displayName }}</div>
+                        <div class="text-feedPostName text-ellipsis overflow-hidden">@{{ postDetails.currentThreadView.post.author.handle }}</div>
                     </div>
-                    <div class="rounded-full self-center ml-auto py-1 px-3 bg-slate-300 font-bold hover:bg-slate-200 text-slate-800 cursor-pointer">
+                    <div class="rounded-full self-center ml-auto
+                    py-1 px-3 bg-slate-300 font-bold hover:bg-slate-200
+                    text-slate-800 text-nowrap cursor-pointer">
                         + Follow
                     </div>
                 </div>
                 {{ void "Post Content - Text" }}
                 <div class="text-sm pt-2">
-                    {{ postDetails.postThread ? postDetails.postThread.post.record.text : "initial state - undefined" }}
+                    {{ postDetails.currentThreadView ? postDetails.currentThreadView.post.record.text : "initial state - undefined" }}
                 </div>
                 {{ void "Post Metadata" }}
                 <div class="border-slate-600 divide-y divide-inherit !mt-0">
                     <div class="py-1">
                         <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
                     </div>
-                    <PostInteractionIcons :numComments="postDetails.postThread.post.replyCount"
-                        :numShares="postDetails.postThread.post.repostCount" :numLikes="postDetails.postThread.post.likeCount"/>
+                    <PostInteractionIcons :numComments="postDetails.currentThreadView.post.replyCount"
+                        :numShares="postDetails.currentThreadView.post.repostCount" :numLikes="postDetails.currentThreadView.post.likeCount"/>
                 </div>
             </div>
             {{ void "post reply input" }}
             <div class="px-4"><PostReplyInput/></div>
             {{ void "Replies" }}
-            <div class="flex pl-4 overflow-y-scroll">
-                <div class="flex flex-col w-full text-xl text-slate-200">
-                    <!-- <div class="w-auto">No Replies</div> -->
-                    <div class="flex flex-col bg-orange-400s preload-gutter divide-y border-slate-600 divide-inherit">
-                        {{ void "replies" }}
-                        <div v-for="replies in postDetails.postThread?.replies" class="pt-2 pr-3">
-                            <PostReply :userName="replies.post.author.displayName"
-                                :userHandle="replies.post.author.handle" :avatar="replies.post.author.avatar"
-                                :postText="replies.post.record.text" :timestamp="replies.post.indexedAt"
-                                :totalComments="replies.post.replyCount" :totalReposts="replies.post.repostCount"
-                                :totalLikes="replies.post.likeCount" :replyThreadIndex="0"
-                                :totalThreadReplies="replies.replies.length"/>
-                            {{ void "displays replies to comment" }}
-                            <div v-for="(reply, index) in replies.replies">
-                                <PostReply :userName="reply.post.author.displayName"
-                                    :userHandle="reply.post.author.handle" :avatar="reply.post.author.avatar"
-                                    :postText="reply.post.record.text" :timestamp="reply.post.indexedAt"
-                                    :totalComments="reply.post.replyCount" :totalReposts="reply.post.repostCount"
-                                    :totalLikes="reply.post.likeCount" :replyThreadIndex="index+1"
-                                    :totalThreadReplies="replies.replies.length+replies.replies[0].replies.length"/>
-                                <PostReply v-if="reply.replies.length == 1" :userName="reply.replies[0].post.author.displayName"
-                                    :userHandle="reply.replies[0].post.author.handle" :avatar="reply.replies[0].post.author.avatar"
-                                    :postText="reply.replies[0].post.record.text" :timestamp="reply.replies[0].post.indexedAt"
-                                    :totalComments="reply.replies[0].post.replyCount" :totalReposts="reply.replies[0].post.repostCount"
-                                    :totalLikes="reply.replies[0].post.likeCount"
-                                    :replyThreadIndex="index+1" :totalThreadReplies="1"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <ReplyBreadcrumb class="px-4"/>
+            <PostThreadView/>
         </div>
     </div>
 </template>
@@ -114,6 +87,8 @@
 import { defineComponent } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { convertToLongTimestamp } from '../../helpers/converters';
+import PostThreadView from './PostThreadView.vue';
+import ReplyBreadcrumb from './ReplyBreadcrumb.vue';
 
 export default defineComponent({
     setup () {

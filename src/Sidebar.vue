@@ -67,7 +67,6 @@ import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { DebugFlags } from "./state/Debug.vue";
 import { OptionIconList } from "./fake-data/dumPostData";
-import PostFocusModal from "./components/Post/PostFocusModal.vue";
 //Remove ASAP
 import {agent} from "./lib/api.ts"
 import { AppBskyFeedDefs } from "@atproto/api/dist/client";
@@ -171,6 +170,8 @@ import { getBlueskyPostThread } from "./lib/api/Post";
                 console.log(postThread);
                 // postDetails.postThread = thread.data.thread;
                 postDetails.postThread = postThread.thread;
+                postDetails.currentThreadView = postThread.thread;
+                postDetails.updateCurrentBreadcrumbs();
                 // postDetails.showFocusModal(post, 0);
                 postDetails.showFocusModalIndex(0);
             }

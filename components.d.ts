@@ -46,6 +46,8 @@ declare module 'vue' {
     PostOptionsMenuItem: typeof import('./src/components/Post/PostOptionsMenuItem.vue')['default']
     PostReply: typeof import('./src/components/Post/PostReply.vue')['default']
     PostReplyInput: typeof import('./src/components/Post/PostReplyInput.vue')['default']
+    PostThreadView: typeof import('./src/components/Post/PostThreadView.vue')['default']
+    ReplyBreadcrumb: typeof import('./src/components/Post/ReplyBreadcrumb.vue')['default']
     Tooltip: typeof import('./src/components/Decorations/Tooltip.vue')['default']
     UnreadMsgCount: typeof import('./src/components/Decorations/UnreadMsgCount.vue')['default']
     UserButton: typeof import('./src/components/Navbar/UserButton.vue')['default']
