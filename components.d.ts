@@ -7,7 +7,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    copy: typeof import('./src/components/Post/PostFocusModal copy.vue')['default']
     FeedButton: typeof import('./src/components/Navbar/FeedButton.vue')['default']
     FeedColumn: typeof import('./src/components/Feed/FeedColumn.vue')['default']
     FeedIcon: typeof import('./src/components/Feed/FeedIcon.vue')['default']

@@ -28,28 +28,10 @@ export const postDetails :IPostDetailsList = reactive({
     postThread : emptyPostThread,
     currentThreadView : emptyPostThread,
     setCurrentThreadView(cid: string, parentCID: string) {
-        var returnedThreadView = findThreadView(cid,this.postThread);
-        console.log(returnedThreadView);
+        var result = findThreadView(cid,this.postThread);
 
-        const parentContext = this.postThread.replies?.find((reply) => reply.post.cid === parentCID);
-        console.log('Parent context:');
-        console.log('ParentCID '+parentCID);
-        var result;
-        if(!parentContext){
-            console.log('Reply ThreadView found through parent context failed, checking direct replies')
-            result = this.postThread.replies?.find((reply) => reply.post.cid === cid);
-        }else{
-            console.log('Reply ThreadView found through parent, succeeded');
-            result = parentContext.replies?.find((reply) => reply.post.cid === cid);
-        }
-        console.log(cid);
-        console.log('Result:');
-        console.log(result);
         if(result){
             this.currentThreadView = result;
-        }
-        else if(parentContext){
-            this.currentThreadView = parentContext;
         }
         else{
             //go back to Post origin ThreadView
@@ -203,62 +185,32 @@ function find2(id, array) {
     array.some(o => o.id === id && (result = o) || (result = findThreadView(id, o.children || [])));
     return result;
 }
-function findThreadView(cid:string, repliesArray:ThreadViewPost) {
+/**
+ * Method that is used to return a Post thread matching a specific cid. Used
+ * by PostFocusModal component.
+ * @param cid The unique cid value of the ThreadViewPost object we're trying to find.
+ * @param repliesArray The ThreadViewPost object representing the Post "thread" we will search.
+ */
+function findThreadView(cid:string, repliesArray:ThreadViewPost):ThreadViewPost|undefined {
     var result;
-    var loops = 0;
-    var isResultFound = false;
-    console.log('findThreadView() start:');
-    console.log(repliesArray);
-    //Check if passed object has a "replies" array
-    if(Array.isArray(repliesArray.replies)){
-        // for(let reply of repliesArray.replies) {
-        for (let i = 0; i < repliesArray.replies.length; i++) {
-            var reply = repliesArray.replies[i];
-            // // console.log('findThreadView() start, cid value: '+cid)
-            // if(repliesArray.post === undefined) break;// return undefined;
-            // // if(repliesArray.post.cid == cid) result = repliesArray;
-            // repliesArray.post.cid === cid ? result = repliesArray :
-            // repliesArray.replies?.some(o => o.post.cid === cid && (result = o) || (result = findThreadView(cid, o.replies || [])));
-            // // repliesArray.post.cid === cid ? result = repliesArray : findThreadView(cid, repliesArray.replies);
-            // if(result != undefined) break;
-            if(isResultFound) break;
-            loops++;
-            console.log('Loop: '+loops);
-
-            // console.log('findThreadView() start, cid value: '+cid)
-            // if(reply.post === undefined) return;
-            // if(repliesArray.post.cid == cid) result = repliesArray;
-
-            // reply.post.cid === cid ? result = repliesArray :
-            // reply.replies?.some(o => o.post.cid === cid && (result = o) || (result = findThreadView(cid, o || [])));
-
-            // repliesArray.post.cid === cid ? result = repliesArray : findThreadView(cid, repliesArray.replies);
-
-            //Check Post first to see if it matches cid before moving
-            //on to replies
-            if(reply.post.cid === cid){
-                result = reply.post;
-                isResultFound = true;
-                i = repliesArray.replies.length
-                return result;
+    //Check if current ThreadViewPost is the one we're looking for
+    if(repliesArray.post.cid === cid) result = repliesArray;
+    //If match found, skip replies check...
+    if(result == undefined){
+        //otherwise...
+        //If match is not found, check if it has replies that can be searched
+        if(Array.isArray(repliesArray.replies) && repliesArray.replies.length > 0){
+            //replies is NOT empty - time to check each object in the array
+            for (let i = 0; i < repliesArray.replies.length; i++) {
+                result = findThreadView(cid, repliesArray.replies[i])
+                //If a result has been returned, stop the for loops
+                if(result != undefined){
+                    i = repliesArray.replies.length;
+                }
             }
-            else{
-                result = findThreadView(cid, reply);
-            }
-
-            // if(result != undefined){
-            //     console.log('We found a record. Breaking out.');
-            //     i = repliesArray.replies.length
-            //     return result;
-            // }
         }
     }
-    else //If this object does not have a "replies" array, check if the "post" object has a matching cid
-    {
-        console.log('no replies, checking the "post" object')
-        repliesArray.post.cid === cid ? result = repliesArray : result = undefined;
-    }
-    console.log('Result of findThreadView() search loop '+loops+':');
+    //Return final result
     return result;
 }
 </script>
