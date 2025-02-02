@@ -1,5 +1,5 @@
 <template>
-    <div class="flex py-2 text-feedPostName leading-4">
+    <div class="flex py-2 text-feedPostName leading-4 flex-wrap">
         <div v-for="(breadcrumb, index) in postDetails.currentBreadCrumb"
         class="flex">
             <div class="cursor-pointer hover:text-slate-400"

@@ -24,7 +24,7 @@ interface IPostDetailsList{
     postData : IPostDetails,
     postThread: ThreadViewPost,
     currentThreadView: ThreadViewPost,
-    setCurrentThreadView(cid:string, parentCID:string):void,
+    setCurrentThreadView(cid:string):void,
     returnToThreadOrigin():void,
     currentBreadCrumb: [string],
     updateCurrentBreadcrumbs():void,

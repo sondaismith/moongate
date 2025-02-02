@@ -27,7 +27,7 @@ export const postDetails :IPostDetailsList = reactive({
     postData: emptyPostModalData,
     postThread : emptyPostThread,
     currentThreadView : emptyPostThread,
-    setCurrentThreadView(cid: string, parentCID: string) {
+    setCurrentThreadView(cid: string) {
         var result = findThreadView(cid,this.postThread);
 
         if(result){
@@ -59,8 +59,11 @@ export const postDetails :IPostDetailsList = reactive({
             postDetails.currentBreadCrumb.splice(0, postDetails.currentBreadCrumb.length, ...["Origin"]);
         }
         else{
-            var breadcrumbs = [];
-            postDetails.currentBreadCrumb.splice(0, postDetails.currentBreadCrumb.length, ...["Origin", postDetails.currentThreadView.post.author.handle]);
+            //reset breadcrumbs
+            postDetails.currentBreadCrumb.splice(0, postDetails.currentBreadCrumb.length, ...[]);
+            discoverBreadcrumbs(this.currentThreadView.post.cid, this.currentThreadView);
+            //add origin "home button" to start of breadcrumbs
+            postDetails.currentBreadCrumb.unshift("Origin");
         }
     },
     createPostData(data) {
@@ -212,5 +215,23 @@ function findThreadView(cid:string, repliesArray:ThreadViewPost):ThreadViewPost|
     }
     //Return final result
     return result;
+}
+
+/**
+ * Method used to generate the "breadcrumb" labels used to illustrate the current "reply tree"
+ * location relative to the originally loaded ThreadViewPost object.
+ * @param parentCID The unique cid value of the "Parent" ThreadViewPost object we're trying to find.
+ * @param currentPostThread The ThreadViewPost object representing the Post "thread" who's parent we are looking for.
+ */
+function discoverBreadcrumbs(parentCID:string, currentPostThread:ThreadViewPost){
+    var result;
+    //get the parent element
+    var parentThread = findThreadView(parentCID, postDetails.postThread);
+    //If this has a reply object we have not gotten to the top level ThreadViewPost
+    if(parentThread.post.record.reply){
+        result = parentThread.post.author.displayName;
+        postDetails.currentBreadCrumb.unshift(parentThread.post.author.displayName);
+        discoverBreadcrumbs(parentThread?.post.record.reply.parent.cid,parentThread);
+    }
 }
 </script>
