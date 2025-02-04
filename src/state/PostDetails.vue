@@ -2,7 +2,7 @@
 import { reactive } from 'vue'
 import { IPostDetails, IPostDetailsList } from '../interfaces/PostInterfaces';
 import { IconTypes } from '../enums/PostEnums';
-import { emptyPostModalData } from '../fake-data/dumPostData';
+import { emptyPostModalData, emptyPostThread } from '../fake-data/dumPostData';
 
 //DetailIcon Icons
 import SolarChatDotsOutline from '~icons/solar/chat-dots-outline';
@@ -10,6 +10,7 @@ import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteHeartFill from '~icons/mingcute/heart-fill';
 import SolarShareBold from '~icons/solar/share-bold';
 import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
+import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 // export const postDetails : IPostDetailsList = reactive({
 export const postDetails :IPostDetailsList = reactive({
@@ -24,7 +25,63 @@ export const postDetails :IPostDetailsList = reactive({
     },
     menuClickPos: [0, -500],
     postData: emptyPostModalData,
-    // modalPostData: [],
+    postThread : emptyPostThread,
+    currentThreadView : emptyPostThread,
+    setCurrentThreadView(cid: string) {
+        var result = findThreadView(cid,this.postThread);
+
+        if(result){
+            this.currentThreadView = result;
+        }
+        else{
+            //go back to Post origin ThreadView
+            console.log('Finding Post ThreadView failed :(');
+            this.currentThreadView = this.postThread;
+        }
+        this.updateCurrentBreadcrumbs();
+    },
+    /**
+     * Method that resets the current ThreadView back to the Post
+     * origin.
+     */
+    returnToThreadOrigin() {
+        this.currentThreadView = this.postThread;
+        this.updateCurrentBreadcrumbs();
+    },
+    currentBreadcrumb : [{userName:"Origin",postCID:"this_cid_is_unset"}],
+    /**
+     * Method that updates currently displayed reply breadcrumb labels.
+     * Should be called any time the currentThreadView is changed.
+     */
+    updateCurrentBreadcrumbs(){
+        //If there the reply object containing the parent ref does not exist
+        if(!postDetails.currentThreadView.post.record.reply){
+            postDetails.currentBreadcrumb.splice(0, postDetails.currentBreadcrumb.length, ...[{userName:"Origin",postCID:"root"}]);
+        }
+        else{
+            //reset breadcrumbs
+            postDetails.currentBreadcrumb.splice(0, postDetails.currentBreadcrumb.length, ...[]);
+            discoverBreadcrumbs(this.currentThreadView.post.cid, this.currentThreadView);
+            //add origin "home button" to start of breadcrumbs
+            postDetails.currentBreadcrumb.unshift({userName:"Origin",postCID:"this_cid_is_unset"});
+        }
+    },
+    createPostData(data) {
+        var postData = data.post;
+        var post : IPostDetails = {
+            userName : postData.author.displayName ? postData.author.displayName : "",
+            userHandle: postData.author.handle,
+            postText: postData.record.text,
+            postType: PostEnums.PostTypes.Image,
+            // postMedia: [postData.embed?.images[0] ? postData.embed?.images[0].fullSize : ""],
+            postMedia: [postData.embed?.images[0].fullsize],
+            // postMedia: [postData.author.avatar ? postData.author.avatar : ""],
+            comments: [],
+            totalComments: postData.replyCount ? postData.replyCount : 0,
+            totalLikes: postData.likeCount ? postData.likeCount : 0,
+            totalReposts: postData.repostCount ? postData.repostCount : 0,
+        }
+    },
     showModal(){
         this.isVisible = true;
     },
@@ -37,12 +94,22 @@ export const postDetails :IPostDetailsList = reactive({
     },
     /**
      * Method that shows "Focus" modal - media on left with comments
-     * in right sidebar.
+     * in right sidebar. This is the initial version created that used
+     * dummy data.
      */
     showFocusModal(postToShow:IPostDetails, mediaIndex:number){
         postDetails.isFocusVisible = true;
         this.clickedMediaIndex = mediaIndex;
         this.postData = updatePostDetails(postToShow)
+    },
+    /**
+     * Method that shows "Focus" modal - media on left with comments
+     * in right sidebar. This is the live version that accesses the
+     * Bluesky API
+     */
+    showFocusModalIndex(mediaIndex:number){
+        postDetails.isFocusVisible = true;
+        this.clickedMediaIndex = mediaIndex;
     },
     /**
      * Method that hides "Focus" modal - media on left with comments
@@ -115,5 +182,51 @@ export const postDetails :IPostDetailsList = reactive({
 
 function updatePostDetails(postToOpen:IPostDetails):IPostDetails{
     return postToOpen;
+}
+/**
+ * Method that is used to return a Post thread matching a specific cid. Used
+ * by PostFocusModal component.
+ * @param cid The unique cid value of the ThreadViewPost object we're trying to find.
+ * @param repliesArray The ThreadViewPost object representing the Post "thread" we will search.
+ */
+function findThreadView(cid:string, repliesArray:ThreadViewPost):ThreadViewPost|undefined {
+    var result;
+    //Check if current ThreadViewPost is the one we're looking for
+    if(repliesArray.post.cid === cid) result = repliesArray;
+    //If match found, skip replies check...
+    if(result == undefined){
+        //otherwise...
+        //If match is not found, check if it has replies that can be searched
+        if(Array.isArray(repliesArray.replies) && repliesArray.replies.length > 0){
+            //replies is NOT empty - time to check each object in the array
+            for (let i = 0; i < repliesArray.replies.length; i++) {
+                result = findThreadView(cid, repliesArray.replies[i])
+                //If a result has been returned, stop the for loops
+                if(result != undefined){
+                    i = repliesArray.replies.length;
+                }
+            }
+        }
+    }
+    //Return final result
+    return result;
+}
+
+/**
+ * Method used to generate the "breadcrumb" labels used to illustrate the current "reply tree"
+ * location relative to the originally loaded ThreadViewPost object.
+ * @param parentCID The unique cid value of the "Parent" ThreadViewPost object we're trying to find.
+ * @param currentPostThread The ThreadViewPost object representing the Post "thread" who's parent we are looking for.
+ */
+function discoverBreadcrumbs(parentCID:string, currentPostThread:ThreadViewPost){
+    var result;
+    //get the parent element
+    var parentThread = findThreadView(parentCID, postDetails.postThread);
+    //If this has a reply object we have not gotten to the top level ThreadViewPost
+    if(parentThread.post.record.reply){
+        result = parentThread.post.author.displayName;
+        postDetails.currentBreadcrumb.unshift({userName:parentThread.post.author.displayName, postCID:parentThread?.post.cid});
+        discoverBreadcrumbs(parentThread?.post.record.reply.parent.cid,parentThread);
+    }
 }
 </script>

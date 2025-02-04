@@ -12,23 +12,23 @@
             <div class="flex items-center h-full">
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
                     <div @click="decreaseCurrentMediaIndex"
-                    v-if="postDetails.postData?.postMedia &&
+                    v-if="postDetails.currentThreadView.post.embed?.images &&
                     postDetails.clickedMediaIndex != 0 &&
                     postDetails.clickedMediaIndex>=0"
                     class="cursor-pointer">
                         <i-mingcute:left-fill/>
                     </div>
                 </div>
-                <div v-if="postDetails.postData?.postMedia" class="border border-slate-800 rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
-                    :style="{'background-image' : 'url('+postDetails.postData.postMedia[postDetails.clickedMediaIndex]+')'}">
+                <div v-if="postDetails.currentThreadView.post.embed?.images" class="border border-slate-800 rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
+                    :style="{'background-image' : 'url('+postDetails.currentThreadView.post.embed.images[postDetails.clickedMediaIndex].fullsize+')'}">
                 </div>
                 <div v-else class="w-full">
                     {{ void "button spacer" }}
                 </div>
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
                     <div @click="increaseCurrentMediaIndex"
-                    v-if="postDetails.postData?.postMedia &&
-                    postDetails.clickedMediaIndex+1 != postDetails.postData?.postMedia.length &&
+                    v-if="postDetails.currentThreadView.post.embed?.images &&
+                    postDetails.clickedMediaIndex+1 != postDetails.currentThreadView.post.embed?.images.length &&
                     postDetails.clickedMediaIndex>=0"
                     class="cursor-pointer">
                         <i-mingcute:right-fill/>
@@ -47,54 +47,38 @@
             {{ void "User Info/Actions" }}
             <div class="p-4">
                 <div class="flex">
-                    <div class="rounded-full bg-stone-500 aspect-square size-10 self-center">
-                        <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/>
+                    <div class="rounded-full shrink-0 overflow-hidden bg-stone-500 aspect-square size-10 self-center">
+                        <!-- <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/> -->
+                        <div class="h-full w-full bg-contain" :style="{'background-image' : 'url('+postDetails.currentThreadView.post.author.avatar+')'}"></div>
                     </div>
-                    <div class="self-center ml-2">
-                        <div class="font-bold leading-4">{{ postDetails.postData?.userName }}</div>
-                        <div class="text-feedPostName">@{{ postDetails.postData?.userHandle }}</div>
+                    <div class="self-center ml-2 overflow-hidden">
+                        <div class="font-bold leading-4 text-ellipsis overflow-hidden">{{ postDetails.currentThreadView.post.author.displayName }}</div>
+                        <div class="text-feedPostName text-ellipsis overflow-hidden">@{{ postDetails.currentThreadView.post.author.handle }}</div>
                     </div>
-                    <div class="rounded-full self-center ml-auto py-1 px-3 bg-slate-300 font-bold hover:bg-slate-200 text-slate-800 cursor-pointer">
+                    <div class="rounded-full self-center ml-auto
+                    py-1 px-3 bg-slate-300 font-bold hover:bg-slate-200
+                    text-slate-800 text-nowrap cursor-pointer">
                         + Follow
                     </div>
                 </div>
                 {{ void "Post Content - Text" }}
                 <div class="text-sm pt-2">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    {{ postDetails.currentThreadView ? postDetails.currentThreadView.post.record.text : "initial state - undefined" }}
                 </div>
                 {{ void "Post Metadata" }}
                 <div class="border-slate-600 divide-y divide-inherit !mt-0">
                     <div class="py-1">
-                        <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">January 4th, 2025 at 12:42am</div>
+                        <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
                     </div>
-                    <PostInteractionIcons :numComments="postDetails.postData?.comments.length"
-                        :numShares="postDetails.postData?.totalReposts" :numLikes="postDetails.postData?.totalLikes"/>
+                    <PostInteractionIcons :numComments="postDetails.currentThreadView.post.replyCount"
+                        :numShares="postDetails.currentThreadView.post.repostCount" :numLikes="postDetails.currentThreadView.post.likeCount"/>
                 </div>
             </div>
             {{ void "post reply input" }}
             <div class="px-4"><PostReplyInput/></div>
             {{ void "Replies" }}
-            <div class="flex pl-4 overflow-y-scroll">
-                <div class="flex flex-col w-full text-xl text-slate-200">
-                    <!-- <div class="w-auto">No Replies</div> -->
-                    <div class="flex flex-col bg-orange-400s preload-gutter divide-y border-slate-600 divide-inherit">
-                        {{ void "replies" }}
-                        <div v-for="replies in postDetails.postData?.comments" class="pt-2 pr-3">
-                            <PostReply :userName="replies.userName"
-                                :userHandle="replies.userHandle" :postText="replies.postText"
-                                :totalComments="replies.totalComments" :totalReposts="replies.totalReposts"
-                                :totalLikes="replies.totalLikes"/>
-                            {{ void "displays replies to comment" }}
-                            <PostReply v-for="reply in replies.comments" :userName="reply.userName"
-                                :userHandle="reply.userHandle" :postText="reply.postText"
-                                :totalComments="reply.totalComments" :totalReposts="reply.totalReposts"
-                                :totalLikes="reply.totalLikes"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <ReplyBreadcrumb class="px-4"/>
+            <PostThreadView/>
         </div>
     </div>
 </template>
@@ -102,6 +86,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
+import { convertToLongTimestamp } from '../../helpers/converters';
+import PostThreadView from './PostThreadView.vue';
+import ReplyBreadcrumb from './ReplyBreadcrumb.vue';
 
 export default defineComponent({
     setup () {
@@ -116,6 +103,7 @@ export default defineComponent({
                 'src/assets/test-media/posts/image06.png',
             ],
             postDetails,
+            convertToLongTimestamp,
         }
     },
     methods:{

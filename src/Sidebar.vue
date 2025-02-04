@@ -43,7 +43,17 @@
             </div>
         </div>
         {{ void "Post Details Modal" }}
-        <!-- <PostDetailModal v-show="postDetails.isVisible"/> -->
+        <div v-if="DebugFlags.showPostFocusModalAPITestButton"
+            class="absolute z-10 p-4 space-y-1 w-72">
+            <div @click="getBSkyAPIData" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2">Get Posts</div>
+            <div class="p-4 bg-slate-950/90">
+                Posts here:
+                <div v-for="(data, index) in APIResponse.data?.feeds">
+                    {{ index }} - {{ data.displayName }}
+                </div>
+            </div>
+            <FeedPost/>
+        </div>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
         <PostFocusModal/>
@@ -58,7 +68,11 @@ import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { DebugFlags } from "./state/Debug.vue";
 import { OptionIconList } from "./fake-data/dumPostData";
-import PostFocusModal from "./components/Post/PostFocusModal.vue";
+//Remove ASAP
+import {agent} from "./lib/api.ts"
+import { AppBskyFeedDefs } from "@atproto/api/dist/client";
+import { IPostDetails } from "./interfaces/PostInterfaces";
+import { getBlueskyPostThread } from "./lib/api/Post";
 
     export default defineComponent({
         name:'Sidebar',
@@ -76,6 +90,7 @@ import PostFocusModal from "./components/Post/PostFocusModal.vue";
                 scrollXPos : 0,
                 fdViewWidth : 0,
                 OptionIconList,
+                APIResponse: {},
             }
         },
         methods: {
@@ -115,6 +130,51 @@ import PostFocusModal from "./components/Post/PostFocusModal.vue";
                     centerLine.style.left = (feedDisplayViewport.clientWidth/2) + feedDisplayViewport.offsetLeft+"px";
                 }
                 else if(!feedDisplayViewport){console.log('There was an error positioning the `FeedColumn` display center line.')}
+            },
+            /**DEBUG - Test getting data through Bluesky API */
+            async getBSkyAPIData(){
+                const feedResults = await agent.app.bsky.unspecced.getPopularFeedGenerators({limit:15})
+                this.APIResponse = feedResults;
+                this.getExamplePost();
+            },
+            /**DEBUG - Get example post data */
+            async getExamplePost(){
+                // var did = await agent.app.bsky.actor.getProfile({actor:"mega64official.bsky.social"});
+                // var did = await agent.app.bsky.actor.getProfile({actor:"qqqewie.bsky.social"});
+                var pasDID = "did:plc:2ecumfvt54kiepru4leansvz";
+                var pasPost = "3lginbvqidk26";
+                // var eeeDID = (await agent.app.bsky.actor.getProfile({actor:"eulyin.bsky.social"})).data.did;
+                var eeePost = "3leto5w64bs2u";
+                var henkenDID = (await agent.app.bsky.actor.getProfile({actor:"henkensecond.bsky.social"})).data.did;
+                var zzzPost = "3l7d5aw7t4426";
+                var EXAMPLE_POST = "at://did:plc:7kf37yk3wjqjv6zjlryjypn4/app.bsky.feed.post/3lgj4pe5uz22o"
+                EXAMPLE_POST = "at://"+henkenDID+"/app.bsky.feed.post/"+zzzPost;
+
+                var postThread = await getBlueskyPostThread(henkenDID+"/app.bsky.feed.post/"+zzzPost)
+
+                // var postData = thread.data.thread.post;
+                var postData = postThread.thread.post;
+                var post : IPostDetails = {
+                    userName : postData.author.displayName ? postData.author.displayName : "",
+                    userHandle: postData.author.handle,
+                    postText: postData.record.text,
+                    postType: PostEnums.PostTypes.Image,
+                    // postMedia: [postData.embed?.images[0] ? postData.embed?.images[0].fullSize : ""],
+                    postMedia: [postData.embed?.images[0].fullsize],
+                    // postMedia: [postData.author.avatar ? postData.author.avatar : ""],
+                    comments: [],
+                    totalComments: postData.replyCount ? postData.replyCount : 0,
+                    totalLikes: postData.likeCount ? postData.likeCount : 0,
+                    totalReposts: postData.repostCount ? postData.repostCount : 0,
+                }
+                // console.log(thread.data);
+                console.log(postThread);
+                // postDetails.postThread = thread.data.thread;
+                postDetails.postThread = postThread.thread;
+                postDetails.currentThreadView = postThread.thread;
+                postDetails.updateCurrentBreadcrumbs();
+                // postDetails.showFocusModal(post, 0);
+                postDetails.showFocusModalIndex(0);
             }
         },
         created(){

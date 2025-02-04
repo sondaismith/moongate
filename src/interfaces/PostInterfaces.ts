@@ -1,5 +1,6 @@
 import { FunctionalComponent } from "vue";
 import * as PostEnums from "../enums/PostEnums";
+import { ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
 interface IPostDetails{
     userName: String,
@@ -19,12 +20,20 @@ interface IPostDetailsList{
     isFocusVisible: Boolean,
     clickedMediaIndex: number,
     getClickedMediaIndex():number,
-    setClickedMediaIndex(newVal:number):number,
+    setClickedMediaIndex(newVal:number):void,
     postData : IPostDetails,
+    postThread: ThreadViewPost,
+    currentThreadView: ThreadViewPost,
+    setCurrentThreadView(cid:string):void,
+    returnToThreadOrigin():void,
+    currentBreadcrumb: [ReplyBreadcrumb],
+    updateCurrentBreadcrumbs():void,
+    createPostData(data:ThreadViewPost):void,
     showModal(): void,
     showModalPost(postToShow:IPostDetails): void,
     hideModal(): void,
     showFocusModal(postToShow:IPostDetails,mediaIndex:number): void,
+    showFocusModalIndex(mediaIndex:number): void,
     hideFocusModal(): void,
     isPostOptionsMenuVisible: Boolean,
     showPostOptionsMenu(event:PointerEvent): void,
@@ -37,6 +46,11 @@ interface IPostDetailsList{
     clickedElement: HTMLElement,
     postDetailIconValues: IDetailIcon[],
     updatePostDetailIconValues(omments:string, reposts:string, likes:string): void,
+}
+
+type ReplyBreadcrumb{
+    userName: string,
+    postCID: string
 }
 
 interface IDetailIcon{
