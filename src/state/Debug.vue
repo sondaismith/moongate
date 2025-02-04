@@ -6,6 +6,7 @@ interface IDebugFlags{
     showFeedViewportCenter: Boolean,
     showFeedColumnCenter: Boolean,
     showFeedColumnDragResizeStats: Boolean,
+    showPostFocusModalAPITestButton: Boolean,
 }
 
 export const DebugFlags : IDebugFlags = reactive({
@@ -13,5 +14,6 @@ export const DebugFlags : IDebugFlags = reactive({
     showFeedViewportCenter: false,
     showFeedColumnCenter: false,
     showFeedColumnDragResizeStats: false,
+    showPostFocusModalAPITestButton: false,
 })
 </script>

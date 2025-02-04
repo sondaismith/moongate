@@ -43,7 +43,8 @@
             </div>
         </div>
         {{ void "Post Details Modal" }}
-        <div class="absolute z-10 p-4 space-y-1 w-72">
+        <div v-if="DebugFlags.showPostFocusModalAPITestButton"
+            class="absolute z-10 p-4 space-y-1 w-72">
             <div @click="getBSkyAPIData" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2">Get Posts</div>
             <div class="p-4 bg-slate-950/90">
                 Posts here:
