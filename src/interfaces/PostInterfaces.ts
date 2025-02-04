@@ -26,7 +26,7 @@ interface IPostDetailsList{
     currentThreadView: ThreadViewPost,
     setCurrentThreadView(cid:string):void,
     returnToThreadOrigin():void,
-    currentBreadCrumb: [string],
+    currentBreadcrumb: [ReplyBreadcrumb],
     updateCurrentBreadcrumbs():void,
     createPostData(data:ThreadViewPost):void,
     showModal(): void,
@@ -46,6 +46,11 @@ interface IPostDetailsList{
     clickedElement: HTMLElement,
     postDetailIconValues: IDetailIcon[],
     updatePostDetailIconValues(omments:string, reposts:string, likes:string): void,
+}
+
+type ReplyBreadcrumb{
+    userName: string,
+    postCID: string
 }
 
 interface IDetailIcon{

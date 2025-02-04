@@ -14,7 +14,7 @@
                 <div class="flex-1 text-feedPostName pl-1 min-w-[60px] text-nowrap overflow-hidden text-ellipsis">@{{ userHandle }}</div>
                 <div class="text-feedPostName px-1 ml-auto text-nowrap cursor-pointer hover:text-slate-300"
                 :title="convertToLongTimestamp(timestamp)"
-                @click="postDetails.setCurrentThreadView(cid, parentCID)"
+                @click="postDetails.setCurrentThreadView(cid)"
                 >
                 {{ convertToShortTimestamp(timestamp) }}
             </div>

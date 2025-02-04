@@ -48,7 +48,7 @@ export const postDetails :IPostDetailsList = reactive({
         this.currentThreadView = this.postThread;
         this.updateCurrentBreadcrumbs();
     },
-    currentBreadCrumb : ["Origin"],
+    currentBreadcrumb : [{userName:"Origin",postCID:"this_cid_is_unset"}],
     /**
      * Method that updates currently displayed reply breadcrumb labels.
      * Should be called any time the currentThreadView is changed.
@@ -56,14 +56,14 @@ export const postDetails :IPostDetailsList = reactive({
     updateCurrentBreadcrumbs(){
         //If there the reply object containing the parent ref does not exist
         if(!postDetails.currentThreadView.post.record.reply){
-            postDetails.currentBreadCrumb.splice(0, postDetails.currentBreadCrumb.length, ...["Origin"]);
+            postDetails.currentBreadcrumb.splice(0, postDetails.currentBreadcrumb.length, ...[{userName:"Origin",postCID:"root"}]);
         }
         else{
             //reset breadcrumbs
-            postDetails.currentBreadCrumb.splice(0, postDetails.currentBreadCrumb.length, ...[]);
+            postDetails.currentBreadcrumb.splice(0, postDetails.currentBreadcrumb.length, ...[]);
             discoverBreadcrumbs(this.currentThreadView.post.cid, this.currentThreadView);
             //add origin "home button" to start of breadcrumbs
-            postDetails.currentBreadCrumb.unshift("Origin");
+            postDetails.currentBreadcrumb.unshift({userName:"Origin",postCID:"this_cid_is_unset"});
         }
     },
     createPostData(data) {
@@ -183,11 +183,6 @@ export const postDetails :IPostDetailsList = reactive({
 function updatePostDetails(postToOpen:IPostDetails):IPostDetails{
     return postToOpen;
 }
-function find2(id, array) {
-    var result;
-    array.some(o => o.id === id && (result = o) || (result = findThreadView(id, o.children || [])));
-    return result;
-}
 /**
  * Method that is used to return a Post thread matching a specific cid. Used
  * by PostFocusModal component.
@@ -230,7 +225,7 @@ function discoverBreadcrumbs(parentCID:string, currentPostThread:ThreadViewPost)
     //If this has a reply object we have not gotten to the top level ThreadViewPost
     if(parentThread.post.record.reply){
         result = parentThread.post.author.displayName;
-        postDetails.currentBreadCrumb.unshift(parentThread.post.author.displayName);
+        postDetails.currentBreadcrumb.unshift({userName:parentThread.post.author.displayName, postCID:parentThread?.post.cid});
         discoverBreadcrumbs(parentThread?.post.record.reply.parent.cid,parentThread);
     }
 }
