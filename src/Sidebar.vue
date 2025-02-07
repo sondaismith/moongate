@@ -65,11 +65,16 @@
                     <div class="w-10">Id</div>
                     <div class="w-20">Name</div>
                     <div class="w-60">DateAdded</div>
+                    <div class="w-20">[Delete]</div>
                 </div>
-                <div v-for="(data, index) in DBResponse" class="flex bg-blue-900 px-2">
+                <div v-for="(data, index) in DBResponse" class="flex bg-blue-900 px-2 items-center">
                     <div class="w-10">{{ data.id }}</div>
                     <div class="w-20 overflow-hidden text-ellipsis">{{ data.title }}</div>
                     <div class="w-60">{{ data.created_at }}</div>
+                    <div class="w-20">
+                        <div @click="deleteDBRecord(data.id)" class="bg-red-500 rounded text-center m-1 mr-0 select-none
+                        cursor-pointer hover:bg-red-400">X</div>
+                    </div>
                 </div>
                 <div v-if="DBResponse.length == undefined" class="flex bg-blue-900 px-2 justify-center">
                     <div>No Records to Display</div>
@@ -95,7 +100,7 @@ import {agent} from "./lib/api.ts"
 import { AppBskyFeedDefs } from "@atproto/api/dist/client";
 import { IPostDetails } from "./interfaces/PostInterfaces";
 import { getBlueskyPostThread } from "./lib/api/Post";
-import {createTestTable, addTestRecord, loadRecords } from "./lib/db/local_db"
+import {createTestTable, addTestRecord, loadRecords, deleteRecord } from "./lib/db/local_db"
 
     export default defineComponent({
         name:'Sidebar',
@@ -203,7 +208,14 @@ import {createTestTable, addTestRecord, loadRecords } from "./lib/db/local_db"
             /**DEBUG - Add dummy record to database */
             async addDBRecord(){
                 console.log('Adding dummy record to db');
-                console.log(addTestRecord());
+                console.log(await addTestRecord());
+                this.refreshDBDisplay();
+            },
+            /**DEBUG - Add dummy record to database */
+            async deleteDBRecord(recordId:number){
+                console.log('Removing dummy record ['+recordId+'] from db');
+                console.log(await deleteRecord(recordId));
+                this.refreshDBDisplay();
             },
             /**DEBUG - Pull latest data from DB so it can be displayed */
             async refreshDBDisplay(){
@@ -216,7 +228,6 @@ import {createTestTable, addTestRecord, loadRecords } from "./lib/db/local_db"
                 // this.DBResponse = dummmyRecords;
                 const result = await loadRecords();
                 this.DBResponse = result;
-                console.log(result)
             },
             async createPrefTable(){
                 console.log(createTestTable());
