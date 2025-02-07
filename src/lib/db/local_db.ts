@@ -1,6 +1,6 @@
 import Database from "@tauri-apps/plugin-sql";
 
-const APPLICATION_DB = "moongate_app.db";
+const APPLICATION_DB = "sqlite:moongate_app.db";
 
 enum FeedSizeSetting{
     Small,
@@ -20,6 +20,7 @@ type AppSettings = {
     lastWindowPosX?: number,
     lastWindowPosY?: number,
     lastMonitor?: number,
+    lastUpdatedAt?: string,
 }
 
 /**
@@ -61,10 +62,70 @@ export function createQueryString(newAppSettings:AppSettings, updateId?:number){
  * @returns Result of attempting to create test table in database.
  */
 export async function createTestTable(){
-    const db = await Database.load('sqlite:prefs_test.db');
+    const db = await Database.load(APPLICATION_DB);
     var result;
     try{
-        result = await db.execute('CREATE TABLE dummy (id INTEGER PRIMARY KEY, title TEXT,created_at datetime DEFAULT "now")');
+        result = await db.execute('CREATE TABLE debug (id INTEGER PRIMARY KEY, title TEXT,created_at datetime DEFAULT "now")');
+    }
+    catch(error){
+        result = error;
+    }
+    checkIfError(result);
+    await db.close(); //close connection
+    return result;
+}
+
+export async function createAppSettingTable(){
+    const db = await Database.load(APPLICATION_DB);
+    var result;
+    try{
+        const newTableQuery = 'CREATE TABLE app_settings (id INTEGER PRIMARY KEY,currentUserId INTEGER DEFAULT 1,'
+        +'darkModeOn INTEGER DEFAULT 0,lastWindowWidth INTEGER,lastWindowHeight INTEGER,lastWindowPosX INTEGER,'
+        +'lastWindowPosY INTEGER,lastMonitor INTEGER DEFAULT 0,lastUpdatedAt datetime DEFAULT "now")';
+        result = await db.execute(newTableQuery);
+    }
+    catch(error){
+        result = error;
+    }
+    checkIfError(result);
+    await db.close(); //close connection
+    return result;
+}
+
+export async function initializeAppSettingsTable(){
+    const db = await Database.load(APPLICATION_DB);
+    var result;
+    try{
+        const initialTableValuesQuery = 'INSERT into app_settings (currentUserId,darkModeOn,'
+        +'lastWindowWidth,lastWindowHeight,lastWindowPosX,lastWindowPosY,lastMonitor,'
+        +'lastUpdatedAt) VALUES($1,$2,$3,$4,$5,$6,$7,$8)';
+        var addInitialResult = await db.execute(initialTableValuesQuery,
+            [1,0,800,600,900,200,0,(new Date()).toISOString()]
+        )
+        // [{currentUserId:1,darkModeOn:0,lastWindowWidth:800,lastWindowHeight:600,
+        //     lastWindowPosX:900,lastWindowPosY:200,lastMonitor:0,
+        //     lastUpdatedAt:(new Date()).toISOString()}] as AppSettings[]
+        result = addInitialResult;
+    }
+    catch(error){
+        result = error;
+        await db.close();
+    }
+    checkIfError(result);
+    await db.close(); //close connection
+    return result;
+}
+
+/**
+ * Method that is used to reset app settings to their default by
+ * deleting the table and recreating it.
+ * @returns Result of trying to delete the app_settings table.
+ */
+export async function clearAppSettings() {
+    const db = await Database.load(APPLICATION_DB);
+    var result;
+    try{
+        result = await db.execute('DELETE FROM app_settings');//Effectively a TRUNCATE
     }
     catch(error){
         result = error;
@@ -80,16 +141,15 @@ export async function createTestTable(){
 export async function addTestRecord(){
     var result;
     try{
-        const db = await Database.load('sqlite:prefs_test.db');
-        result = await db.execute('INSERT into dummy (title, created_at) VALUES ($1,$2)',
+        const db = await Database.load(APPLICATION_DB);
+        result = await db.execute('INSERT into debug (title, created_at) VALUES ($1,$2)',
             ['test', new Date().toISOString()]
         )
     }
     catch(error){
         result = error; //Make sure to handle returned error object wherever
     }
-    checkIfError(result);
-    return result;
+    return checkIfError(result);
 }
 
 /**
@@ -101,33 +161,47 @@ export async function addTestRecord(){
 export async function deleteRecord(id:number) {
     var result;
     try{
-        const db = await Database.load('sqlite:prefs_test.db');
-        result = await db.execute('DELETE from dummy WHERE (id) = ($1)',
+        const db = await Database.load(APPLICATION_DB);
+        result = await db.execute('DELETE from debug WHERE (id) = ($1)',
             [id]
         )
     }
     catch(error){
         result = error; //Make sure to handle returned error object wherever
     }
-    checkIfError(result);
-    return result;
+    return checkIfError(result);
+}
+
+/**
+ * Method the returns all the records currently held in the `app_settings` table.
+ * @returns Result of trying to grab all the records held in the `app_settings` table.
+ */
+export async function loadRecords(){
+    var result;
+    try{
+        const db = await Database.load(APPLICATION_DB);
+        result = await db.select('SELECT * FROM app_settings');
+    }
+    catch(error){
+        result = error;
+    }
+    return checkIfError(result);
 }
 
 /**
  * Method the returns all the records currently held in the test table.
  * @returns Result of trying to grab all the records held in the test table.
  */
-export async function loadRecords(){
+export async function loadTestRecords(){
     var result;
     try{
-        const db = await Database.load('sqlite:prefs_test.db');
-        result = await db.select('SELECT * FROM dummy');
+        const db = await Database.load(APPLICATION_DB);
+        result = await db.select('SELECT * FROM debug');
     }
     catch(error){
         result = error;
     }
-    checkIfError(result);
-    return result;
+    return checkIfError(result);
 }
 
 /**
@@ -144,9 +218,11 @@ function checkIfError(result:Object|undefined|unknown){
         console.log('Most likely an error - returned value is: '+result);
         //Handle error in some way - i.e send toast to message system so the user can know what
         //went wrong.
+        return false; //action failed
     }
     else{
         //Do nothing - for DEBUG only
         console.log('DB action completed - returned type is: '+typeof result);
+        return result; //action success
     }
 }

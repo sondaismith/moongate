@@ -10,11 +10,11 @@ import { addTestRecord, createQueryString } from "../local_db";
 // })
 
 describe('generation of sql query strings', () => {
-    it('should return correctly formatted result when only one variable is provided', () =>{
+    it('should return correctly formatted result when only one variable is provided, with id', () =>{
         expect(createQueryString({darkModeOn: 1}, 2))
         .toBe('UPDATE dummy SET darkModeOn = 1 WHERE id = 2');
     })
-    it('should return correctly formatted result when 3 variables are provided', () =>{
+    it('should return correctly formatted result when 3 variables are provided, without id', () =>{
         expect(createQueryString({darkModeOn:1, lastMonitor:1, currentUserId:2,lastWindowPosX:250,lastWindowPosY:500}))
         .toBe('UPDATE dummy SET darkModeOn = 1, lastMonitor = 1, currentUserId = 2, lastWindowPosX = 250, lastWindowPosY = 500');
     })

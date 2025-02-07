@@ -58,7 +58,13 @@
             <div class="space-y-2">
                 <div @click="addDBRecord" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2 drop-shadow">Add dummy record</div>
                 <div @click="refreshDBDisplay" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2 drop-shadow">Load Records</div>
-                <div @click="createPrefTable" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2 drop-shadow">Create Table (sqlite backend)</div>
+                <div @click="createTestTable" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2 drop-shadow">Create Table (sqlite backend)</div>
+                <div class="flex justify-between">
+                    <div @click="createAppSettingsTable" class="cursor-pointer bg-green-600
+                    hover:bg-green-500 rounded p-2 drop-shadow">Create app_setting table</div>
+                    <div @click="initializeAppSettings" class="cursor-pointer bg-orange-600
+                    hover:bg-orange-500 rounded p-2 drop-shadow">(Re)Intitalize app_setting</div>
+                </div>
             </div>
             <div>
                 <div class="flex justify-between px-2">
@@ -100,7 +106,8 @@ import {agent} from "./lib/api.ts"
 import { AppBskyFeedDefs } from "@atproto/api/dist/client";
 import { IPostDetails } from "./interfaces/PostInterfaces";
 import { getBlueskyPostThread } from "./lib/api/Post";
-import {createTestTable, addTestRecord, loadRecords, deleteRecord } from "./lib/db/local_db"
+import {createTestTable, addTestRecord, loadRecords,
+    deleteRecord, clearAppSettings, createAppSettingTable, initializeAppSettingsTable } from "./lib/db/local_db"
 
     export default defineComponent({
         name:'Sidebar',
@@ -205,6 +212,12 @@ import {createTestTable, addTestRecord, loadRecords, deleteRecord } from "./lib/
                 // postDetails.showFocusModal(post, 0);
                 postDetails.showFocusModalIndex(0);
             },
+            /**DEBUG - (Re)Initialize app_settings table */
+            async initializeAppSettings(){
+                console.log('(Re)Initializing app_settings table');
+                clearAppSettings();
+                initializeAppSettingsTable();
+            },
             /**DEBUG - Add dummy record to database */
             async addDBRecord(){
                 console.log('Adding dummy record to db');
@@ -227,10 +240,17 @@ import {createTestTable, addTestRecord, loadRecords, deleteRecord } from "./lib/
                 // ]
                 // this.DBResponse = dummmyRecords;
                 const result = await loadRecords();
-                this.DBResponse = result;
+                if(result) this.DBResponse = result;
+                console.log(result);
             },
-            async createPrefTable(){
+            /**DEBUG - Creates the debug test table*/
+            async createTestTable(){
                 console.log(createTestTable());
+            },
+            /**DEBUG - Creates the app_settings table */
+            async createAppSettingsTable(){
+                // console.log(createTestTable());
+                console.log(createAppSettingTable());
             },
         },
         created(){
