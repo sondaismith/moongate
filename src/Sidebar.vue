@@ -54,6 +54,28 @@
             </div>
             <FeedPost/>
         </div>
+        <div class="absolute right-0 mr-2 mt-2 bg-purple-600 p-2 rounded drop-shadow-md">
+            <div class="space-y-2">
+                <div @click="addDBRecord" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2 drop-shadow">Add dummy record</div>
+                <div @click="refreshDBDisplay" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2 drop-shadow">Load Records</div>
+                <div @click="createPrefTable" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2 drop-shadow">Create Table (sqlite backend)</div>
+            </div>
+            <div>
+                <div class="flex justify-between px-2">
+                    <div class="w-10">Id</div>
+                    <div class="w-20">Name</div>
+                    <div class="w-60">DateAdded</div>
+                </div>
+                <div v-for="(data, index) in DBResponse" class="flex bg-blue-900 px-2">
+                    <div class="w-10">{{ data.id }}</div>
+                    <div class="w-20 overflow-hidden text-ellipsis">{{ data.title }}</div>
+                    <div class="w-60">{{ data.created_at }}</div>
+                </div>
+                <div v-if="DBResponse.length == undefined" class="flex bg-blue-900 px-2 justify-center">
+                    <div>No Records to Display</div>
+                </div>
+            </div>
+        </div>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
         <PostFocusModal/>
@@ -73,6 +95,7 @@ import {agent} from "./lib/api.ts"
 import { AppBskyFeedDefs } from "@atproto/api/dist/client";
 import { IPostDetails } from "./interfaces/PostInterfaces";
 import { getBlueskyPostThread } from "./lib/api/Post";
+import {createTestTable, addTestRecord, loadRecords } from "./lib/db/local_db"
 
     export default defineComponent({
         name:'Sidebar',
@@ -91,6 +114,7 @@ import { getBlueskyPostThread } from "./lib/api/Post";
                 fdViewWidth : 0,
                 OptionIconList,
                 APIResponse: {},
+                DBResponse: {},
             }
         },
         methods: {
@@ -175,7 +199,28 @@ import { getBlueskyPostThread } from "./lib/api/Post";
                 postDetails.updateCurrentBreadcrumbs();
                 // postDetails.showFocusModal(post, 0);
                 postDetails.showFocusModalIndex(0);
-            }
+            },
+            /**DEBUG - Add dummy record to database */
+            async addDBRecord(){
+                console.log('Adding dummy record to db');
+                console.log(addTestRecord());
+            },
+            /**DEBUG - Pull latest data from DB so it can be displayed */
+            async refreshDBDisplay(){
+                console.log('Pulling latest records from db');
+                // const dummmyRecords = [
+                //     {id:1, name:'Sarks', dateAdded:'02/01/2003'},
+                //     {id:2, name:'Jameson', dateAdded:'02/01/2003'},
+                //     {id:3, name:'Tommy', dateAdded:'02/01/2003'},
+                // ]
+                // this.DBResponse = dummmyRecords;
+                const result = await loadRecords();
+                this.DBResponse = result;
+                console.log(result)
+            },
+            async createPrefTable(){
+                console.log(createTestTable());
+            },
         },
         created(){
         },
