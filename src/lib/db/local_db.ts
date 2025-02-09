@@ -8,11 +8,19 @@ enum FeedSizeSetting{
     Large
 }
 
+export enum QueryAction{
+    CREATE,
+    SELECT,
+    INSERT,
+    UPDATE,
+    DELETE
+}
+
 /**
  * Type that describes the shape of the data that can be
  * saved to the application preferences table.
  */
-type AppSettings = {
+export type AppSettings = {
     currentUserId?: number,
     darkModeOn?: number,
     lastWindowWidth?: number,
@@ -40,19 +48,54 @@ type FeedDetails = {
  * @param updateId The id of the record that needs to be updated.
  * @returns String value of the created SQL Query.
  */
-export function createQueryString(newAppSettings:AppSettings, updateId?:number){
-    var query = "UPDATE dummy SET ";
+export function createQueryString(queryType:QueryAction, newAppSettings:AppSettings, updateId?:number){
+    var query;
 
     var objectKeys = Object.keys(newAppSettings);
     var objectValues = Object.values(newAppSettings);
-    for (let i = 0; i < objectKeys.length; i++) {
-        var column = objectKeys[i]+" = "+objectValues[i];
-        if(i+1<objectKeys.length) column+=", ";
-        query += column;
-    }
-    if(updateId){//if updateId has been specified and is not undefined
-        //target record id
-        query += " WHERE id = "+updateId;
+
+    switch (queryType) {
+        case QueryAction.CREATE:
+            //not implemented
+            break;
+        case QueryAction.INSERT:
+            if(objectKeys.length < 8){
+                //log and inform of error - too few values
+                query = undefined;
+            }
+            else{
+                query = "INSERT into app_settings ";
+                var columns = "(";
+                var values = "VALUES(";
+                for (let i = 0; i < objectKeys.length; i++) {
+                    columns += objectKeys[i];
+                    values += "$"+(i+1);
+                    if(i+1<objectKeys.length){
+                        columns+=", "; //if not last element, add comma
+                        values+=",";
+                    }
+                    else{
+                        columns+=") "; //add closing bracket
+                        values+=")";
+                    }
+                }
+                query = query + columns + values;
+            }
+            break;
+        case QueryAction.UPDATE:
+            query = "UPDATE dummy SET ";
+            for (let i = 0; i < objectKeys.length; i++) {
+                var column = objectKeys[i]+" = "+objectValues[i];
+                if(i+1<objectKeys.length) column+=", "; //if not last element, add comma
+                query += column;
+            }
+            if(updateId){//if updateId has been specified and is not undefined
+                //target record id
+                query += " WHERE id = "+updateId;
+            }
+            break;
+        default:
+            query = undefined;
     }
     return query;
 }
@@ -92,19 +135,24 @@ export async function createAppSettingTable(){
     return result;
 }
 
+/**
+ * Method used to initialize the `app_settings` table after it has been created.
+ * @returns Result of trying to initialize the `app_settings` table. Will be
+ * a string starting with "ERROR:" if something went wrong.
+ */
 export async function initializeAppSettingsTable(){
     const db = await Database.load(APPLICATION_DB);
     var result;
+    var addInitialResult;
     try{
-        const initialTableValuesQuery = 'INSERT into app_settings (currentUserId,darkModeOn,'
-        +'lastWindowWidth,lastWindowHeight,lastWindowPosX,lastWindowPosY,lastMonitor,'
-        +'lastUpdatedAt) VALUES($1,$2,$3,$4,$5,$6,$7,$8)';
-        var addInitialResult = await db.execute(initialTableValuesQuery,
-            [1,0,800,600,900,200,0,(new Date()).toISOString()]
-        )
-        // [{currentUserId:1,darkModeOn:0,lastWindowWidth:800,lastWindowHeight:600,
-        //     lastWindowPosX:900,lastWindowPosY:200,lastMonitor:0,
-        //     lastUpdatedAt:(new Date()).toISOString()}] as AppSettings[]
+        //create variable with initial values
+        var initialValues = {currentUserId: 1,darkModeOn:0,lastWindowWidth:800,lastWindowHeight:600,lastWindowPosX:445,
+            lastWindowPosY:565,lastMonitor:0,lastUpdatedAt:new Date().toISOString()} as AppSettings;
+        //generate query
+        var query = createQueryString(QueryAction.INSERT,initialValues);
+        if(query == undefined) addInitialResult = "ERROR: Creation of initialize 'app_settings' table query failed";
+        else
+            addInitialResult = await db.execute(query,Object.values(initialValues));
         result = addInitialResult;
     }
     catch(error){
