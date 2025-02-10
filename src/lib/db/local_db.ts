@@ -52,7 +52,6 @@ export function createQueryString(queryType:QueryAction, newAppSettings:AppSetti
     var query;
 
     var objectKeys = Object.keys(newAppSettings);
-    var objectValues = Object.values(newAppSettings);
 
     switch (queryType) {
         case QueryAction.CREATE:
@@ -83,9 +82,9 @@ export function createQueryString(queryType:QueryAction, newAppSettings:AppSetti
             }
             break;
         case QueryAction.UPDATE:
-            query = "UPDATE dummy SET ";
+            query = "UPDATE app_settings SET ";
             for (let i = 0; i < objectKeys.length; i++) {
-                var column = objectKeys[i]+" = "+objectValues[i];
+                var column = objectKeys[i]+" = "+"$"+(i+1);
                 if(i+1<objectKeys.length) column+=", "; //if not last element, add comma
                 query += column;
             }
@@ -158,6 +157,31 @@ export async function initializeAppSettingsTable(){
     catch(error){
         result = error;
         await db.close();
+    }
+    checkIfError(result);
+    await db.close(); //close connection
+    return result;
+}
+
+/**
+ * Method that allows the updating of the values held in the `app_settings` table.
+ * @param newValues The values to update the `app_settings` table with.
+ * @returns
+ */
+export async function updateAppSettings(newValues:AppSettings|Object) {
+    const db = await Database.load(APPLICATION_DB);
+    var result;
+    var updateQueryResult;
+
+    try{
+        var query = createQueryString(QueryAction.UPDATE, newValues);
+        if(query == undefined) updateQueryResult = "ERROR: Creation of 'update' query failed";
+        else
+            updateQueryResult = await db.execute(query,Object.values(newValues));
+        result = updateQueryResult;
+    }
+    catch (error){
+        result = error;
     }
     checkIfError(result);
     await db.close(); //close connection

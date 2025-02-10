@@ -12,11 +12,11 @@ import { addTestRecord, createQueryString, AppSettings, QueryAction } from "../l
 describe('generation of sql query strings', () => {
     it('should return correctly formatted UPDATE result when only one variable is provided, with id', () =>{
         expect(createQueryString(QueryAction.UPDATE, {darkModeOn: 1}, 2))
-        .toBe('UPDATE dummy SET darkModeOn = 1 WHERE id = 2');
+        .toBe('UPDATE app_settings SET darkModeOn = $1 WHERE id = 2');
     })
     it('should return correctly formatted UPDATE result when 3 variables are provided, without id', () =>{
         expect(createQueryString(QueryAction.UPDATE, {darkModeOn:1, lastMonitor:1, currentUserId:2,lastWindowPosX:250,lastWindowPosY:500}))
-        .toBe('UPDATE dummy SET darkModeOn = 1, lastMonitor = 1, currentUserId = 2, lastWindowPosX = 250, lastWindowPosY = 500');
+        .toBe('UPDATE app_settings SET darkModeOn = $1, lastMonitor = $2, currentUserId = $3, lastWindowPosX = $4, lastWindowPosY = $5');
     })
     it('should return correctly formatted INSERT result when all required values are provided', () => {
         var currentTime = new Date().toISOString();

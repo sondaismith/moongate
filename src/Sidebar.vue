@@ -65,18 +65,19 @@
                     <div @click="initializeAppSettings" class="cursor-pointer bg-orange-600
                     hover:bg-orange-500 rounded p-2 drop-shadow">(Re)Intitalize app_setting</div>
                 </div>
+                <div @click="getAppWindowPosition" class="cursor-pointer bg-yellow-600 hover:bg-yellow-500 rounded p-2 drop-shadow">Update Saved Window Size</div>
             </div>
             <div>
                 <div class="flex justify-between px-2">
                     <div class="w-10">Id</div>
-                    <div class="w-20">Name</div>
-                    <div class="w-60">DateAdded</div>
+                    <div class="w-20">Monitor Width</div>
+                    <div class="w-60">Monitor Height</div>
                     <div class="w-20">[Delete]</div>
                 </div>
                 <div v-for="(data, index) in DBResponse" class="flex bg-blue-900 px-2 items-center">
                     <div class="w-10">{{ data.id }}</div>
-                    <div class="w-20 overflow-hidden text-ellipsis">{{ data.title }}</div>
-                    <div class="w-60">{{ data.created_at }}</div>
+                    <div class="w-20 overflow-hidden text-ellipsis">{{ data.lastWindowWidth}}</div>
+                    <div class="w-60">{{ data.lastWindowHeight }}</div>
                     <div class="w-20">
                         <div @click="deleteDBRecord(data.id)" class="bg-red-500 rounded text-center m-1 mr-0 select-none
                         cursor-pointer hover:bg-red-400">X</div>
@@ -107,7 +108,11 @@ import { AppBskyFeedDefs } from "@atproto/api/dist/client";
 import { IPostDetails } from "./interfaces/PostInterfaces";
 import { getBlueskyPostThread } from "./lib/api/Post";
 import {createTestTable, addTestRecord, loadRecords,
-    deleteRecord, clearAppSettings, createAppSettingTable, initializeAppSettingsTable } from "./lib/db/local_db"
+    deleteRecord, clearAppSettings, createAppSettingTable,
+    initializeAppSettingsTable, updateAppSettings } from "./lib/db/local_db";
+import { invoke } from "@tauri-apps/api/core";
+import { currentMonitor, getCurrentWindow } from "@tauri-apps/api/window";
+import { AppSettings } from "./lib/db/local_db";
 
     export default defineComponent({
         name:'Sidebar',
@@ -252,6 +257,16 @@ import {createTestTable, addTestRecord, loadRecords,
                 // console.log(createTestTable());
                 console.log(createAppSettingTable());
             },
+            async getAppWindowPosition(){
+                // invoke('get_app_window_size').then((message) => console.log(message));
+                var windowSize = (await getCurrentWindow().innerSize()).toJSON();
+                var monitor = (await currentMonitor())?.position;
+                console.log("Window Size: "+windowSize.width+"x"+windowSize.height
+                    +", Monitor X Start Pos: "+monitor?.x);
+                await updateAppSettings({lastWindowWidth:windowSize.width,
+                    lastWindowHeight:windowSize.height} as AppSettings)
+                this.refreshDBDisplay();
+            }
         },
         created(){
         },
