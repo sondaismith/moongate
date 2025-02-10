@@ -66,6 +66,7 @@
                     hover:bg-orange-500 rounded p-2 drop-shadow">(Re)Intitalize app_setting</div>
                 </div>
                 <div @click="getAppWindowPosition" class="cursor-pointer bg-yellow-600 hover:bg-yellow-500 rounded p-2 drop-shadow">Update Saved Window Size</div>
+                <div @click="closeWindow" class="cursor-pointer bg-yellow-600 hover:bg-yellow-500 rounded p-2 drop-shadow">Close Window</div>
             </div>
             <div>
                 <div class="flex justify-between px-2">
@@ -111,7 +112,7 @@ import {createTestTable, addTestRecord, loadRecords,
     deleteRecord, clearAppSettings, createAppSettingTable,
     initializeAppSettingsTable, updateAppSettings } from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
-import { currentMonitor, getCurrentWindow } from "@tauri-apps/api/window";
+import { currentMonitor, getCurrentWindow, Window } from "@tauri-apps/api/window";
 import { AppSettings } from "./lib/db/local_db";
 
     export default defineComponent({
@@ -266,9 +267,38 @@ import { AppSettings } from "./lib/db/local_db";
                 await updateAppSettings({lastWindowWidth:windowSize.width,
                     lastWindowHeight:windowSize.height} as AppSettings)
                 this.refreshDBDisplay();
+            },
+            /**Method used to set up event listeners for app actions.
+             * Called during creation of component.
+             */
+            async setUpListeners(){
+                var window = Window.getCurrent();
+
+                //Listen to any attempt to close the app window.
+                const unlisten = await window.onCloseRequested(async (event) => {
+                    var windowSize = (await getCurrentWindow().innerSize()).toJSON();
+                    var monitor = (await currentMonitor())?.position;
+                    const confirmed = await confirm('Are you sure?');
+                    if (!confirmed) {
+                        // user did not confirm closing the window; let's prevent it
+                        event.preventDefault();
+                    }
+                    else{
+                        await updateAppSettings({lastWindowWidth:windowSize.width,
+                            lastWindowHeight:windowSize.height} as AppSettings);
+                    }
+                });
+
+                // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
+            },
+            /**Method that will attempt to close the current app window. */
+            closeWindow(){
+                var window = Window.getCurrent();
+                window.close();
             }
         },
         created(){
+            this.setUpListeners();
         },
         mounted(){
             this.getFeedDisplayViewWidth();
