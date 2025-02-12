@@ -62,7 +62,7 @@
                 <div class="flex justify-between">
                     <div @click="createAppSettingsTable" class="cursor-pointer bg-green-600
                     hover:bg-green-500 rounded p-2 drop-shadow">Create app_setting table</div>
-                    <div @click="initializeAppSettings" class="cursor-pointer bg-orange-600
+                    <div @click="debugInitializeAppSettings" class="cursor-pointer bg-orange-600
                     hover:bg-orange-500 rounded p-2 drop-shadow">(Re)Intitalize app_setting</div>
                 </div>
                 <div @click="getAppWindowPosition" class="cursor-pointer bg-yellow-600 hover:bg-yellow-500 rounded p-2 drop-shadow">Update Saved Window Size</div>
@@ -108,12 +108,12 @@ import {agent} from "./lib/api.ts"
 import { AppBskyFeedDefs } from "@atproto/api/dist/client";
 import { IPostDetails } from "./interfaces/PostInterfaces";
 import { getBlueskyPostThread } from "./lib/api/Post";
-import {createTestTable, addTestRecord, loadRecords,
+import {AppSettings, createTestTable, addTestRecord, loadRecords,
     deleteRecord, clearAppSettings, createAppSettingTable,
-    initializeAppSettingsTable, updateAppSettings } from "./lib/db/local_db";
+    initializeAppSettingsTable, updateAppSettings,
+    checkIfAppSettingsTableExists, checkIfAppSettingsDatabaseExists } from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
 import { currentMonitor, getCurrentWindow, Window } from "@tauri-apps/api/window";
-import { AppSettings } from "./lib/db/local_db";
 
     export default defineComponent({
         name:'Sidebar',
@@ -219,7 +219,7 @@ import { AppSettings } from "./lib/db/local_db";
                 postDetails.showFocusModalIndex(0);
             },
             /**DEBUG - (Re)Initialize app_settings table */
-            async initializeAppSettings(){
+            async debugInitializeAppSettings(){
                 console.log('(Re)Initializing app_settings table');
                 clearAppSettings();
                 initializeAppSettingsTable();
@@ -291,13 +291,29 @@ import { AppSettings } from "./lib/db/local_db";
 
                 // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
             },
+            /**
+             * Method that ensures that the `app_settings` database and tables
+             * are set up. Called during creation of component.
+             */
+            async appSettingsDatabaseSetup(){
+                //technically trying to load the DB will create it, so...
+                var dbExist = await checkIfAppSettingsDatabaseExists();
+                var tableExist = await checkIfAppSettingsTableExists();
+
+                if(!dbExist || !tableExist){
+                    createAppSettingTable();
+                    initializeAppSettingsTable();
+                }
+            },
             /**Method that will attempt to close the current app window. */
-            closeWindow(){
+            async closeWindow(){
                 var window = Window.getCurrent();
-                window.close();
+                // window.close();
+                // invoke('get_app_window_size').then((message) => console.log(message));
             }
         },
         created(){
+            this.appSettingsDatabaseSetup();
             this.setUpListeners();
         },
         mounted(){

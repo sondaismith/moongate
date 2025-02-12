@@ -1,3 +1,4 @@
+import { BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 import Database from "@tauri-apps/plugin-sql";
 
 const APPLICATION_DB = "sqlite:moongate_app.db";
@@ -225,6 +226,49 @@ export async function addTestRecord(){
 }
 
 /**
+ * Method that checks if the `moongate_app.db` database file exists in the
+ * AppData folder (AppData/Roaming/).
+ * @returns True if database exists, False if not.
+ */
+export async function checkIfAppSettingsDatabaseExists() {
+    var result;
+    try{
+        const dbExists = await exists('moongate_app.db', {
+            baseDir: BaseDirectory.AppData,
+        });
+        console.log("does app settings db exist: "+dbExists);
+        result = dbExists;
+    }
+    catch(error){
+        result = error; //Make sure to handle returned error object wherever
+    }
+    return checkIfError(result);
+}
+
+/**
+ * Method that checks if the `app_settings` table exists, and if there's
+ * at least one record row in it.
+ * @returns True (1) if table exists, False (0) if not.
+ */
+export async function checkIfAppSettingsTableExists(){
+    var result;
+    try{
+        const db = await Database.load(APPLICATION_DB);
+        var tableExists = await db.select("SELECT EXISTS (SELECT * FROM sqlite_master WHERE type='table' AND name='app_settings')");
+        var rowExists = await db.select("SELECT EXISTS (SELECT 1 FROM app_settings LIMIT 1)");
+        //returned object key is query text and result is value, the array indexes below extract the values
+        var tableResult = Boolean(Object.values(tableExists[0])[0]);
+        var rowResult = Boolean(Object.values(rowExists[0])[0]);
+        result = (tableResult && rowResult); //both must be true for all to be A-OK
+        console.log("does `app_settings` table exist: "+result);
+    }
+    catch(error){
+        result = error; //Make sure to handle returned error object wherever
+    }
+    return checkIfError(result);
+}
+
+/**
  * Method that deletes record from the database. Not used atm,
  * probably will eventually be used when the cache gets set up.
  * @param id The id of the record to delete.
@@ -285,7 +329,9 @@ export async function loadTestRecords(){
 function checkIfError(result:Object|undefined|unknown){
     //Checks if result value has been receievd/set - if so no Error
     //code from Erisan Olasheni: https://stackoverflow.com/a/51458052
-    if(result != null && result.constructor.name != "Object" && result.constructor.name != "Array"){
+    if(result != null && result.constructor.name != "Object" && result.constructor.name != "Array"
+        && result.constructor.name != "Boolean"
+    ){
         console.log('An error has occurred - returned type is: '+typeof result);
         console.log('Most likely an error - returned value is: '+result);
         //Handle error in some way - i.e send toast to message system so the user can know what
@@ -294,7 +340,7 @@ function checkIfError(result:Object|undefined|unknown){
     }
     else{
         //Do nothing - for DEBUG only
-        console.log('DB action completed - returned type is: '+typeof result);
+        // console.log('DB action completed - returned type is: '+typeof result);
         return result; //action success
     }
 }
