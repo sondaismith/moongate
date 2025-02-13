@@ -72,13 +72,17 @@
                 <div class="flex justify-between px-2">
                     <div class="w-10">Id</div>
                     <div class="w-20">Monitor Width</div>
-                    <div class="w-60">Monitor Height</div>
+                    <div class="w-20">Monitor Height</div>
+                    <div class="w-20">Window XPos</div>
+                    <div class="w-20">Window YPOS</div>
                     <div class="w-20">[Delete]</div>
                 </div>
                 <div v-for="(data, index) in DBResponse" class="flex bg-blue-900 px-2 items-center">
                     <div class="w-10">{{ data.id }}</div>
                     <div class="w-20 overflow-hidden text-ellipsis">{{ data.lastWindowWidth}}</div>
-                    <div class="w-60">{{ data.lastWindowHeight }}</div>
+                    <div class="w-20">{{ data.lastWindowHeight }}</div>
+                    <div class="w-20">{{ data.lastWindowPosX }}</div>
+                    <div class="w-20">{{ data.lastWindowPosY }}</div>
                     <div class="w-20">
                         <div @click="deleteDBRecord(data.id)" class="bg-red-500 rounded text-center m-1 mr-0 select-none
                         cursor-pointer hover:bg-red-400">X</div>
@@ -113,7 +117,9 @@ import {AppSettings, createTestTable, addTestRecord, loadRecords,
     initializeAppSettingsTable, updateAppSettings,
     checkIfAppSettingsTableExists, checkIfAppSettingsDatabaseExists } from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
-import { currentMonitor, getCurrentWindow, Window } from "@tauri-apps/api/window";
+import { currentMonitor, getCurrentWindow, PhysicalPosition, Window } from "@tauri-apps/api/window";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { listen } from "@tauri-apps/api/event";
 
     export default defineComponent({
         name:'Sidebar',
@@ -277,6 +283,7 @@ import { currentMonitor, getCurrentWindow, Window } from "@tauri-apps/api/window
                 //Listen to any attempt to close the app window.
                 const unlisten = await window.onCloseRequested(async (event) => {
                     var windowSize = (await getCurrentWindow().innerSize()).toJSON();
+                    var windowPos = (await getCurrentWindow().innerPosition()).toJSON();
                     var monitor = (await currentMonitor())?.position;
                     const confirmed = await confirm('Are you sure?');
                     if (!confirmed) {
@@ -285,10 +292,11 @@ import { currentMonitor, getCurrentWindow, Window } from "@tauri-apps/api/window
                     }
                     else{
                         await updateAppSettings({lastWindowWidth:windowSize.width,
-                            lastWindowHeight:windowSize.height} as AppSettings);
+                            lastWindowHeight:windowSize.height,
+                            lastWindowPosX:windowPos.x<0?0:windowPos.x,
+                            lastWindowPosY:windowPos.y<0?0:windowPos.y} as AppSettings);
                     }
                 });
-
                 // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
             },
             /**
@@ -305,6 +313,16 @@ import { currentMonitor, getCurrentWindow, Window } from "@tauri-apps/api/window
                     initializeAppSettingsTable();
                 }
             },
+            /**
+             * Method that loads the application settings saved in the
+             * `app_settings` database and applies them.
+             */
+            async loadAppSettings(){
+                var loadedWindowPosition = new PhysicalPosition(200,100);
+                var curWindow = getCurrentWindow();
+                curWindow.setPosition(loadedWindowPosition);
+                curWindow.setVisibleOnAllWorkspaces(true);
+            },
             /**Method that will attempt to close the current app window. */
             async closeWindow(){
                 var window = Window.getCurrent();
@@ -315,6 +333,8 @@ import { currentMonitor, getCurrentWindow, Window } from "@tauri-apps/api/window
         created(){
             this.appSettingsDatabaseSetup();
             this.setUpListeners();
+            this.loadAppSettings();
+            invoke('show_main_window');//unhide main window and focus it via Rust
         },
         mounted(){
             this.getFeedDisplayViewWidth();
