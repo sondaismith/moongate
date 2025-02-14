@@ -117,7 +117,7 @@ import {AppSettings, createTestTable, addTestRecord, loadRecords,
     initializeAppSettingsTable, updateAppSettings,
     checkIfAppSettingsTableExists, checkIfAppSettingsDatabaseExists } from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
-import { currentMonitor, getCurrentWindow, PhysicalPosition, Window } from "@tauri-apps/api/window";
+import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { listen } from "@tauri-apps/api/event";
 
@@ -319,9 +319,13 @@ import { listen } from "@tauri-apps/api/event";
              */
             async loadAppSettings(){
                 var loadedWindowPosition = new PhysicalPosition(200,100);
+                var loadedWindowSize = new PhysicalSize(1000,600);
+                var appSettings = await loadRecords() as AppSettings[];
+                loadedWindowPosition = new PhysicalPosition(appSettings[0].lastWindowPosX ? appSettings[0].lastWindowPosX:0, appSettings[0].lastWindowPosY ? appSettings[0].lastWindowPosY:0);
+                loadedWindowSize = new PhysicalSize(appSettings[0].lastWindowWidth ? appSettings[0].lastWindowWidth:0,appSettings[0].lastWindowHeight ? appSettings[0].lastWindowHeight:0)
                 var curWindow = getCurrentWindow();
                 curWindow.setPosition(loadedWindowPosition);
-                curWindow.setVisibleOnAllWorkspaces(true);
+                curWindow.setSize(loadedWindowSize);
             },
             /**Method that will attempt to close the current app window. */
             async closeWindow(){

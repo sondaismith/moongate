@@ -296,7 +296,7 @@ export async function loadRecords(){
     var result;
     try{
         const db = await Database.load(APPLICATION_DB);
-        result = await db.select('SELECT * FROM app_settings');
+        result = await db.select('SELECT * FROM app_settings') as AppSettings;
     }
     catch(error){
         result = error;
