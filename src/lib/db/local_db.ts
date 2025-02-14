@@ -1,3 +1,4 @@
+import { Monitor, PhysicalPosition, PhysicalSize } from "@tauri-apps/api/window";
 import { BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 import Database from "@tauri-apps/plugin-sql";
 
@@ -343,4 +344,36 @@ function checkIfError(result:Object|undefined|unknown){
         // console.log('DB action completed - returned type is: '+typeof result);
         return result; //action success
     }
+}
+
+/**
+ * Method that takes a desired PhysicalPosition for an app window and returns a
+ * value that is "valid" - a position where the user can still move and interact
+ * with the window titlebar.
+ * @param monitor The `Monitor` the app window is currently on.
+ * @param position The current `PhysicalPosition` of the app window.
+ * @param windowSize The current `PhysicalSize` of the app window.
+ * @returns A valid (user interactable) `PhysicalPosition` for the app window.
+ */
+export function validateWindowPosition(monitor:Monitor|null,position:PhysicalPosition,windowSize:PhysicalSize):PhysicalPosition{
+    var validPosition = position;
+    if(monitor){
+        var minX = monitor.position.x;
+        var maxX = minX+monitor.size.width;
+        var minY = monitor.position.y;
+        var maxY = minY+monitor.size.height;
+
+        //if off left of monitor by more than half window width
+        if((position.x+(windowSize.width/2))<minX) validPosition.x = minX;
+        //if off right of monitor - reposition so right of window is along monitor right
+        if(position.x>maxX) validPosition.x = maxX - windowSize.width;
+        //if off top of monitor - place at top of monitor
+        if(position.y<minY) validPosition.y = minY;
+        //if below bottom of monitor - reposition so bottom of window is along monitor bottom
+        if(position.y>maxY) validPosition.y = maxY - windowSize.height;
+    }
+    else{
+        validPosition = new PhysicalPosition(0,0);
+    }
+    return validPosition;
 }

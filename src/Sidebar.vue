@@ -115,9 +115,10 @@ import { getBlueskyPostThread } from "./lib/api/Post";
 import {AppSettings, createTestTable, addTestRecord, loadRecords,
     deleteRecord, clearAppSettings, createAppSettingTable,
     initializeAppSettingsTable, updateAppSettings,
-    checkIfAppSettingsTableExists, checkIfAppSettingsDatabaseExists } from "./lib/db/local_db";
+    checkIfAppSettingsTableExists, checkIfAppSettingsDatabaseExists,
+validateWindowPosition} from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
-import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
+import { availableMonitors, currentMonitor, getCurrentWindow, Monitor, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { listen } from "@tauri-apps/api/event";
 
@@ -293,8 +294,8 @@ import { listen } from "@tauri-apps/api/event";
                     else{
                         await updateAppSettings({lastWindowWidth:windowSize.width,
                             lastWindowHeight:windowSize.height,
-                            lastWindowPosX:windowPos.x<0?0:windowPos.x,
-                            lastWindowPosY:windowPos.y<0?0:windowPos.y} as AppSettings);
+                            lastWindowPosX:windowPos.x,
+                            lastWindowPosY:windowPos.y} as AppSettings);
                     }
                 });
                 // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
@@ -318,12 +319,14 @@ import { listen } from "@tauri-apps/api/event";
              * `app_settings` database and applies them.
              */
             async loadAppSettings(){
-                var loadedWindowPosition = new PhysicalPosition(200,100);
+                var loadedWindowPosition = new PhysicalPosition(-1200,-500);
                 var loadedWindowSize = new PhysicalSize(1000,600);
                 var appSettings = await loadRecords() as AppSettings[];
+                var curMonitor = await currentMonitor();
                 loadedWindowPosition = new PhysicalPosition(appSettings[0].lastWindowPosX ? appSettings[0].lastWindowPosX:0, appSettings[0].lastWindowPosY ? appSettings[0].lastWindowPosY:0);
-                loadedWindowSize = new PhysicalSize(appSettings[0].lastWindowWidth ? appSettings[0].lastWindowWidth:0,appSettings[0].lastWindowHeight ? appSettings[0].lastWindowHeight:0)
-                var curWindow = getCurrentWindow();
+                loadedWindowSize = new PhysicalSize(appSettings[0].lastWindowWidth ? appSettings[0].lastWindowWidth:0,appSettings[0].lastWindowHeight ? appSettings[0].lastWindowHeight:0);
+                loadedWindowPosition = validateWindowPosition(curMonitor,loadedWindowPosition,loadedWindowSize);
+                var curWindow = await getCurrentWindow();
                 curWindow.setPosition(loadedWindowPosition);
                 curWindow.setSize(loadedWindowSize);
             },
