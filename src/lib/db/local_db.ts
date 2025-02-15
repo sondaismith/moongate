@@ -1,5 +1,5 @@
 import { Monitor, PhysicalPosition, PhysicalSize } from "@tauri-apps/api/window";
-import { BaseDirectory, exists } from "@tauri-apps/plugin-fs";
+import { BaseDirectory, exists, remove } from "@tauri-apps/plugin-fs";
 import Database from "@tauri-apps/plugin-sql";
 
 const APPLICATION_DB = "sqlite:moongate_app.db";
@@ -29,7 +29,7 @@ export type AppSettings = {
     lastWindowHeight?: number,
     lastWindowPosX?: number,
     lastWindowPosY?: number,
-    lastMonitor?: number,
+    lastMonitor?: string,
     lastUpdatedAt?: string,
 }
 
@@ -125,7 +125,7 @@ export async function createAppSettingTable(){
     try{
         const newTableQuery = 'CREATE TABLE app_settings (id INTEGER PRIMARY KEY,currentUserId INTEGER DEFAULT 1,'
         +'darkModeOn INTEGER DEFAULT 0,lastWindowWidth INTEGER,lastWindowHeight INTEGER,lastWindowPosX INTEGER,'
-        +'lastWindowPosY INTEGER,lastMonitor INTEGER DEFAULT 0,lastUpdatedAt datetime DEFAULT "now")';
+        +'lastWindowPosY INTEGER,lastMonitor TEXT DEFAULT "\\\\.\\DISPLAY1",lastUpdatedAt datetime DEFAULT "now")';
         result = await db.execute(newTableQuery);
     }
     catch(error){
@@ -147,8 +147,8 @@ export async function initializeAppSettingsTable(){
     var addInitialResult;
     try{
         //create variable with initial values
-        var initialValues = {currentUserId: 1,darkModeOn:0,lastWindowWidth:800,lastWindowHeight:600,lastWindowPosX:445,
-            lastWindowPosY:565,lastMonitor:0,lastUpdatedAt:new Date().toISOString()} as AppSettings;
+        var initialValues = {currentUserId: 1,darkModeOn:0,lastWindowWidth:800,lastWindowHeight:600,lastWindowPosX:560,
+            lastWindowPosY:240,lastMonitor:"\\\\.\\DISPLAY1",lastUpdatedAt:new Date().toISOString()} as AppSettings;
         //generate query
         var query = createQueryString(QueryAction.INSERT,initialValues);
         if(query == undefined) addInitialResult = "ERROR: Creation of initialize 'app_settings' table query failed";
@@ -205,6 +205,7 @@ export async function clearAppSettings() {
         result = error;
     }
     checkIfError(result);
+    await db.close();
     return result;
 }
 
@@ -219,6 +220,7 @@ export async function addTestRecord(){
         result = await db.execute('INSERT into debug (title, created_at) VALUES ($1,$2)',
             ['test', new Date().toISOString()]
         )
+        await db.close();
     }
     catch(error){
         result = error; //Make sure to handle returned error object wherever
@@ -247,6 +249,26 @@ export async function checkIfAppSettingsDatabaseExists() {
 }
 
 /**
+ * Method that attempts to delete the `moongate_app.db` app_settings
+ * database file.
+ * @returns Nothing.
+ */
+export async function deleteAppSettingsDBFile(){
+    var result;
+    try{
+        const dbFileDelete = await remove('moongate_app.db', {
+            baseDir: BaseDirectory.AppData,
+        });
+        console.log("app_settings db file deleted: "+dbFileDelete);
+        result = dbFileDelete;
+    }
+    catch(error){
+        result = error;
+    }
+    return checkIfError(result);
+}
+
+/**
  * Method that checks if the `app_settings` table exists, and if there's
  * at least one record row in it.
  * @returns True (1) if table exists, False (0) if not.
@@ -256,11 +278,16 @@ export async function checkIfAppSettingsTableExists(){
     try{
         const db = await Database.load(APPLICATION_DB);
         var tableExists = await db.select("SELECT EXISTS (SELECT * FROM sqlite_master WHERE type='table' AND name='app_settings')");
-        var rowExists = await db.select("SELECT EXISTS (SELECT 1 FROM app_settings LIMIT 1)");
         //returned object key is query text and result is value, the array indexes below extract the values
         var tableResult = Boolean(Object.values(tableExists[0])[0]);
-        var rowResult = Boolean(Object.values(rowExists[0])[0]);
+        var rowResult = false;
+        //if table exists, need to check for row
+        if(tableResult){
+            var rowExists = await db.select("SELECT EXISTS (SELECT 1 FROM app_settings LIMIT 1)");
+            rowResult = Boolean(Object.values(rowExists[0])[0]);
+        }
         result = (tableResult && rowResult); //both must be true for all to be A-OK
+        await db.close();
         console.log("does `app_settings` table exist: "+result);
     }
     catch(error){
@@ -282,6 +309,7 @@ export async function deleteRecord(id:number) {
         result = await db.execute('DELETE from debug WHERE (id) = ($1)',
             [id]
         )
+        await db.close();
     }
     catch(error){
         result = error; //Make sure to handle returned error object wherever
@@ -298,6 +326,7 @@ export async function loadRecords(){
     try{
         const db = await Database.load(APPLICATION_DB);
         result = await db.select('SELECT * FROM app_settings') as AppSettings;
+        await db.close();
     }
     catch(error){
         result = error;
@@ -314,6 +343,7 @@ export async function loadTestRecords(){
     try{
         const db = await Database.load(APPLICATION_DB);
         result = await db.select('SELECT * FROM debug');
+        await db.close();
     }
     catch(error){
         result = error;

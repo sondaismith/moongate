@@ -63,9 +63,9 @@
                     <div @click="createAppSettingsTable" class="cursor-pointer bg-green-600
                     hover:bg-green-500 rounded p-2 drop-shadow">Create app_setting table</div>
                     <div @click="debugInitializeAppSettings" class="cursor-pointer bg-orange-600
-                    hover:bg-orange-500 rounded p-2 drop-shadow">(Re)Intitalize app_setting</div>
+                    hover:bg-orange-500 rounded p-2 drop-shadow">(Re)Intitalize app_setting db+table</div>
                 </div>
-                <div @click="getAppWindowPosition" class="cursor-pointer bg-yellow-600 hover:bg-yellow-500 rounded p-2 drop-shadow">Update Saved Window Size</div>
+                <div @click="getAppWindowPosition" class="cursor-pointer bg-yellow-600 hover:bg-yellow-500 rounded p-2 drop-shadow">Update Saved Window Pos+Size</div>
                 <div @click="closeWindow" class="cursor-pointer bg-yellow-600 hover:bg-yellow-500 rounded p-2 drop-shadow">Close Window</div>
             </div>
             <div>
@@ -113,7 +113,7 @@ import { AppBskyFeedDefs } from "@atproto/api/dist/client";
 import { IPostDetails } from "./interfaces/PostInterfaces";
 import { getBlueskyPostThread } from "./lib/api/Post";
 import {AppSettings, createTestTable, addTestRecord, loadRecords,
-    deleteRecord, clearAppSettings, createAppSettingTable,
+    deleteRecord, clearAppSettings, deleteAppSettingsDBFile, createAppSettingTable,
     initializeAppSettingsTable, updateAppSettings,
     checkIfAppSettingsTableExists, checkIfAppSettingsDatabaseExists,
 validateWindowPosition} from "./lib/db/local_db";
@@ -227,9 +227,11 @@ import { listen } from "@tauri-apps/api/event";
             },
             /**DEBUG - (Re)Initialize app_settings table */
             async debugInitializeAppSettings(){
-                console.log('(Re)Initializing app_settings table');
-                clearAppSettings();
-                initializeAppSettingsTable();
+                console.log('(Re)Initializing app_settings db + table');
+                // clearAppSettings();
+                deleteAppSettingsDBFile();
+                // initializeAppSettingsTable();
+                this.appSettingsDatabaseSetup();
             },
             /**DEBUG - Add dummy record to database */
             async addDBRecord(){
@@ -268,11 +270,12 @@ import { listen } from "@tauri-apps/api/event";
             async getAppWindowPosition(){
                 // invoke('get_app_window_size').then((message) => console.log(message));
                 var windowSize = (await getCurrentWindow().innerSize()).toJSON();
-                var monitor = (await currentMonitor())?.position;
-                console.log("Window Size: "+windowSize.width+"x"+windowSize.height
-                    +", Monitor X Start Pos: "+monitor?.x);
+                var windowPos = (await getCurrentWindow().outerPosition()).toJSON();
+                var monitor = (await currentMonitor())?.name;
                 await updateAppSettings({lastWindowWidth:windowSize.width,
-                    lastWindowHeight:windowSize.height} as AppSettings)
+                    lastWindowHeight:windowSize.height,
+                    lastWindowPosX:windowPos.x,lastWindowPosY:windowPos.y,
+                    lastMonitor:monitor} as AppSettings)
                 this.refreshDBDisplay();
             },
             /**Method used to set up event listeners for app actions.
@@ -285,7 +288,7 @@ import { listen } from "@tauri-apps/api/event";
                 const unlisten = await window.onCloseRequested(async (event) => {
                     var windowSize = (await getCurrentWindow().innerSize()).toJSON();
                     var windowPos = (await getCurrentWindow().innerPosition()).toJSON();
-                    var monitor = (await currentMonitor())?.position;
+                    var monitor = (await currentMonitor())?.name;
                     const confirmed = await confirm('Are you sure?');
                     if (!confirmed) {
                         // user did not confirm closing the window; let's prevent it
@@ -295,7 +298,8 @@ import { listen } from "@tauri-apps/api/event";
                         await updateAppSettings({lastWindowWidth:windowSize.width,
                             lastWindowHeight:windowSize.height,
                             lastWindowPosX:windowPos.x,
-                            lastWindowPosY:windowPos.y} as AppSettings);
+                            lastWindowPosY:windowPos.y,
+                            lastMonitor:monitor} as AppSettings);
                     }
                 });
                 // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
@@ -309,9 +313,13 @@ import { listen } from "@tauri-apps/api/event";
                 var dbExist = await checkIfAppSettingsDatabaseExists();
                 var tableExist = await checkIfAppSettingsTableExists();
 
-                if(!dbExist || !tableExist){
-                    createAppSettingTable();
-                    initializeAppSettingsTable();
+                if(!dbExist){
+                    console.log("db file missing - creating db file");
+                    await createAppSettingTable();
+                }
+                if(!tableExist){
+                    console.log("`app_settings` table missing - creating table");
+                    await initializeAppSettingsTable();
                 }
             },
             /**
@@ -322,6 +330,9 @@ import { listen } from "@tauri-apps/api/event";
                 var loadedWindowPosition = new PhysicalPosition(-1200,-500);
                 var loadedWindowSize = new PhysicalSize(1000,600);
                 var appSettings = await loadRecords() as AppSettings[];
+                //move window to correct monitor first
+                await invoke('position_on_monitor',{monitorName:appSettings[0].lastMonitor});
+                //then get monitor for positioning
                 var curMonitor = await currentMonitor();
                 loadedWindowPosition = new PhysicalPosition(appSettings[0].lastWindowPosX ? appSettings[0].lastWindowPosX:0, appSettings[0].lastWindowPosY ? appSettings[0].lastWindowPosY:0);
                 loadedWindowSize = new PhysicalSize(appSettings[0].lastWindowWidth ? appSettings[0].lastWindowWidth:0,appSettings[0].lastWindowHeight ? appSettings[0].lastWindowHeight:0);
@@ -333,15 +344,20 @@ import { listen } from "@tauri-apps/api/event";
             /**Method that will attempt to close the current app window. */
             async closeWindow(){
                 var window = Window.getCurrent();
+                var lastMonitor = await currentMonitor();
+                console.log(lastMonitor?.name ? lastMonitor.name:"")
                 // window.close();
                 // invoke('get_app_window_size').then((message) => console.log(message));
+            },
+            async appStartupProcedure(){
+                let make_db = await this.appSettingsDatabaseSetup();
+                let add_listen = await this.setUpListeners();
+                let load_settings = this.loadAppSettings();
+                invoke('show_main_window');//unhide main window and focus it via Rust
             }
         },
         created(){
-            this.appSettingsDatabaseSetup();
-            this.setUpListeners();
-            this.loadAppSettings();
-            invoke('show_main_window');//unhide main window and focus it via Rust
+            this.appStartupProcedure();
         },
         mounted(){
             this.getFeedDisplayViewWidth();
