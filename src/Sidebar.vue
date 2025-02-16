@@ -54,6 +54,7 @@
             </div>
             <FeedPost/>
         </div>
+        <DbDebugModal v-if="DebugFlags.showAppSettingsDBDebugModal"/>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
         <PostFocusModal/>
@@ -73,6 +74,11 @@ import {agent} from "./lib/api.ts"
 import { AppBskyFeedDefs } from "@atproto/api/dist/client";
 import { IPostDetails } from "./interfaces/PostInterfaces";
 import { getBlueskyPostThread } from "./lib/api/Post";
+import {AppSettings, loadRecords, createAppSettingTable,
+    initializeAppSettingsTable, updateAppSettings, checkIfAppSettingsTableExists,
+    checkIfAppSettingsDatabaseExists, validateWindowPosition} from "./lib/db/local_db";
+import { invoke } from "@tauri-apps/api/core";
+import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
 
     export default defineComponent({
         name:'Sidebar',
@@ -91,6 +97,7 @@ import { getBlueskyPostThread } from "./lib/api/Post";
                 fdViewWidth : 0,
                 OptionIconList,
                 APIResponse: {},
+                DBResponse: {},
             }
         },
         methods: {
@@ -175,9 +182,81 @@ import { getBlueskyPostThread } from "./lib/api/Post";
                 postDetails.updateCurrentBreadcrumbs();
                 // postDetails.showFocusModal(post, 0);
                 postDetails.showFocusModalIndex(0);
+            },
+            /**Method used to set up event listeners for app actions.
+             * Called during creation of component.
+             */
+            async setUpListeners(){
+                var window = Window.getCurrent();
+
+                //Listen to any attempt to close the app window.
+                const unlisten = await window.onCloseRequested(async (event) => {
+                    var windowSize = (await getCurrentWindow().innerSize()).toJSON();
+                    var windowPos = (await getCurrentWindow().innerPosition()).toJSON();
+                    var monitor = (await currentMonitor())?.name;
+                    const confirmed = await confirm('Are you sure?');
+                    if (!confirmed) {
+                        // user did not confirm closing the window; let's prevent it
+                        event.preventDefault();
+                    }
+                    else{
+                        await updateAppSettings({lastWindowWidth:windowSize.width,
+                            lastWindowHeight:windowSize.height,
+                            lastWindowPosX:windowPos.x,
+                            lastWindowPosY:windowPos.y,
+                            lastMonitor:monitor} as AppSettings);
+                    }
+                });
+                // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
+            },
+            /**
+             * Method that ensures that the `app_settings` database and tables
+             * are set up. Called during creation of component.
+             */
+            async appSettingsDatabaseSetup(){
+                //technically trying to load the DB will create it, so...
+                var dbExist = await checkIfAppSettingsDatabaseExists();
+                var tableExist = await checkIfAppSettingsTableExists();
+
+                if(!dbExist){
+                    console.log("db file missing - creating db file");
+                    await createAppSettingTable();
+                }
+                if(!tableExist){
+                    console.log("`app_settings` table missing - creating table");
+                    await initializeAppSettingsTable();
+                }
+            },
+            /**
+             * Method that loads the application settings saved in the
+             * `app_settings` database and applies them.
+             */
+            async loadAppSettings(){
+                var loadedWindowPosition = new PhysicalPosition(0,0);
+                var loadedWindowSize = new PhysicalSize(800,600);
+                var appSettings = await loadRecords() as AppSettings[];
+                //move window to correct monitor first
+                await invoke('position_on_monitor',{monitorName:appSettings[0].lastMonitor});
+                //then get monitor for positioning
+                var curMonitor = await currentMonitor();
+                loadedWindowPosition = new PhysicalPosition(appSettings[0].lastWindowPosX ? appSettings[0].lastWindowPosX:0,
+                    appSettings[0].lastWindowPosY ? appSettings[0].lastWindowPosY:0);
+                loadedWindowSize = new PhysicalSize(appSettings[0].lastWindowWidth ? appSettings[0].lastWindowWidth:0,
+                    appSettings[0].lastWindowHeight ? appSettings[0].lastWindowHeight:0);
+                loadedWindowPosition = validateWindowPosition(curMonitor,loadedWindowPosition,loadedWindowSize);
+                var curWindow = await getCurrentWindow();
+                curWindow.setPosition(loadedWindowPosition);
+                curWindow.setSize(loadedWindowSize);
+            },
+            async appStartupProcedure(){
+                await this.appSettingsDatabaseSetup();
+                await this.setUpListeners();
+                this.loadAppSettings();
+                invoke('show_main_window');//unhide main window and focus it via Rust
             }
         },
         created(){
+            this.appStartupProcedure();
         },
         mounted(){
             this.getFeedDisplayViewWidth();

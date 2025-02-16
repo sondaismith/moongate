@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, reactive } from 'vue'
+import { reactive } from 'vue'
 
 interface IDebugFlags{
     showFeedScrollStats: Boolean,
@@ -7,6 +7,7 @@ interface IDebugFlags{
     showFeedColumnCenter: Boolean,
     showFeedColumnDragResizeStats: Boolean,
     showPostFocusModalAPITestButton: Boolean,
+    showAppSettingsDBDebugModal: Boolean,
 }
 
 export const DebugFlags : IDebugFlags = reactive({
@@ -15,5 +16,6 @@ export const DebugFlags : IDebugFlags = reactive({
     showFeedColumnCenter: false,
     showFeedColumnDragResizeStats: false,
     showPostFocusModalAPITestButton: false,
+    showAppSettingsDBDebugModal: false,
 })
 </script>

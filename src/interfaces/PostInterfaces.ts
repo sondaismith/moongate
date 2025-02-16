@@ -48,7 +48,7 @@ interface IPostDetailsList{
     updatePostDetailIconValues(omments:string, reposts:string, likes:string): void,
 }
 
-type ReplyBreadcrumb{
+type ReplyBreadcrumb = {
     userName: string,
     postCID: string
 }
