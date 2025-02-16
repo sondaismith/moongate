@@ -102,23 +102,10 @@ export function createQueryString(queryType:QueryAction, newAppSettings:AppSetti
 }
 
 /**
- * Method that tries to create a test table.
- * @returns Result of attempting to create test table in database.
+ * Method that attempts to create the `app_settings` table.
+ * @returns Result of trying to create the `app_settings` table. Will be
+ * a string starting with "ERROR:" if something went wrong.
  */
-export async function createTestTable(){
-    const db = await Database.load(APPLICATION_DB);
-    var result;
-    try{
-        result = await db.execute('CREATE TABLE debug (id INTEGER PRIMARY KEY, title TEXT,created_at datetime DEFAULT "now")');
-    }
-    catch(error){
-        result = error;
-    }
-    checkIfError(result);
-    await db.close(); //close connection
-    return result;
-}
-
 export async function createAppSettingTable(){
     const db = await Database.load(APPLICATION_DB);
     var result;
@@ -131,13 +118,12 @@ export async function createAppSettingTable(){
     catch(error){
         result = error;
     }
-    checkIfError(result);
     await db.close(); //close connection
-    return result;
+    return checkIfError(result);
 }
 
 /**
- * Method used to initialize the `app_settings` table after it has been created.
+ * Method used to initialize the `app_settings` table with a record after it has been created.
  * @returns Result of trying to initialize the `app_settings` table. Will be
  * a string starting with "ERROR:" if something went wrong.
  */
@@ -160,9 +146,8 @@ export async function initializeAppSettingsTable(){
         result = error;
         await db.close();
     }
-    checkIfError(result);
     await db.close(); //close connection
-    return result;
+    return checkIfError(result);
 }
 
 /**
@@ -185,9 +170,8 @@ export async function updateAppSettings(newValues:AppSettings|Object) {
     catch (error){
         result = error;
     }
-    checkIfError(result);
     await db.close(); //close connection
-    return result;
+    return checkIfError(result);
 }
 
 /**
@@ -204,27 +188,7 @@ export async function clearAppSettings() {
     catch(error){
         result = error;
     }
-    checkIfError(result);
     await db.close();
-    return result;
-}
-
-/**
- * Method that tries to add a record to the test table.
- * @returns Result of attempting to add a record to the test table.
- */
-export async function addTestRecord(){
-    var result;
-    try{
-        const db = await Database.load(APPLICATION_DB);
-        result = await db.execute('INSERT into debug (title, created_at) VALUES ($1,$2)',
-            ['test', new Date().toISOString()]
-        )
-        await db.close();
-    }
-    catch(error){
-        result = error; //Make sure to handle returned error object wherever
-    }
     return checkIfError(result);
 }
 
@@ -297,27 +261,6 @@ export async function checkIfAppSettingsTableExists(){
 }
 
 /**
- * Method that deletes record from the database. Not used atm,
- * probably will eventually be used when the cache gets set up.
- * @param id The id of the record to delete.
- * @returns The returned result from the deletion attempt.
- */
-export async function deleteRecord(id:number) {
-    var result;
-    try{
-        const db = await Database.load(APPLICATION_DB);
-        result = await db.execute('DELETE from debug WHERE (id) = ($1)',
-            [id]
-        )
-        await db.close();
-    }
-    catch(error){
-        result = error; //Make sure to handle returned error object wherever
-    }
-    return checkIfError(result);
-}
-
-/**
  * Method the returns all the records currently held in the `app_settings` table.
  * @returns Result of trying to grab all the records held in the `app_settings` table.
  */
@@ -326,23 +269,6 @@ export async function loadRecords(){
     try{
         const db = await Database.load(APPLICATION_DB);
         result = await db.select('SELECT * FROM app_settings') as AppSettings;
-        await db.close();
-    }
-    catch(error){
-        result = error;
-    }
-    return checkIfError(result);
-}
-
-/**
- * Method the returns all the records currently held in the test table.
- * @returns Result of trying to grab all the records held in the test table.
- */
-export async function loadTestRecords(){
-    var result;
-    try{
-        const db = await Database.load(APPLICATION_DB);
-        result = await db.select('SELECT * FROM debug');
         await db.close();
     }
     catch(error){

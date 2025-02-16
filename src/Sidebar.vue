@@ -54,45 +54,7 @@
             </div>
             <FeedPost/>
         </div>
-        <div class="absolute right-0 mr-2 mt-2 bg-purple-600 p-2 rounded drop-shadow-md">
-            <div class="space-y-2">
-                <div @click="addDBRecord" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2 drop-shadow">Add dummy record</div>
-                <div @click="refreshDBDisplay" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2 drop-shadow">Load Records</div>
-                <div @click="createTestTable" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2 drop-shadow">Create Table (sqlite backend)</div>
-                <div class="flex justify-between">
-                    <div @click="createAppSettingsTable" class="cursor-pointer bg-green-600
-                    hover:bg-green-500 rounded p-2 drop-shadow">Create app_setting table</div>
-                    <div @click="debugInitializeAppSettings" class="cursor-pointer bg-orange-600
-                    hover:bg-orange-500 rounded p-2 drop-shadow">(Re)Intitalize app_setting db+table</div>
-                </div>
-                <div @click="getAppWindowPosition" class="cursor-pointer bg-yellow-600 hover:bg-yellow-500 rounded p-2 drop-shadow">Update Saved Window Pos+Size</div>
-                <div @click="closeWindow" class="cursor-pointer bg-yellow-600 hover:bg-yellow-500 rounded p-2 drop-shadow">Close Window</div>
-            </div>
-            <div>
-                <div class="flex justify-between px-2">
-                    <div class="w-10">Id</div>
-                    <div class="w-20">Monitor Width</div>
-                    <div class="w-20">Monitor Height</div>
-                    <div class="w-20">Window XPos</div>
-                    <div class="w-20">Window YPOS</div>
-                    <div class="w-20">[Delete]</div>
-                </div>
-                <div v-for="(data, index) in DBResponse" class="flex bg-blue-900 px-2 items-center">
-                    <div class="w-10">{{ data.id }}</div>
-                    <div class="w-20 overflow-hidden text-ellipsis">{{ data.lastWindowWidth}}</div>
-                    <div class="w-20">{{ data.lastWindowHeight }}</div>
-                    <div class="w-20">{{ data.lastWindowPosX }}</div>
-                    <div class="w-20">{{ data.lastWindowPosY }}</div>
-                    <div class="w-20">
-                        <div @click="deleteDBRecord(data.id)" class="bg-red-500 rounded text-center m-1 mr-0 select-none
-                        cursor-pointer hover:bg-red-400">X</div>
-                    </div>
-                </div>
-                <div v-if="DBResponse.length == undefined" class="flex bg-blue-900 px-2 justify-center">
-                    <div>No Records to Display</div>
-                </div>
-            </div>
-        </div>
+        <DbDebugModal v-if="DebugFlags.showAppSettingsDBDebugModal"/>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
         <PostFocusModal/>
@@ -112,15 +74,11 @@ import {agent} from "./lib/api.ts"
 import { AppBskyFeedDefs } from "@atproto/api/dist/client";
 import { IPostDetails } from "./interfaces/PostInterfaces";
 import { getBlueskyPostThread } from "./lib/api/Post";
-import {AppSettings, createTestTable, addTestRecord, loadRecords,
-    deleteRecord, clearAppSettings, deleteAppSettingsDBFile, createAppSettingTable,
-    initializeAppSettingsTable, updateAppSettings,
-    checkIfAppSettingsTableExists, checkIfAppSettingsDatabaseExists,
-validateWindowPosition} from "./lib/db/local_db";
+import {AppSettings, loadRecords, createAppSettingTable,
+    initializeAppSettingsTable, updateAppSettings, checkIfAppSettingsTableExists,
+    checkIfAppSettingsDatabaseExists, validateWindowPosition} from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
-import { availableMonitors, currentMonitor, getCurrentWindow, Monitor, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { listen } from "@tauri-apps/api/event";
+import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
 
     export default defineComponent({
         name:'Sidebar',
@@ -225,59 +183,6 @@ import { listen } from "@tauri-apps/api/event";
                 // postDetails.showFocusModal(post, 0);
                 postDetails.showFocusModalIndex(0);
             },
-            /**DEBUG - (Re)Initialize app_settings table */
-            async debugInitializeAppSettings(){
-                console.log('(Re)Initializing app_settings db + table');
-                // clearAppSettings();
-                deleteAppSettingsDBFile();
-                // initializeAppSettingsTable();
-                this.appSettingsDatabaseSetup();
-            },
-            /**DEBUG - Add dummy record to database */
-            async addDBRecord(){
-                console.log('Adding dummy record to db');
-                console.log(await addTestRecord());
-                this.refreshDBDisplay();
-            },
-            /**DEBUG - Add dummy record to database */
-            async deleteDBRecord(recordId:number){
-                console.log('Removing dummy record ['+recordId+'] from db');
-                console.log(await deleteRecord(recordId));
-                this.refreshDBDisplay();
-            },
-            /**DEBUG - Pull latest data from DB so it can be displayed */
-            async refreshDBDisplay(){
-                console.log('Pulling latest records from db');
-                // const dummmyRecords = [
-                //     {id:1, name:'Sarks', dateAdded:'02/01/2003'},
-                //     {id:2, name:'Jameson', dateAdded:'02/01/2003'},
-                //     {id:3, name:'Tommy', dateAdded:'02/01/2003'},
-                // ]
-                // this.DBResponse = dummmyRecords;
-                const result = await loadRecords();
-                if(result) this.DBResponse = result;
-                console.log(result);
-            },
-            /**DEBUG - Creates the debug test table*/
-            async createTestTable(){
-                console.log(createTestTable());
-            },
-            /**DEBUG - Creates the app_settings table */
-            async createAppSettingsTable(){
-                // console.log(createTestTable());
-                console.log(createAppSettingTable());
-            },
-            async getAppWindowPosition(){
-                // invoke('get_app_window_size').then((message) => console.log(message));
-                var windowSize = (await getCurrentWindow().innerSize()).toJSON();
-                var windowPos = (await getCurrentWindow().outerPosition()).toJSON();
-                var monitor = (await currentMonitor())?.name;
-                await updateAppSettings({lastWindowWidth:windowSize.width,
-                    lastWindowHeight:windowSize.height,
-                    lastWindowPosX:windowPos.x,lastWindowPosY:windowPos.y,
-                    lastMonitor:monitor} as AppSettings)
-                this.refreshDBDisplay();
-            },
             /**Method used to set up event listeners for app actions.
              * Called during creation of component.
              */
@@ -327,32 +232,26 @@ import { listen } from "@tauri-apps/api/event";
              * `app_settings` database and applies them.
              */
             async loadAppSettings(){
-                var loadedWindowPosition = new PhysicalPosition(-1200,-500);
-                var loadedWindowSize = new PhysicalSize(1000,600);
+                var loadedWindowPosition = new PhysicalPosition(0,0);
+                var loadedWindowSize = new PhysicalSize(800,600);
                 var appSettings = await loadRecords() as AppSettings[];
                 //move window to correct monitor first
                 await invoke('position_on_monitor',{monitorName:appSettings[0].lastMonitor});
                 //then get monitor for positioning
                 var curMonitor = await currentMonitor();
-                loadedWindowPosition = new PhysicalPosition(appSettings[0].lastWindowPosX ? appSettings[0].lastWindowPosX:0, appSettings[0].lastWindowPosY ? appSettings[0].lastWindowPosY:0);
-                loadedWindowSize = new PhysicalSize(appSettings[0].lastWindowWidth ? appSettings[0].lastWindowWidth:0,appSettings[0].lastWindowHeight ? appSettings[0].lastWindowHeight:0);
+                loadedWindowPosition = new PhysicalPosition(appSettings[0].lastWindowPosX ? appSettings[0].lastWindowPosX:0,
+                    appSettings[0].lastWindowPosY ? appSettings[0].lastWindowPosY:0);
+                loadedWindowSize = new PhysicalSize(appSettings[0].lastWindowWidth ? appSettings[0].lastWindowWidth:0,
+                    appSettings[0].lastWindowHeight ? appSettings[0].lastWindowHeight:0);
                 loadedWindowPosition = validateWindowPosition(curMonitor,loadedWindowPosition,loadedWindowSize);
                 var curWindow = await getCurrentWindow();
                 curWindow.setPosition(loadedWindowPosition);
                 curWindow.setSize(loadedWindowSize);
             },
-            /**Method that will attempt to close the current app window. */
-            async closeWindow(){
-                var window = Window.getCurrent();
-                var lastMonitor = await currentMonitor();
-                console.log(lastMonitor?.name ? lastMonitor.name:"")
-                // window.close();
-                // invoke('get_app_window_size').then((message) => console.log(message));
-            },
             async appStartupProcedure(){
-                let make_db = await this.appSettingsDatabaseSetup();
-                let add_listen = await this.setUpListeners();
-                let load_settings = this.loadAppSettings();
+                await this.appSettingsDatabaseSetup();
+                await this.setUpListeners();
+                this.loadAppSettings();
                 invoke('show_main_window');//unhide main window and focus it via Rust
             }
         },

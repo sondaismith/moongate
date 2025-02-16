@@ -68,7 +68,7 @@ fn position_on_monitor(app_handle: tauri::AppHandle, monitor_name:String){
     //Look for matching monitor based on name
     // println!("Passed monitor name: {0:?}",&monitor_name);//DEBUG
     let last_monitor = monitors.iter().find(|&monitor|monitor.name().unwrap() == &monitor_name);
-    println!("App was closed on Monitor: {0:?}", last_monitor);//DEBUG
+    // println!("App was closed on Monitor: {0:?}", last_monitor);//DEBUG
     //fallback position if monitor was not found
     let mut x_pos = 0;
     let mut y_pos = 0;
