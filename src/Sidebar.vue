@@ -76,7 +76,9 @@ import { IPostDetails } from "./interfaces/PostInterfaces";
 import { getBlueskyPostThread } from "./lib/api/Post";
 import {AppSettings, loadRecords, createAppSettingTable,
     initializeAppSettingsTable, updateAppSettings, checkIfAppSettingsTableExists,
-    checkIfAppSettingsDatabaseExists, validateWindowPosition} from "./lib/db/local_db";
+    checkIfAppSettingsDatabaseExists, validateWindowPosition,
+checkIfUserAccountsTableExists,
+createUserAccountsTable} from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
 import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
 
@@ -214,7 +216,6 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
              * are set up. Called during creation of component.
              */
             async appSettingsDatabaseSetup(){
-                //technically trying to load the DB will create it, so...
                 var dbExist = await checkIfAppSettingsDatabaseExists();
                 var tableExist = await checkIfAppSettingsTableExists();
 
@@ -225,6 +226,17 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
                 if(!tableExist){
                     console.log("`app_settings` table missing - creating table");
                     await initializeAppSettingsTable();
+                }
+            },
+            /**
+             * Method that ensures that the `user_accounts` table exists.
+             * Called during creation of component.
+             */
+             async userAccountsDatabaseSetup(){
+                var tableExist = await checkIfUserAccountsTableExists();
+                if(!tableExist){
+                    console.log("`user_accounts` table missing - creating table");
+                    await createUserAccountsTable();
                 }
             },
             /**
@@ -250,6 +262,7 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
             },
             async appStartupProcedure(){
                 await this.appSettingsDatabaseSetup();
+                await this.userAccountsDatabaseSetup();
                 await this.setUpListeners();
                 this.loadAppSettings();
                 invoke('show_main_window');//unhide main window and focus it via Rust

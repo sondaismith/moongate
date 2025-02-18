@@ -19,6 +19,16 @@ export enum QueryAction{
 }
 
 /**
+ * Enum used as part of actions relating to moongate_app database.
+ *
+ * Holds details specifying table name (key) and number of columns (value).
+ */
+export enum DBTable{
+    app_settings = 8,
+    user_accounts = 4,
+}
+
+/**
  * Type that describes the shape of the data that can be
  * saved to the application preferences table.
  */
@@ -31,6 +41,16 @@ export type AppSettings = {
     lastWindowPosY?: number,
     lastMonitor?: string,
     lastUpdatedAt?: string,
+}
+
+/**
+ * Type that describes the shape of the data that can be saved to the user_accounts table.
+ */
+export type UserAccounts = {
+    name: string,
+    handle: string,
+    did: string,
+    pfp?: string,
 }
 
 /**
@@ -50,7 +70,7 @@ type FeedDetails = {
  * @param updateId The id of the record that needs to be updated.
  * @returns String value of the created SQL Query.
  */
-export function createQueryString(queryType:QueryAction, newAppSettings:AppSettings, updateId?:number){
+export function createQueryString(queryType:QueryAction, newAppSettings:AppSettings|UserAccounts, tableToTarget:DBTable, updateId?:number){
     var query;
 
     var objectKeys = Object.keys(newAppSettings);
@@ -58,14 +78,16 @@ export function createQueryString(queryType:QueryAction, newAppSettings:AppSetti
     switch (queryType) {
         case QueryAction.CREATE:
             //not implemented
+            query = undefined;
             break;
         case QueryAction.INSERT:
-            if(objectKeys.length < 8){
+            if(objectKeys.length < tableToTarget){
                 //log and inform of error - too few values
                 query = undefined;
             }
             else{
-                query = "INSERT into app_settings ";
+                //get target table name via key from DBTable enum
+                query = `INSERT into ${Object.keys(DBTable)[Object.values(DBTable).indexOf(tableToTarget)]} `;
                 var columns = "(";
                 var values = "VALUES(";
                 for (let i = 0; i < objectKeys.length; i++) {
@@ -84,7 +106,12 @@ export function createQueryString(queryType:QueryAction, newAppSettings:AppSetti
             }
             break;
         case QueryAction.UPDATE:
-            query = "UPDATE app_settings SET ";
+            if(objectKeys.length<1){
+                query = undefined;
+                break;//no values specified - do not continue
+            }
+            //get target table name via key from DBTable enum
+            query = `UPDATE ${Object.keys(DBTable)[Object.values(DBTable).indexOf(tableToTarget)]} SET `;
             for (let i = 0; i < objectKeys.length; i++) {
                 var column = objectKeys[i]+" = "+"$"+(i+1);
                 if(i+1<objectKeys.length) column+=", "; //if not last element, add comma
@@ -113,6 +140,26 @@ export async function createAppSettingTable(){
         const newTableQuery = 'CREATE TABLE app_settings (id INTEGER PRIMARY KEY,currentUserId INTEGER DEFAULT 1,'
         +'darkModeOn INTEGER DEFAULT 0,lastWindowWidth INTEGER,lastWindowHeight INTEGER,lastWindowPosX INTEGER,'
         +'lastWindowPosY INTEGER,lastMonitor TEXT DEFAULT "\\\\.\\DISPLAY1",lastUpdatedAt datetime DEFAULT "now")';
+        result = await db.execute(newTableQuery);
+    }
+    catch(error){
+        result = error;
+    }
+    await db.close(); //close connection
+    return checkIfError(result);
+}
+
+/**
+ * Method that attempts to create the `user_accounts` table.
+ * @returns Result of trying to create the `user_accounts` table. Will be
+ * a string starting with "ERROR:" if something went wrong.
+ */
+export async function createUserAccountsTable(){
+    const db = await Database.load(APPLICATION_DB);
+    var result;
+    try{
+        const newTableQuery = 'CREATE TABLE user_accounts (id INTEGER PRIMARY KEY,name TEXT NOT NULL,'
+        +'handle TEXT NOT NULL,did TEXT NOT NULL,pfp TEXT)';
         result = await db.execute(newTableQuery);
     }
     catch(error){
@@ -203,7 +250,7 @@ export async function checkIfAppSettingsDatabaseExists() {
         const dbExists = await exists('moongate_app.db', {
             baseDir: BaseDirectory.AppData,
         });
-        console.log("does app settings db exist: "+dbExists);
+        console.log("does `moongate_app` db exist: "+dbExists);
         result = dbExists;
     }
     catch(error){
@@ -253,6 +300,28 @@ export async function checkIfAppSettingsTableExists(){
         result = (tableResult && rowResult); //both must be true for all to be A-OK
         await db.close();
         console.log("does `app_settings` table exist: "+result);
+    }
+    catch(error){
+        result = error; //Make sure to handle returned error object wherever
+    }
+    return checkIfError(result);
+}
+
+/**
+ * Method that checks if the `user_accounts` table exists, and if there's
+ * at least one record row in it.
+ * @returns True (1) if table exists, False (0) if not.
+ */
+export async function checkIfUserAccountsTableExists(){
+    var result;
+    try{
+        const db = await Database.load(APPLICATION_DB);
+        var tableExists = await db.select("SELECT EXISTS (SELECT * FROM sqlite_master WHERE type='table' AND name='user_accounts')");
+        //returned object key is query text and result is value, the array indexes below extract the values
+        var tableResult = Boolean(Object.values(tableExists[0])[0]);
+        result = tableResult;
+        await db.close();
+        console.log("does `user_accounts` table exist: "+result);
     }
     catch(error){
         result = error; //Make sure to handle returned error object wherever
