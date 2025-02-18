@@ -37,6 +37,7 @@ declare module 'vue' {
     'IMingcute:userAddFill': typeof import('~icons/mingcute/user-add-fill')['default']
     'ISolar:chatDotsOutline': typeof import('~icons/solar/chat-dots-outline')['default']
     'ISolar:shareBold': typeof import('~icons/solar/share-bold')['default']
+    LoginModal: typeof import('./src/components/Login/LoginModal.vue')['default']
     PostDetailIcon: typeof import('./src/components/Post/PostDetailIcon.vue')['default']
     PostDetailModal: typeof import('./src/components/Post/PostDetailModal.vue')['default']
     PostFocusModal: typeof import('./src/components/Post/PostFocusModal.vue')['default']

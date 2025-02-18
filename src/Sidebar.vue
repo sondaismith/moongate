@@ -54,6 +54,8 @@
             </div>
             <FeedPost/>
         </div>
+        <LoginModal/>
+        <Toast position="bottom-center"/>
         <DbDebugModal v-if="DebugFlags.showAppSettingsDBDebugModal"/>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
@@ -81,6 +83,8 @@ checkIfUserAccountsTableExists,
 createUserAccountsTable} from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
 import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
+import LoginModal from "./components/Login/LoginModal.vue";
+
 
     export default defineComponent({
         name:'Sidebar',
@@ -266,7 +270,7 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
                 await this.setUpListeners();
                 this.loadAppSettings();
                 invoke('show_main_window');//unhide main window and focus it via Rust
-            }
+            },
         },
         created(){
             this.appStartupProcedure();
