@@ -35,6 +35,7 @@ declare module 'vue' {
     'IMingcute:settings6Fill': typeof import('~icons/mingcute/settings6-fill')['default']
     'IMingcute:user1Line': typeof import('~icons/mingcute/user1-line')['default']
     'IMingcute:userAddFill': typeof import('~icons/mingcute/user-add-fill')['default']
+    InLaInput: typeof import('./src/components/Utilities/InLaInput.vue')['default']
     'ISolar:chatDotsOutline': typeof import('~icons/solar/chat-dots-outline')['default']
     'ISolar:shareBold': typeof import('~icons/solar/share-bold')['default']
     LoginModal: typeof import('./src/components/Login/LoginModal.vue')['default']
