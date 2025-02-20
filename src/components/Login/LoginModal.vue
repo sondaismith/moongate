@@ -22,10 +22,10 @@
                     <InLaInput v-model="enteredUsername" textLabel="Handle"/>
                     <InLaInput v-model="enteredPassword" textLabel="Password"/>
                 </div>
-                <div class="flex flex-col">
+                <div class="flex flex-col md:float-end" :class="{ disabled: attemptingLogin}">
                     <a @click="testToast" tabindex="0" class="relative flex md:self-end rounded cursor-pointer
                         bg-blue-700 justify-center md:w-40 px-3 py-2 font-semibold
-                        hover:text-white hover:bg-blue-500 focus:bg-blue-600 mb-1
+                        hover:text-white hover:bg-blue-500 focus:bg-blue-600
                         select-none">Login</a>
                 </div>
             </form>
@@ -53,18 +53,24 @@ export default defineComponent({
         return{
             enteredUsername: "",
             enteredPassword: "",
+            attemptingLogin: false,
             AppState
         }
     },
     methods:{
-        testToast(){
+        async testToast(){
+            this.attemptingLogin = true;
             this.$toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:2500});
+            setTimeout(() => {
+                this.attemptingLogin = false;
+            }, 2500);
         },
         browseAsGuest(){
             AppState.isAuthBrowsing = false;
             AppState.isGuestBrowsing = true;
+            AppState.currentUsername = "Guest";
             AppState.canBrowse = true;
-            this.$toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr'})
+            this.$toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
         }
     },
     setup () {
@@ -99,5 +105,19 @@ div.group-heading{
     /* animation: dismiss 0.2s forwards; */
     opacity: 0;
     visibility: hidden;
+}
+
+.disabled,
+.disabled:focus,
+.disabled:hover{
+    cursor: wait;
+}
+
+.disabled a,
+.disabled a:focus,
+.disabled a:hover{
+    /* user-select: none; */
+    pointer-events: none;
+    background-color: gray;
 }
 </style>

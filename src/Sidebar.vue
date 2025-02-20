@@ -25,7 +25,7 @@
                 <div class="p-2 space-y-2">
                 <!-- <button class="bg-blue-200 h-10 w-full"></button> -->
                     <FeedButton type="settings" tooltip="App Settings"/>
-                    <UserButton tooltip="[user]"/>
+                    <UserButton :tooltip="AppState.currentUsername"/>
                 </div>
             </div>
             <Tooltip id="navbar-tooltip" tooltip=""/>
