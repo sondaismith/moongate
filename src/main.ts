@@ -8,13 +8,23 @@ import Material from "@primevue/themes/material";
 import Nora from "@primevue/themes/nora";
 import Toast from "primevue/toast";
 import ToastService from "primevue/toastservice";
+import { definePreset } from "@primevue/themes";
+
+const PrimeVueCustomTheme = definePreset(Aura,{
+    components:{
+        toast:{
+            // borderWidth:'15px'
+            width: '200px'
+        }
+    }
+});
 
 const app = createApp(App)
 app.use(PrimeVue, {
-    theme: {
-        preset: Nora,
-        // unstyled: true
-    }
+    // theme:{ preset: PrimeVueCustomTheme },
+    theme:{ preset: Aura },
+    // theme: 'none',
+    // unstyled: true, //allows us to custom style components
 });
 app.use(ToastService);
 app.component("Toast", Toast);

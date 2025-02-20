@@ -58,13 +58,13 @@ export default defineComponent({
     },
     methods:{
         testToast(){
-            this.$toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', life:1500});
+            this.$toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:2500});
         },
         browseAsGuest(){
             AppState.isAuthBrowsing = false;
             AppState.isGuestBrowsing = true;
             AppState.canBrowse = true;
-            this.$toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
+            this.$toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr'})
         }
     },
     setup () {

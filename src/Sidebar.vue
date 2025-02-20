@@ -56,7 +56,30 @@
         </div>
         <LoginModal/>
         <Toast position="bottom-center" group="bc"/>
+        <!-- <Toast position="bottom-center" group="bc":pt="{
+                root:'mr-auto',
+                message:'rounded border border-blue-500',
+                messageContent: 'flex bg-blue-700 p-2 space-x-2',
+                summary: 'font-bold',
+                detail: 'text-xs',
+                transition:{
+                    enterToClass: 'slide-fade'
+                }
+            }">
+        </Toast> -->
         <Toast position="top-right" group="tr"/>
+        <!-- <Toast position="top-right" group="tr"
+            :pt="{
+                root:'',
+                message:'rounded border border-blue-500',
+                messageContent: 'flex bg-blue-700 p-2 space-x-2',
+                summary: 'font-bold',
+                detail: 'text-xs',
+                transition:{
+                    enterToClass: 'slide-fade'
+                }
+            }">
+        </Toast> -->
         <DbDebugModal v-if="DebugFlags.showAppSettingsDBDebugModal"/>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
