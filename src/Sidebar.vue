@@ -55,7 +55,8 @@
             <FeedPost/>
         </div>
         <LoginModal/>
-        <Toast position="bottom-center"/>
+        <Toast position="bottom-center" group="bc"/>
+        <Toast position="top-right" group="tr"/>
         <DbDebugModal v-if="DebugFlags.showAppSettingsDBDebugModal"/>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
@@ -69,11 +70,11 @@ import { userFeedList, GenerateUniqueId } from "./state/FeedList.vue";
 import { FeedEnums } from "./enums/FeedEnums";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
+import { AppState } from "./state/AppState.vue";
 import { DebugFlags } from "./state/Debug.vue";
 import { OptionIconList } from "./fake-data/dumPostData";
 //Remove ASAP
 import {agent} from "./lib/api.ts"
-import { AppBskyFeedDefs } from "@atproto/api/dist/client";
 import { IPostDetails } from "./interfaces/PostInterfaces";
 import { getBlueskyPostThread } from "./lib/api/Post";
 import {AppSettings, loadRecords, createAppSettingTable,
@@ -83,7 +84,6 @@ checkIfUserAccountsTableExists,
 createUserAccountsTable} from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
 import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
-import LoginModal from "./components/Login/LoginModal.vue";
 
 
     export default defineComponent({
@@ -97,6 +97,7 @@ import LoginModal from "./components/Login/LoginModal.vue";
                 // ]
                 feedListing: userFeedList,
                 postDetails,
+                AppState,
                 DebugFlags,
                 iconTypes:PostEnums.IconTypes,
                 scrollXPos : 0,
