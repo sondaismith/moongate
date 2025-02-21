@@ -1,6 +1,6 @@
 <template>
     {{ void "feed column" }}
-    <!-- <div class="flex"> -->
+    {{void `<!-- <div class="flex"> -->`}}
     <div data-test="feed-column" :id="feedId" class="relative flex flex-col h-full w-72 pr-1 bg-slate-900 overflow-hidden min-w-72 max-w-[600px]">
         {{ void "feed title" }}
         <div class="flex min-h-14 w-full border-b-2 border-white pl-2 pr-1 items-center">
@@ -16,9 +16,9 @@
                 <div class="flex flex-col self-center">
                     <div class="flex items-center">
                         <!-- <div title="Add - DEBUG" @click="addNewPost" class="cursor-pointer hover:text-cyan-400"><i-mingcute:plus-fill/></div> -->
-                        <div title="Refresh" @click="generateRandomDate(new Date(2012, 0, 1), new Date)"><i-mingcute:refresh-3-fill class="text-xl cursor-pointer hover:text-cyan-400"/></div>
+                        <div title="Refresh" @click="refreshFeed"><i-mingcute:refresh-3-fill class="text-xl cursor-pointer hover:text-cyan-400"/></div>
                         <div title="Options" @click="toggleFeedColumnOptionsMenu()" class="text-xl cursor-pointer hover:text-cyan-400"><i-mingcute:settings-6-fill/></div>
-                        <div title="Reorder"><i-mingcute:menu-line title="Reorder" class="text-xl cursor-grab hover:text-cyan-400"/></div>
+                        <div title="Reorder" @click="removePost"><i-mingcute:menu-line title="Reorder" class="text-xl cursor-grab hover:text-cyan-400"/></div>
                     </div>
                 </div>
             </div>
@@ -91,8 +91,9 @@
             </div>
         </div>
         <div class="h-full py-2 pl-2 pr-1 bg-slate-600 preload-gutter overflow-y-auto">
-            <!-- <FeedPost v-for="n in feedData?.totalPosts" /> -->
-            <FeedPost v-for="n in PostCollection" :postData="n" />
+            <TransitionGroup name="feedpost">
+                <FeedPost v-for="n in PostCollection" :key="n" :postData="n" />
+            </TransitionGroup>
             <div v-if="DebugFlags.showFeedColumnCenter" class="relative h-full w-0.5 left-1/2 bg-blue-900/60"></div>
             <div v-if="DebugFlags.showFeedColumnDragResizeStats" class="absolute left-0 top-16 px-2 py-1 bg-orange-500/80 content-center">
                 <div>Dragging?: {{ isDragging }}</div>
@@ -102,8 +103,8 @@
         </div>
         <div data-test="feedColumn-highlight" class="absolute pointer-events-none h-full left-0 right-0 border-2 rounded-sm border-sky-500/0 transition-colors"></div>
     </div>
-    <!-- <div data-test="feedColumn-resizer" @mousedown="startDrag($event)" class="relative bg-slate-900 w-1 cursor-ew-resize"></div> -->
-    <!-- </div> -->
+    {{void `<!-- <div data-test="feedColumn-resizer" @mousedown="startDrag($event)" class="relative bg-slate-900 w-1 cursor-ew-resize"></div> -->`}}
+    {{void `<!-- </div> -->`}}
 </template>
 
 <script lang="ts">
@@ -164,7 +165,11 @@ export default defineComponent({
         addNewPost(){
             this.PostCollection.push(createPost(1));
         },
+        removePost(){
+            this.PostCollection.pop();
+        },
         refreshFeed(){
+            this.generateRandomDate(new Date(2012, 0, 1), new Date);
             this.addNewPost();
         },
         startDrag(e: MouseEvent){
@@ -287,13 +292,25 @@ export default defineComponent({
 .small{
     width: 18rem; /*288px*/
 }
-[data-test="feed-column"]{
+/* [data-test="feed-column"]{
     transition: width 0.2s;
-}
+} */
 [data-test="feed-column"].medium{
     width: 27.75rem; /*444px*/
 }
 [data-test="feed-column"].large{
     width: 37.5rem; /*600px*/
+}
+
+/* .feedpost-move, */
+.feedpost-enter-active,
+.feedpost-leave-active {
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.feedpost-enter-from,
+.feedpost-leave-to {
+    opacity: 0;
+    transform: translateY(10px);
 }
 </style>

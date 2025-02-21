@@ -24,7 +24,7 @@ export const AppState = reactive({
      * Confirms the user has either logged in or chosen to
      * browse as a guest.
      */
-    canBrowse: false,
+    canBrowse: true,
     /**
      * The name of the currently logged in user.
      * This variable might belong in another State.

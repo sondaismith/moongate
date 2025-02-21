@@ -12,7 +12,9 @@
                     <div class="flex-shrink preload-gutter overflow-x-hidden">
                         <div class="space-y-2 py-2 pl-2 pr-1">
                             <FeedButton type="home" tooltip="Home"/>
-                            <FeedButton v-for="feeds in feedListing.feedList" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/>
+                            <TransitionGroup name="feedbutton">
+                                <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/>
+                            </TransitionGroup>
                         </div>
                     </div>
                     <div class="border-t border-gray-700 px-2 py-2 flex-none">
@@ -23,7 +25,6 @@
             {{ void "Navbar Footer" }}
             <div class="w-full flex-none !mt-auto">
                 <div class="p-2 space-y-2">
-                <!-- <button class="bg-blue-200 h-10 w-full"></button> -->
                     <FeedButton type="settings" tooltip="App Settings"/>
                     <UserButton :tooltip="AppState.currentUsername"/>
                 </div>
@@ -31,9 +32,14 @@
             <Tooltip id="navbar-tooltip" tooltip=""/>
         </div>
         {{ void "main content" }}
-        <div data-test="feed-viewport" :onscroll="showScrollXPos" id="feedcolumnDisplay" class="bg-slate-700 flex overflow-y-hidden" >
+        <div data-test="feed-viewport" :onscroll="showScrollXPos" id="feedcolumnDisplay"
+            class="flex w-full bg-slate-700 overflow-y-hidden" >
             <div class="flex">
-                <FeedColumn v-for="feed in feedListing.feedList" :feedData="feed" :feedId="feed.feedId" :post-count="feed.totalPosts" :feed-name="feed.feedName" :user-handle="feed.feedHandle"/>
+                <!-- <TransitionGroup name="feedcolumn"> -->
+                    <FeedColumn v-for="feed in feedListing.feedList" :key="feed.feedId" :feedData="feed"
+                        :feedId="feed.feedId" :post-count="feed.totalPosts" :feed-name="feed.feedName"
+                        :user-handle="feed.feedHandle"/>
+                <!-- </TransitionGroup> -->
                 <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
                     <div>X Pos: {{ scrollXPos }}</div>
                     <div>Viewport Width: {{ fdViewWidth }}</div>
@@ -68,18 +74,6 @@
             }">
         </Toast> -->
         <Toast position="top-right" group="tr"/>
-        <!-- <Toast position="top-right" group="tr"
-            :pt="{
-                root:'',
-                message:'rounded border border-blue-500',
-                messageContent: 'flex bg-blue-700 p-2 space-x-2',
-                summary: 'font-bold',
-                detail: 'text-xs',
-                transition:{
-                    enterToClass: 'slide-fade'
-                }
-            }">
-        </Toast> -->
         <DbDebugModal v-if="DebugFlags.showAppSettingsDBDebugModal"/>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
@@ -308,3 +302,26 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
         }
     })
 </script>
+<style scoped>
+.feedbutton-enter-active,
+.feedbutton-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.feedbutton-enter-from,
+.feedbutton-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.feedcolumn-enter-active,
+.feedcolumn-leave-active {
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.feedcolumn-enter-from,
+.feedcolumn-leave-to {
+    opacity: 0;
+    transform: translateX(10px);
+}
+</style>

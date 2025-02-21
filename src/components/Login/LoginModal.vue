@@ -1,5 +1,6 @@
 <template>
-    <div :class="AppState.canBrowse ? 'hide' : 'show'" class="modal absolute z-20 flex flex-col w-full h-full bg-slate-900/80">
+    <div :class="AppState.canBrowse ? 'hide' : 'show'" class="modal absolute z-20 flex
+        flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm">
         <div class="flex flex-col w-4/5 md:w-2/3 lg:max-w-[700px]
             h-2/3 md:h-auto bg-slate-800 p-4 mx-auto my-auto rounded-md">
             {{ void "close button" }}
