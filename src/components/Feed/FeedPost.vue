@@ -1,5 +1,4 @@
 <template>
-    {{ void "feed content" }}
     <div class="w-full pb-2">
         {{ void "feed post" }}
         <div class="flex flex-col rounded bg-slate-400 p-1 w-full drop-shadow-md justify-between">

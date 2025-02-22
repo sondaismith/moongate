@@ -1,7 +1,5 @@
 <template>
-    {{ void "feed column" }}
-    {{void `<!-- <div class="flex"> -->`}}
-    <div data-test="feed-column" :id="feedData?.feedId" class="flex flex-col h-full w-72 pr-1 bg-slate-900 overflow-hidden min-w-72 max-w-[600px]">
+    <div data-test="feed-column" :id="feedData?.feedId" class="flex flex-col relative h-full w-72 pr-1 bg-slate-900 overflow-hidden min-w-72 max-w-[600px]">
         {{ void "feed title" }}
         <div class="flex min-h-14 w-full border-b-2 border-white pl-2 pr-1 items-center">
             <FeedIcon :icon="feedData?.feedType"/>
@@ -103,9 +101,8 @@
         </div>
         <div data-test="feedColumn-highlight" class="absolute pointer-events-none h-full left-0 right-0 border-2 rounded-sm border-sky-500/0 transition-colors"></div>
     </div>
-    {{void `<!-- <div data-test="feedColumn-resizer" @mousedown="startDrag($event)" class="relative bg-slate-900 w-1 cursor-ew-resize"></div> -->`}}
-    {{void `<!-- </div> -->`}}
 </template>
+<!-- <div v-if="false" data-test="feedColumn-resizer" @mousedown="startDrag($event)" class="relative bg-slate-900 w-1 cursor-ew-resize"></div> -->
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
@@ -165,7 +162,7 @@ export default defineComponent({
         },
         startDrag(e: MouseEvent){
             if(!this.feedId) return;
-            const column = document.getElementById(this.feedId);
+            const column = document.getElementById(this.feedData?.feedId);
             if(column){
                 colElement = column;
                 if(DebugFlags.showFeedColumnDragResizeStats){
@@ -222,7 +219,7 @@ export default defineComponent({
             this.feedOptionPreferencesShown = !this.feedOptionPreferencesShown;
         },
         getFeedElement():HTMLElement{
-            return document.getElementById(this.feedId) as HTMLElement;
+            return document.getElementById(this.feedData?.feedId) as HTMLElement;
         },
         /**
          * Method that changes the FeedColumn's width to "Small" (18rem).
@@ -249,7 +246,7 @@ export default defineComponent({
             this.selectedWidthSetting = 2;
         },
     },
-    created(){
+    mounted(){
         this.generateRandomDate(new Date(2012, 0, 1), new Date())
         for (let i = 0; i < this.feedData.totalPosts; i++) {
             this.PostCollection.push(createPost(8));
@@ -296,7 +293,7 @@ export default defineComponent({
 /* .feedpost-move, */
 .feedpost-enter-active,
 .feedpost-leave-active {
-    transition: opacity 0.5s ease, transform 0.5s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .feedpost-enter-from,

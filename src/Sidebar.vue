@@ -38,7 +38,6 @@
             <div class="flex">
                 <TransitionGroup name="feedcolumn">
                     <FeedColumn v-for="feed in feedListing.feedList" :key="feed" :feedData="feed"/>
-                    <!-- <div v-for="feeds in feedListing.feedList" :key="feeds">{{ feeds.feedId }}</div> -->
                 </TransitionGroup>
                 <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
                     <div>X Pos: {{ scrollXPos }}</div>
@@ -127,15 +126,18 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
         methods: {
             addFeed(){
                 const feedTypes = [FeedEnums.Types.Art,FeedEnums.Types.Friends,FeedEnums.Types.News];
-                userFeedList.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
-                let newestFeed = userFeedList.feedList[userFeedList.feedList.length-1];
+                this.feedListing.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
+                let newestFeed = this.feedListing.feedList[this.feedListing.feedList.length-1];
                 console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
                 this.showScrollXPos();
             },
             removeFeed(){
-                let removedFeed = userFeedList.feedList[userFeedList.feedList.length-1];
-                userFeedList.feedList.pop();
-                console.log(`Removed feed: [${removedFeed.feedName}, ${removedFeed.feedType}, ${removedFeed.newPosts}]`);
+                if(this.feedListing.feedList && this.feedListing.feedList.length>0){
+                    let removedIndex = Math.round(Math.random() * (this.feedListing.feedList.length-1));
+                    let removedFeed = this.feedListing.feedList[removedIndex];
+                    console.log(`Removing feed: [${removedFeed.feedName}, ${removedFeed.feedType}, ${removedFeed.newPosts}]`);
+                    this.feedListing.feedList.splice(removedIndex,1);
+                }
                 this.showScrollXPos();
             },
             /**
@@ -325,12 +327,16 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
 
 .feedcolumn-enter-active,
 .feedcolumn-leave-active {
-    transition: opacity 0.5s ease, transform 0.5s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, width 0.6s ease;
 }
 
 .feedcolumn-enter-from,
 .feedcolumn-leave-to {
-    opacity: 0px;
-    transform: translateX(10px);
+    width: 0 !important;
+    opacity: 0;
+    transform: translateX(-10px);
+}
+.feedcolumn-leave-to{
+    min-width: unset;
 }
 </style>
