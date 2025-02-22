@@ -1,7 +1,7 @@
 <template>
     {{ void "feed column" }}
     {{void `<!-- <div class="flex"> -->`}}
-    <div data-test="feed-column" :id="feedId" class="relative flex flex-col h-full w-72 pr-1 bg-slate-900 overflow-hidden min-w-72 max-w-[600px]">
+    <div data-test="feed-column" :id="feedData?.feedId" class="flex flex-col h-full w-72 pr-1 bg-slate-900 overflow-hidden min-w-72 max-w-[600px]">
         {{ void "feed title" }}
         <div class="flex min-h-14 w-full border-b-2 border-white pl-2 pr-1 items-center">
             <FeedIcon :icon="feedData?.feedType"/>
@@ -143,16 +143,7 @@ export default defineComponent({
         }
     },
     props: {
-        feedId: String,
-        userHandle: String,
-        feedName: String,
-        postCount: Number,
         feedData: Object as PropType<IFeedData>,
-    },
-    mounted() {
-        this.userHandle
-        this.feedName
-        this.postCount
     },
     methods: {
         generateRandomDate(start: Date, end: Date){

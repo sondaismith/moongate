@@ -6,6 +6,7 @@
         <i-mingcute:home-4-line v-if="type === 'home'" class="h-full text-2xl text-slate-800"/>
         <i-mingcute:settings-2-line v-else-if="type === 'settings'" class="h-full text-2xl text-slate-800"/>
         <i-mdi:playlist-add v-else-if="type === 'add'" class="h-full text-2xl text-slate-800"/>
+        <i-mdi:playlist-remove v-else-if="type === 'remove'" class="h-full text-2xl text-slate-800"/>
         <i-mdi:paint-outline v-else-if="type === 'art'" class="h-full text-2xl text-slate-800"/>
         <i-mdi:newspaper-variant-multiple v-else-if="type === 'news'" class="h-full text-2xl text-slate-800"/>
         <i-mingcute:group-3-fill v-else-if="type === 'friends'" class="h-full text-2xl text-slate-800"/>

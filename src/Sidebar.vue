@@ -17,8 +17,9 @@
                             </TransitionGroup>
                         </div>
                     </div>
-                    <div class="border-t border-gray-700 px-2 py-2 flex-none">
+                    <div class="border-t border-gray-700 space-y-2 px-2 py-2 flex-none">
                         <FeedButton type="add" tooltip="Add Feed" @click="addFeed"/>
+                        <FeedButton type="remove" tooltip="Remove Feed" @click="removeFeed"/>
                     </div>
                 </div>
             </div>
@@ -35,11 +36,10 @@
         <div data-test="feed-viewport" :onscroll="showScrollXPos" id="feedcolumnDisplay"
             class="flex w-full bg-slate-700 overflow-y-hidden" >
             <div class="flex">
-                <!-- <TransitionGroup name="feedcolumn"> -->
-                    <FeedColumn v-for="feed in feedListing.feedList" :key="feed.feedId" :feedData="feed"
-                        :feedId="feed.feedId" :post-count="feed.totalPosts" :feed-name="feed.feedName"
-                        :user-handle="feed.feedHandle"/>
-                <!-- </TransitionGroup> -->
+                <TransitionGroup name="feedcolumn">
+                    <FeedColumn v-for="feed in feedListing.feedList" :key="feed" :feedData="feed"/>
+                    <!-- <div v-for="feeds in feedListing.feedList" :key="feeds">{{ feeds.feedId }}</div> -->
+                </TransitionGroup>
                 <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
                     <div>X Pos: {{ scrollXPos }}</div>
                     <div>Viewport Width: {{ fdViewWidth }}</div>
@@ -130,6 +130,12 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
                 userFeedList.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
                 let newestFeed = userFeedList.feedList[userFeedList.feedList.length-1];
                 console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
+                this.showScrollXPos();
+            },
+            removeFeed(){
+                let removedFeed = userFeedList.feedList[userFeedList.feedList.length-1];
+                userFeedList.feedList.pop();
+                console.log(`Removed feed: [${removedFeed.feedName}, ${removedFeed.feedType}, ${removedFeed.newPosts}]`);
                 this.showScrollXPos();
             },
             /**
@@ -303,14 +309,17 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
     })
 </script>
 <style scoped>
+.feedbutton-move,
 .feedbutton-enter-active,
 .feedbutton-leave-active {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: margin 0.4s ease, opacity 0.2s ease, height 0.4s ease, transform 0.2s ease;
 }
 
 .feedbutton-enter-from,
 .feedbutton-leave-to {
     opacity: 0;
+    height: 0;
+    margin: 0 !important;
     transform: translateY(-10px);
 }
 
@@ -321,7 +330,7 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
 
 .feedcolumn-enter-from,
 .feedcolumn-leave-to {
-    opacity: 0;
+    opacity: 0px;
     transform: translateX(10px);
 }
 </style>

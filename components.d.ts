@@ -21,6 +21,7 @@ declare module 'vue' {
     'IMdi:newspaperVariantMultiple': typeof import('~icons/mdi/newspaper-variant-multiple')['default']
     'IMdi:paintOutline': typeof import('~icons/mdi/paint-outline')['default']
     'IMdi:playlistAdd': typeof import('~icons/mdi/playlist-add')['default']
+    'IMdi:playlistRemove': typeof import('~icons/mdi/playlist-remove')['default']
     IMdiRobotAngry: typeof import('~icons/mdi/robot-angry')['default']
     'IMingcute:butterfly2Line': typeof import('~icons/mingcute/butterfly2-line')['default']
     'IMingcute:closeFill': typeof import('~icons/mingcute/close-fill')['default']
