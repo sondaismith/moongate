@@ -21,10 +21,10 @@
                     <div>bsky.social</div> -->
                     <div class="group-heading">Account</div>
                     <InLaInput v-model="enteredUsername" textLabel="Handle"/>
-                    <InLaInput v-model="enteredPassword" textLabel="Password"/>
+                    <InLaInput v-model="enteredPassword" textLabel="Password" isPasswordInput="true"/>
                 </div>
                 <div class="flex flex-col md:float-end" :class="{ disabled: attemptingLogin}">
-                    <a @click="testToast" tabindex="0" class="relative flex md:self-end rounded cursor-pointer
+                    <a @click="loginAccount" tabindex="0" class="relative flex md:self-end rounded cursor-pointer
                         bg-blue-700 justify-center md:w-40 px-3 py-2 font-semibold
                         hover:text-white hover:bg-blue-500 focus:bg-blue-600
                         select-none">Login</a>
@@ -48,6 +48,7 @@
 import { defineComponent } from 'vue'
 import InLaInput from '../Utilities/InLaInput.vue';
 import { AppState } from '../../state/AppState.vue';
+import { LoginBskyAccount } from '../../lib/api/Login';
 
 export default defineComponent({
     data(){
@@ -59,12 +60,24 @@ export default defineComponent({
         }
     },
     methods:{
-        async testToast(){
+        async loginAccount(){
             this.attemptingLogin = true;
-            this.$toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:2500});
-            setTimeout(() => {
-                this.attemptingLogin = false;
-            }, 2500);
+            this.$toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
+            const result = await LoginBskyAccount(this.enteredUsername, this.enteredPassword);
+            // setTimeout(() => {
+            //     this.attemptingLogin = false;
+            // }, 2500);
+            if(result.success){
+                AppState.isAuthBrowsing = true;
+                AppState.isGuestBrowsing = false;
+                AppState.currentUsername = "Logged In";
+                AppState.canBrowse = true;
+                this.$toast.add({summary:"Login Success", detail:``,severity:'success',group:'tr',life:1000});
+            }
+            else{
+                this.$toast.add({summary:"Login Error", detail:`${result.message}`,severity:'error',group:'tr',life:3000});
+            }
+            this.attemptingLogin = false;
         },
         browseAsGuest(){
             AppState.isAuthBrowsing = false;
