@@ -13,7 +13,8 @@
                         <div class="space-y-2 py-2 pl-2 pr-1">
                             <FeedButton type="home" tooltip="Home"/>
                             <TransitionGroup name="feedbutton">
-                                <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/>
+                                <!-- <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/> -->
+                                <FeedButton v-for="feed in FeedList" :key="feed" :feedId="feed.description.feedId" :type="feed.description.feedType" :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"/>
                             </TransitionGroup>
                         </div>
                     </div>
@@ -37,7 +38,8 @@
             class="flex w-full bg-slate-700 overflow-y-hidden" >
             <div class="flex">
                 <TransitionGroup name="feedcolumn">
-                    <FeedColumn v-for="feed in feedListing.feedList" :key="feed" :feedData="feed"/>
+                    <!-- <FeedColumn v-for="feed in feedListing.feedList" :key="feed" :feedData="feed"/> -->
+                    <FeedColumn v-for="feed in FeedList" :key="feed.description.feedId" :feedData="feed"/>
                 </TransitionGroup>
                 <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
                     <div>X Pos: {{ scrollXPos }}</div>
@@ -49,8 +51,10 @@
         </div>
         {{ void "Post Details Modal" }}
         <div v-if="DebugFlags.showPostFocusModalAPITestButton"
-            class="absolute z-10 p-4 space-y-1 w-72">
+            class="absolute z-10 m-4 space-y-1 w-72">
             <div @click="getBSkyAPIData" class="cursor-pointer bg-blue-600 hover:bg-blue-500 rounded p-2">Get Posts</div>
+            <div @click="getHomeFeed" class="cursor-pointer bg bg-sky-600 hover:bg-sky-500
+                rounded p-2">Get Home Feed</div>
             <div class="p-4 bg-slate-950/90">
                 Posts here:
                 <div v-for="(data, index) in APIResponse.data?.feeds">
@@ -82,8 +86,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { userFeedList, GenerateUniqueId } from "./state/FeedList.vue";
-import { FeedEnums } from "./enums/FeedEnums";
+import { userFeedList, addDummyFeed, FeedList, addUserFeed } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState } from "./state/AppState.vue";
@@ -100,6 +103,7 @@ checkIfUserAccountsTableExists,
 createUserAccountsTable} from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
 import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
+import { getUserHomeFeed } from "./lib/api/Feed";
 
 
     export default defineComponent({
@@ -112,6 +116,7 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
                 //     {feedName:'Artists', feedType:'art', newPosts: 7},
                 // ]
                 feedListing: userFeedList,
+                FeedList,
                 postDetails,
                 AppState,
                 DebugFlags,
@@ -125,10 +130,11 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
         },
         methods: {
             addFeed(){
-                const feedTypes = [FeedEnums.Types.Art,FeedEnums.Types.Friends,FeedEnums.Types.News];
-                this.feedListing.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
-                let newestFeed = this.feedListing.feedList[this.feedListing.feedList.length-1];
-                console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
+                // const feedTypes = [FeedEnums.Types.Art,FeedEnums.Types.Friends,FeedEnums.Types.News];
+                // this.feedListing.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
+                // let newestFeed = this.feedListing.feedList[this.feedListing.feedList.length-1];
+                // console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
+                addDummyFeed();
                 this.showScrollXPos();
             },
             removeFeed(){
@@ -214,6 +220,10 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
                 postDetails.updateCurrentBreadcrumbs();
                 // postDetails.showFocusModal(post, 0);
                 postDetails.showFocusModalIndex(0);
+            },
+            async getHomeFeed(){
+                var homeFeed = await getUserHomeFeed();
+                addUserFeed(homeFeed.data.feed);
             },
             /**Method used to set up event listeners for app actions.
              * Called during creation of component.

@@ -1,5 +1,6 @@
 import { FunctionalComponent } from "vue"
 import { FeedEnums } from "../enums/FeedEnums"
+import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs"
 
 // interface IFeedCollection{
 //     feedName: string
@@ -16,7 +17,7 @@ import { FeedEnums } from "../enums/FeedEnums"
  * @property {number} newPosts - Number of unread posts.
  * @property {number} totalPosts - The total number of posts that are part of the feed.
  */
-interface IFeedData{
+interface IFeedDescription{
     /**The unique identifier of the Feed. */
     feedId: String
     /**The Display Name of the Feed. */
@@ -32,7 +33,12 @@ interface IFeedData{
 }
 
 interface IFeedListing{
-    feedList : IFeedData[]
+    description : IFeedDescription,
+    data : FeedViewPost[],
+}
+
+interface IFeedList{
+    feedDescription: IFeedDescription[]
 }
 
 interface IFeedIconTypes{
@@ -40,4 +46,4 @@ interface IFeedIconTypes{
     icon : FunctionalComponent
 }
 
-export type {IFeedData, IFeedListing, IFeedIconTypes}
+export type {IFeedDescription, IFeedListing, IFeedIconTypes}

@@ -15,7 +15,7 @@ export const DebugFlags : IDebugFlags = reactive({
     showFeedViewportCenter: false,
     showFeedColumnCenter: false,
     showFeedColumnDragResizeStats: false,
-    showPostFocusModalAPITestButton: false,
+    showPostFocusModalAPITestButton: true,
     showAppSettingsDBDebugModal: false,
 })
 </script>

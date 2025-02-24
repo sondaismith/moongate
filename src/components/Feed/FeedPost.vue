@@ -13,12 +13,12 @@
                 {{ void "post content" }}
                 <div class="flex flex-col px-2 overflow-hidden">
                     <div class="flex items-center">
-                        <div class="text-feedPostName font-semibold text-nowrap">{{ postData?.userName }}</div>
-                        <div class="text-feedTimestamp pl-1 truncate" title="@Random User hdahdhdaahd">@{{ postData?.userHandle }}</div>
+                        <div class="text-feedPostName font-semibold text-nowrap">{{ postData?.post.author.displayName }}</div>
+                        <div class="text-feedTimestamp pl-1 truncate" title="@Random User hdahdhdaahd">@{{ postData?.post.author.handle }}</div>
                         <div data-test="post-timestamp" class="text-feedTimestamp text-nowrap cursor-pointer ml-auto" @click="openPostDetails()">1 Jan 2024</div>
                     </div>
                     <div class="text-xs leading-4 pb-2">
-                        {{ postData?.postText }}
+                        {{ postData?.post.record.text }}
                     </div>
                     <!-- <div class="text-xs leading-4 pb-2">{{ postData?.postText }}</div> -->
                     {{ void "image-type media" }}
@@ -27,8 +27,8 @@
                     @media-click="(i:number) => openFocusDetails(i)"/>
                     <div class="flex flex-row h-8">
                         <PostInteractionIcons class="text-slate-50 text-s" :noShareButton="true"
-                            :numComments="postData?.comments.length" :numShares="postData?.totalReposts"
-                            :numLikes="postData?.totalLikes"/>
+                            :numComments="postData?.post.replyCount" :numShares="postData?.post.repostCount"
+                            :numLikes="postData?.post.likeCount"/>
                     </div>
                 </div>
             </div>
@@ -40,10 +40,11 @@
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
+import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 export default defineComponent({
     props:{
-        postData: Object as PropType<IPostDetails>
+        postData: Object as PropType<FeedViewPost>
     },
     data(){
         return{
