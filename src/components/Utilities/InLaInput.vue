@@ -1,9 +1,11 @@
 <template>
-    <div class="relative flex flex-col items-start">
+    <div class="relative flex flex-col" :class="fillContainer ? 'w-full' : ''">
         <input :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"
             class="peer bg-slate-900 leading-8 pl-2 pt-3 h-11 mb-2
             border-gray-500 hover:border-blue-400 focus:border-blue-600 rounded-md
-            w-full" :type="isPasswordInput?'password' : 'text'"/>
+            disabled:border-gray-700 disabled:text-gray-500
+            w-full" :type="isPasswordInput ? 'password' : 'text'"
+            :disabled="isDisabled ? true : false"/>
         <div class="absolute top-[-2px] left-2 select-none text-feedTimestamp text-gray-300
             peer-focus:text-blue-300">
             {{ textLabel ? textLabel : "Unset Label" }}
@@ -15,11 +17,30 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
-    props: ['modelValue', 'textLabel', 'isPasswordInput'],
+    // props: ['modelValue', 'textLabel', 'isPasswordInput', 'isDisabled'],
+    name: "InLaInput",
+    props:{
+        modelValue:{
+            type: String,
+        },
+        textLabel:{
+            type: String,
+        },
+        isPasswordInput:{
+            type: Boolean,
+        },
+        isDisabled:{
+            type: Boolean,
+        },
+        fillContainer:{
+            type: Boolean,
+            default: false,
+        }
+    },
     emits: ['update:modelValue'],
     setup () {
         return {}
-    }
+    },
 })
 </script>
 

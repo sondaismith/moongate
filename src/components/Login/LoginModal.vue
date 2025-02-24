@@ -20,8 +20,12 @@
                     <!-- <div>Hosting Provider</div>
                     <div>bsky.social</div> -->
                     <div class="group-heading">Account</div>
-                    <InLaInput v-model="enteredUsername" textLabel="Handle"/>
-                    <InLaInput v-model="enteredPassword" textLabel="Password" isPasswordInput="true"/>
+                    <div class="flex">
+                        <InLaInput v-model="enteredUsername" textLabel="Handle" :fillContainer="true"/>
+                        <InLaInput v-model="hostProvider" textLabel="Host" :isDisabled="true" :fillContainer="true"/>
+                    </div>
+                    <InLaInput v-model="enteredPassword" textLabel="Password"
+                        :isPasswordInput="true" :fillContainer="true"/>
                 </div>
                 <div class="flex flex-col md:float-end" :class="{ disabled: attemptingLogin}">
                     <a @click="loginAccount" tabindex="0" class="relative flex md:self-end rounded cursor-pointer
@@ -55,6 +59,7 @@ export default defineComponent({
         return{
             enteredUsername: "",
             enteredPassword: "",
+            hostProvider: "bsky.social",
             attemptingLogin: false,
             AppState
         }
@@ -63,7 +68,8 @@ export default defineComponent({
         async loginAccount(){
             this.attemptingLogin = true;
             this.$toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
-            const result = await LoginBskyAccount(this.enteredUsername, this.enteredPassword);
+            var handleAddress = `${this.enteredUsername}.${this.hostProvider}`;
+            const result = await LoginBskyAccount(handleAddress, this.enteredPassword);
             // setTimeout(() => {
             //     this.attemptingLogin = false;
             // }, 2500);
@@ -86,6 +92,9 @@ export default defineComponent({
             AppState.canBrowse = true;
             this.$toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
         }
+    },
+    components:{
+        InLaInput: InLaInput,
     },
     setup () {
         return {}
