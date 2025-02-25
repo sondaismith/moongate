@@ -7,7 +7,7 @@
 <script lang="ts">
 import { reactive } from 'vue';
 import {FeedEnums} from '../enums/FeedEnums';
-import { IFeedListing } from '../interfaces/FeedInterfaces';
+import { IFeedDescription, IFeedListing } from '../interfaces/FeedInterfaces';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
@@ -35,20 +35,34 @@ export const FeedList : IFeedListing[] = reactive([
  * based on data returned by the Bluesky API.
  * @param feed The Feed data returned by the Bluesky API.
  */
-export function addUserFeed(feed:FeedViewPost[]){
+export function addUserFeed(description:IFeedDescription, feed:FeedViewPost[]){
     const feedTypes = [FeedEnums.Types.Art,FeedEnums.Types.Friends,FeedEnums.Types.News];
     var randomHandleNum = `${Math.floor((Math.random()*40))+1}_${Math.floor((Math.random()*40))+1}`;
     FeedList.push({
-        description:{
-            feedId: GenerateUniqueId(10),
-            feedHandle: `LiveGrab${randomHandleNum}`,
-            feedName: 'ThisOnesReal',
-            feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)],
-            newPosts: Math.floor(Math.random()*15),
-            totalPosts: Math.floor(Math.random()*6)
-        },
+        description:description,
         data:feed,
     })
+}
+
+/**
+ * Method used to create a FeedDescription. Required when adding a Feed to the `FeedList`
+ * state.
+ * @param handle The Feed handle. If the Feed is for a user, this will just be their handle.
+ * @param name The name/title of the Feed. The user can specify this to be whatever they want.
+ * @param type The type of Feed this is. Used for categorization, changes icon used.
+ * @param newPosts The number of unread posts.
+ * @param totalPosts Total number of Posts in feed. Pretty sure this value is not needed.
+ */
+export function createFeedDescription(handle:string,name:string,type:FeedEnums.Types,newPosts:number,totalPosts:number){
+    var desc : IFeedDescription = {
+        feedId: GenerateUniqueId(10),
+        feedHandle: handle,
+        feedName: name,
+        feedType: type,
+        newPosts: newPosts,
+        totalPosts: totalPosts
+    }
+    return desc;
 }
 
 /**

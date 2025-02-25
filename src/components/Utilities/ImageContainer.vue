@@ -9,7 +9,7 @@
                         (imagesToDisplay?.length === 3 && index === 2 ? 'col-start-2 row-span-2':'')
                     ]">
             <div class="h-full w-full bg-center bg-cover"
-                :style="{'background-image': 'url('+image+')'}"></div>
+                :style="{'background-image': 'url('+image.thumb+')'}"></div>
         </div>
     </div>
 </template>
@@ -17,6 +17,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
+import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
@@ -29,7 +30,7 @@ export function calculateImageContainerMinHeight(elWidth:number):number{
 export default defineComponent({
     name:'ImageContainer',
     props:{
-        imagesToDisplay: Object as PropType<string[]>,
+        imagesToDisplay: Object as PropType<ViewImage[]>,
     },
     methods:{
         /**

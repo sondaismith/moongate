@@ -1,5 +1,6 @@
 import { AppBskyFeedDefs, isDid } from "@atproto/api";
 import { agent } from "../api";
+import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
 export class InvalidPostDIDError extends Error{
     constructor(did = ""){
@@ -43,4 +44,21 @@ export async function getBlueskyPostThread(postDID: string){
     else{
         throw new InvalidPostDIDError("fail test");
     }
+}
+
+
+/**
+ * Method that retrieves a Post ThreadView object from the Bluesky API based on
+ * a Post selected in a Feed view.
+ * @param postToShow The Post Thread to show based on the Post clicked in a Feed.
+ */
+export async function getPostThread(postToShow:FeedViewPost){
+    var threadResult = await agent.getPostThread({uri:postToShow.post.uri});
+    var result = undefined;
+    if(threadResult){
+        // postDetails.postThread = threadResult.data.thread as ThreadViewPost;
+        // postDetails.currentThreadView = postDetails.postThread;
+        return threadResult.data.thread as ThreadViewPost;
+    }
+    return result;
 }

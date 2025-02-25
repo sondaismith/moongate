@@ -10,7 +10,8 @@ import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteHeartFill from '~icons/mingcute/heart-fill';
 import SolarShareBold from '~icons/solar/share-bold';
 import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
-import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { FeedViewPost, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { getPostThread } from '../lib/api/Post';
 
 // export const postDetails : IPostDetailsList = reactive({
 export const postDetails :IPostDetailsList = reactive({
@@ -85,23 +86,24 @@ export const postDetails :IPostDetailsList = reactive({
     showModal(){
         this.isVisible = true;
     },
-    showModalPost(postToShow:IPostDetails){
+    showModalPost(postToShow:FeedViewPost){
         this.isVisible = true;
-        this.postData = updatePostDetails(postToShow);
+        // this.postData = updatePostDetails(postToShow);
+        this.postData = postToShow;
     },
     hideModal(){
         this.isVisible = false;
     },
-    /**
-     * Method that shows "Focus" modal - media on left with comments
-     * in right sidebar. This is the initial version created that used
-     * dummy data.
-     */
-    showFocusModal(postToShow:IPostDetails, mediaIndex:number){
-        postDetails.isFocusVisible = true;
-        this.clickedMediaIndex = mediaIndex;
-        this.postData = updatePostDetails(postToShow)
-    },
+    // /**
+    //  * Method that shows "Focus" modal - media on left with comments
+    //  * in right sidebar. This is the initial version created that used
+    //  * dummy data.
+    //  */
+    // showFocusModal(postToShow:IPostDetails, mediaIndex:number){
+    //     postDetails.isFocusVisible = true;
+    //     this.clickedMediaIndex = mediaIndex;
+    //     this.postData = updatePostDetails(postToShow)
+    // },
     /**
      * Method that shows "Focus" modal - media on left with comments
      * in right sidebar. This is the live version that accesses the
@@ -227,6 +229,36 @@ function discoverBreadcrumbs(parentCID:string, currentPostThread:ThreadViewPost)
         result = parentThread.post.author.displayName;
         postDetails.currentBreadcrumb.unshift({userName:parentThread.post.author.displayName, postCID:parentThread?.post.cid});
         discoverBreadcrumbs(parentThread?.post.record.reply.parent.cid,parentThread);
+    }
+}
+
+/**
+ * Method that opens a "Post Detail Modal" (central display, text
+ * focus) with data associated with the Post that was selected
+ * in a Feed View (`FeedColumn`).
+ * @param postToShow The Post you want to see the Thread View for.
+ */
+export async function showDetailModal(postToShow:FeedViewPost){
+    postDetails.isVisible = true;
+    var postThreadResult = await getPostThread(postToShow);
+    if(postThreadResult){
+        postDetails.postThread = postThreadResult;
+        postDetails.currentThreadView = postThreadResult;
+    }
+}
+
+/**
+ * Method that shows "Focus" modal - media on left with comments
+ * in right sidebar. This is the live version that pulls data through
+ * the Bluesky API.
+ */
+export async function showFocusModal(postToShow:FeedViewPost, mediaIndex:number){
+    postDetails.isFocusVisible = true;
+    postDetails.clickedMediaIndex = mediaIndex;
+    var postThreadResult = await getPostThread(postToShow);
+    if(postThreadResult){
+        postDetails.postThread = postThreadResult;
+        postDetails.currentThreadView = postThreadResult;
     }
 }
 </script>

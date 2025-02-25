@@ -1,6 +1,6 @@
 import { FunctionalComponent } from "vue";
 import * as PostEnums from "../enums/PostEnums";
-import { ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
 interface IPostDetails{
     userName: String,
@@ -21,7 +21,7 @@ interface IPostDetailsList{
     clickedMediaIndex: number,
     getClickedMediaIndex():number,
     setClickedMediaIndex(newVal:number):void,
-    postData : IPostDetails,
+    postData : FeedViewPost,
     postThread: ThreadViewPost,
     currentThreadView: ThreadViewPost,
     setCurrentThreadView(cid:string):void,
@@ -30,9 +30,7 @@ interface IPostDetailsList{
     updateCurrentBreadcrumbs():void,
     createPostData(data:ThreadViewPost):void,
     showModal(): void,
-    showModalPost(postToShow:IPostDetails): void,
     hideModal(): void,
-    showFocusModal(postToShow:IPostDetails,mediaIndex:number): void,
     showFocusModalIndex(mediaIndex:number): void,
     hideFocusModal(): void,
     isPostOptionsMenuVisible: Boolean,

@@ -86,7 +86,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { userFeedList, addDummyFeed, FeedList, addUserFeed } from "./state/FeedList.vue";
+import { userFeedList, addDummyFeed, FeedList, addUserFeed, createFeedDescription } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState } from "./state/AppState.vue";
@@ -104,6 +104,7 @@ createUserAccountsTable} from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
 import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
 import { getUserHomeFeed } from "./lib/api/Feed";
+import { FeedEnums } from "./enums/FeedEnums";
 
 
     export default defineComponent({
@@ -223,7 +224,8 @@ import { getUserHomeFeed } from "./lib/api/Feed";
             },
             async getHomeFeed(){
                 var homeFeed = await getUserHomeFeed();
-                addUserFeed(homeFeed.data.feed);
+                var feedDesc = createFeedDescription('home','Home Timeline',FeedEnums.Types.Home,10,10);
+                addUserFeed(feedDesc, homeFeed.data.feed);
             },
             /**Method used to set up event listeners for app actions.
              * Called during creation of component.

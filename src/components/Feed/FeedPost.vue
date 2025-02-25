@@ -20,10 +20,9 @@
                     <div class="text-xs leading-4 pb-2">
                         {{ postData?.post.record.text }}
                     </div>
-                    <!-- <div class="text-xs leading-4 pb-2">{{ postData?.postText }}</div> -->
                     {{ void "image-type media" }}
-                    <ImageContainer v-if="postData?.postType === 'image'"
-                    :imagesToDisplay="postData?.postMedia"
+                    <ImageContainer v-if="postData?.post.embed?.images"
+                    :imagesToDisplay="postData?.post.embed.images"
                     @media-click="(i:number) => openFocusDetails(i)"/>
                     <div class="flex flex-row h-8">
                         <PostInteractionIcons class="text-slate-50 text-s" :noShareButton="true"
@@ -38,8 +37,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { postDetails } from '../../state/PostDetails.vue';
-import { IPostDetails } from '../../interfaces/PostInterfaces';
+import { postDetails, showDetailModal, showFocusModal } from '../../state/PostDetails.vue';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 export default defineComponent({
@@ -54,16 +52,18 @@ export default defineComponent({
     methods:{
         openPostDetails(){
             if(this.postData){
-                postDetails.showModalPost(this.postData);
+                // postDetails.showModalPost(this.postData);
+                showDetailModal(this.postData);
                 //update `PostDetailIcons` in `Post` State
-                postDetails.updatePostDetailIconValues(this.postData.comments.length.toString(),this.postData.totalReposts.toString(),this.postData.totalLikes.toString());
+                // postDetails.updatePostDetailIconValues(this.postData.comments.length.toString(),this.postData.totalReposts.toString(),this.postData.totalLikes.toString());
             }
         },
         openFocusDetails(mediaIndex:number){
             if(this.postData){
-                postDetails.showFocusModal(this.postData, mediaIndex);
+                // postDetails.showFocusModal(this.postData, mediaIndex);
+                showFocusModal(this.postData, mediaIndex);
                 //update `PostDetailIcons` in `Post` State
-                postDetails.updatePostDetailIconValues(this.postData.comments.length.toString(),this.postData.totalReposts.toString(),this.postData.totalLikes.toString());
+                postDetails.updatePostDetailIconValues(this.postData.post.replyCount.toString(),this.postData.post.repostCount.toString(),this.postData.post.likeCount.toString());
             }
         }
     },
