@@ -81,6 +81,7 @@
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
         <PostFocusModal/>
+        <FeedCreateModal/>
     </div>
 </template>
 
@@ -105,6 +106,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
 import { getUserHomeFeed } from "./lib/api/Feed";
 import { FeedEnums } from "./enums/FeedEnums";
+import FeedCreateModal from "./components/Feed/FeedCreateModal.vue";
 
 
     export default defineComponent({
@@ -131,7 +133,7 @@ import { FeedEnums } from "./enums/FeedEnums";
         },
         methods: {
             addFeed(){
-                // const feedTypes = [FeedEnums.Types.Art,FeedEnums.Types.Friends,FeedEnums.Types.News];
+                // const feedTypes = [FeedEnums.Icons.Art,FeedEnums.Icons.Friends,FeedEnums.Icons.News];
                 // this.feedListing.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
                 // let newestFeed = this.feedListing.feedList[this.feedListing.feedList.length-1];
                 // console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
@@ -224,7 +226,7 @@ import { FeedEnums } from "./enums/FeedEnums";
             },
             async getHomeFeed(){
                 var homeFeed = await getUserHomeFeed();
-                var feedDesc = createFeedDescription('home','Home Timeline',FeedEnums.Types.Home,10,10);
+                var feedDesc = createFeedDescription('home','Home Timeline',FeedEnums.Icons.Home,10,10);
                 addUserFeed(feedDesc, homeFeed.data.feed);
             },
             /**Method used to set up event listeners for app actions.

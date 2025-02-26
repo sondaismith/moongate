@@ -17,10 +17,10 @@ import { FeedEnums } from '../../enums/FeedEnums';
 import { IFeedIconTypes } from '../../interfaces/FeedInterfaces';
 
 var FeedIconTypes : IFeedIconTypes[] = [
-    { name: FeedEnums.Types.Friends, icon: MingcuteGroup3Fill },
-    { name: FeedEnums.Types.News, icon: MdiNewspaperVariantMultiple },
-    { name: FeedEnums.Types.Art, icon: MdiPaintOutline },
-    { name: FeedEnums.Types.Music, icon: MingcuteMusicLine },
+    { name: FeedEnums.Icons.Friends, icon: MingcuteGroup3Fill },
+    { name: FeedEnums.Icons.News, icon: MdiNewspaperVariantMultiple },
+    { name: FeedEnums.Icons.Art, icon: MdiPaintOutline },
+    { name: FeedEnums.Icons.Music, icon: MingcuteMusicLine },
 ]
 
 export default defineComponent({

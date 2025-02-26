@@ -20,6 +20,7 @@ export default defineComponent({
     // props: ['modelValue', 'textLabel', 'isPasswordInput', 'isDisabled'],
     name: "InLaInput",
     props:{
+        /**Used to set the initial value displayed in the control. */
         modelValue:{
             type: String,
         },

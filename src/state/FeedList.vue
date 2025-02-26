@@ -36,7 +36,7 @@ export const FeedList : IFeedListing[] = reactive([
  * @param feed The Feed data returned by the Bluesky API.
  */
 export function addUserFeed(description:IFeedDescription, feed:FeedViewPost[]){
-    const feedTypes = [FeedEnums.Types.Art,FeedEnums.Types.Friends,FeedEnums.Types.News];
+    const feedTypes = [FeedEnums.Icons.Art,FeedEnums.Icons.Friends,FeedEnums.Icons.News];
     var randomHandleNum = `${Math.floor((Math.random()*40))+1}_${Math.floor((Math.random()*40))+1}`;
     FeedList.push({
         description:description,
@@ -53,7 +53,7 @@ export function addUserFeed(description:IFeedDescription, feed:FeedViewPost[]){
  * @param newPosts The number of unread posts.
  * @param totalPosts Total number of Posts in feed. Pretty sure this value is not needed.
  */
-export function createFeedDescription(handle:string,name:string,type:FeedEnums.Types,newPosts:number,totalPosts:number){
+export function createFeedDescription(handle:string,name:string,type:FeedEnums.Icons,newPosts:number,totalPosts:number){
     var desc : IFeedDescription = {
         feedId: GenerateUniqueId(10),
         feedHandle: handle,
@@ -70,7 +70,7 @@ export function createFeedDescription(handle:string,name:string,type:FeedEnums.T
  * object.
  */
 export function addDummyFeed(){
-    const feedTypes = [FeedEnums.Types.Art,FeedEnums.Types.Friends,FeedEnums.Types.News];
+    const feedTypes = [FeedEnums.Icons.Art,FeedEnums.Icons.Friends,FeedEnums.Icons.News];
     var randomHandleNum = `${Math.floor((Math.random()*100))+1}_${Math.floor((Math.random()*100))+1}`;
     FeedList.push({
         description:{
@@ -149,9 +149,9 @@ export function removeLastFeedPost(feedId:String){
 
 export const userFeedList : IFeedListing = reactive({
     feedList: [
-        {feedId:GenerateUniqueId(10), feedName:'Friends', feedHandle:'friends', feedType:FeedEnums.Types.Friends, newPosts: 3, totalPosts: 2},
-        // {feedId:GenerateUniqueId(10), feedName:'Local News', feedHandle:'bbcNews', feedType:FeedEnums.Types.News, newPosts: 5, totalPosts: 3},
-        // {feedId:GenerateUniqueId(10), feedName:'Artists', feedHandle:'artists', feedType:FeedEnums.Types.Art, newPosts: 7, totalPosts: 1},
+        {feedId:GenerateUniqueId(10), feedName:'Friends', feedHandle:'friends', feedType:FeedEnums.Icons.Friends, newPosts: 3, totalPosts: 2},
+        // {feedId:GenerateUniqueId(10), feedName:'Local News', feedHandle:'bbcNews', feedType:FeedEnums.Icons.News, newPosts: 5, totalPosts: 3},
+        // {feedId:GenerateUniqueId(10), feedName:'Artists', feedHandle:'artists', feedType:FeedEnums.Icons.Art, newPosts: 7, totalPosts: 1},
     ]
 })
 </script>
