@@ -16,7 +16,7 @@
             <div class="flex flex-col relative grow overflow-hidden">
                 <Transition>
                     <div v-if="currentPage == 0" class="h-full w-full">
-                        <div>
+                        <div class="mb-2">
                             <div class="flex items-start flex-wrap gap-1">
                                 <PillButton @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
                                 <PillButton :disabled="true" @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
@@ -24,12 +24,7 @@
                                 <PillButton :disabled="true">DMs</PillButton>
                             </div>
                         </div>
-                        <div class="bg-violet-400">
-                            <InLaInput v-model="searchTerm" text-label="User Search"/>
-                            <div v-for="result, index in filterUsers" :key="index">
-                                {{ result.name }}
-                            </div>
-                        </div>
+                        <UserSearchBar :data-list="searchResults"/>
                     </div>
                     <div v-else-if="currentPage == 1" class="h-full w-full">
                         <div>
@@ -65,12 +60,15 @@ import { FeedEnums } from '../../enums/FeedEnums.ts'
 import PillButton from '../Utilities/PillButton.vue';
 import InLaInput from '../Utilities/InLaInput.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
+import {debounce} from '../../helpers/debouncer'
+import UserSearchBar from '../Utilities/UserSearchBar.vue';
 
 export default defineComponent({
     components:{
         PillButton,
         SquareButton,
         InLaInput,
+        UserSearchBar,
     },
     data(){
         return{
@@ -89,37 +87,15 @@ export default defineComponent({
             feedTypeSelected:false,
             feedSpecificationsSet:false,
             searchResults:[
-                {name:'Jimmy', handle:'brainblast'},
-                {name:'James', handle:'serectserviced'},
-                {name:'Samuel', handle:'wockafella'},
+                {did:'asjdy8383h31', name:'Jimmy', handle:'brainblast', pfp:'src/assets/test-media/posts/image04.png'},
+                {did:'033jo3hcbccs', name:'James', handle:'serectserviced'},
+                {did:'4000djjeaj33', name:'Johnathon', handle:'jjrenttoomuch', pfp:'src/assets/test-media/posts/image07.png'},
+                {did:'skiei229iix9', name:'Jack', handle:'mybodyjackjack', pfp:'src/assets/test-media/posts/image08.png'},
+                {did:'nneu302bshw3', name:'Samuel', handle:'wockafella'},
             ],
             searchTerm:'',
-            FeedEnums
-        }
-    },
-    computed:{
-        // filterUsers:{
-        filterUsers(){
-            // get(){
-            //     if(!this.searchTerm) {console.log(this.searchTerm); return this.searchResults;}
-            //     else{
-            //         console.log(this.searchTerm);
-            //         return this.searchResults.filter(x => x.name.toLowerCase().includes(this.searchTerm));
-            //     }
-            // },
-            // set(v){
-            //     if(!this.searchTerm) {console.log(this.searchTerm); return this.searchResults;}
-            //     else{
-            //         console.log(this.searchTerm);
-            //         return this.searchResults.filter(x => x.name.toLowerCase().includes(this.searchTerm));
-            //     }
-            // }
-            if(this.searchTerm.trim().length > 0){
-                console.log(this.searchTerm);
-                // return this.searchResults.filter((record) => record.name.toLowerCase().includes(this.searchTerm.trim()));
-                return this.searchResults.filter((record) => new RegExp(`^${this.searchTerm}${/[a-zA-Z]*/.source}`, "gi").test(record.name));
-            }
-            return this.searchResults;
+            debouncedSearchTerm:'',
+            FeedEnums,
         }
     },
     methods:{

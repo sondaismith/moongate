@@ -4,7 +4,7 @@
             class="peer bg-slate-900 leading-8 pl-2 pt-3 h-11 mb-2
             border-gray-500 hover:border-blue-400 focus:border-blue-600 rounded-md
             disabled:border-gray-700 disabled:text-gray-500
-            w-full" :type="isPasswordInput ? 'password' : 'text'"
+            w-full" :class="$attrs.class" :type="isPasswordInput ? 'password' : 'text'"
             :disabled="isDisabled ? true : false"/>
         <div class="absolute top-[-2px] left-2 select-none text-feedTimestamp text-gray-300
             peer-focus:text-blue-300">
