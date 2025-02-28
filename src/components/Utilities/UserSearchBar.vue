@@ -1,7 +1,7 @@
 <template>
     <div class="border-slate-500">
         <div class="flex">
-            <InLaInput id="test1" @inlainput-submit="submitSearch" :emit-on-enter="true"
+            <InLaInput id="user-searchbar" @inlainput-submit="submitSearch" :emit-on-enter="true"
             :is-disabled="isWaitingForResult"
             class="peer grow rounded-r-none border-r-0" v-model="searchTerm"
             text-label="User Search"/>
@@ -45,6 +45,8 @@
 import { defineComponent, toRef } from 'vue'
 import InLaInput from './InLaInput.vue';
 import { debounce } from '../../helpers/debouncer';
+import { agent } from '../../lib/api';
+import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 export default defineComponent({
     name:'User Search Bar',
@@ -77,13 +79,16 @@ export default defineComponent({
             debouncedSearchTerm:'',
             /**Determines if waiting for result from data source. */
             isWaitingForResult:false,
+            /**DEBUG FOR NOW - returned data from API */
+            apiData: [] as IUserSearchResult[]
         }
     },
     computed:{
         filteredUsers(){
             if(this.debouncedSearchTerm.trim().length > 0){
                 // return this.searchResults.filter((record) => record.name.toLowerCase().includes(this.searchTerm.trim()));
-                return this.dataList.filter((record) => new RegExp(`^${this.debouncedSearchTerm}${/[a-zA-Z]*/.source}`, "gi").test(record.name));
+                // return this.dataList.filter((record) => new RegExp(`^${this.debouncedSearchTerm}${/[a-zA-Z]*/.source}`, "gi").test(record.name));
+                return this.apiData;
             }
             // return this.searchResults;
             return [];
@@ -105,7 +110,7 @@ export default defineComponent({
          * Method used to "submit" the search term entered into the control
          * on Enter Key or button press.
          */
-        submitSearch(){
+        async submitSearch(){
             if(!this.isWaitingForResult && this.searchTerm.trim().length>0){
                 this.isWaitingForResult = true;
                 console.log(`Search term: ${this.searchTerm}`);//DEBUG
@@ -113,14 +118,32 @@ export default defineComponent({
                 setTimeout(() => {
                     this.debouncedSearchTerm = this.searchTerm;//DEBUG, updates the display filter
                     this.isWaitingForResult = false;
-                    var searchbar = (document.getElementById('test1')?.children[0] as HTMLElement)
+                    var searchbar = (document.getElementById('user-searchbar')?.children[0] as HTMLElement)
                     searchbar.focus();
                 },500)
+                var query = `rocco`
+                var searchResult = await agent.searchActors({q: `${this.searchTerm}`,limit:10});
+                // var searchResult = await agent.searchActors({q: query,limit:10});
+                console.log(searchResult);
+                this.payloadToUserSearchResult(searchResult.data.actors)
             }
             else{
                 this.debouncedSearchTerm = this.searchTerm;//DEBUG, just here to allow clear
             }
+        },
+        payloadToUserSearchResult(data:ProfileView[]){
+            var test = [] as (IUserSearchResult[])
+            data.forEach(r => {
+                test.push({
+                    did:r.did,
+                    handle:r.handle,
+                    name:r.displayName ? r.displayName : '',
+                    pfp: r.avatar
+                })
+            });
+            this.apiData = test;
         }
+
     },
     setup () {
         return {}

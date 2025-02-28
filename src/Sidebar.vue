@@ -81,7 +81,9 @@
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <PostDetailModal/>
         <PostFocusModal/>
-        <FeedCreateModal/>
+        <Transition name="modal">
+            <FeedCreateModal v-if="AppState.isCreatingFeed"/>
+        </Transition>
     </div>
 </template>
 
@@ -90,7 +92,7 @@ import { defineComponent } from "vue";
 import { userFeedList, addDummyFeed, FeedList, addUserFeed, createFeedDescription } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
-import { AppState } from "./state/AppState.vue";
+import { AppState, ToggleCreateFeedModal } from "./state/AppState.vue";
 import { DebugFlags } from "./state/Debug.vue";
 import { OptionIconList } from "./fake-data/dumPostData";
 //Remove ASAP
@@ -137,7 +139,9 @@ import FeedCreateModal from "./components/Feed/FeedCreateModal.vue";
                 // this.feedListing.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
                 // let newestFeed = this.feedListing.feedList[this.feedListing.feedList.length-1];
                 // console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
-                addDummyFeed();
+
+                // addDummyFeed();
+                AppState.ToggleCreateFeedModal();
                 this.showScrollXPos();
             },
             removeFeed(){
@@ -325,6 +329,18 @@ import FeedCreateModal from "./components/Feed/FeedCreateModal.vue";
     })
 </script>
 <style scoped>
+.modal-move,
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0 !important;
+    transform: translateY(-10px);
+}
+
 .feedbutton-move,
 .feedbutton-enter-active,
 .feedbutton-leave-active {

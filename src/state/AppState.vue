@@ -30,5 +30,13 @@ export const AppState = reactive({
      * This variable might belong in another State.
      */
     currentUsername: "[User]",
+    /**Is the user currently trying to create a new Feed to add to the
+     * view.
+     */
+    isCreatingFeed: false,
+    /**Toggles display of `FeedCreateModal` component. */
+    ToggleCreateFeedModal(){
+        AppState.isCreatingFeed = !AppState.isCreatingFeed;
+    }
 })
 </script>
