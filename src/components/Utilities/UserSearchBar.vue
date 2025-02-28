@@ -1,6 +1,15 @@
 <template>
     <div class="border-slate-500">
-        <InLaInput class="mb-0s" v-model="searchTerm" text-label="User Search"/>
+        <div class="flex">
+            <InLaInput id="test1" @inlainput-submit="submitSearch" :emit-on-enter="true"
+            :is-disabled="isWaitingForResult"
+            class="peer grow rounded-r-none border-r-0" v-model="searchTerm"
+            text-label="User Search"/>
+            <div @click="submitSearch" class="peer-hover:border-blue-400 rounded-r p-2 bg-blue-500
+            border border-l-0 border-blue-500 transition-colors cursor-pointer
+            hover:bg-blue-400"
+            :class="[isWaitingForResult ? 'bg-gray-500 hover:bg-gray-500 cursor-wait' : '']">Search</div>
+        </div>
         <div class="rounded-t border p-2 border-inherit cursor-pointer hover:bg-blue-400/30"
             v-if="searchTerm.trim() && debouncedSearchTerm.trim()">
             <div>Search for: "{{ searchTerm }}"</div>
@@ -66,6 +75,8 @@ export default defineComponent({
             searchTerm:'',
             /**Debounced/delayed value of search term entered into input. */
             debouncedSearchTerm:'',
+            /**Determines if waiting for result from data source. */
+            isWaitingForResult:false,
         }
     },
     computed:{
@@ -79,14 +90,37 @@ export default defineComponent({
         },
     },
     watch:{
+        /**
+         * Debounces the updating of the search term value. Used to limit the
+         * number of calls made to the API when using "live" search requests.
+         */
         searchTerm: debounce(function (newVal){
             console.log(`Call to API made, new search val: ${newVal}.`);
             //perform API call
-            this.debouncedSearchTerm = newVal; //DEBUG code
+            // this.debouncedSearchTerm = newVal; //DEBUG code
             },600)
     },
-    mounted(){
-        // this.delay = this.debounceDelay;
+    methods:{
+        /**
+         * Method used to "submit" the search term entered into the control
+         * on Enter Key or button press.
+         */
+        submitSearch(){
+            if(!this.isWaitingForResult && this.searchTerm.trim().length>0){
+                this.isWaitingForResult = true;
+                console.log(`Search term: ${this.searchTerm}`);//DEBUG
+                //DEBUG - simulating API call
+                setTimeout(() => {
+                    this.debouncedSearchTerm = this.searchTerm;//DEBUG, updates the display filter
+                    this.isWaitingForResult = false;
+                    var searchbar = (document.getElementById('test1')?.children[0] as HTMLElement)
+                    searchbar.focus();
+                },500)
+            }
+            else{
+                this.debouncedSearchTerm = this.searchTerm;//DEBUG, just here to allow clear
+            }
+        }
     },
     setup () {
         return {}
