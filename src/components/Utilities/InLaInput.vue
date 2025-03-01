@@ -16,6 +16,13 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
+interface Emits{
+    /**Triggered when the passed `modelValue` is updated by the control. */
+    (event: "update:modelValue"):void;
+    /**Fired when the user presses the enter key or the submit button. */
+    (event: "inlainput-submit"):void;
+}
+
 export default defineComponent({
     name: "InLaInput",
     props:{
@@ -54,12 +61,23 @@ export default defineComponent({
             default: false,
         },
     },
-    emits: ['update:modelValue', 'inlainput-submit'],
+    // emits: ['update:modelValue', 'inlainput-submit'],
+    emits: {
+        /**Fired when the `modelValue` value is updated. */
+        'update:modelValue':(payload:string|undefined) => {
+            return true;
+        },
+        /**Fired when the user presses the enter key or the submit button. */
+        inlainputSubmit:(payload:string|undefined) => {
+            return payload && payload.length>0;
+        },
+    },
     methods:{
         /**Emits the currently held `modelValue` value. */
         emitValue(){
             if(this.emitOnEnter){
-                this.$emit('inlainput-submit', this.modelValue);
+                // this.$emit('inlainput-submit', this.modelValue);
+                this.$emit('inlainputSubmit', this.modelValue);
             }
         }
     },

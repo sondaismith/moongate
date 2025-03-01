@@ -25,19 +25,23 @@
                                 <PillButton :disabled="true">DMs</PillButton>
                             </div>
                         </div>
-                        <UserSearchBar :data-list="searchResults"/>
                     </div>
                     <div v-else-if="currentPage == 1" class="h-full w-full">
-                        <div>
-                            <!-- <SquareButton @click="forwardOnePage" class="bg-sky-500 hover:bg-sky-600">Button2</SquareButton> -->
-                            <div>
-                                <InLaInput v-model="feedFilters.filterTag" text-label="Tag"/>
-                            </div>
+                        <div v-if="selectedFeedType == FeedEnums.Types.Tag">
+                            <InLaInput v-model="feedFilters.tag" text-label="Tag"/>
+                        </div>
+                        <div v-if="selectedFeedType == FeedEnums.Types.User">
+                            <UserSearchBar @user-selected="selectUser" :data-list="searchResults"/>
                         </div>
                     </div>
                     <div v-else-if="currentPage == 2">
                         <div>Feed Type: {{ selectedFeedType }}</div>
-                        <div>Tags: {{ feedFilters.filterTag }}</div>
+                        <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ feedFilters.tag }}</div>
+                        <div v-if="selectedFeedType == FeedEnums.Types.User">
+                            <div>User DID: {{ feedFilters.user.did }}</div>
+                            <div>User: {{ feedFilters.user.name }}</div>
+                            <div>Handle: {{ feedFilters.user.handle }}</div>
+                        </div>
                     </div>
                 </Transition>
                 <!-- <div v-for="page in modalPages">{{ page.title }}</div> -->
@@ -47,8 +51,8 @@
                     {{currentPage == 0 ? 'Cancel':'Back'}}
                 </SquareButton>
                 <div class="flex">
-                    <SquareButton v-if="(feedFilters.filterTag != '') && currentPage != totalPages-1 && currentPage != 0" @click="forwardOnePage">Next</SquareButton>
-                    <SquareButton v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)">Submit</SquareButton>
+                    <SquareButton v-if="(feedFilters.tag != '') && currentPage != totalPages-1 && currentPage != 0" @click="forwardOnePage">Next</SquareButton>
+                    <SquareButton @click="createFeed()" v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)">Submit</SquareButton>
                 </div>
             </div>
         </div>
@@ -63,6 +67,8 @@ import InLaInput from '../Utilities/InLaInput.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import UserSearchBar from '../Utilities/UserSearchBar.vue';
 import { AppState } from '../../state/AppState.vue';
+import { getAuthorFeed } from '../../lib/api/Feed';
+import { addUserFeed, createFeedDescription } from '../../state/FeedList.vue';
 
 export default defineComponent({
     components:{
@@ -77,11 +83,16 @@ export default defineComponent({
             userPromptText: 'What type of Feed do you want to add?',
             modalPages:[
                 { title:'What type of Feed do you want to add?', instruction: 'Select Below:'},
-                { title:'What do you want to see?', instruction: 'Enter filters below:'},
+                { title:'What do you want to see?', instruction: 'Select filter(s) below:'},
                 { title:'Summary', instruction: 'Are these settings correct?'},
             ],
             feedFilters:{
-                filterTag:'',
+                tag:'',
+                user:{
+                    did:'',
+                    handle:'',
+                    name:'',
+                },
             },
             currentPage:0,
             totalPages:3,
@@ -101,16 +112,25 @@ export default defineComponent({
         }
     },
     methods:{
+        /**
+         * Moves forward one page in the modal. Will loop back
+         * to the first page if attempting to reach an
+         * out-of-bounds page.
+         */
         forwardOnePage(){
-            if(this.currentPage+1 == this.totalPages){
+            if(this.currentPage+1 >= this.totalPages){
                 this.currentPage=0;
                 this.selectedFeedType="";
             }
             else{
                 this.currentPage++}
                 this.feedTypeSelected = true;
-                if(this.feedFilters.filterTag != '') this.feedSpecificationsSet = true;
+                if(this.feedFilters.tag != '' || this.feedFilters.user) this.feedSpecificationsSet = true;
         },
+        /**
+         * Moves back one page in the modal. Closes the modal
+         * if used when on the first page.
+         */
         backOnePage(){
             if(this.currentPage-1 > -1){
                 this.currentPage--;
@@ -118,13 +138,40 @@ export default defineComponent({
                 this.feedSpecificationsSet = false;
             }
             else{
-                //close modal
+                this.closeModal()
             }
         },
+        /**
+         * Method that fires when the user chooses the type of
+         * Feed they wish to create.
+         * @param feedType The feed type the user wishes to create.
+         */
         selectFeedType(feedType:string){
             this.selectedFeedType = feedType;
             console.log(this.selectedFeedType);
             this.forwardOnePage();
+        },
+        /**
+         * Method that fires when a user is selected in the
+         * `UserSearchBar` control.
+         * @param user Object representing the chosen user.
+         */
+        selectUser(user:IUserSearchResult){
+            this.feedFilters.user.did = user.did;
+            this.feedFilters.user.handle = user.handle;
+            this.feedFilters.user.name = user.name;
+            this.forwardOnePage();
+        },
+        /**
+         * Method that adds a new feed with specified options
+         * to the App's `FeedList`.
+         */
+        async createFeed(){
+            var userFeed = await getAuthorFeed(this.feedFilters.user.did);
+            var feedDescripton = createFeedDescription(this.feedFilters.user.handle,
+                this.feedFilters.user.name,FeedEnums.Icons.Art,10,30);
+            addUserFeed(feedDescripton,userFeed.data.feed);
+            this.closeModal();
         },
         closeModal(){
             AppState.ToggleCreateFeedModal();

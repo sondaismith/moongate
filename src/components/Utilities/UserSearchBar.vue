@@ -25,7 +25,7 @@
         border-inherit border-slate-500 rounded-b flex items-center"
         :class="[filteredUsers.length<1 ? 'border-none' : 'border']">
             <div class="relative flex flex-col w-full max-h-[102px] overflow-auto">
-                <div class="flex items-center hover:bg-slate-200/10 px-2 py-2
+                <div @click="selectUser(result)" class="flex items-center hover:bg-slate-200/10 px-2 py-2
                     cursor-pointer"
                     v-for="result, index in filteredUsers" :key="index">
                     <div class="flex rounded-full min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover"
@@ -105,6 +105,12 @@ export default defineComponent({
             // this.debouncedSearchTerm = newVal; //DEBUG code
             },600)
     },
+    emits:{
+        /**Event used to indicate that a user returned via search has been selected/clicked. */
+        userSelected:(payload:IUserSearchResult) => {
+            return payload && payload.did.startsWith('did:');
+        }
+    },
     methods:{
         /**
          * Method used to "submit" the search term entered into the control
@@ -131,6 +137,12 @@ export default defineComponent({
                 this.debouncedSearchTerm = this.searchTerm;//DEBUG, just here to allow clear
             }
         },
+        /**
+         * Changes the passed `ProfileView[]` object into a
+         * `IUserSearchResult[]` object. Seems like this isn't
+         * really needed?
+         * @param data The returned list of user profiles.
+         */
         payloadToUserSearchResult(data:ProfileView[]){
             var test = [] as (IUserSearchResult[])
             data.forEach(r => {
@@ -142,6 +154,10 @@ export default defineComponent({
                 })
             });
             this.apiData = test;
+        },
+        /**Emits the DID of the user selected from the search results. */
+        selectUser(user:IUserSearchResult){
+            this.$emit('userSelected',user);
         }
 
     },
