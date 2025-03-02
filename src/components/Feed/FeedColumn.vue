@@ -1,23 +1,25 @@
 <template>
-    <div data-test="feed-column" :id="feedData?.description.feedId" class="flex flex-col relative h-full w-72 pr-1 bg-slate-900 overflow-hidden min-w-72 max-w-[600px]">
+    <div data-test="feed-column" :id="feedData?.description.feedId"
+    class="flex flex-col relative w-72 pr-1 bg-slate-900
+    overflow-hidden min-w-72 max-w-[600px] origin-top-left">
         {{ void "feed title" }}
-        <div class="flex min-h-14 w-full border-b-2 border-white pl-2 pr-1 items-center">
-            <FeedIcon :icon="feedData?.description.feedType"/>
-            <div class="flex w-full justify-between">
-                <div class="flex flex-col text-nowrap">
-                    <div class="flex items-center text-nowrap">
-                        <div class="font-semibold pr-1 content-end">{{ feedData?.description.feedName }}</div>
-                        <div class="text-xs leading-none h-1/2">@{{ feedData?.description.feedHandle }}</div>
-                    </div>
-                    <div class="text-feedTimestamp leading-none text-nowrap content-end">Updated: {{ getTimeStampFormat() }}</div>
+        <div class="flex w-full shrink-0 border-b-2 border-white pl-2 pr-1 pt-2 pb-1">
+            <div class="flex w-full items-center">
+                <div class="p-1">
+                    <FeedIcon :icon="feedData?.description.feedType"/>
                 </div>
-                <div class="flex flex-col self-center">
-                    <div class="flex items-center">
-                        <!-- <div title="Add - DEBUG" @click="addNewPost" class="cursor-pointer hover:text-cyan-400"><i-mingcute:plus-fill/></div> -->
-                        <div title="Refresh" @click="refreshFeed"><i-mingcute:refresh-3-fill class="text-xl cursor-pointer hover:text-cyan-400"/></div>
-                        <div title="Options" @click="toggleFeedColumnOptionsMenu()" class="text-xl cursor-pointer hover:text-cyan-400"><i-mingcute:settings-6-fill/></div>
-                        <div title="Reorder" @click="removePost"><i-mingcute:menu-line title="Reorder" class="text-xl cursor-grab hover:text-cyan-400"/></div>
+                <div class="flex overflow-hidden flex-col">
+                    <div class="flex flex-col text-nowrap">
+                        <div class="font-semibold leading-none pr-1 truncate">{{ feedData?.description.feedName }}</div>
+                        <div class="text-xs truncate">@{{ feedData?.description.feedHandle }}</div>
                     </div>
+                    <div class="text-feedTimestamp leading-4 text-nowrap content-end text-slate-400">Updated: {{ getTimeStampFormat() }}</div>
+                </div>
+                <div class="flex self-center ml-auto">
+                        <!-- <div title="Add - DEBUG" @click="addNewPost" class="cursor-pointer hover:text-cyan-400"><i-mingcute:plus-fill/></div> -->
+                        <div title="Refresh" @click="refreshFeed"><i-mingcute:refresh-3-fill class="text-2xl cursor-pointer hover:text-cyan-400"/></div>
+                        <div title="Options" @click="toggleFeedColumnOptionsMenu()" class="text-2xl cursor-pointer hover:text-cyan-400"><i-mingcute:settings-6-fill/></div>
+                        <div title="Reorder" @click="removePost"><i-mingcute:menu-line title="Reorder" class="text-2xl cursor-grab hover:text-cyan-400"/></div>
                 </div>
             </div>
         </div>
@@ -225,7 +227,7 @@ export default defineComponent({
             this.feedOptionPreferencesShown = !this.feedOptionPreferencesShown;
         },
         getFeedElement():HTMLElement{
-            return document.getElementById(this.feedData?.feedId) as HTMLElement;
+            return document.getElementById(this.feedData?.description.feedId) as HTMLElement;
         },
         /**
          * Method that changes the FeedColumn's width to "Small" (18rem).

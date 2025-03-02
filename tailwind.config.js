@@ -5,7 +5,7 @@ export default {
     extend: {
       fontSize:{
         feedPostName: '0.75rem',
-        feedTimestamp: '0.625rem', // 10px
+        feedTimestamp: '0.5rem', // 8px
       },
       dropShadow:{
         'md-harder': '0 4px 4px rgba(0, 0, 0, 0.75)'

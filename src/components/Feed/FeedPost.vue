@@ -6,16 +6,19 @@
             <div class="flex w-full">
                 <!-- <div class="w-1/6"> -->
                 <div>
-                    <div class="rounded-full bg-stone-500 aspect-square size-10">
-                        <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/>
+                    <div class="rounded-full bg-stone-500 aspect-square border box-content size-10 bg-contain
+                    hover:border-slate-600 transition-[border-color] ease-linear duration-200 cursor-pointer"
+                    :style="{'background-image' : 'url('+postData?.post.author.avatar+')'}">
+                        <!-- <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/> -->
                     </div>
                 </div>
                 {{ void "post content" }}
-                <div class="flex flex-col px-2 overflow-hidden">
+                <div class="flex flex-col px-2 w-full overflow-hidden">
                     <div class="flex items-center">
-                        <div class="text-feedPostName font-semibold text-nowrap">{{ postData?.post.author.displayName }}</div>
-                        <div class="text-feedTimestamp pl-1 truncate" title="@Random User hdahdhdaahd">@{{ postData?.post.author.handle }}</div>
-                        <div data-test="post-timestamp" class="text-feedTimestamp text-nowrap cursor-pointer ml-auto" @click="openPostDetails()">1 Jan 2024</div>
+                        <div class="text-feedPostName font-semibold max-w-36 shrink-0 truncate"
+                        :title="postData?.post.author.displayName">{{ postData?.post.author.displayName }}</div>
+                        <div class="text-[10px] pl-1 truncate" :title="`@${postData?.post.author.handle}`">@{{ postData?.post.author.handle }}</div>
+                        <div data-test="post-timestamp" class="text-[10px] text-nowrap cursor-pointer ml-auto pl-1" @click="openPostDetails()">{{ convertToShortTimestamp(postData?.post.indexedAt) }}</div>
                     </div>
                     <div class="text-xs leading-4 pb-2">
                         {{ postData?.post.record.text }}
@@ -39,6 +42,7 @@
 import { defineComponent, PropType } from 'vue'
 import { postDetails, showDetailModal, showFocusModal } from '../../state/PostDetails.vue';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { convertToShortTimestamp } from '../../helpers/converters';
 
 export default defineComponent({
     props:{
@@ -47,6 +51,7 @@ export default defineComponent({
     data(){
         return{
             postDetails,
+            convertToShortTimestamp,
         }
     },
     methods:{
