@@ -84,6 +84,9 @@
         <Transition name="modal">
             <FeedCreateModal v-if="AppState.isCreatingFeed"/>
         </Transition>
+        <Transition>
+            <UserFocusModal/>
+        </Transition>
     </div>
 </template>
 
@@ -109,10 +112,15 @@ import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Windo
 import { getUserHomeFeed } from "./lib/api/Feed";
 import { FeedEnums } from "./enums/FeedEnums";
 import FeedCreateModal from "./components/Feed/FeedCreateModal.vue";
+import UserFocusModal from "./components/User/UserFocusModal.vue";
 
 
     export default defineComponent({
         name:'Sidebar',
+        components:{
+            FeedCreateModal,
+            UserFocusModal,
+        },
         data(){
             return{
                 // feedList: [

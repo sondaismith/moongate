@@ -59,6 +59,7 @@ declare module 'vue' {
     Tooltip: typeof import('./src/components/Decorations/Tooltip.vue')['default']
     UnreadMsgCount: typeof import('./src/components/Decorations/UnreadMsgCount.vue')['default']
     UserButton: typeof import('./src/components/Navbar/UserButton.vue')['default']
+    UserFocusModal: typeof import('./src/components/User/UserFocusModal.vue')['default']
     UserSearchBar: typeof import('./src/components/Utilities/UserSearchBar.vue')['default']
   }
 }

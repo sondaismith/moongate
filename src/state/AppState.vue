@@ -34,9 +34,15 @@ export const AppState = reactive({
      * view.
      */
     isCreatingFeed: false,
+    /**Is the UserFocusModal currently open. */
+    isViewingUserAccount: false,
     /**Toggles display of `FeedCreateModal` component. */
     ToggleCreateFeedModal(){
         AppState.isCreatingFeed = !AppState.isCreatingFeed;
-    }
+    },
+    /**Toggles display of `UserFocusModal` component. */
+    ToggleUserFocusModal(){
+        AppState.isViewingUserAccount = !AppState.isViewingUserAccount;
+    },
 })
 </script>
