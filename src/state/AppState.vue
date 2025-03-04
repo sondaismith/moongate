@@ -1,5 +1,6 @@
 <script lang="ts">
 import { reactive } from 'vue'
+import { postDetails } from './PostDetails.vue';
 
 /**
  * Object that defines the current App state. Controls values such
@@ -24,25 +25,36 @@ export const AppState = reactive({
      * Confirms the user has either logged in or chosen to
      * browse as a guest.
      */
-    canBrowse: true,
+    canBrowse: false,
     /**
      * The name of the currently logged in user.
      * This variable might belong in another State.
      */
-    currentUsername: "[User]",
+    currentUsername: "Login Here",
     /**Is the user currently trying to create a new Feed to add to the
      * view.
      */
     isCreatingFeed: false,
+    /**Is the LoginModal currently open. */
+    isLoggingIntoAccount: false,
     /**Is the UserFocusModal currently open. */
     isViewingUserAccount: false,
     /**Toggles display of `FeedCreateModal` component. */
     ToggleCreateFeedModal(){
         AppState.isCreatingFeed = !AppState.isCreatingFeed;
     },
-    /**Toggles display of `UserFocusModal` component. */
-    ToggleUserFocusModal(){
+    /**
+     * Toggles display of `UserFocusModal` component.
+     * @param userDID The User you want to view the profile page of.
+     */
+    ToggleUserFocusModal(userDID:string | undefined){
         AppState.isViewingUserAccount = !AppState.isViewingUserAccount;
+        if(userDID && userDID.trim() != ''){
+            postDetails.currentUserAccountDID = userDID;
+        }
     },
+    ToggleLoginModal(){
+        AppState.isLoggingIntoAccount = !AppState.isLoggingIntoAccount;
+    }
 })
 </script>

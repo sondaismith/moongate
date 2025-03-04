@@ -179,7 +179,12 @@ export const postDetails :IPostDetailsList = reactive({
         if(comments) this.postDetailIconValues[0].label = comments;
         if(reposts) this.postDetailIconValues[1].label = reposts;
         if(likes) this.postDetailIconValues[2].label = likes;
-    }
+    },
+    /**
+     * DID of the user account details that are currently being shown in
+     * the `UserFocusModal` component.
+     */
+    currentUserAccountDID:'',
 })
 
 function updatePostDetails(postToOpen:IPostDetails):IPostDetails{
@@ -260,5 +265,9 @@ export async function showFocusModal(postToShow:FeedViewPost, mediaIndex:number)
         postDetails.postThread = postThreadResult;
         postDetails.currentThreadView = postThreadResult;
     }
+}
+
+export async function s(){
+
 }
 </script>

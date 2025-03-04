@@ -63,7 +63,9 @@
             </div>
             <FeedPost/>
         </div>
-        <LoginModal/>
+        <Transition>
+            <LoginModal v-if="AppState.isLoggingIntoAccount"/>
+        </Transition>
         <Toast position="bottom-center" group="bc"/>
         <!-- <Toast position="bottom-center" group="bc":pt="{
                 root:'mr-auto',
@@ -85,17 +87,17 @@
             <FeedCreateModal v-if="AppState.isCreatingFeed"/>
         </Transition>
         <Transition>
-            <UserFocusModal/>
+            <UserFocusModal v-if="AppState.isViewingUserAccount"/>
         </Transition>
     </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { userFeedList, addDummyFeed, FeedList, addUserFeed, createFeedDescription } from "./state/FeedList.vue";
+import { userFeedList, FeedList, addUserFeed, createFeedDescription } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
-import { AppState, ToggleCreateFeedModal } from "./state/AppState.vue";
+import { AppState } from "./state/AppState.vue";
 import { DebugFlags } from "./state/Debug.vue";
 import { OptionIconList } from "./fake-data/dumPostData";
 //Remove ASAP

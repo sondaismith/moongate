@@ -1,5 +1,5 @@
 <template>
-    <a @click="toggleVisibility" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
+    <a @click="displayUserAccount" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
         class="group cursor-pointer relative flex justify-center
         rounded-full drop-shadow-md bg-blue-200 border
         border-blue-200 transition-[border] hover:border-gray-800
@@ -30,6 +30,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { AppState } from '../../state/AppState.vue';
+import { agent } from '../../lib/api';
 
 export default defineComponent({
     props: {
@@ -60,9 +61,19 @@ export default defineComponent({
                 tooltip.textContent = "";
             }
         },
-        toggleVisibility(){
-            // this.isVisible = !this.isVisible; //DEBUG
-            AppState.canBrowse = false; //Update to use setter - don't directly access
+        /**
+         * Opens the `UserFocusModal` component to the currently logged in
+         * user's profile.
+         */
+        async displayUserAccount(){
+            if(!AppState.canBrowse){
+                AppState.ToggleLoginModal();
+            }
+            else if(AppState.canBrowse && AppState.isAuthBrowsing){
+                var userToCheck = agent.assertDid;
+                // var accountDID = await agent.resolveHandle({handle:userToCheck});
+                AppState.ToggleUserFocusModal(userToCheck);
+            }
         }
     },
     setup (props) {

@@ -1,11 +1,11 @@
 <template>
-    <div :class="AppState.canBrowse ? 'hide' : 'show'" class="modal absolute z-20 flex
+    <div class="absolute z-20 flex
         flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm">
         <div class="flex flex-col w-4/5 md:w-2/3 lg:max-w-[700px]
             h-2/3 md:h-auto bg-slate-800 p-4 mx-auto my-auto rounded-md">
             {{ void "close button" }}
             <div class="relative">
-                <div class="absolute right-0 flex border rounded-full border-red-500
+                <div @click="closeModal" class="absolute right-0 flex border rounded-full border-red-500
                     w-8 aspect-square text-red-500 hover:text-red-700 hover:border-red-700
                     justify-center items-center cursor-pointer">
                     <i-mingcute:close-fill/>
@@ -78,6 +78,7 @@ export default defineComponent({
                 AppState.isGuestBrowsing = false;
                 AppState.currentUsername = "Logged In";
                 AppState.canBrowse = true;
+                AppState.ToggleLoginModal();
                 this.$toast.add({summary:"Login Success", detail:``,severity:'success',group:'tr',life:1000});
             }
             else{
@@ -91,6 +92,9 @@ export default defineComponent({
             AppState.currentUsername = "Guest";
             AppState.canBrowse = true;
             this.$toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
+        },
+        closeModal(){
+            AppState.ToggleLoginModal();
         }
     },
     components:{

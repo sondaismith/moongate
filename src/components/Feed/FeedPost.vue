@@ -6,7 +6,7 @@
             <div class="flex w-full">
                 <!-- <div class="w-1/6"> -->
                 <div>
-                    <div class="rounded-full bg-stone-500 aspect-square border box-content size-10 bg-contain
+                    <div @click="displaySelectedUserAccount" class="rounded-full bg-stone-500 aspect-square border box-content size-10 bg-contain
                     hover:border-slate-600 transition-[border-color] ease-linear duration-200 cursor-pointer"
                     :style="{'background-image' : 'url('+postData?.post.author.avatar+')'}">
                         <!-- <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/> -->
@@ -43,6 +43,7 @@ import { defineComponent, PropType } from 'vue'
 import { postDetails, showDetailModal, showFocusModal } from '../../state/PostDetails.vue';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { convertToShortTimestamp } from '../../helpers/converters';
+import { AppState } from '../../state/AppState.vue';
 
 export default defineComponent({
     props:{
@@ -69,6 +70,21 @@ export default defineComponent({
                 showFocusModal(this.postData, mediaIndex);
                 //update `PostDetailIcons` in `Post` State
                 postDetails.updatePostDetailIconValues(this.postData.post.replyCount.toString(),this.postData.post.repostCount.toString(),this.postData.post.likeCount.toString());
+            }
+        },
+        /**
+         * Opens the `UserFocusModal` component to the currently logged in
+         * user's profile.
+         */
+        displaySelectedUserAccount(){
+            if(AppState.canBrowse && AppState.isAuthBrowsing){
+                // var userToCheck = 'fang.3am.moe';
+                // userToCheck = 'mega64official.bsky.social';
+                // var accountDID = await agent.resolveHandle({handle:userToCheck});
+                AppState.ToggleUserFocusModal(this.postData?.post.author.did);
+            }
+            else{
+                alert('Please log in first.');
             }
         }
     },
