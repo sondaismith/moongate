@@ -24,6 +24,7 @@ export async function getAuthorFeed(did:string){
         result = await agent.getAuthorFeed(
             {
                 actor:did,
+                filter:"posts_no_replies",
                 limit:30,
             }
         )

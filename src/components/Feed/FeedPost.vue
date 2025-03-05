@@ -1,10 +1,14 @@
 <template>
     <div class="w-full pb-2">
         {{ void "feed post" }}
-        <div class="flex flex-col rounded bg-slate-400 p-1 w-full drop-shadow-md justify-between">
+        <div class="flex flex-col rounded bg-slate-400 p-1 pr-3 w-full drop-shadow-md justify-between">
+            <div v-if="postData?.reason && isReasonRepost(postData.reason)"
+            class="flex text-xs font-medium mb-1 items-center p-0.5 rounded bg-slate-600">
+                <div class="flex grow-0 shrink-0 w-12 justify-end pr-1"><i-mdi:twitter-retweet/></div>
+                <div class="whitespace-nowrap overflow-hidden text-ellipsis">Reposted by {{ postData.reason.by.displayName }}</div>
+            </div>
             {{ void "post pfp" }}
             <div class="flex w-full">
-                <!-- <div class="w-1/6"> -->
                 <div>
                     <div @click="displaySelectedUserAccount" class="rounded-full bg-stone-500 aspect-square border box-content size-10 bg-contain
                     hover:border-slate-600 transition-[border-color] ease-linear duration-200 cursor-pointer"
@@ -13,7 +17,7 @@
                     </div>
                 </div>
                 {{ void "post content" }}
-                <div class="flex flex-col px-2 w-full overflow-hidden">
+                <div class="flex flex-col pl-2 w-full overflow-hidden">
                     <div class="flex items-center">
                         <div class="text-feedPostName font-semibold max-w-36 shrink-0 truncate"
                         :title="postData?.post.author.displayName">{{ postData?.post.author.displayName }}</div>
@@ -41,7 +45,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import { postDetails, showDetailModal, showFocusModal } from '../../state/PostDetails.vue';
-import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { FeedViewPost, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { convertToShortTimestamp } from '../../helpers/converters';
 import { AppState } from '../../state/AppState.vue';
 
@@ -53,6 +57,7 @@ export default defineComponent({
         return{
             postDetails,
             convertToShortTimestamp,
+            isReasonRepost,
         }
     },
     methods:{

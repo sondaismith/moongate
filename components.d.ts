@@ -23,6 +23,7 @@ declare module 'vue' {
     'IMdi:paintOutline': typeof import('~icons/mdi/paint-outline')['default']
     'IMdi:playlistAdd': typeof import('~icons/mdi/playlist-add')['default']
     'IMdi:playlistRemove': typeof import('~icons/mdi/playlist-remove')['default']
+    'IMdi:twitterRetweet': typeof import('~icons/mdi/twitter-retweet')['default']
     IMdiRobotAngry: typeof import('~icons/mdi/robot-angry')['default']
     'IMingcute:butterfly2Line': typeof import('~icons/mingcute/butterfly2-line')['default']
     'IMingcute:closeFill': typeof import('~icons/mingcute/close-fill')['default']
