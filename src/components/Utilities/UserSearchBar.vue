@@ -42,11 +42,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, toRef } from 'vue'
+import { defineComponent } from 'vue'
 import InLaInput from './InLaInput.vue';
 import { debounce } from '../../helpers/debouncer';
-import { agent } from '../../lib/api';
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { HandleAPIError, IsError } from '../../helpers/errors';
+import { SearchForAccounts } from '../../lib/api/Feed';
 
 export default defineComponent({
     name:'User Search Bar',
@@ -128,8 +129,12 @@ export default defineComponent({
                     searchbar.focus();
                 },500)
                 var query = `rocco`
-                var searchResult = await agent.searchActors({q: `${this.searchTerm}`,limit:10});
-                // var searchResult = await agent.searchActors({q: query,limit:10});
+                var searchResult = await SearchForAccounts(`${this.searchTerm}`);
+                //Check if API call created Error
+                if(IsError(searchResult)){
+                    this.$toast.add(HandleAPIError(searchResult as Error));
+                    return; //stop further actions
+                }
                 console.log(searchResult);
                 this.payloadToUserSearchResult(searchResult.data.actors)
             }

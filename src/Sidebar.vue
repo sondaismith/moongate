@@ -63,7 +63,7 @@
             </div>
             <FeedPost/>
         </div>
-        <Transition>
+        <Transition name="modal">
             <LoginModal v-if="AppState.isLoggingIntoAccount"/>
         </Transition>
         <Toast position="bottom-center" group="bc"/>

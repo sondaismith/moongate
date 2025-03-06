@@ -19,7 +19,7 @@ const PrimeVueCustomTheme = definePreset(Aura,{
     }
 });
 
-const app = createApp(App)
+const app = createApp(App);
 app.use(PrimeVue, {
     // theme:{ preset: PrimeVueCustomTheme },
     theme:{ preset: Aura },
