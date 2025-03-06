@@ -52,7 +52,8 @@
                 </SquareButton>
                 <div class="flex">
                     <SquareButton v-if="(feedFilters.tag != '') && currentPage != totalPages-1 && currentPage != 0" @click="forwardOnePage">Next</SquareButton>
-                    <SquareButton @click="createFeed()" v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)">Submit</SquareButton>
+                    <SquareButton @click="createFeed()" v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)"
+                    :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
             </div>
         </div>
@@ -69,6 +70,7 @@ import UserSearchBar from '../Utilities/UserSearchBar.vue';
 import { AppState } from '../../state/AppState.vue';
 import { getAuthorFeed } from '../../lib/api/Feed';
 import { addUserFeed, createFeedDescription } from '../../state/FeedList.vue';
+import { HandleAPIError, IsError } from '../../helpers/errors';
 
 export default defineComponent({
     components:{
@@ -108,6 +110,7 @@ export default defineComponent({
             ],
             searchTerm:'',
             debouncedSearchTerm:'',
+            attemptingToCreateFeed: false,
             FeedEnums,
         }
     },
@@ -167,7 +170,14 @@ export default defineComponent({
          * to the App's `FeedList`.
          */
         async createFeed(){
+            this.attemptingToCreateFeed = true;
             var userFeed = await getAuthorFeed(this.feedFilters.user.did);
+            //Check if API call created Error
+            if(IsError(userFeed)){
+                this.$toast.add(HandleAPIError(userFeed as Error));
+                this.attemptingToCreateFeed = false;
+                return; //Stop further actions
+            }
             var feedDescripton = createFeedDescription(this.feedFilters.user.handle,
                 this.feedFilters.user.name,FeedEnums.Icons.Art,10,30);
             addUserFeed(feedDescripton,userFeed.data.feed);
