@@ -1,5 +1,6 @@
 <template>
-    <div class="border-slate-500">
+    <div class="border-slate-500 flex flex-col mb-2 h-full overflow-hidden">
+        {{ void "Searchbar" }}
         <div class="flex">
             <InLaInput id="user-searchbar" @inlainput-submit="submitSearch" :emit-on-enter="true"
             :is-disabled="isWaitingForResult"
@@ -8,12 +9,15 @@
             <div @click="submitSearch" class="peer-hover:border-blue-400 rounded-r p-2 bg-blue-500
             border border-l-0 border-blue-500 transition-colors cursor-pointer
             hover:bg-blue-400"
-            :class="[isWaitingForResult ? 'bg-gray-500 hover:bg-gray-500 cursor-wait' : '']">Search</div>
+            :class="[isWaitingForResult ? 'bg-gray-600 hover:bg-gray-500 cursor-wait' : '']">Search</div>
         </div>
-        <div class="rounded-t border p-2 border-inherit cursor-pointer hover:bg-blue-400/30"
+        {{ void "Search for: elements" }}
+        <div class="rounded-t border p-2 border-inherit cursor-pointer hover:bg-sky-500
+        grow-0 shrink-0 bg-sky-600"
             v-if="searchTerm.trim() && debouncedSearchTerm.trim()">
             <div>Search for: "{{ searchTerm }}"</div>
         </div>
+        {{ void "Loading Spinner" }}
         <div class="flex rounded-b border-t-0 border-slate-500 justify-center"
         :class="[searchTerm.trim() && searchTerm.trim() != debouncedSearchTerm.trim() && filteredUsers.length<1 ? 'border p-2' : 'border-none',
             !debouncedSearchTerm.trim() ? 'border-t-[1px] rounded' : 'border-t-0'
@@ -22,10 +26,10 @@
                 class="loader w-[25px]"></div>
         </div>
         <div v-if="searchTerm.trim() && debouncedSearchTerm.trim()" class="border-t-0
-        border-inherit border-slate-500 rounded-b flex items-center"
+        border-inherit border-slate-500 rounded-b flex bg-slate-800 overflow-auto"
         :class="[filteredUsers.length<1 ? 'border-none' : 'border']">
-            <div class="relative flex flex-col w-full max-h-[102px] overflow-auto">
-                <div @click="selectUser(result)" class="flex items-center hover:bg-slate-200/10 px-2 py-2
+            <div class="relative flex flex-col w-full">
+                <div @click="selectUser(result)" class="flex items-center hover:bg-gray-700 px-2 py-2
                     cursor-pointer"
                     v-for="result, index in filteredUsers" :key="index">
                     <div class="flex rounded-full min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover"

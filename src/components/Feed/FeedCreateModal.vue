@@ -26,13 +26,9 @@
                             </div>
                         </div>
                     </div>
-                    <div v-else-if="currentPage == 1" class="h-full w-full">
-                        <div v-if="selectedFeedType == FeedEnums.Types.Tag">
-                            <InLaInput v-model="feedFilters.tag" text-label="Tag"/>
-                        </div>
-                        <div v-if="selectedFeedType == FeedEnums.Types.User">
-                            <UserSearchBar @user-selected="selectUser" :data-list="searchResults"/>
-                        </div>
+                    <div v-else-if="currentPage == 1" class="flex flex-col h-full w-full">
+                        <InLaInput v-if="selectedFeedType == FeedEnums.Types.Tag" v-model="feedFilters.tag" text-label="Tag"/>
+                        <UserSearchBar v-if="selectedFeedType == FeedEnums.Types.User" @user-selected="selectUser" :data-list="searchResults"/>
                     </div>
                     <div v-else-if="currentPage == 2">
                         <div>Feed Type: {{ selectedFeedType }}</div>
