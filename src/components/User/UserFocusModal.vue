@@ -9,8 +9,8 @@
             items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover"
             :style="'background-image: url('+currentUserProfile.avatar+')'">{{currentUserProfile ? '' : 'PFP'}}</div>
             {{ void "Main Container" }}
-            <div class="p-4 h-full overflow-hidden">
-                <div class="flex flex-col h-full overflow-hidden">
+            <div class="p-4 h-full overflow-auto">
+                <div class="flex flex-col h-full overflow-hiddens">
                     {{ void "User Details Content" }}
                     <div class="flex flex-col mb-2 shrink grow-0">
                         <div class="flex ml-auto gap-2 h-10">
@@ -33,9 +33,11 @@
                                 <div class="text-slate-400">posts</div>
                             </div>
                         </div>
-                        <div class="leading-4 mt-2">
-                            {{ currentUserProfile ? currentUserProfile.description : 'No Description' }}
+                        <div v-html="currentUserProfile ? GenerateTagLinkText(currentUserProfile.description) : 'No Description'" class="leading-4 mt-2 whitespace-pre-wrap">
                         </div>
+                        <!-- <div class="leading-4 mt-2 whitespace-pre-wrap">
+                            {{ currentUserProfile ? currentUserProfile.description : 'No Description' }}
+                        </div> -->
                     </div>
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0 grow">
@@ -60,7 +62,7 @@
                         {{ void "Media Posts" }}
                         <div v-if="isViewingMedia" class="py-4 w-full grid gap-2 self-center
                         grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] justify-items-center
-                        overflow-x-hidden">
+                        overflow-x-hiddens">
                             <div @click="showMediaContent(n)" v-for="n in currentUserAccountData.filter(
                                 x => x.post.embed && x.post.author.did == currentUserProfile.did &&
                                 (AppBskyEmbedImages.isView(x.post.embed) || AppBskyEmbedVideo.isView(x.post.embed)))"
@@ -88,11 +90,13 @@ import { AppBskyEmbedImages, AppBskyEmbedVideo, isDid } from '@atproto/api';
 import { agent } from '../../lib/api';
 import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { GenerateTagLinkText } from '../../helpers/parsers';
 
 export default defineComponent({
     data(){
         return{
             isImage,
+            GenerateTagLinkText,
             AppBskyEmbedImages,
             AppBskyEmbedVideo,
             isViewingPosts:true,
