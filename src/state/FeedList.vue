@@ -27,8 +27,11 @@ export function GenerateUniqueId(len: number) : String{
     return newId;
 }
 
-export const FeedList : IFeedListing[] = reactive([
-])
+export const FeedState = reactive({
+    FeedList : [] as IFeedListing[],
+    selectedFeed: '',
+    isFeedOptionMenuVisible: false,
+})
 
 /**
  * Method used to create a Feed object in the FeedList State
@@ -38,7 +41,7 @@ export const FeedList : IFeedListing[] = reactive([
 export function addUserFeed(description:IFeedDescription, feed:FeedViewPost[]){
     const feedTypes = [FeedEnums.Icons.Art,FeedEnums.Icons.Friends,FeedEnums.Icons.News];
     var randomHandleNum = `${Math.floor((Math.random()*40))+1}_${Math.floor((Math.random()*40))+1}`;
-    FeedList.push({
+    FeedState.FeedList.push({
         description:description,
         data:feed,
     })
@@ -72,7 +75,7 @@ export function createFeedDescription(handle:string,name:string,type:FeedEnums.I
 export function addDummyFeed(){
     const feedTypes = [FeedEnums.Icons.Art,FeedEnums.Icons.Friends,FeedEnums.Icons.News];
     var randomHandleNum = `${Math.floor((Math.random()*100))+1}_${Math.floor((Math.random()*100))+1}`;
-    FeedList.push({
+    FeedState.FeedList.push({
         description:{
             feedId: GenerateUniqueId(10),
             feedHandle: `tester${randomHandleNum}`,
@@ -109,7 +112,7 @@ export function addDummyFeed(){
  * dummy records to.
  */
 export function addDummyPostToFeed(feedId:String){
-    var feed = FeedList.find(x => x.description.feedId == feedId);
+    var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     if(feed){//Ensure matching Feed was found
         var randomHandleNum = `${Math.floor((Math.random()*100))+1}_${Math.floor((Math.random()*100))+1}`;
         feed.data.push({
@@ -140,11 +143,29 @@ export function addDummyPostToFeed(feedId:String){
  * @param feedId The `feedId` of the Feed you want to remove the
  * last in array Post from.
  */
-export function removeLastFeedPost(feedId:String){
-    var feed = FeedList.find(x => x.description.feedId == feedId);
+export function RemoveFeed(feedId:String){
+    var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     if(feed){//Ensure matching Feed was found
-        feed.data.pop();
+        var removeIndex = FeedState.FeedList.indexOf(feed);
+        //Remove item
+        FeedState.FeedList.splice(removeIndex,1);
     }
+}
+
+/**
+ * Method that toggles the visibility of the `FeedOptionsMenu`.
+ */
+export function ToggleFeedOptionsMenu(){
+    FeedState.isFeedOptionMenuVisible = !FeedState.isFeedOptionMenuVisible;
+}
+
+/**
+ * Method that updates the stored DID of the Feed that has just been
+ * interacted with.
+ * @param newVal The new value of the selected feed.
+ */
+export function UpdateSelectedFeed(newVal:string){
+    FeedState.selectedFeed = newVal;
 }
 
 export const userFeedList : IFeedListing = reactive({

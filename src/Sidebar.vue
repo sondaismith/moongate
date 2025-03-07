@@ -14,7 +14,7 @@
                             <FeedButton type="home" tooltip="Home"/>
                             <TransitionGroup name="feedbutton">
                                 <!-- <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/> -->
-                                <FeedButton v-for="feed in FeedList" :key="feed" :feedId="feed.description.feedId" :type="feed.description.feedType" :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"/>
+                                <FeedButton v-for="feed in FeedState.FeedList" :key="feed" :feedId="feed.description.feedId" :type="feed.description.feedType" :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"/>
                             </TransitionGroup>
                         </div>
                     </div>
@@ -39,7 +39,7 @@
             <div class="flex">
                 <TransitionGroup name="feedcolumn">
                     <!-- <FeedColumn v-for="feed in feedListing.feedList" :key="feed" :feedData="feed"/> -->
-                    <FeedColumn v-for="feed in FeedList" :key="feed.description.feedId" :feedData="feed"/>
+                    <FeedColumn v-for="feed in FeedState.FeedList" :key="feed.description.feedId" :feedData="feed"/>
                 </TransitionGroup>
                 <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
                     <div>X Pos: {{ scrollXPos }}</div>
@@ -81,6 +81,7 @@
         <Toast position="top-right" group="tr"/>
         <DbDebugModal v-if="DebugFlags.showAppSettingsDBDebugModal"/>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
+        <FeedOptionsMenu v-show="FeedState.isFeedOptionMenuVisible"/>
         <PostDetailModal/>
         <PostFocusModal/>
         <Transition name="modal">
@@ -94,7 +95,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { userFeedList, FeedList, addUserFeed, createFeedDescription } from "./state/FeedList.vue";
+import { userFeedList, FeedState, addUserFeed, createFeedDescription } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState } from "./state/AppState.vue";
@@ -115,6 +116,7 @@ import { getUserHomeFeed } from "./lib/api/Feed";
 import { FeedEnums } from "./enums/FeedEnums";
 import FeedCreateModal from "./components/Feed/FeedCreateModal.vue";
 import UserFocusModal from "./components/User/UserFocusModal.vue";
+import FeedOptionsMenu from "./components/Feed/FeedOptionsMenu.vue";
 
 
     export default defineComponent({
@@ -131,7 +133,7 @@ import UserFocusModal from "./components/User/UserFocusModal.vue";
                 //     {feedName:'Artists', feedType:'art', newPosts: 7},
                 // ]
                 feedListing: userFeedList,
-                FeedList,
+                FeedState,
                 postDetails,
                 AppState,
                 DebugFlags,

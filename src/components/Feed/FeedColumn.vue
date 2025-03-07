@@ -110,11 +110,10 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
 import { DebugFlags } from '../../state/Debug.vue';
-import { IFeedDescription, IFeedListing } from '../../interfaces/FeedInterfaces';
+import { IFeedListing } from '../../interfaces/FeedInterfaces';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
 import { createPost } from '../../fake-data/PostFactory'
-import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { addDummyPostToFeed, removeLastFeedPost } from '../../state/FeedList.vue';
+import { addDummyPostToFeed, RemoveFeed } from '../../state/FeedList.vue';
 
 var colElement;
 
@@ -162,7 +161,7 @@ export default defineComponent({
         },
         removePost(){
             // this.PostCollection.pop();
-            removeLastFeedPost(this.feedData.description.feedId);
+            RemoveFeed(this.feedData.description.feedId);
         },
         refreshFeed(){
             this.generateRandomDate(new Date(2012, 0, 1), new Date);

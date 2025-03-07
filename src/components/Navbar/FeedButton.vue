@@ -1,6 +1,6 @@
 <template>
     <a :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
-        @click="highlightFeed" class="group cursor-pointer relative flex justify-center
+        @click="highlightFeed" @contextmenu="showFeedOptionsMenu" class="group cursor-pointer relative flex justify-center
         rounded-xl drop-shadow-md bg-blue-200 border border-blue-200 transition-[border]
         hover:border-gray-800 h-10">
         <i-mingcute:home-4-line v-if="type === 'home'" class="h-full text-2xl text-slate-800"/>
@@ -21,6 +21,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { FeedState, UpdateSelectedFeed } from '../../state/FeedList.vue';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to
@@ -174,6 +175,21 @@ export default defineComponent({
             scrollContainer.scrollBy({top:0, left:target-fdScrollPos, behavior:"smooth"});
 
             this.isScrollByFinished(el, target);
+        },
+        showFeedOptionsMenu(event:MouseEvent){
+            event.preventDefault();
+            if(this.feedId){
+                //Initial showing of menu
+                FeedState.isFeedOptionMenuVisible = true;
+                UpdateSelectedFeed(this.feedId);
+                var menu = document.getElementById('feed-btn-menu');
+                var button = (event.currentTarget as HTMLElement);
+                var containerScrollPos = button.parentElement?.parentElement?.scrollTop;
+                if(menu){
+                    menu.style.top = event.clientY+'px';
+                    menu.style.left = event.clientX+'px';
+                }
+            }
         }
     },
     setup (props) {
