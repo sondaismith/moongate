@@ -14,6 +14,7 @@ declare module 'vue' {
     FeedIcon: typeof import('./src/components/Feed/FeedIcon.vue')['default']
     FeedOptionsMenu: typeof import('./src/components/Feed/FeedOptionsMenu.vue')['default']
     FeedPost: typeof import('./src/components/Feed/FeedPost.vue')['default']
+    Hashtag: typeof import('./src/components/Utilities/Hashtag.vue')['default']
     ImageContainer: typeof import('./src/components/Utilities/ImageContainer.vue')['default']
     'IMdi:accountOff': typeof import('~icons/mdi/account-off')['default']
     'IMdi:dotsHorizontal': typeof import('~icons/mdi/dots-horizontal')['default']
@@ -58,12 +59,13 @@ declare module 'vue' {
     PostReplyInput: typeof import('./src/components/Post/PostReplyInput.vue')['default']
     PostThreadView: typeof import('./src/components/Post/PostThreadView.vue')['default']
     ReplyBreadcrumb: typeof import('./src/components/Post/ReplyBreadcrumb.vue')['default']
-    SearchBar: typeof import('./src/components/Utilities/SearchBar.vue')['default']
+    RichPostText: typeof import('./src/components/Utilities/RichPostText.vue')['default']
     SquareButton: typeof import('./src/components/Utilities/SquareButton.vue')['default']
     Tooltip: typeof import('./src/components/Decorations/Tooltip.vue')['default']
     UnreadMsgCount: typeof import('./src/components/Decorations/UnreadMsgCount.vue')['default']
     UserButton: typeof import('./src/components/Navbar/UserButton.vue')['default']
     UserFocusModal: typeof import('./src/components/User/UserFocusModal.vue')['default']
+    Userlink: typeof import('./src/components/Utilities/Userlink.vue')['default']
     UserSearchBar: typeof import('./src/components/Utilities/UserSearchBar.vue')['default']
   }
 }

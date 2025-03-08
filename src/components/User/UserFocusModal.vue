@@ -33,11 +33,12 @@
                                 <div class="text-slate-400">posts</div>
                             </div>
                         </div>
-                        <div v-html="currentUserProfile ? GenerateTagLinkText(currentUserProfile.description) : 'No Description'" class="leading-4 mt-2 whitespace-pre-wrap">
-                        </div>
+                        <!-- <div v-html="currentUserProfile ? GenerateTagLinkText(currentUserProfile.description) : 'No Description'" class="leading-4 mt-2 whitespace-pre-wrap">
+                        </div> -->
                         <!-- <div class="leading-4 mt-2 whitespace-pre-wrap">
                             {{ currentUserProfile ? currentUserProfile.description : 'No Description' }}
                         </div> -->
+                        <RichPostText :post-text="currentUserProfile ? currentUserProfile.description : 'No Description'"/>
                     </div>
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0 grow">
@@ -91,6 +92,8 @@ import { agent } from '../../lib/api';
 import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { GenerateTagLinkText } from '../../helpers/parsers';
+import Hashtag from '../Utilities/Hashtag.vue';
+import RichPostText from '../Utilities/RichPostText.vue';
 
 export default defineComponent({
     data(){
@@ -108,6 +111,8 @@ export default defineComponent({
     },
     components:{
         PillButton,
+        Hashtag,
+        RichPostText,
     },
     methods:{
         viewPosts(){

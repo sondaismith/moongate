@@ -1,8 +1,16 @@
 
 const tagRegex = new RegExp(`${/#\S*/.source}`,'g');
 // const tagRegex = new RegExp(`${/\B#\w+/.source}`,'g');
-const userlinkRegex = new RegExp(`${/@\S*/.source}`,'g');
+const userlinkRegex = new RegExp(`${/\B@(\S*)/.source}`,'g');
 
+/**
+ * Method that parses a passed in string for hashtags (words beginning with #)
+ * or userlinks (words beginning with \@) and returns a modified version of
+ * that string with components elements added describing those special pieces
+ * of text.
+ * @param text The text to scan for hashtags or userlinks.
+ * @returns Text string with added hashtag/userlink component declaration.
+ */
 export function GenerateTagLinkText(text:string|undefined){
     if(text == undefined) return;
     var result;
@@ -10,12 +18,17 @@ export function GenerateTagLinkText(text:string|undefined){
     //Check for tags first
     var tagResults = GetHashtagPositions(text);
     tagResults.forEach(element => {
-        html = html.replace(element.foundTag,`<span class='font-bold'>${element.foundTag}</span>`)
+        html = html.replace(element.foundTag,`<component :is="Hashtag" :tagValue="'${element.foundTag}'">${element.foundTag}</component>`)
     });
     //Check for User links next
-    // var userlinkResults = GetUserlinkPositions(text);
+    var userlinkResults = GetUserlinkPositions(text);
+    userlinkResults.forEach(element => {
+        html = html.replace(element.foundUserlink,`<component :is="Userlink" :userlinkValue="'${element.foundUserlink}'">${element.foundUserlink}</component>`)
+    });
+    //At end, replace all newlines (\n) with line-breaks
+    html = html.replace(/\n/g,"<br/>");
     result = html;
-    //Return <div> element containing formatted "text component"
+    //Return formatted "text component"
     return result;
 }
 
