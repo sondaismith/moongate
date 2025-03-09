@@ -54,3 +54,24 @@ export async function getAuthorFeed(did:string){
     }
     return result;
 }
+
+/**
+ * Method that gets Posts containing specific hashtags.
+ * @param tags String of hashtags, space-separated.
+ * @returns Search results returned from the Bluesky API.
+ */
+export async function getTagPosts(tags:string){
+    var result;
+    try{
+        console.log(tags)
+        result = await agent.app.bsky.feed.searchPosts(
+            {
+                q:`${tags}`,
+            }
+        )
+    }
+    catch(error){
+        result = error;
+    }
+    return result;
+}

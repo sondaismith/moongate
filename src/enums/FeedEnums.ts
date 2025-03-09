@@ -1,10 +1,14 @@
 export namespace FeedEnums{
     export enum Icons{
         Home = "home",
+        Settings = "settings",
+        AddList = "add_list",
+        RemoveList = "remove_list",
         Art = "art",
         News = "news",
         Friends = "friends",
-        Music = "art"
+        Music = "art",
+        Hashtag = "hashtag"
     }
     export enum Types{
         Home = "home",

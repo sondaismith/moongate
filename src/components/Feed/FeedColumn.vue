@@ -5,7 +5,7 @@
         {{ void "feed title" }}
         <div class="flex w-full shrink-0 border-b-2 border-white pl-2 pr-1 pt-2 pb-1">
             <div class="flex w-full items-center">
-                <div class="p-1">
+                <div class="p-1 pr-3">
                     <FeedIcon :icon="feedData?.description.feedType"/>
                 </div>
                 <div class="flex overflow-hidden flex-col">

@@ -20,7 +20,7 @@
                         <div class="mb-2">
                             <div class="flex items-start flex-wrap gap-1">
                                 <PillButton @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
-                                <PillButton :disabled="true" @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
+                                <PillButton @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
                                 <PillButton :disabled="true">Mentions</PillButton>
                                 <PillButton :disabled="true">DMs</PillButton>
                             </div>
@@ -28,11 +28,20 @@
                     </div>
                     <div v-else-if="currentPage == 1" class="flex flex-col h-full w-full">
                         <InLaInput v-if="selectedFeedType == FeedEnums.Types.Tag" v-model="feedFilters.tag" text-label="Tag"/>
+                        <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mt-1 overflow-x-hidden">
+                            <div class="mb-1">Discovered Tags:</div>
+                            <div class="flex gap-1 flex-wrap">
+                                <div v-for="n, index in validTags" :key="index"
+                                class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 break-all">
+                                    {{ n }}
+                                </div>
+                            </div>
+                        </div>
                         <UserSearchBar v-if="selectedFeedType == FeedEnums.Types.User" @user-selected="selectUser" :data-list="searchResults"/>
                     </div>
                     <div v-else-if="currentPage == 2">
                         <div>Feed Type: {{ selectedFeedType }}</div>
-                        <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ feedFilters.tag }}</div>
+                        <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ validTags.join(', ') }}</div>
                         <div v-if="selectedFeedType == FeedEnums.Types.User">
                             <div>User DID: {{ feedFilters.user.did }}</div>
                             <div>User: {{ feedFilters.user.name }}</div>
@@ -47,7 +56,7 @@
                     {{currentPage == 0 ? 'Cancel':'Back'}}
                 </SquareButton>
                 <div class="flex">
-                    <SquareButton v-if="(feedFilters.tag != '') && currentPage != totalPages-1 && currentPage != 0" @click="forwardOnePage">Next</SquareButton>
+                    <SquareButton v-if="(validTags.length>0) && currentPage != totalPages-1 && currentPage != 0" @click="forwardOnePage">Next</SquareButton>
                     <SquareButton @click="createFeed()" v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
@@ -64,7 +73,7 @@ import InLaInput from '../Utilities/InLaInput.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import UserSearchBar from '../Utilities/UserSearchBar.vue';
 import { AppState } from '../../state/AppState.vue';
-import { getAuthorFeed } from '../../lib/api/Feed';
+import { getAuthorFeed, getTagPosts } from '../../lib/api/Feed';
 import { addUserFeed, createFeedDescription } from '../../state/FeedList.vue';
 import { HandleAPIError, IsError } from '../../helpers/errors';
 
@@ -124,7 +133,7 @@ export default defineComponent({
             else{
                 this.currentPage++}
                 this.feedTypeSelected = true;
-                if(this.feedFilters.tag != '' || this.feedFilters.user) this.feedSpecificationsSet = true;
+                if(this.validTags.length>0 || this.feedFilters.user) this.feedSpecificationsSet = true;
         },
         /**
          * Moves back one page in the modal. Closes the modal
@@ -161,31 +170,100 @@ export default defineComponent({
             this.feedFilters.user.name = user.name;
             this.forwardOnePage();
         },
+        grabHashtags(){
+            var s = this.feedFilters.tag.split(',');
+            //trim whitespace
+            for (let i = 0; i < s.length; i++) {
+                s[i] = `#${s[i].trim()}`;
+            }
+            return s.join(' ');
+        },
         /**
          * Method that adds a new feed with specified options
          * to the App's `FeedList`.
          */
         async createFeed(){
             this.attemptingToCreateFeed = true;
-            var userFeed = await getAuthorFeed(this.feedFilters.user.did);
+            /**The object that will be added to the FeedList. */
+            var feedResult;
+            /**Object describing Feed. Includes things like name, icon used, etc. */
+            var feedDescripton;
+            //Perform required API call based on Feed Type
+            switch (this.selectedFeedType) {
+                case FeedEnums.Types.User:
+                    // var userFeed = await getAuthorFeed(this.feedFilters.user.did);
+                    feedResult = await getAuthorFeed(this.feedFilters.user.did);
+                    break;
+                case FeedEnums.Types.Tag:
+                    // feedResult = await getTagPosts(this.grabHashtags());
+                    feedResult = await getTagPosts(this.validTags.join(' '));
+                        break;
+                default:
+                    break;
+            }
             //Check if API call created Error
-            if(IsError(userFeed)){
-                this.$toast.add(HandleAPIError(userFeed as Error));
+            if(IsError(feedResult)){
+                this.$toast.add(HandleAPIError(feedResult as Error));
                 this.attemptingToCreateFeed = false;
                 return; //Stop further actions
             }
-            var feedDescripton = createFeedDescription(this.feedFilters.user.handle,
-                this.feedFilters.user.name,FeedEnums.Icons.Art,10,30);
-            addUserFeed(feedDescripton,userFeed.data.feed);
+            console.log(feedResult);//DEBUG
+            //Select correct returned Object value based on Feed Type
+            switch (this.selectedFeedType) {
+                case FeedEnums.Types.User:
+                    feedResult = feedResult.data.feed;
+                    //Generate Feed Description based on selected options
+                    feedDescripton = createFeedDescription(this.feedFilters.user.handle,
+                        this.feedFilters.user.name,FeedEnums.Icons.Art,10,30);
+                    break;
+                case FeedEnums.Types.Tag:
+                    var posts = [];
+                    //Place Posts in a "Feed" shaped Object
+                    feedResult.data.posts.forEach(p => {
+                        posts.push({post:p})
+                    });
+                    feedResult = posts;
+                    //Generate Feed Description based on selected options
+                    feedDescripton = createFeedDescription('hashtag',
+                        this.feedFilters.tag,FeedEnums.Icons.Hashtag,10,30);
+                    break;
+                default:
+                    break;
+            }
+            //Create the Feed
+            // addUserFeed(feedDescripton,feedResult.data.feed);
+            addUserFeed(feedDescripton,feedResult);
             this.closeModal();
         },
         closeModal(){
             AppState.ToggleCreateFeedModal();
         }
     },
-    setup () {
-        return {}
-    }
+    computed:{
+        /**
+         * Method that takes the content put into the "Tag" input control
+         * and parses it for valid tags - words starting with (#) and containing
+         * no illegal hashtag characters. Currently the allowed length is unlimited.
+         */
+        validTags(){
+            const tagRegex = new RegExp(`${/#[^/\\!@\-()$%\^&\+~|[\]{}#,;'"`.<>=\s]+/.source}`,'g');
+            //content must be longer than 1 character
+            if(this.feedFilters.tag.length>1){
+                var result = [];
+                let matches = this.feedFilters.tag.matchAll(tagRegex);
+                for(const match of matches){
+                    result.push(match[0]);
+                }
+                return result;
+            }
+            return [];
+        }
+    },
+    // watch:{
+    //     'feedFilters.tag': debounce(function (newVal){
+
+    //     },400)
+    // }
 })
 </script>
 

@@ -3,18 +3,7 @@
         @click="highlightFeed" @contextmenu="showFeedOptionsMenu" class="group cursor-pointer relative flex justify-center
         rounded-xl drop-shadow-md bg-blue-200 border border-blue-200 transition-[border]
         hover:border-gray-800 h-10">
-        <i-mingcute:home-4-line v-if="type === 'home'" class="h-full text-2xl text-slate-800"/>
-        <i-mingcute:settings-2-line v-else-if="type === 'settings'" class="h-full text-2xl text-slate-800"/>
-        <i-mdi:playlist-add v-else-if="type === 'add'" class="h-full text-2xl text-slate-800"/>
-        <i-mdi:playlist-remove v-else-if="type === 'remove'" class="h-full text-2xl text-slate-800"/>
-        <i-mdi:paint-outline v-else-if="type === 'art'" class="h-full text-2xl text-slate-800"/>
-        <i-mdi:newspaper-variant-multiple v-else-if="type === 'news'" class="h-full text-2xl text-slate-800"/>
-        <i-mingcute:group-3-fill v-else-if="type === 'friends'" class="h-full text-2xl text-slate-800"/>
-        <!-- <span
-            class="invisible absolute whitespace-nowrap start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
-        >
-            {{ tooltip }}
-        </span> -->
+        <FeedIcon :icon="type" class="h-full text-2xl text-slate-800"/>
         <UnreadMsgCount :unreadCount="newPosts"/>
     </a>
 </template>
@@ -22,6 +11,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { FeedState, UpdateSelectedFeed } from '../../state/FeedList.vue';
+import FeedIcon from '../Feed/FeedIcon.vue';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to

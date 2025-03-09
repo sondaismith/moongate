@@ -19,8 +19,8 @@
                         </div>
                     </div>
                     <div class="border-t border-gray-700 space-y-2 px-2 py-2 flex-none">
-                        <FeedButton type="add" tooltip="Add Feed" @click="addFeed"/>
-                        <FeedButton type="remove" tooltip="Remove Feed" @click="removeFeed"/>
+                        <FeedButton :type="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
+                        <FeedButton :type="FeedEnums.Icons.RemoveList" tooltip="Remove Feed" @click="removeFeed"/>
                     </div>
                 </div>
             </div>
@@ -143,6 +143,7 @@ import FeedOptionsMenu from "./components/Feed/FeedOptionsMenu.vue";
                 OptionIconList,
                 APIResponse: {},
                 DBResponse: {},
+                FeedEnums
             }
         },
         methods: {
