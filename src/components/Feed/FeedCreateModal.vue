@@ -197,7 +197,7 @@ export default defineComponent({
                 case FeedEnums.Types.Tag:
                     // feedResult = await getTagPosts(this.grabHashtags());
                     feedResult = await getTagPosts(this.validTags.join(' '));
-                        break;
+                    break;
                 default:
                     break;
             }

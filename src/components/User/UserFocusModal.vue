@@ -94,6 +94,7 @@ import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { GenerateTagLinkText } from '../../helpers/parsers';
 import Hashtag from '../Utilities/Hashtag.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
+import { HandleAPIError, IsError } from '../../helpers/errors';
 
 export default defineComponent({
     data(){
@@ -134,7 +135,7 @@ export default defineComponent({
             this.currentUserAccountData = userMedia.data.feed;
         },
         closeModal(){
-            AppState.ToggleUserFocusModal();
+            AppState.ToggleUserFocusModal(undefined);
         },
         showMediaContent(post:FeedViewPost){
             postDetails.isFocusVisible = true;
@@ -143,13 +144,15 @@ export default defineComponent({
     },
     async created() {
         if(isDid(postDetails.currentUserAccountDID)){
-            // var userTL = await agent.getTimeline();
             var userProfile = await agent.getProfile({
                 actor:postDetails.currentUserAccountDID
             });
             var userTL = await agent.getAuthorFeed({
                 actor:postDetails.currentUserAccountDID,
             });
+            if(IsError(userProfile)){
+                this.$toast.add(HandleAPIError(userProfile as Error));
+            }
             this.currentUserProfile = userProfile.data;
             this.currentUserAccountData = userTL.data.feed;
             console.log(this.currentUserAccountData);

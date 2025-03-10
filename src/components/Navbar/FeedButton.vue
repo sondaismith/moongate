@@ -11,7 +11,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { FeedState, UpdateSelectedFeed } from '../../state/FeedList.vue';
-import FeedIcon from '../Feed/FeedIcon.vue';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to

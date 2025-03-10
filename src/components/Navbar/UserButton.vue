@@ -1,6 +1,6 @@
 <template>
     <a @click="onUserButtonClick" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
-        @contextmenu="showOptionsMenu"
+        @contextmenu.prevent
         class="group cursor-pointer relative flex justify-center
         rounded-full drop-shadow-md bg-blue-200 border
         border-blue-200 transition-[border] hover:border-gray-800
@@ -34,6 +34,8 @@ import { AppState } from '../../state/AppState.vue';
 import { agent, LogoutAgent } from '../../lib/api';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
+import { HandleAPIError } from '../../helpers/errors';
+import ToastEventBus from 'primevue/toasteventbus';
 
 //Options menu icons
 import MingcuteProfileFill from '~icons/mingcute/profile-fill';
@@ -50,9 +52,22 @@ let optionsMenu:IOptionMenuItem[] = [
  * Opens the `UserFocusModal` component to the currently logged in
  * user's profile.
  */
- function displayCurrentUsersAccount(){
-    var userToCheck = agent.assertDid;
-    AppState.ToggleUserFocusModal(userToCheck);
+function displayCurrentUsersAccount(){
+    var userToCheck;
+    try{
+        userToCheck = agent.assertDid;
+        AppState.ToggleUserFocusModal(userToCheck);
+    }
+    catch(e){
+        //The code below plus the ToastEventBus import allow us to send
+        //a Toast message outside of the component.
+        const toast = {
+            add: (message) => ToastEventBus.emit('add', message),
+            removeGroup: (group) => ToastEventBus.emit('remove-group', group),
+            removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
+        };
+        toast.add(HandleAPIError(e as Error));
+    }
 }
 
 /**

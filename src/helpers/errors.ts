@@ -26,10 +26,12 @@ export function IsError(e : any){
  */
 export function HandleAPIError(e : Error, toastPos = 'tr'){
     var eType = '';
+    var eMessage = e.message.toLowerCase();
     //Check Error "type"
-    if(e.message.toLowerCase().includes('authentication')){
+    if(eMessage.includes('authentication')||eMessage.includes('logged')){
         eType = 'Account';
-        AppState.ToggleCreateFeedModal();
+        AppState.isCreatingFeed = false;
+        AppState.isViewingUserAccount = false;
         AppState.ToggleLoginModal();
     }
     return {summary:`${eType} Error`,detail:`Error: ${e.message}`,severity:'error', life:5000, group:toastPos};
