@@ -82,6 +82,10 @@
         <DbDebugModal v-if="DebugFlags.showAppSettingsDBDebugModal"/>
         <PostOptionsMenu v-show="postDetails.isPostOptionsMenuVisible" :menuItems="OptionIconList"/>
         <FeedOptionsMenu v-show="FeedState.isFeedOptionMenuVisible"/>
+        <OptionsMenu v-show="OptionsMenuState.isOptionsMenuVisible"/>
+        <Transition name="modal">
+            <ConfirmModal v-show="AppState.isAskingForConfirmation"/>
+        </Transition>
         <PostDetailModal/>
         <PostFocusModal/>
         <Transition name="modal">
@@ -117,6 +121,9 @@ import { FeedEnums } from "./enums/FeedEnums";
 import FeedCreateModal from "./components/Feed/FeedCreateModal.vue";
 import UserFocusModal from "./components/User/UserFocusModal.vue";
 import FeedOptionsMenu from "./components/Feed/FeedOptionsMenu.vue";
+import OptionsMenu from "./components/Utilities/OptionsMenu.vue";
+import { OptionsMenuState } from "./state/OptionsMenuState.vue";
+import ConfirmModal from "./components/Utilities/ConfirmModal.vue";
 
 
     export default defineComponent({
@@ -134,6 +141,7 @@ import FeedOptionsMenu from "./components/Feed/FeedOptionsMenu.vue";
                 // ]
                 feedListing: userFeedList,
                 FeedState,
+                OptionsMenuState,
                 postDetails,
                 AppState,
                 DebugFlags,

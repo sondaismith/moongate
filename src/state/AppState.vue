@@ -1,6 +1,7 @@
 <script lang="ts">
 import { reactive } from 'vue'
 import { postDetails } from './PostDetails.vue';
+import { IConfirmationTask } from '../components/Utilities/ConfirmModal.vue';
 
 /**
  * Object that defines the current App state. Controls values such
@@ -55,6 +56,20 @@ export const AppState = reactive({
     },
     ToggleLoginModal(){
         AppState.isLoggingIntoAccount = !AppState.isLoggingIntoAccount;
+    },
+    /**Determines whether or not the `ConfirmModal` is currently visible. */
+    isAskingForConfirmation: false,
+    /**Discribes the action that is awaiting confirmation via the `ConfirmModal`. */
+    currentConfirmationTask: {Message:'Default Message: Confirm Action', Task:()=>void 0} as IConfirmationTask,
+    /**Sets `ConfirmModal` to be displayed. */
+    showConfirmModal(message:string, task:Function){
+        this.currentConfirmationTask.Message = message;
+        this.currentConfirmationTask.Task = task;
+        this.isAskingForConfirmation = true;
+    },
+    /**Sets `ConfirmModal` to be hidden. */
+    hideConfirmModal(){
+        this.isAskingForConfirmation = false;
     }
 })
 </script>
