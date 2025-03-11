@@ -5,7 +5,7 @@
             h-2/3 md:h-auto bg-slate-800 p-4 mx-auto my-auto rounded-md">
             {{ void "close button" }}
             <div class="relative">
-                <div @click="closeModal" class="absolute right-0 flex border rounded-full border-red-500
+                <div v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full border-red-500
                     w-8 aspect-square text-red-500 hover:text-red-700 hover:border-red-700
                     justify-center items-center cursor-pointer">
                     <i-mingcute:close-fill/>
@@ -52,7 +52,7 @@
 import { defineComponent } from 'vue'
 import InLaInput from '../Utilities/InLaInput.vue';
 import { AppState } from '../../state/AppState.vue';
-import { LoginBskyAccount } from '../../lib/api/Login';
+import { LoginBskyAccount } from '../../lib/api/Login.vue';
 
 export default defineComponent({
     data(){
@@ -91,6 +91,7 @@ export default defineComponent({
             AppState.isGuestBrowsing = true;
             AppState.currentUsername = "Guest";
             AppState.canBrowse = true;
+            AppState.ToggleLoginModal();
             this.$toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
         },
         closeModal(){

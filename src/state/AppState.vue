@@ -2,6 +2,15 @@
 import { reactive } from 'vue'
 import { postDetails } from './PostDetails.vue';
 import { IConfirmationTask } from '../components/Utilities/ConfirmModal.vue';
+import { ToastEventBus } from 'primevue';
+import { authAgent, guestAgent } from '../lib/api.vue';
+import { Agent } from '@atproto/api';
+
+const toast = {
+    add: (message) => ToastEventBus.emit('add', message),
+    removeGroup: (group) => ToastEventBus.emit('remove-group', group),
+    removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
+};
 
 /**
  * Object that defines the current App state. Controls values such
@@ -27,6 +36,34 @@ export const AppState = reactive({
      * browse as a guest.
      */
     canBrowse: false,
+    /**
+     * Method that checks if `canBrowse` is true (meaning the user has
+     * selected a browsing mode) or false. Returns `canBrowse` value.
+     * Used to ensure user has selected a browsing mode, so it will
+     * display a Toast message and open the `LoginModal`.
+     */
+    checkIfCanBrowse(){
+        //If the user cannot currently browse, have them select
+        //how they would like to browse
+        if(!this.canBrowse){
+            toast.add({summary:"Error", detail:`Please choose how you would like to browse.`, severity:'error', group:'tr', life:3000})
+            this.isLoggingIntoAccount = true;
+            return this.canBrowse;
+        }
+        return this.canBrowse;
+    },
+    /**
+     * Returns the `Agent` to access the Bluesky API with based on
+     * the current browsing mode the app is in.
+     */
+    getBrowsingAgent():Agent{
+        if(AppState.isAuthBrowsing){
+            return authAgent;
+        }
+        else{
+            return guestAgent;
+        }
+    },
     /**
      * The name of the currently logged in user.
      * This variable might belong in another State.
@@ -70,6 +107,6 @@ export const AppState = reactive({
     /**Sets `ConfirmModal` to be hidden. */
     hideConfirmModal(){
         this.isAskingForConfirmation = false;
-    }
+    },
 })
 </script>

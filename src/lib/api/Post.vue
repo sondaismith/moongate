@@ -1,5 +1,6 @@
+<script lang="ts">
 import { AppBskyFeedDefs, isDid } from "@atproto/api";
-import { agent } from "../api";
+import { GetBrowsingAgent } from "../api.vue";
 import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
 export class InvalidPostDIDError extends Error{
@@ -23,7 +24,7 @@ export async function getBlueskyPostThread(postDID: string){
     if(isValidDID){
         try{
             //Try to get PostThread
-            thread = await agent.app.bsky.feed.getPostThread({
+            thread = await GetBrowsingAgent().app.bsky.feed.getPostThread({
                 uri: "at://"+postDID,
             });
         }
@@ -53,7 +54,7 @@ export async function getBlueskyPostThread(postDID: string){
  * @param postToShow The Post Thread to show based on the Post clicked in a Feed.
  */
 export async function getPostThread(postToShow:FeedViewPost){
-    var threadResult = await agent.getPostThread({uri:postToShow.post.uri});
+    var threadResult = await GetBrowsingAgent().getPostThread({uri:postToShow.post.uri});
     var result = undefined;
     if(threadResult){
         // postDetails.postThread = threadResult.data.thread as ThreadViewPost;
@@ -62,3 +63,4 @@ export async function getPostThread(postToShow:FeedViewPost){
     }
     return result;
 }
+</script>

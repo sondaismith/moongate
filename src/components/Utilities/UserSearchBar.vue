@@ -51,7 +51,7 @@ import InLaInput from './InLaInput.vue';
 import { debounce } from '../../helpers/debouncer';
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { HandleAPIError, IsError } from '../../helpers/errors';
-import { SearchForAccounts } from '../../lib/api/Feed';
+import { SearchForAccounts } from '../../lib/api/Feed.vue';
 
 export default defineComponent({
     name:'User Search Bar',

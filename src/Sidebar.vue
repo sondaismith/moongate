@@ -105,10 +105,8 @@ import { postDetails } from "./state/PostDetails.vue";
 import { AppState } from "./state/AppState.vue";
 import { DebugFlags } from "./state/Debug.vue";
 import { OptionIconList } from "./fake-data/dumPostData";
-//Remove ASAP
-import {agent} from "./lib/api.ts"
 import { IPostDetails } from "./interfaces/PostInterfaces";
-import { getBlueskyPostThread } from "./lib/api/Post";
+import { getBlueskyPostThread } from "./lib/api/Post.vue";
 import {AppSettings, loadRecords, createAppSettingTable,
     initializeAppSettingsTable, updateAppSettings, checkIfAppSettingsTableExists,
     checkIfAppSettingsDatabaseExists, validateWindowPosition,
@@ -116,7 +114,7 @@ checkIfUserAccountsTableExists,
 createUserAccountsTable} from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
 import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
-import { getUserHomeFeed } from "./lib/api/Feed";
+import { getUserHomeFeed } from "./lib/api/Feed.vue";
 import { FeedEnums } from "./enums/FeedEnums";
 import FeedCreateModal from "./components/Feed/FeedCreateModal.vue";
 import UserFocusModal from "./components/User/UserFocusModal.vue";
@@ -124,6 +122,7 @@ import FeedOptionsMenu from "./components/Feed/FeedOptionsMenu.vue";
 import OptionsMenu from "./components/Utilities/OptionsMenu.vue";
 import { OptionsMenuState } from "./state/OptionsMenuState.vue";
 import ConfirmModal from "./components/Utilities/ConfirmModal.vue";
+import { GetBrowsingAgent } from "./lib/api.vue";
 
 
     export default defineComponent({
@@ -156,12 +155,8 @@ import ConfirmModal from "./components/Utilities/ConfirmModal.vue";
         },
         methods: {
             addFeed(){
-                // const feedTypes = [FeedEnums.Icons.Art,FeedEnums.Icons.Friends,FeedEnums.Icons.News];
-                // this.feedListing.feedList.push({feedId:GenerateUniqueId(10), feedName: 'AddedByBtn', feedHandle:'test', feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)], newPosts: Math.floor(Math.random()*15), totalPosts: Math.floor(Math.random()*6)})
-                // let newestFeed = this.feedListing.feedList[this.feedListing.feedList.length-1];
-                // console.log(`Created new feed: [${newestFeed.feedName}, ${newestFeed.feedType}, ${newestFeed.newPosts}]`);
-
                 // addDummyFeed();
+                if(!AppState.checkIfCanBrowse()) return;
                 AppState.ToggleCreateFeedModal();
                 this.showScrollXPos();
             },
@@ -206,7 +201,7 @@ import ConfirmModal from "./components/Utilities/ConfirmModal.vue";
             },
             /**DEBUG - Test getting data through Bluesky API */
             async getBSkyAPIData(){
-                const feedResults = await agent.app.bsky.unspecced.getPopularFeedGenerators({limit:15})
+                const feedResults = await GetBrowsingAgent().app.bsky.unspecced.getPopularFeedGenerators({limit:15})
                 this.APIResponse = feedResults;
                 this.getExamplePost();
             },
@@ -218,7 +213,7 @@ import ConfirmModal from "./components/Utilities/ConfirmModal.vue";
                 var pasPost = "3lginbvqidk26";
                 // var eeeDID = (await agent.app.bsky.actor.getProfile({actor:"eulyin.bsky.social"})).data.did;
                 var eeePost = "3leto5w64bs2u";
-                var henkenDID = (await agent.app.bsky.actor.getProfile({actor:"henkensecond.bsky.social"})).data.did;
+                var henkenDID = (await GetBrowsingAgent().app.bsky.actor.getProfile({actor:"henkensecond.bsky.social"})).data.did;
                 var zzzPost = "3l7d5aw7t4426";
                 var EXAMPLE_POST = "at://did:plc:7kf37yk3wjqjv6zjlryjypn4/app.bsky.feed.post/3lgj4pe5uz22o"
                 EXAMPLE_POST = "at://"+henkenDID+"/app.bsky.feed.post/"+zzzPost;

@@ -1,4 +1,5 @@
-import { agent, LoginAgent, LogoutAgent } from "../api";
+<script lang="ts">
+import { GetBrowsingAgent, LoginAgent } from "../api.vue";
 
 const PDS = "bsky.social";
 
@@ -14,6 +15,7 @@ export async function LoginBskyAccount(handle:string, password:string) {
 
 //DEBUG
 export async function GetCurrentUsersProfile(){
-    const data = await agent.getTimeline();
+    const data = await GetBrowsingAgent().getTimeline();
     return data;
 }
+</script>

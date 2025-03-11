@@ -31,7 +31,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { AppState } from '../../state/AppState.vue';
-import { agent, LogoutAgent } from '../../lib/api';
+import { GetBrowsingAgent, LogoutAgent } from '../../lib/api.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { HandleAPIError } from '../../helpers/errors';
@@ -55,7 +55,7 @@ let optionsMenu:IOptionMenuItem[] = [
 function displayCurrentUsersAccount(){
     var userToCheck;
     try{
-        userToCheck = agent.assertDid;
+        userToCheck = GetBrowsingAgent().assertDid;
         AppState.ToggleUserFocusModal(userToCheck);
     }
     catch(e){
@@ -121,7 +121,7 @@ export default defineComponent({
          * Options Menu related to the User's account.
          */
         async onUserButtonClick(e:Event){
-            if(!AppState.canBrowse){
+            if(!AppState.canBrowse || AppState.isGuestBrowsing){
                 AppState.ToggleLoginModal();
             }
             else if(AppState.canBrowse && AppState.isAuthBrowsing){

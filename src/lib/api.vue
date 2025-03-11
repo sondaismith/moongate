@@ -1,5 +1,7 @@
+<script lang="ts">
 // src/lib/api.ts
-import { Agent, AtpAgent, AtpAgentLoginOpts, CredentialSession } from "@atproto/api";
+import { Agent, AtpAgentLoginOpts, CredentialSession } from "@atproto/api";
+import { AppState } from '../state/AppState.vue';
 
 // export const agent = new AtpAgent({
 //   // App View URL
@@ -9,12 +11,31 @@ import { Agent, AtpAgent, AtpAgentLoginOpts, CredentialSession } from "@atproto/
 //   // service: "https://bsky.social",
 // });
 
-const session = new CredentialSession(
+const authSession = new CredentialSession(
   // new URL("", 'https://api.bsky.app'),
   new URL("", 'https://bsky.social'),
 );
 
-export const agent:Agent = new Agent(session);
+const guestSession = new CredentialSession(
+  new URL("", 'https://api.bsky.app'),
+);
+
+export const guestAgent:Agent = new Agent(guestSession)
+
+export const authAgent:Agent = new Agent(authSession);
+
+/**
+ * Returns the `Agent` to access the Bluesky API with based on
+ * the current browsing mode the app is in.
+ */
+export function GetBrowsingAgent():Agent{
+  if(AppState.isAuthBrowsing){
+    return authAgent;
+  }
+  else{
+    return guestAgent;
+  }
+}
 
 /**
  * Method that attempts to get the Bluesky Agent to use a specific
@@ -26,7 +47,7 @@ export const agent:Agent = new Agent(session);
 export async function LoginAgent(handle:string, password:string){
   var result;
   try{
-    result = await session.login({identifier:handle,password:password} as AtpAgentLoginOpts)
+    result = await authSession.login({identifier:handle,password:password} as AtpAgentLoginOpts)
   }
   catch(error){
     result = error;
@@ -42,10 +63,11 @@ export async function LoginAgent(handle:string, password:string){
 export async function LogoutAgent(){
   var result;
   // try{
-    result = await session.logout();
+    result = await authSession.logout();
   // }
   // catch(error){
   //   result = error;
   // }
   return result;
 }
+</script>

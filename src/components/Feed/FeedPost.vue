@@ -78,19 +78,11 @@ export default defineComponent({
             }
         },
         /**
-         * Opens the `UserFocusModal` component to the currently logged in
+         * Opens the `UserFocusModal` component to the currently selected
          * user's profile.
          */
         displaySelectedUserAccount(){
-            if(AppState.canBrowse && AppState.isAuthBrowsing){
-                // var userToCheck = 'fang.3am.moe';
-                // userToCheck = 'mega64official.bsky.social';
-                // var accountDID = await agent.resolveHandle({handle:userToCheck});
-                AppState.ToggleUserFocusModal(this.postData?.post.author.did);
-            }
-            else{
-                alert('Please log in first.');
-            }
+            AppState.ToggleUserFocusModal(this.postData?.post.author.did);
         }
     },
     setup () {

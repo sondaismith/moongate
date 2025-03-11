@@ -88,13 +88,13 @@ import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
 import { AppState } from '../../state/AppState.vue';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppBskyEmbedImages, AppBskyEmbedVideo, isDid } from '@atproto/api';
-import { agent } from '../../lib/api';
 import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { GenerateTagLinkText } from '../../helpers/parsers';
 import Hashtag from '../Utilities/Hashtag.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
 import { HandleAPIError, IsError } from '../../helpers/errors';
+import { GetBrowsingAgent } from '../../lib/api.vue';
 
 export default defineComponent({
     data(){
@@ -128,7 +128,7 @@ export default defineComponent({
             this.isViewingMedia = true;
             this.isViewingPosts = this.isViewingReplies = false;
             //Get media posts
-            var userMedia = await agent.getAuthorFeed({
+            var userMedia = await GetBrowsingAgent().getAuthorFeed({
                 actor:postDetails.currentUserAccountDID,
                 filter:'posts_with_media',
             });
@@ -144,10 +144,10 @@ export default defineComponent({
     },
     async created() {
         if(isDid(postDetails.currentUserAccountDID)){
-            var userProfile = await agent.getProfile({
+            var userProfile = await GetBrowsingAgent().getProfile({
                 actor:postDetails.currentUserAccountDID
             });
-            var userTL = await agent.getAuthorFeed({
+            var userTL = await GetBrowsingAgent().getAuthorFeed({
                 actor:postDetails.currentUserAccountDID,
             });
             if(IsError(userProfile)){

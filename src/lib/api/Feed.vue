@@ -1,10 +1,10 @@
-import { AppBskyFeedDefs } from "@atproto/api";
-import { agent } from "../api";
+<script lang="ts">
+import { GetBrowsingAgent } from "../api.vue";
 
 export async function getUserHomeFeed(){
     var result;
     try{
-        result = await agent.getTimeline();
+        result = await GetBrowsingAgent().getTimeline();
         console.log(result?.data);
     }
     catch(error){
@@ -25,7 +25,7 @@ export async function getUserHomeFeed(){
 export async function SearchForAccounts(searchTerm : string){
     var result;
     try{
-        result = await agent.searchActors({q: `${searchTerm}`,limit:10});
+        result = await GetBrowsingAgent().searchActors({q: `${searchTerm}`,limit:10});
     }
     catch(error){
         result = error;
@@ -41,7 +41,7 @@ export async function SearchForAccounts(searchTerm : string){
 export async function getAuthorFeed(did:string){
     var result;
     try{
-        result = await agent.getAuthorFeed(
+        result = await GetBrowsingAgent().getAuthorFeed(
             {
                 actor:did,
                 filter:"posts_no_replies",
@@ -64,7 +64,7 @@ export async function getTagPosts(tags:string){
     var result;
     try{
         console.log(tags)
-        result = await agent.app.bsky.feed.searchPosts(
+        result = await GetBrowsingAgent().app.bsky.feed.searchPosts(
             {
                 q:`${tags}`,
             }
@@ -75,3 +75,4 @@ export async function getTagPosts(tags:string){
     }
     return result;
 }
+</script>
