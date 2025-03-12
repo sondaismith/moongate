@@ -22,10 +22,13 @@
                         <div class="text-feedPostName font-semibold max-w-36 shrink-0 truncate"
                         :title="postData?.post.author.displayName">{{ postData?.post.author.displayName }}</div>
                         <div class="text-[10px] pl-1 truncate" :title="`@${postData?.post.author.handle}`">@{{ postData?.post.author.handle }}</div>
-                        <div data-test="post-timestamp" class="text-[10px] text-nowrap cursor-pointer ml-auto pl-1" @click="openPostDetails()">{{ convertToShortTimestamp(postData?.post.indexedAt) }}</div>
+                        <div data-test="post-timestamp" class="text-[10px] text-nowrap cursor-pointer ml-auto pl-1" :title="convertToLongTimestamp(postData?.post.indexedAt)" @click="openPostDetails()">{{ convertToShortTimestamp(postData?.post.indexedAt) }}</div>
                     </div>
                     <div class="text-xs leading-4 pb-2">
-                        {{ postData?.post.record.text }}
+                        <!-- {{ postData?.post.record.text }} -->
+                        <RichPostText :post-text="postData?.post.record.text" class="leading-5 text-sm"
+                        hash-tag-style="text-slate-900 hover:text-slate-700"
+                        user-link-style="!bg-slate-700 hover:!bg-slate-500 leading-5 p-[4px] text-[10px]"/>
                     </div>
                     {{ void "image-type media" }}
                     <ImageContainer v-if="postData?.post.embed?.images"
@@ -46,10 +49,14 @@
 import { defineComponent, PropType } from 'vue'
 import { postDetails, showDetailModal, showFocusModal } from '../../state/PostDetails.vue';
 import { FeedViewPost, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { convertToShortTimestamp } from '../../helpers/converters';
+import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
 import { AppState } from '../../state/AppState.vue';
+import RichPostText from '../Utilities/RichPostText.vue';
 
 export default defineComponent({
+    components:{
+        RichPostText,
+    },
     props:{
         postData: Object as PropType<FeedViewPost>
     },
@@ -57,6 +64,7 @@ export default defineComponent({
         return{
             postDetails,
             convertToShortTimestamp,
+            convertToLongTimestamp,
             isReasonRepost,
         }
     },

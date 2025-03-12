@@ -14,10 +14,12 @@ export default defineComponent({
     // template: '<component :is="transformed"></component>',
     props:{
         postText: String,
+        hashTagStyle: String,
+        userLinkStyle: String,
     },
     computed:{
         transformed(){
-            const template = GenerateTagLinkText(this.postText);
+            const template = GenerateTagLinkText(this.postText, this.hashTagStyle, this.userLinkStyle);
             return{
                 template: template,
                 data(){
