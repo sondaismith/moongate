@@ -20,4 +20,9 @@ export namespace FeedEnums{
         Trending = "trending",
         None = 'none'
     }
+    export enum Widths{
+        Small = 288,
+        Medium = 444,
+        Large = 600
+    }
 }

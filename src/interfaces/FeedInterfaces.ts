@@ -29,7 +29,12 @@ interface IFeedDescription{
     /**Number of unread posts. */
     newPosts: number,
     /**The total number of posts that are part of the feed. */
-    totalPosts: number
+    totalPosts: number,
+    /**
+     * Collection of values used to adjust the appearance of the Feed
+     * when placed in a `FeedColumn`.
+     */
+    feedColumnSettings: IFeedColumnSettings,
 }
 
 interface IFeedListing{
@@ -41,9 +46,13 @@ interface IFeedList{
     feedDescription: IFeedDescription[]
 }
 
+interface IFeedColumnSettings{
+    width: FeedEnums.Widths,
+}
+
 interface IFeedIconTypes{
     name : FeedEnums.Icons,
     icon : FunctionalComponent
 }
 
-export type {IFeedDescription, IFeedListing, IFeedIconTypes}
+export type {IFeedDescription, IFeedListing, IFeedColumnSettings, IFeedIconTypes}

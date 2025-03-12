@@ -266,8 +266,4 @@ export async function showFocusModal(postToShow:FeedViewPost, mediaIndex:number)
         postDetails.currentThreadView = postThreadResult;
     }
 }
-
-export async function s(){
-
-}
 </script>

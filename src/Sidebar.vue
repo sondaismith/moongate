@@ -118,10 +118,7 @@ import { getUserHomeFeed } from "./lib/api/Feed.vue";
 import { FeedEnums } from "./enums/FeedEnums";
 import FeedCreateModal from "./components/Feed/FeedCreateModal.vue";
 import UserFocusModal from "./components/User/UserFocusModal.vue";
-import FeedOptionsMenu from "./components/Feed/FeedOptionsMenu.vue";
-import OptionsMenu from "./components/Utilities/OptionsMenu.vue";
 import { OptionsMenuState } from "./state/OptionsMenuState.vue";
-import ConfirmModal from "./components/Utilities/ConfirmModal.vue";
 import { GetBrowsingAgent } from "./lib/api.vue";
 
 

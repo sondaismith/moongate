@@ -7,7 +7,7 @@
 <script lang="ts">
 import { reactive } from 'vue';
 import {FeedEnums} from '../enums/FeedEnums';
-import { IFeedDescription, IFeedListing } from '../interfaces/FeedInterfaces';
+import { IFeedColumnSettings, IFeedDescription, IFeedListing } from '../interfaces/FeedInterfaces';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
@@ -55,17 +55,31 @@ export function addUserFeed(description:IFeedDescription, feed:FeedViewPost[]){
  * @param type The type of Feed this is. Used for categorization, changes icon used.
  * @param newPosts The number of unread posts.
  * @param totalPosts Total number of Posts in feed. Pretty sure this value is not needed.
+ * @param feedColumnSettings Settings that determine the appearance of the `FeedColumn`.
  */
-export function createFeedDescription(handle:string,name:string,type:FeedEnums.Icons,newPosts:number,totalPosts:number){
+export function createFeedDescription(handle:string,name:string,type:FeedEnums.Icons,
+    newPosts:number,totalPosts:number,feedColumnSettings:IFeedColumnSettings){
     var desc : IFeedDescription = {
         feedId: GenerateUniqueId(10),
         feedHandle: handle,
         feedName: name,
         feedType: type,
         newPosts: newPosts,
-        totalPosts: totalPosts
+        totalPosts: totalPosts,
+        feedColumnSettings: feedColumnSettings,
     }
     return desc;
+}
+
+/**
+ * Method that finds a matching FeedList item and updates its `FeedColumn` settings.
+ * @param feedToUpdate The Feed you wish to update the `FeedColumn` settings of.
+ * @param newColumnSettings The new `FeedColumn` settings to update with.
+ */
+export function updateFeedColumnSettings(feedToUpdate:IFeedListing, newColumnSettings:IFeedColumnSettings){
+    var feed = FeedState.FeedList.find(element => element.description.feedId == feedToUpdate.description.feedId);
+    //If existing Feed is found...
+    if(feed) feed.description.feedColumnSettings = newColumnSettings;
 }
 
 /**
@@ -82,7 +96,8 @@ export function addDummyFeed(){
             feedName: 'CreatedByABtn',
             feedType: feedTypes[Math.floor(Math.random()*feedTypes.length)],
             newPosts: Math.floor(Math.random()*15),
-            totalPosts: Math.floor(Math.random()*6)
+            totalPosts: Math.floor(Math.random()*6),
+            feedColumnSettings: {width:FeedEnums.Widths.Small}
         },
         data:[{
             post:{

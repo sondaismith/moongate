@@ -1,7 +1,7 @@
 <template>
     <div data-test="feed-column" :id="feedData?.description.feedId"
     class="flex flex-col relative w-72 pr-1 bg-slate-900
-    overflow-hidden min-w-72 max-w-[600px] origin-top-left">
+    overflow-hidden max-w-[600px] origin-top-left" :style="`min-width:${feedData?.description.feedColumnSettings.width}px`">
         {{ void "feed title" }}
         <div class="flex w-full shrink-0 border-b-2 border-white pl-2 pr-1 pt-2 pb-1">
             <div class="flex w-full items-center">
@@ -113,7 +113,8 @@ import { DebugFlags } from '../../state/Debug.vue';
 import { IFeedListing } from '../../interfaces/FeedInterfaces';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
 import { createPost } from '../../fake-data/PostFactory'
-import { addDummyPostToFeed, RemoveFeed } from '../../state/FeedList.vue';
+import { addDummyPostToFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
+import { FeedEnums } from '../../enums/FeedEnums';
 
 var colElement;
 
@@ -146,6 +147,36 @@ export default defineComponent({
     props: {
         // feedData: Object as PropType<IFeedDescription>,
         feedData: Object as PropType<IFeedListing>,
+    },
+    watch:{
+        selectedWidthSetting(newWidth){
+            switch (newWidth) {
+                case 0:
+                    // this.getFeedElement().classList.remove('medium');
+                    // this.getFeedElement().classList.remove('large');
+                    if(this.feedData){
+                        updateFeedColumnSettings(this.feedData, {width:FeedEnums.Widths.Small});
+                    }
+                    // this.feedData?.description.feedColumnSettings.width = FeedEnums.Widths.Small
+                    break;
+                case 1:
+                    // this.getFeedElement().classList.add('medium');
+                    // this.getFeedElement().classList.remove('large');
+                    if(this.feedData){
+                        updateFeedColumnSettings(this.feedData, {width:FeedEnums.Widths.Medium});
+                    }
+                    break;
+                case 2:
+                    // this.getFeedElement().classList.remove('medium');
+                    // this.getFeedElement().classList.add('large');
+                    if(this.feedData){
+                        updateFeedColumnSettings(this.feedData, {width:FeedEnums.Widths.Large});
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
     },
     methods: {
         generateRandomDate(start: Date, end: Date){
@@ -232,24 +263,24 @@ export default defineComponent({
          * Method that changes the FeedColumn's width to "Small" (18rem).
          */
         setSmallColumnWidth(){
-            this.getFeedElement().classList.remove('medium');
-            this.getFeedElement().classList.remove('large');
+            // this.getFeedElement().classList.remove('medium');
+            // this.getFeedElement().classList.remove('large');
             this.selectedWidthSetting = 0;
         },
         /**
          * Method that changes the FeedColumn's width to "Medium" (27.75rem).
          */
         setMediumColumnWidth(){
-            this.getFeedElement().classList.add('medium');
-            this.getFeedElement().classList.remove('large');
+            // this.getFeedElement().classList.add('medium');
+            // this.getFeedElement().classList.remove('large');
             this.selectedWidthSetting = 1;
         },
         /**
          * Method that changes the FeedColumn's width to "Medium" (27.75rem).
          */
          setLargeColumnWidth(){
-            this.getFeedElement().classList.add('large');
-            this.getFeedElement().classList.remove('medium');
+            // this.getFeedElement().classList.add('large');
+            // this.getFeedElement().classList.remove('medium');
             this.selectedWidthSetting = 2;
         },
     },
@@ -259,10 +290,6 @@ export default defineComponent({
             this.PostCollection.push(createPost(8));
         }
     },
-    setup () {
-
-        return {}
-    }
 })
 </script>
 

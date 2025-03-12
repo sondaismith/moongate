@@ -1,6 +1,10 @@
 <template>
     <div ref="imageContainer" class="grid grid-cols-2 grid-flow-col grid-rows-2 w-full gap-0.5 border
-        border-slate-500 rounded overflow-hidden">
+        border-slate-500 rounded overflow-hidden"
+        :style="[
+            (imagesToDisplay?.length === 1 ? `aspect-ratio: ${imagesToDisplay[0].aspectRatio?.width} / ${imagesToDisplay[0].aspectRatio?.height}`:''),
+            (imagesToDisplay?.length && imagesToDisplay.length > 1 ? 'aspect-ratio: 16 / 9':'')
+        ]">
         <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" class="overflow-hidden cursor-pointer"
             :class="[
                         (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2':''),
@@ -41,7 +45,7 @@ export default defineComponent({
             var component = (this.$refs.imageContainer as HTMLElement);
             const aspectRatio = 9/16;
             var newMinHeight = Math.floor(component.clientWidth*aspectRatio);
-            component.style.minHeight = newMinHeight+'px';
+            // component.style.minHeight = newMinHeight+'px';
         },
         showMediaFocusModal(index:number){
             this.$emit('media-click', index);

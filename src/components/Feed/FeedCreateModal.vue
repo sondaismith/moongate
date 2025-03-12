@@ -76,6 +76,7 @@ import { AppState } from '../../state/AppState.vue';
 import { getAuthorFeed, getTagPosts } from '../../lib/api/Feed.vue';
 import { addUserFeed, createFeedDescription } from '../../state/FeedList.vue';
 import { HandleAPIError, IsError } from '../../helpers/errors';
+import { IFeedColumnSettings } from '../../interfaces/FeedInterfaces';
 
 export default defineComponent({
     components:{
@@ -208,13 +209,16 @@ export default defineComponent({
                 return; //Stop further actions
             }
             console.log(feedResult);//DEBUG
+            var defaultAppearance:IFeedColumnSettings = {
+                width: FeedEnums.Widths.Small,
+            }
             //Select correct returned Object value based on Feed Type
             switch (this.selectedFeedType) {
                 case FeedEnums.Types.User:
                     feedResult = feedResult.data.feed;
                     //Generate Feed Description based on selected options
                     feedDescripton = createFeedDescription(this.feedFilters.user.handle,
-                        this.feedFilters.user.name,FeedEnums.Icons.Art,10,30);
+                        this.feedFilters.user.name,FeedEnums.Icons.Art,10,30,defaultAppearance);
                     break;
                 case FeedEnums.Types.Tag:
                     var posts = [];
@@ -225,7 +229,7 @@ export default defineComponent({
                     feedResult = posts;
                     //Generate Feed Description based on selected options
                     feedDescripton = createFeedDescription('hashtag',
-                        this.feedFilters.tag,FeedEnums.Icons.Hashtag,10,30);
+                        this.feedFilters.tag,FeedEnums.Icons.Hashtag,10,30,defaultAppearance);
                     break;
                 default:
                     break;
