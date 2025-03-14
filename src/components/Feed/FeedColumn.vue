@@ -6,7 +6,7 @@
         <div class="flex w-full shrink-0 border-b-2 border-white pl-2 pr-1 pt-2 pb-1">
             <div class="flex w-full items-center">
                 <div class="p-1 pr-3">
-                    <FeedIcon :icon="feedData?.description.feedType"/>
+                    <FeedIcon :icon="feedData?.description.feedIcon"/>
                 </div>
                 <div class="flex overflow-hidden flex-col">
                     <div class="flex flex-col text-nowrap">
@@ -142,6 +142,7 @@ export default defineComponent({
             feedOptionContentSettingsShown: false,
             feedOptionAuthorSettingsShown: false,
             feedOptionPreferencesShown: false,
+            testData:{} as IFeedListing
         }
     },
     props: {
@@ -289,6 +290,7 @@ export default defineComponent({
         for (let i = 0; i < this.feedData.totalPosts; i++) {
             this.PostCollection.push(createPost(8));
         }
+        if(this.feedData) this.testData = this.feedData;
     },
 })
 </script>

@@ -3,7 +3,7 @@
         @click="highlightFeed" @contextmenu="showFeedOptionsMenu" class="group cursor-pointer relative flex justify-center
         rounded-xl drop-shadow-md bg-blue-200 border border-blue-200 transition-[border]
         hover:border-gray-800 h-10">
-        <FeedIcon :icon="type" class="h-full text-2xl text-slate-800"/>
+        <FeedIcon :icon="icon" class="h-full text-2xl text-slate-800"/>
         <UnreadMsgCount :unreadCount="newPosts"/>
     </a>
 </template>
@@ -11,6 +11,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { FeedState, UpdateSelectedFeed } from '../../state/FeedList.vue';
+import { FeedEnums } from '../../enums/FeedEnums';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to
@@ -31,7 +32,7 @@ export default defineComponent({
     props: {
         feedId: String,
         tooltip: String,
-        type: {type: String, required: true},
+        icon: String,
         newPosts: Number,
     },
     methods:{

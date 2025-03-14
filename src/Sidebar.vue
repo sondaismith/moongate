@@ -11,23 +11,23 @@
                 <div class="flex flex-col h-full">
                     <div class="flex-shrink preload-gutter overflow-x-hidden">
                         <div class="space-y-2 py-2 pl-2 pr-1">
-                            <FeedButton type="home" tooltip="Home"/>
+                            <FeedButton :icon="FeedEnums.Icons.Home" tooltip="Home"/>
                             <TransitionGroup name="feedbutton">
                                 <!-- <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/> -->
-                                <FeedButton v-for="feed in FeedState.FeedList" :key="feed" :feedId="feed.description.feedId" :type="feed.description.feedType" :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"/>
+                                <FeedButton v-for="feed in FeedState.FeedList" :key="feed" :feedId="feed.description.feedId" :icon="feed.description.feedIcon" :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"/>
                             </TransitionGroup>
                         </div>
                     </div>
                     <div class="border-t border-gray-700 space-y-2 px-2 py-2 flex-none">
-                        <FeedButton :type="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
-                        <FeedButton :type="FeedEnums.Icons.RemoveList" tooltip="Remove Feed" @click="removeFeed"/>
+                        <FeedButton :icon="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
+                        <FeedButton :icon="FeedEnums.Icons.RemoveList" tooltip="Remove Feed" @click="removeFeed"/>
                     </div>
                 </div>
             </div>
             {{ void "Navbar Footer" }}
             <div class="w-full flex-none !mt-auto">
                 <div class="p-2 space-y-2">
-                    <FeedButton type="settings" tooltip="App Settings"/>
+                    <FeedButton :icon="FeedEnums.Icons.Settings" tooltip="App Settings"/>
                     <UserButton :tooltip="AppState.currentUsername"/>
                 </div>
             </div>
@@ -99,7 +99,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { userFeedList, FeedState, addUserFeed, createFeedDescription } from "./state/FeedList.vue";
+import { userFeedList, FeedState, addUserFeed, createFeedDescription, AddFeed } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState } from "./state/AppState.vue";
@@ -107,11 +107,16 @@ import { DebugFlags } from "./state/Debug.vue";
 import { OptionIconList } from "./fake-data/dumPostData";
 import { IPostDetails } from "./interfaces/PostInterfaces";
 import { getBlueskyPostThread } from "./lib/api/Post.vue";
-import {AppSettings, loadRecords, createAppSettingTable,
+import {AppSettings, loadAppSettingsRecords, createAppSettingTable,
     initializeAppSettingsTable, updateAppSettings, checkIfAppSettingsTableExists,
     checkIfAppSettingsDatabaseExists, validateWindowPosition,
 checkIfUserAccountsTableExists,
-createUserAccountsTable} from "./lib/db/local_db";
+createUserAccountsTable,
+checkIfSavedFeedsTableExists,
+createSavedFeedsTable, updateSavedFeedsTable,
+loadSavedFeedsRecords,
+stringifyFeedListData,
+stringToJSON} from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
 import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
 import { getUserHomeFeed } from "./lib/api/Feed.vue";
@@ -158,12 +163,13 @@ import { GetBrowsingAgent } from "./lib/api.vue";
                 this.showScrollXPos();
             },
             removeFeed(){
-                if(this.feedListing.feedList && this.feedListing.feedList.length>0){
-                    let removedIndex = Math.round(Math.random() * (this.feedListing.feedList.length-1));
-                    let removedFeed = this.feedListing.feedList[removedIndex];
-                    console.log(`Removing feed: [${removedFeed.feedName}, ${removedFeed.feedType}, ${removedFeed.newPosts}]`);
-                    this.feedListing.feedList.splice(removedIndex,1);
-                }
+                // if(this.feedListing.feedList && this.feedListing.feedList.length>0){
+                //     let removedIndex = Math.round(Math.random() * (this.feedListing.feedList.length-1));
+                //     let removedFeed = this.feedListing.feedList[removedIndex];
+                //     console.log(`Removing feed: [${removedFeed.feedName}, ${removedFeed.feedType}, ${removedFeed.newPosts}]`);
+                //     this.feedListing.feedList.splice(removedIndex,1);
+                // }
+                stringifyFeedListData(FeedState.FeedList);
                 this.showScrollXPos();
             },
             /**
@@ -243,7 +249,7 @@ import { GetBrowsingAgent } from "./lib/api.vue";
             },
             async getHomeFeed(){
                 var homeFeed = await getUserHomeFeed();
-                var feedDesc = createFeedDescription('home','Home Timeline',FeedEnums.Icons.Home,10,10);
+                var feedDesc = createFeedDescription(homeFeed.data.feed[0].post.author.did,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444});
                 addUserFeed(feedDesc, homeFeed.data.feed);
             },
             /**Method used to set up event listeners for app actions.
@@ -268,6 +274,8 @@ import { GetBrowsingAgent } from "./lib/api.vue";
                             lastWindowPosX:windowPos.x,
                             lastWindowPosY:windowPos.y,
                             lastMonitor:monitor} as AppSettings);
+
+                        await updateSavedFeedsTable({data:stringifyFeedListData(FeedState.FeedList)});
                     }
                 });
                 // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
@@ -293,7 +301,7 @@ import { GetBrowsingAgent } from "./lib/api.vue";
              * Method that ensures that the `user_accounts` table exists.
              * Called during creation of component.
              */
-             async userAccountsDatabaseSetup(){
+            async userAccountsDatabaseSetup(){
                 var tableExist = await checkIfUserAccountsTableExists();
                 if(!tableExist){
                     console.log("`user_accounts` table missing - creating table");
@@ -301,13 +309,24 @@ import { GetBrowsingAgent } from "./lib/api.vue";
                 }
             },
             /**
+             * Method that ensures that the `user_accounts` table exists.
+             * Called during creation of component.
+             */
+             async savedFeedsDatabaseSetup(){
+                var tableExist = await checkIfSavedFeedsTableExists();
+                if(!tableExist){
+                    console.log("`saved_feeds` table missing - creating table");
+                    await createSavedFeedsTable();
+                }
+            },
+            /**
              * Method that loads the application settings saved in the
              * `app_settings` database and applies them.
              */
-            async loadAppSettings(){
+            async loadAppConfig(){
                 var loadedWindowPosition = new PhysicalPosition(0,0);
                 var loadedWindowSize = new PhysicalSize(800,600);
-                var appSettings = await loadRecords() as AppSettings[];
+                var appSettings = await loadAppSettingsRecords() as AppSettings[];
                 //move window to correct monitor first
                 await invoke('position_on_monitor',{monitorName:appSettings[0].lastMonitor});
                 //then get monitor for positioning
@@ -320,12 +339,24 @@ import { GetBrowsingAgent } from "./lib/api.vue";
                 var curWindow = await getCurrentWindow();
                 curWindow.setPosition(loadedWindowPosition);
                 curWindow.setSize(loadedWindowSize);
+
+                //Load saved Feeds
+                var lastOpenFeeds = await loadSavedFeedsRecords();
+                console.log(lastOpenFeeds);
+                if(lastOpenFeeds){
+                    var loadedFeeds = stringToJSON(lastOpenFeeds[0].data);
+                    console.log(loadedFeeds);
+                    loadedFeeds.forEach(element => {
+                        AddFeed(element);
+                    });
+                }
             },
             async appStartupProcedure(){
                 await this.appSettingsDatabaseSetup();
                 await this.userAccountsDatabaseSetup();
+                await this.savedFeedsDatabaseSetup();
                 await this.setUpListeners();
-                this.loadAppSettings();
+                this.loadAppConfig();
                 invoke('show_main_window');//unhide main window and focus it via Rust
             },
         },

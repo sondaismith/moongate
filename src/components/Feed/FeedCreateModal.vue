@@ -77,6 +77,7 @@ import { getAuthorFeed, getTagPosts } from '../../lib/api/Feed.vue';
 import { addUserFeed, createFeedDescription } from '../../state/FeedList.vue';
 import { HandleAPIError, IsError } from '../../helpers/errors';
 import { IFeedColumnSettings } from '../../interfaces/FeedInterfaces';
+import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 export default defineComponent({
     components:{
@@ -218,7 +219,8 @@ export default defineComponent({
                     feedResult = feedResult.data.feed;
                     //Generate Feed Description based on selected options
                     feedDescripton = createFeedDescription(this.feedFilters.user.handle,
-                        this.feedFilters.user.name,FeedEnums.Icons.Art,10,30,defaultAppearance);
+                        this.feedFilters.user.name,FeedEnums.Types.User,FeedEnums.Icons.Art,10,30,defaultAppearance,
+                        this.feedFilters.user.did);
                     break;
                 case FeedEnums.Types.Tag:
                     var posts = [];
@@ -228,8 +230,8 @@ export default defineComponent({
                     });
                     feedResult = posts;
                     //Generate Feed Description based on selected options
-                    feedDescripton = createFeedDescription('hashtag',
-                        this.feedFilters.tag,FeedEnums.Icons.Hashtag,10,30,defaultAppearance);
+                    feedDescripton = createFeedDescription('hashtag',this.feedFilters.tag,FeedEnums.Types.Tag,
+                        FeedEnums.Icons.Hashtag,10,30,defaultAppearance);
                     break;
                 default:
                     break;
