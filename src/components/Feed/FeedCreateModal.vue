@@ -74,10 +74,9 @@ import SquareButton from '../Utilities/SquareButton.vue';
 import UserSearchBar from '../Utilities/UserSearchBar.vue';
 import { AppState } from '../../state/AppState.vue';
 import { getAuthorFeed, getTagPosts } from '../../lib/api/Feed.vue';
-import { addUserFeed, createFeedDescription } from '../../state/FeedList.vue';
+import { addUserFeed, GenerateUniqueId } from '../../state/FeedList.vue';
 import { HandleAPIError, IsError } from '../../helpers/errors';
-import { IFeedColumnSettings } from '../../interfaces/FeedInterfaces';
-import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { IFeedColumnSettings, IFeedDescription } from '../../interfaces/FeedInterfaces';
 
 export default defineComponent({
     components:{
@@ -188,8 +187,6 @@ export default defineComponent({
             this.attemptingToCreateFeed = true;
             /**The object that will be added to the FeedList. */
             var feedResult;
-            /**Object describing Feed. Includes things like name, icon used, etc. */
-            var feedDescripton;
             //Perform required API call based on Feed Type
             switch (this.selectedFeedType) {
                 case FeedEnums.Types.User:
@@ -213,14 +210,31 @@ export default defineComponent({
             var defaultAppearance:IFeedColumnSettings = {
                 width: FeedEnums.Widths.Small,
             }
+
+            //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
+            /**Starting template for IFeedDescription used to create Feed. */
+            var desc:IFeedDescription = {
+                feedId:GenerateUniqueId(10),
+                userId:1,
+                feedHandle:'hashtag',
+                feedName:this.validTags.join(','),
+                feedType:FeedEnums.Types.User,
+                feedIcon:FeedEnums.Icons.Art,
+                newPosts:10,totalPosts:30,
+                feedColumnSettings:defaultAppearance,
+                feedSourceDID:'',
+                feedTags:''
+            }
             //Select correct returned Object value based on Feed Type
             switch (this.selectedFeedType) {
                 case FeedEnums.Types.User:
                     feedResult = feedResult.data.feed;
                     //Generate Feed Description based on selected options
-                    feedDescripton = createFeedDescription(this.feedFilters.user.handle,
-                        this.feedFilters.user.name,FeedEnums.Types.User,FeedEnums.Icons.Art,10,30,defaultAppearance,
-                        this.feedFilters.user.did);
+                    desc = {...desc,
+                        feedHandle:this.feedFilters.user.handle,
+                        feedName:this.feedFilters.user.name,
+                        feedSourceDID:this.feedFilters.user.did
+                    }
                     break;
                 case FeedEnums.Types.Tag:
                     var posts = [];
@@ -230,15 +244,17 @@ export default defineComponent({
                     });
                     feedResult = posts;
                     //Generate Feed Description based on selected options
-                    feedDescripton = createFeedDescription('hashtag',this.feedFilters.tag,FeedEnums.Types.Tag,
-                        FeedEnums.Icons.Hashtag,10,30,defaultAppearance);
+                    desc = {...desc,
+                        feedType:FeedEnums.Types.Tag,
+                        feedIcon:FeedEnums.Icons.Hashtag,
+                        feedTags:this.validTags.join(' ')
+                    }
                     break;
                 default:
                     break;
             }
             //Create the Feed
-            // addUserFeed(feedDescripton,feedResult.data.feed);
-            addUserFeed(feedDescripton,feedResult);
+            addUserFeed(desc,feedResult);
             this.closeModal();
         },
         closeModal(){

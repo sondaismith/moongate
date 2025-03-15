@@ -13,10 +13,10 @@ function dec2hex (dec: number) {
     return dec.toString(16).padStart(2, "0")
 }
 //Code from Mulan at https://stackoverflow.com/a/27747377
-export function GenerateUniqueId(len: number) : String{
+export function GenerateUniqueId(len: number) : string{
     const arr = new Uint8Array((len || 40) / 2)
     crypto.getRandomValues(arr);
-    const newId : String = Array.from(arr,dec2hex).join('');
+    const newId : string = Array.from(arr,dec2hex).join('');
     //Was supposed to be check to prevent dupes, not needed since this
     //wont be used live
     // feedListing.feedList.forEach(feed => {
@@ -46,6 +46,9 @@ export function addUserFeed(description:IFeedDescription, feed:FeedViewPost[]){
 /**
  * Method used to create a FeedDescription. Required when adding a Feed to the `FeedList`
  * state.
+ * NOTE: Not really used anymore - the required `IFeedDescription` is just created before
+ * being passed to the method that needs it.
+ * @param userId The ID of the User stored in the `user_accounts` table this feed is associated with.
  * @param handle The Feed handle. If the Feed is for a user, this will just be their handle.
  * @param name The name/title of the Feed. The user can specify this to be whatever they want.
  * @param type The type of Feed this is. Used for categorization, changes icon used.
@@ -54,12 +57,14 @@ export function addUserFeed(description:IFeedDescription, feed:FeedViewPost[]){
  * @param feedColumnSettings Settings that determine the appearance of the `FeedColumn`.
  * @param sourceDid The "source" DID used to get Feed content. Used by User-type Feeds.
  */
-export function createFeedDescription(handle:string,name:string,type:FeedEnums.Types,
-    icon:FeedEnums.Icons, newPosts:number,totalPosts:number,feedColumnSettings:IFeedColumnSettings,
-    sourceDid:string = ''){
+export function createFeedDescription(userId:number,handle:string,name:string,type:FeedEnums.Types,
+    icon:FeedEnums.Icons,newPosts:number,totalPosts:number,feedColumnSettings:IFeedColumnSettings,
+    sourceDid:string = '',feedTags:string = ''){
     var desc : IFeedDescription = {
         feedId: GenerateUniqueId(10),
+        userId:userId,
         feedSourceDID: sourceDid,
+        feedTags: feedTags,
         feedHandle: handle,
         feedName: name,
         feedType: type,
@@ -157,11 +162,9 @@ export function addDummyPostToFeed(feedId:String){
  * app startup.
  * @param savedFeed Summary Feed info used to restore Feed in app.
  */
-export async function AddFeed(savedFeed:IFeedDBData){
+export async function AddSavedFeed(savedFeed:IFeedDBData){
     /**The object that will be added to the FeedList. */
     var feedResult;
-    /**Object describing Feed. Includes things like name, icon used, etc. */
-    var feedDescripton;
     //Perform required API call based on Feed Type
     switch (savedFeed.type) {
         case FeedEnums.Types.User:
@@ -170,7 +173,7 @@ export async function AddFeed(savedFeed:IFeedDBData){
             break;
         case FeedEnums.Types.Tag:
             // feedResult = await getTagPosts(this.grabHashtags());
-            feedResult = await getTagPosts(this.validTags.join(' '));
+            feedResult = await getTagPosts(savedFeed.tags);
             break;
         default:
             break;
@@ -181,20 +184,38 @@ export async function AddFeed(savedFeed:IFeedDBData){
         return; //Stop further actions
     }
     console.log(feedResult);//DEBUG
+
+    /**Default FeedColumn settings */
     var defaultAppearance:IFeedColumnSettings = {
         width: FeedEnums.Widths.Small,
     }
+    /**Starting template for IFeedDescription used to create Feed. */
+    var desc:IFeedDescription = {
+        feedId:savedFeed.id,
+        userId:savedFeed.userId,
+        feedHandle:'hashtag',
+        feedName:savedFeed.tags,
+        feedType:FeedEnums.Types.User,
+        feedIcon:FeedEnums.Icons.Art,
+        newPosts:10,totalPosts:30,
+        feedColumnSettings:defaultAppearance,
+        feedSourceDID:'',
+        feedTags:''
+    }
+
     //Select correct returned Object value based on Feed Type
-    switch (savedFeeds.type) {
+    switch(savedFeed.type) {
         case FeedEnums.Types.User:
             feedResult = feedResult.data.feed;
             //Get user profile
-            var profile = await getUserProfile(savedFeeds.did);
+            var profile = await getUserProfile(savedFeed.did);
             profile = profile.data as ProfileView;
-            //Generate Feed Description based on selected options
-            feedDescripton = createFeedDescription(profile.handle,
-                profile.displayName ? profile.displayName : '',FeedEnums.Types.User,FeedEnums.Icons.Art,10,30,defaultAppearance,
-                profile.did);
+            //Update required values of starting `IFeedDescription` template
+            desc = {...desc,
+                feedHandle:profile.handle,
+                feedName:profile.displayName,
+                feedSourceDID:profile.did
+            }
             break;
         case FeedEnums.Types.Tag:
             var posts = [];
@@ -202,15 +223,18 @@ export async function AddFeed(savedFeed:IFeedDBData){
             feedResult.data.posts.forEach(p => {
                 posts.push({post:p})
             });
-            feedResult = posts;
-            //Generate Feed Description based on selected options
-            feedDescripton = createFeedDescription('hashtag','add_value_to_table',FeedEnums.Types.Tag,
-                FeedEnums.Icons.Hashtag,10,30,defaultAppearance);
+            feedResult = posts;=
+            //Update required values of starting `IFeedDescription` template
+            desc = {...desc,
+                feedType:FeedEnums.Types.Tag,
+                feedIcon:FeedEnums.Icons.Hashtag,
+                feedTags:savedFeed.tags
+            }
             break;
         default:
             break;
     }
-    addUserFeed(feedDescripton,feedResult);
+    addUserFeed(desc,feedResult);
 }
 
 /**

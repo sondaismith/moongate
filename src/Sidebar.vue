@@ -99,7 +99,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { userFeedList, FeedState, addUserFeed, createFeedDescription, AddFeed } from "./state/FeedList.vue";
+import { userFeedList, FeedState, addUserFeed, createFeedDescription, AddSavedFeed } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState } from "./state/AppState.vue";
@@ -125,6 +125,7 @@ import FeedCreateModal from "./components/Feed/FeedCreateModal.vue";
 import UserFocusModal from "./components/User/UserFocusModal.vue";
 import { OptionsMenuState } from "./state/OptionsMenuState.vue";
 import { GetBrowsingAgent } from "./lib/api.vue";
+import { SavedFeeds } from "./lib/db/local_db";
 
 
     export default defineComponent({
@@ -249,7 +250,8 @@ import { GetBrowsingAgent } from "./lib/api.vue";
             },
             async getHomeFeed(){
                 var homeFeed = await getUserHomeFeed();
-                var feedDesc = createFeedDescription(homeFeed.data.feed[0].post.author.did,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444});
+                //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
+                var feedDesc = createFeedDescription(1,homeFeed.data.feed[0].post.author.did,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444});
                 addUserFeed(feedDesc, homeFeed.data.feed);
             },
             /**Method used to set up event listeners for app actions.
@@ -341,15 +343,17 @@ import { GetBrowsingAgent } from "./lib/api.vue";
                 curWindow.setSize(loadedWindowSize);
 
                 //Load saved Feeds
-                var lastOpenFeeds = await loadSavedFeedsRecords();
+                var lastOpenFeeds = await loadSavedFeedsRecords() as SavedFeeds[];
                 console.log(lastOpenFeeds);
-                if(lastOpenFeeds){
+                //Ensure there is data to load before trying to display Feeds
+                if(lastOpenFeeds && lastOpenFeeds[0].data.length>0){
                     var loadedFeeds = stringToJSON(lastOpenFeeds[0].data);
                     console.log(loadedFeeds);
                     loadedFeeds.forEach(element => {
-                        AddFeed(element);
+                        AddSavedFeed(element);
                     });
                 }
+                else{console.log('No saved Feeds to restore.')}
             },
             async appStartupProcedure(){
                 await this.appSettingsDatabaseSetup();

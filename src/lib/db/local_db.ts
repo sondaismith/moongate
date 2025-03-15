@@ -408,11 +408,11 @@ export async function updateSavedFeedsTable(newValues:SavedFeeds){
  * Method the returns all the records currently held in the `saved_feeds` table.
  * @returns Result of trying to grab all the records held in the `saved_feeds` table.
  */
-export async function loadSavedFeedsRecords(){
+export async function loadSavedFeedsRecords():Promise<SavedFeeds|Boolean|undefined|unknown>{
     var result;
     try{
         const db = await Database.load(APPLICATION_DB);
-        result = await db.select('SELECT * FROM saved_feeds') as AppSettings;
+        result = await db.select('SELECT * FROM saved_feeds') as SavedFeeds;
         await db.close();
     }
     catch(error){
@@ -439,26 +439,32 @@ export async function loadAppSettingsRecords(){
 }
 
 /**
- *
- * @param data
+ * Method that stringifies current list of Feeds so that their configurations can be
+ * saved to the `saved_feeds` table.
+ * @param data List of Feeds to stringify.
  */
 export function stringifyFeedListData(data:IFeedListing[]):string{
     var t:IFeedDBData[]= [];
     // FeedState.FeedList.forEach(e => {
     data.forEach(e => {
-        t.push({id:e.description.feedId,did:e.description.feedSourceDID,type:e.description.feedType,icon:e.description.feedIcon,settings:e.description.feedColumnSettings});
+        t.push({id:e.description.feedId,userId:e.description.userId,did:e.description.feedSourceDID,tags:e.description.feedTags,type:e.description.feedType,icon:e.description.feedIcon,settings:e.description.feedColumnSettings});
     });
     console.log(JSON.stringify(t));
     return JSON.stringify(t);
 }
 
+/**
+ * Method that turns a JSON string saved in the `saved_feeds` table into a IFeedDBData
+ * object that can be used to restore the list of Feeds that were last open in app.
+ * @param feedListString The saved Feed configs string saved to the `saved_feeds` table.
+ * @returns IFeedDBData[] array containing configuration data for each saved Feed.
+ */
 export function stringToJSON(feedListString:string):IFeedDBData[]{
     var result = null;
     //Check that empty text hasn't been passed in
     if(feedListString.trim().length>0){
         try{
             var jsonFromString = JSON.parse(feedListString);
-            // console.log(jsonFromString);
             result = jsonFromString;
         }
         catch(error){
@@ -475,7 +481,7 @@ export function stringToJSON(feedListString:string):IFeedDBData[]{
  * @param result Results of the performed database action to check. Successful
  * actions should return a Promise<>.
  */
-function checkIfError(result:Object|undefined|unknown){
+function checkIfError(result:Object|Boolean|undefined|unknown){
     //Checks if result value has been receievd/set - if so no Error
     //code from Erisan Olasheni: https://stackoverflow.com/a/51458052
     if(result != null && result.constructor.name != "Object" && result.constructor.name != "Array"
