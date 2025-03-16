@@ -1,6 +1,6 @@
 <template>
     <div>
-        <component :is="transformed"></component>
+        <component v-if="transformed.template && transformed.template.length>0" :is="transformed"></component>
     </div>
 </template>
 

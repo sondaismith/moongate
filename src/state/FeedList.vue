@@ -223,7 +223,7 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
             feedResult.data.posts.forEach(p => {
                 posts.push({post:p})
             });
-            feedResult = posts;=
+            feedResult = posts;
             //Update required values of starting `IFeedDescription` template
             desc = {...desc,
                 feedType:FeedEnums.Types.Tag,
