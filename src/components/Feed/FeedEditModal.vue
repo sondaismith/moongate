@@ -4,7 +4,11 @@
         {{void "Modal Control"}}
         <div class="z-20 flex flex-col w-4/5 md:w-2/3 h-2/3 mx-auto my-auto rounded bg-slate-800
             p-4 drop-shadow-lg">
-            <div class="text-2xl">{{modalPages[currentPage].title}}</div>
+            <div class="flex gap-2">
+                <div class="text-2xl">{{modalPages[currentPage].title}}</div>
+                <div v-if="AppState.isCreatingFeed" class="bg-green-600 rounded-full px-2 py-1">Creating</div>
+                <div v-if="AppState.isUpdatingFeed" class="bg-orange-600 rounded-full px-2 py-1">Editing</div>
+            </div>
             {{ void "Pages" }}
             <div class="flex items-center my-1 w-full">
                 <template v-for="n in totalPages">
@@ -56,7 +60,7 @@
                     {{currentPage == 0 ? 'Cancel':'Back'}}
                 </SquareButton>
                 <div class="flex">
-                    <SquareButton v-if="(validTags.length>0) && currentPage != totalPages-1 && currentPage != 0" @click="forwardOnePage">Next</SquareButton>
+                    <SquareButton v-if="(validTags.length>0) && selectedFeedType == FeedEnums.Types.Tag && currentPage != totalPages-1 && currentPage != 0" @click="forwardOnePage">Next</SquareButton>
                     <SquareButton @click="createFeed()" v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
@@ -74,9 +78,9 @@ import SquareButton from '../Utilities/SquareButton.vue';
 import UserSearchBar from '../Utilities/UserSearchBar.vue';
 import { AppState } from '../../state/AppState.vue';
 import { getAuthorFeed, getTagPosts } from '../../lib/api/Feed.vue';
-import { addUserFeed, GenerateUniqueId } from '../../state/FeedList.vue';
-import { HandleAPIError, IsError } from '../../helpers/errors';
-import { IFeedColumnSettings, IFeedDescription } from '../../interfaces/FeedInterfaces';
+import { addUserFeed, FeedState, GenerateUniqueId, GetFeed, UpdateFeed } from '../../state/FeedList.vue';
+import { HandleAPIError, IsError } from '../../helpers/errors.ts';
+import { IFeedColumnSettings, IFeedDescription } from '../../interfaces/FeedInterfaces.ts';
 
 export default defineComponent({
     components:{
@@ -90,7 +94,7 @@ export default defineComponent({
             AppState,
             userPromptText: 'What type of Feed do you want to add?',
             modalPages:[
-                { title:'What type of Feed do you want to add?', instruction: 'Select Below:'},
+                { title:'What type of Feed is it?', instruction: 'Select Below:'},
                 { title:'What do you want to see?', instruction: 'Select filter(s) below:'},
                 { title:'Summary', instruction: 'Are these settings correct?'},
             ],
@@ -211,10 +215,13 @@ export default defineComponent({
                 width: FeedEnums.Widths.Small,
             }
 
+            var usedFeedId:string = '';
+            if(AppState.isCreatingFeed) usedFeedId = GenerateUniqueId(10);
+            else if(AppState.isUpdatingFeed) usedFeedId = FeedState.selectedFeed;
             //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
             /**Starting template for IFeedDescription used to create Feed. */
             var desc:IFeedDescription = {
-                feedId:GenerateUniqueId(10),
+                feedId: usedFeedId,
                 userId:1,
                 feedHandle:'hashtag',
                 feedName:this.validTags.join(','),
@@ -254,11 +261,17 @@ export default defineComponent({
                     break;
             }
             //Create the Feed
-            addUserFeed(desc,feedResult);
+            if(AppState.isCreatingFeed){
+                addUserFeed(desc,feedResult);
+            }
+            else if(AppState.isUpdatingFeed){
+                UpdateFeed(FeedState.selectedFeed,desc,feedResult);
+            }
             this.closeModal();
         },
         closeModal(){
-            AppState.ToggleCreateFeedModal();
+            // AppState.ToggleCreateFeedModal();
+            AppState.HideEditFeedModal();
         }
     },
     computed:{
@@ -281,6 +294,30 @@ export default defineComponent({
             return [];
         }
     },
+    mounted(){
+        if(AppState.isUpdatingFeed){
+            //Start on last/summary page
+            this.currentPage = this.modalPages.length-1;
+            //Get existing Feed
+            var existingFeed = GetFeed(FeedState.selectedFeed);
+            //Update the modal state to hold the existing feed's data
+            switch (existingFeed?.description.feedType) {
+                case FeedEnums.Types.User:
+                    this.selectedFeedType = FeedEnums.Types.User;
+                    this.feedFilters.user = {
+                        did:existingFeed.description.feedSourceDID,
+                        handle:existingFeed.description.feedHandle,
+                        name:existingFeed.description.feedName
+                    };
+                    break;
+                case FeedEnums.Types.Tag:
+                    this.selectedFeedType = FeedEnums.Types.Tag;
+                    this.feedFilters.tag = existingFeed.description.feedTags;
+                    break;
+            }
+
+        }
+    }
     // watch:{
     //     'feedFilters.tag': debounce(function (newVal){
 

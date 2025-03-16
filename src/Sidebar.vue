@@ -89,7 +89,7 @@
         <PostDetailModal/>
         <PostFocusModal/>
         <Transition name="modal">
-            <FeedCreateModal v-if="AppState.isCreatingFeed"/>
+            <FeedEditModal v-if="AppState.isCreatingFeed || AppState.isUpdatingFeed"/>
         </Transition>
         <Transition>
             <UserFocusModal v-if="AppState.isViewingUserAccount"/>
@@ -121,7 +121,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
 import { getUserHomeFeed } from "./lib/api/Feed.vue";
 import { FeedEnums } from "./enums/FeedEnums";
-import FeedCreateModal from "./components/Feed/FeedCreateModal.vue";
+import FeedEditModal from "./components/Feed/FeedEditModal.vue";
 import UserFocusModal from "./components/User/UserFocusModal.vue";
 import { OptionsMenuState } from "./state/OptionsMenuState.vue";
 import { GetBrowsingAgent } from "./lib/api.vue";
@@ -131,7 +131,7 @@ import { SavedFeeds } from "./lib/db/local_db";
     export default defineComponent({
         name:'Sidebar',
         components:{
-            FeedCreateModal,
+            FeedEditModal,
             UserFocusModal,
         },
         data(){

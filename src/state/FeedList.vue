@@ -238,10 +238,32 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
 }
 
 /**
- * DEBUG FUNCTION: Removes the last Post record held in array
- * from as specific Feed.
- * @param feedId The `feedId` of the Feed you want to remove the
- * last in array Post from.
+ * Method that returns a specific Feed's IFeedListing object.
+ * @param feedId Id of the Feed you wish get the IFeedListing object of.
+ */
+export function GetFeed(feedId:string){
+    var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
+    return feed;
+}
+
+/**
+ *
+ * @param feedId Id of the Feed you wish to update the specifications for.
+ * @param description The updated IFeedDescription for the Feed.
+ * @param feedData The new Feed content retrieved using the updated specifications.
+ */
+export function UpdateFeed(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]){
+    var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
+    //If feed found
+    if(feed){
+        feed.description = description;
+        feed.data = feedData;
+    }
+}
+
+/**
+ * Removes specific Feed from FeedList.
+ * @param feedId The `feedId` of the Feed you want to remove.
  */
 export function RemoveFeed(feedId:String){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);

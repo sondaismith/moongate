@@ -12,6 +12,7 @@ declare module 'vue' {
     FeedButton: typeof import('./src/components/Navbar/FeedButton.vue')['default']
     FeedColumn: typeof import('./src/components/Feed/FeedColumn.vue')['default']
     FeedCreateModal: typeof import('./src/components/Feed/FeedCreateModal.vue')['default']
+    FeedEditModal: typeof import('./src/components/Feed/FeedEditModal.vue')['default']
     FeedIcon: typeof import('./src/components/Feed/FeedIcon.vue')['default']
     FeedOptionsMenu: typeof import('./src/components/Feed/FeedOptionsMenu.vue')['default']
     FeedPost: typeof import('./src/components/Feed/FeedPost.vue')['default']

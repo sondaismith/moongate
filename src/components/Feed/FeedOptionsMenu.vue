@@ -3,7 +3,7 @@
         <!-- <div class="w-full h-full z-10 bg-red-500"> -->
             <div id="feed-btn-menu" class="absolute flex flex-col rounded z-20 p-1 bg-slate-800 border
             border-slate-600 *:divide-slate-500 text-xs space-y-1 drop-shadow-md-harder">
-                <div class="flex rounded-sm py-0.5 px-1 divide-x-[1px] items-center hover:bg-white/20 cursor-pointer">
+                <div @click="updateFeed" class="flex rounded-sm py-0.5 px-1 divide-x-[1px] items-center hover:bg-white/20 cursor-pointer">
                     <div class="pr-1 text-base"><i-mingcute:edit-4-line/></div>
                     <div class="pl-2">Edit Feed</div>
                 </div>
@@ -20,9 +20,17 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { FeedState, RemoveFeed } from '../../state/FeedList.vue';
+import { AppState } from '../../state/AppState.vue';
 
 export default defineComponent({
     methods:{
+        updateFeed(){
+            console.log(`DEBUG: this is FeedId: ${FeedState.selectedFeed}`);
+            if(!AppState.checkIfCanBrowse()) return;
+            AppState.isUpdatingFeed = true;
+            //Hide menu when edit modal opens
+            FeedState.isFeedOptionMenuVisible = false;
+        },
         deleteFeed(){
             RemoveFeed(FeedState.selectedFeed);
             FeedState.isFeedOptionMenuVisible = false;

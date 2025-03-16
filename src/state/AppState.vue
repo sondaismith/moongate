@@ -73,13 +73,18 @@ export const AppState = reactive({
      * view.
      */
     isCreatingFeed: false,
+    /**Is the user currently editing an existing Feed. */
+    isUpdatingFeed: false,
     /**Is the LoginModal currently open. */
     isLoggingIntoAccount: false,
     /**Is the UserFocusModal currently open. */
     isViewingUserAccount: false,
-    /**Toggles display of `FeedCreateModal` component. */
+    /**Toggles display of `FeedEditModal` component. */
     ToggleCreateFeedModal(){
         AppState.isCreatingFeed = !AppState.isCreatingFeed;
+    },
+    HideEditFeedModal(){
+       AppState.isCreatingFeed = AppState.isUpdatingFeed = false;
     },
     /**
      * Toggles display of `UserFocusModal` component.
