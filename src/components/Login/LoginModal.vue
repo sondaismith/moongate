@@ -3,45 +3,70 @@
         flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm">
         <div class="flex flex-col w-4/5 md:w-2/3 lg:max-w-[700px]
             h-2/3 md:h-auto bg-slate-800 p-4 mx-auto my-auto rounded-md">
-            {{ void "close button" }}
-            <div class="relative">
-                <div v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full border-red-500
-                    w-8 aspect-square text-red-500 hover:text-red-700 hover:border-red-700
-                    justify-center items-center cursor-pointer">
-                    <i-mingcute:close-fill/>
+            <div>
+                <div>Which account do you wish to use?</div>
+                <div>
+                    <div></div>
+                    <div v-if="true" class="border-t-0
+                        border-inherit border-slate-500 rounded-b flex bg-slate-800 overflow-auto"
+                        :class="[2<1 ? 'border-none' : 'border']">
+                            <div class="relative flex flex-col w-full">
+                                <div class="flex items-center hover:bg-gray-700 px-2 py-2
+                                    cursor-pointer"
+                                    v-for="n in 2" :key="n">
+                                    <div class="flex rounded-full min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover"
+                                    :style="{'background-image': 'url()'}">
+                                        <i-mingcute:user-add-fill v-if="true"/>
+                                    </div>
+                                    <div class="ml-2">Test {{ n }}</div>
+                                    <div class="text-xs text-sky-500 ml-1">@{{ n }}</div>
+                                </div>
+                                <!-- <div class="px-2 py-2 select-none" v-if="filteredUsers.length == 0 && debouncedSearchTerm.trim().length>0">No Results</div> -->
+                            </div>
+                        </div>
                 </div>
             </div>
-            {{ void "login form" }}
-            <form>
-                <div class="text-3xl text-blue-700 font-extrabold">Login</div>
-                <div class="text-sm md:text-lg font-bold">Enter your username and password</div>
-                <div class="h-[1px] bg-slate-500 my-2"></div>
-                <div class="flex flex-col">
-                    <!-- <div>Hosting Provider</div>
-                    <div>bsky.social</div> -->
-                    <div class="group-heading">Account</div>
-                    <div class="flex">
-                        <InLaInput v-model="enteredUsername" textLabel="Handle" :fillContainer="true"/>
-                        <InLaInput v-model="hostProvider" textLabel="Host" :isDisabled="true" :fillContainer="true"/>
+            <div class="hidden">
+                {{ void "close button" }}
+                <div class="relative">
+                    <div v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full border-red-500
+                        w-8 aspect-square text-red-500 hover:text-red-700 hover:border-red-700
+                        justify-center items-center cursor-pointer">
+                        <i-mingcute:close-fill/>
                     </div>
-                    <InLaInput v-model="enteredPassword" textLabel="Password"
-                        :isPasswordInput="true" :fillContainer="true"/>
                 </div>
-                <div class="flex flex-col md:float-end" :class="{ disabled: attemptingLogin}">
-                    <a @click="loginAccount" tabindex="0" class="relative flex md:self-end rounded cursor-pointer
-                        bg-blue-700 justify-center md:w-40 px-3 py-2 font-semibold
-                        hover:text-white hover:bg-blue-500 focus:bg-blue-600
-                        select-none">Login</a>
-                </div>
-            </form>
-            <div class="h-[1px] bg-slate-500 my-2"></div>
-            {{ void "browse without account" }}
-            <div class="relative flex flex-col items-start">
-                <div @click="browseAsGuest" tabindex="0" class="text-blue-400 hover:text-blue-500 cursor-pointer">
-                    Or Browse without an account
-                </div>
-                <div class="text-feedPostName leading-4">Note: Some content is unable to be viewed without an account due to
-                    Post visibility settings specified by the author.
+                {{ void "login form" }}
+                <form>
+                    <div class="text-3xl text-blue-700 font-extrabold">Login</div>
+                    <div class="text-sm md:text-lg font-bold">Enter your username and password</div>
+                    <div class="h-[1px] bg-slate-500 my-2"></div>
+                    <div class="flex flex-col">
+                        <!-- <div>Hosting Provider</div>
+                        <div>bsky.social</div> -->
+                        <div class="group-heading">Account</div>
+                        <div class="flex">
+                            <InLaInput v-model="enteredUsername" textLabel="Handle" :fillContainer="true"/>
+                            <InLaInput v-model="hostProvider" textLabel="Host" :isDisabled="true" :fillContainer="true"/>
+                        </div>
+                        <InLaInput v-model="enteredPassword" textLabel="Password"
+                            :isPasswordInput="true" :fillContainer="true"/>
+                    </div>
+                    <div class="flex flex-col md:float-end" :class="{ disabled: attemptingLogin}">
+                        <a @click="loginAccount" tabindex="0" class="relative flex md:self-end rounded cursor-pointer
+                            bg-blue-700 justify-center md:w-40 px-3 py-2 font-semibold
+                            hover:text-white hover:bg-blue-500 focus:bg-blue-600
+                            select-none">Login</a>
+                    </div>
+                </form>
+                <div class="h-[1px] bg-slate-500 my-2"></div>
+                {{ void "browse without account" }}
+                <div class="relative flex flex-col items-start">
+                    <div @click="browseAsGuest" tabindex="0" class="text-blue-400 hover:text-blue-500 cursor-pointer">
+                        Or Browse without an account
+                    </div>
+                    <div class="text-feedPostName leading-4">Note: Some content is unable to be viewed without an account due to
+                        Post visibility settings specified by the author.
+                    </div>
                 </div>
             </div>
         </div>
