@@ -7,6 +7,10 @@ import { getAuthorFeed, getTagPosts } from '../lib/api/Feed.vue';
 import { HandleAPIError, IsError } from '../helpers/errors';
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { getUserProfile } from '../lib/api/User.vue';
+import { ToastEventBus } from 'primevue';
+import { AppState } from './AppState.vue';
+import { IUserSearchResult } from '../interfaces/UserInterfaces';
+import { GetBrowsingAgent } from '../lib/api.vue';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
 function dec2hex (dec: number) {
@@ -25,6 +29,12 @@ export function GenerateUniqueId(len: number) : string{
     return newId;
 }
 
+const toast = {
+    add: (message) => ToastEventBus.emit('add', message),
+    removeGroup: (group) => ToastEventBus.emit('remove-group', group),
+    removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
+};
+
 export const FeedState = reactive({
     FeedList : [] as IFeedListing[],
     selectedFeed: '',
@@ -36,11 +46,119 @@ export const FeedState = reactive({
  * based on data returned by the Bluesky API.
  * @param feed The Feed data returned by the Bluesky API.
  */
-export function addUserFeed(description:IFeedDescription, feed:FeedViewPost[]){
+export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]){
     FeedState.FeedList.push({
         description:description,
         data:feed,
     })
+}
+
+/**
+ * Method used to prepare the data needed to add a Feed to `FeedList`. Creates the
+ * description and post collection needed and returns it as an `IFeedListing`.
+ * NOTE: Must toggle AppState.isCreatingFeed before calling method.
+ * @param feedType The type of Feed to prepare data for.
+ * @param userData If this is to be a User-type Feed this parameter needs to be passed in.
+ * @param tags If this is to be a Tag-type Feed this parameter needs to be passed in - is a space
+ * separated collection of hashtags.
+ */
+export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSearchResult={did:'',name:'',handle:''},tags:string=''):Promise<IFeedListing>{
+    /**The object that will be added to the FeedList. */
+    var feedResult;
+    /**Object containing profile data on User. Used when creating User-type Feeds. */
+    var profile:ProfileView = {did:'', handle:''};
+    //Perform required API call based on Feed Type
+    switch (feedType) {
+        case FeedEnums.Types.User:
+            var did:string = '';
+            //check if we have a DID
+            if(userData.did.trim() != ''){
+                did = userData.did
+            }
+            //if no DID check for handle, then get DID
+            else if(userData.handle.trim() != ''){
+                await GetBrowsingAgent().resolveHandle(
+                    {
+                        handle:userData.handle
+                    }
+                ).then(res => did = res.data.did)
+                .catch(_ => did = '');
+            }
+            //If we do not have a profile name
+            if(userData.name.trim() == ''){
+                await GetBrowsingAgent().getProfile({actor:did})
+                .then(res => profile = res.data);
+                userData.name = profile.displayName ? profile.displayName : '';
+            }
+
+            feedResult = await getAuthorFeed(did);
+            break;
+        case FeedEnums.Types.Tag:
+            feedResult = await getTagPosts(tags);
+            break;
+        default:
+            break;
+    }
+    //Check if API call created Error
+    if(IsError(feedResult)){
+        toast.add(HandleAPIError(feedResult as Error));
+        //this.attemptingToCreateFeed = false;
+        return; //Stop further actions
+    }
+    console.log(feedResult);//DEBUG
+
+    var defaultAppearance:IFeedColumnSettings = {
+        width: FeedEnums.Widths.Small,
+    }
+
+    var usedFeedId:string = '';
+    if(AppState.isUpdatingFeed) usedFeedId = FeedState.selectedFeed;
+    else usedFeedId = GenerateUniqueId(10);
+    //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
+    /**Starting template for IFeedDescription used to create Feed. */
+    var desc:IFeedDescription = {
+        feedId: usedFeedId,
+        userId:1,
+        feedHandle:'hashtag',
+        feedName:tags.replace(' ',','),
+        feedType:FeedEnums.Types.User,
+        feedIcon:FeedEnums.Icons.Art,
+        newPosts:10,totalPosts:30,
+        feedColumnSettings:defaultAppearance,
+        feedSourceDID:'',
+        feedTags:''
+    }
+    //Select correct returned Object value based on Feed Type
+    switch (feedType) {
+        case FeedEnums.Types.User:
+            feedResult = feedResult.data.feed;
+            //Generate Feed Description based on selected options
+            desc = {...desc,
+                feedHandle:userData.handle,
+                feedName:userData.name,
+                feedSourceDID:userData.did
+            }
+            break;
+        case FeedEnums.Types.Tag:
+            var posts = [];
+            //Place Posts in a "Feed" shaped Object
+            feedResult.data.posts.forEach(p => {
+                posts.push({post:p})
+            });
+            feedResult = posts;
+            //Generate Feed Description based on selected options
+            desc = {...desc,
+                feedType:FeedEnums.Types.Tag,
+                feedIcon:FeedEnums.Icons.Hashtag,
+                feedTags:tags
+            }
+            break;
+        default:
+            break;
+    }
+
+    AppState.isCreatingFeed = false;
+    return {description:desc, data:feedResult};
 }
 
 /**
@@ -234,7 +352,7 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
         default:
             break;
     }
-    addUserFeed(desc,feedResult);
+    AddFeedToList(desc,feedResult);
 }
 
 /**

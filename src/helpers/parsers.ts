@@ -1,7 +1,7 @@
 
-const tagRegex = new RegExp(`${/#\S*/.source}`,'g');
+const tagRegex = new RegExp(`${/\B#[^/\\!@\-()$%\^&\+~|[\]{}#,;'"`.<>=\s]+/.source}`,'g');
 // const tagRegex = new RegExp(`${/\B#\w+/.source}`,'g');
-const userlinkRegex = new RegExp(`${/\B@(\S*)/.source}`,'g');
+const userlinkRegex = new RegExp(`${/\B@[^/\\!@\-()$%\^&\+~|[\]{}#,;'"`<>=\s]+/.source}`,'g');
 
 /**
  * Method that parses a passed in string for hashtags (words beginning with #)

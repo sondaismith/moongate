@@ -21,7 +21,7 @@ interface IUser{
  * Interface used to describe the shape of data passed to the
  * `UserSearchBar` component.
  */
-interface IUserSearchResult{
+export interface IUserSearchResult{
     /**
      * The unique identifier for the User.
      */

@@ -78,7 +78,7 @@ import SquareButton from '../Utilities/SquareButton.vue';
 import UserSearchBar from '../Utilities/UserSearchBar.vue';
 import { AppState } from '../../state/AppState.vue';
 import { getAuthorFeed, getTagPosts } from '../../lib/api/Feed.vue';
-import { addUserFeed, FeedState, GenerateUniqueId, GetFeed, UpdateFeed } from '../../state/FeedList.vue';
+import { AddFeedToList, FeedState, GenerateUniqueId, GetFeed, UpdateFeed } from '../../state/FeedList.vue';
 import { HandleAPIError, IsError } from '../../helpers/errors.ts';
 import { IFeedColumnSettings, IFeedDescription } from '../../interfaces/FeedInterfaces.ts';
 
@@ -272,7 +272,7 @@ export default defineComponent({
             }
             //Create the Feed
             if(AppState.isCreatingFeed){
-                addUserFeed(desc,feedResult);
+                AddFeedToList(desc,feedResult);
             }
             else if(AppState.isUpdatingFeed){
                 UpdateFeed(FeedState.selectedFeed,desc,feedResult);

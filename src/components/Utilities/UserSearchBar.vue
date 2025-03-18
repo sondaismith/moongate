@@ -52,6 +52,7 @@ import { debounce } from '../../helpers/debouncer';
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { HandleAPIError, IsError } from '../../helpers/errors';
 import { SearchForAccounts } from '../../lib/api/Feed.vue';
+import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 
 export default defineComponent({
     name:'User Search Bar',

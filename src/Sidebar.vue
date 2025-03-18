@@ -99,7 +99,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { userFeedList, FeedState, addUserFeed, createFeedDescription, AddSavedFeed } from "./state/FeedList.vue";
+import { userFeedList, FeedState, AddFeedToList, createFeedDescription, AddSavedFeed } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState } from "./state/AppState.vue";
@@ -252,7 +252,7 @@ import { SavedFeeds } from "./lib/db/local_db";
                 var homeFeed = await getUserHomeFeed();
                 //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
                 var feedDesc = createFeedDescription(1,homeFeed.data.feed[0].post.author.did,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444});
-                addUserFeed(feedDesc, homeFeed.data.feed);
+                AddFeedToList(feedDesc, homeFeed.data.feed);
             },
             /**Method used to set up event listeners for app actions.
              * Called during creation of component.
