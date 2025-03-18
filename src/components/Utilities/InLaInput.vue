@@ -75,7 +75,8 @@ export default defineComponent({
     methods:{
         /**Emits the currently held `modelValue` value. */
         emitValue(){
-            if(this.emitOnEnter){
+            //don't emit if modelValue is empty/doesn't exist
+            if(this.emitOnEnter && this.modelValue){
                 // this.$emit('inlainput-submit', this.modelValue);
                 this.$emit('inlainputSubmit', this.modelValue);
             }

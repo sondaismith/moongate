@@ -31,7 +31,7 @@
                         </div>
                     </div>
                     <div v-else-if="currentPage == 1" class="flex flex-col h-full w-full">
-                        <InLaInput v-if="selectedFeedType == FeedEnums.Types.Tag" v-model="feedFilters.tag" text-label="Tag"/>
+                        <InLaInput v-if="selectedFeedType == FeedEnums.Types.Tag" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag"/>
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mt-1 overflow-x-hidden">
                             <div class="mb-1">Discovered Tags:</div>
                             <div class="flex gap-1 flex-wrap">
@@ -60,7 +60,7 @@
                     {{currentPage == 0 ? 'Cancel':'Back'}}
                 </SquareButton>
                 <div class="flex">
-                    <SquareButton v-if="(validTags.length>0) && selectedFeedType == FeedEnums.Types.Tag && currentPage != totalPages-1 && currentPage != 0" @click="forwardOnePage">Next</SquareButton>
+                    <SquareButton v-if="isTagSpecsEntryComplete" @click="forwardOnePage">Next</SquareButton>
                     <SquareButton @click="createFeed()" v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
@@ -184,6 +184,16 @@ export default defineComponent({
             return s.join(' ');
         },
         /**
+         * Used by the Tag entry input control on Enter key press. Used to check if the
+         * input values are valid before moving forward to the Feed creation details
+         * summary page.
+         */
+        trySubmitTags(){
+            if(this.isTagSpecsEntryComplete){
+                this.forwardOnePage();
+            }
+        },
+        /**
          * Method that adds a new feed with specified options
          * to the App's `FeedList`.
          */
@@ -292,6 +302,15 @@ export default defineComponent({
                 return result;
             }
             return [];
+        },
+        /**
+         * Validates that the required conditions have been met during the
+         * Tag-type Feed creation process to progress to the summary/creation page.
+         */
+        isTagSpecsEntryComplete(){
+            return (this.validTags.length>0) &&
+            this.selectedFeedType == FeedEnums.Types.Tag &&
+            this.currentPage != this.totalPages-1 && this.currentPage != 0;
         }
     },
     mounted(){

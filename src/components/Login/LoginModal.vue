@@ -3,7 +3,7 @@
         flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm">
         <div class="flex flex-col w-4/5 md:w-2/3 lg:max-w-[700px]
             h-2/3 md:h-auto bg-slate-800 p-4 mx-auto my-auto rounded-md">
-            <div>
+            <div class="hidden">
                 <div>Which account do you wish to use?</div>
                 <div>
                     <div></div>
@@ -25,7 +25,7 @@
                     </div>
                 </div>
             </div>
-            <div class="hidden">
+            <div class="hiddens">
                 {{ void "close button" }}
                 <div class="relative">
                     <div v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full border-red-500
