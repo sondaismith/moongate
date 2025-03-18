@@ -349,9 +349,12 @@ import { SavedFeeds } from "./lib/db/local_db";
                 if(lastOpenFeeds && lastOpenFeeds[0].data.length>0){
                     var loadedFeeds = stringToJSON(lastOpenFeeds[0].data);
                     console.log(loadedFeeds);
-                    loadedFeeds.forEach(element => {
-                        AddSavedFeed(element);
-                    });
+                    //Set AppState to "loading feeds" - prevent interaction until
+                    //all data has been loaded
+                    for (let i = 0; i < loadedFeeds.length; i++) {
+                        await AddSavedFeed(loadedFeeds[i]);
+                    }
+                    //Set AppState "loading feeds" to false
                 }
                 else{console.log('No saved Feeds to restore.')}
             },

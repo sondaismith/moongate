@@ -10,20 +10,19 @@
                     <div v-if="true" class="border-t-0
                         border-inherit border-slate-500 rounded-b flex bg-slate-800 overflow-auto"
                         :class="[2<1 ? 'border-none' : 'border']">
-                            <div class="relative flex flex-col w-full">
-                                <div class="flex items-center hover:bg-gray-700 px-2 py-2
-                                    cursor-pointer"
-                                    v-for="n in 2" :key="n">
-                                    <div class="flex rounded-full min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover"
-                                    :style="{'background-image': 'url()'}">
-                                        <i-mingcute:user-add-fill v-if="true"/>
-                                    </div>
-                                    <div class="ml-2">Test {{ n }}</div>
-                                    <div class="text-xs text-sky-500 ml-1">@{{ n }}</div>
+                        <div class="relative flex flex-col w-full">
+                            <div class="flex items-center hover:bg-gray-700 px-2 py-2
+                                cursor-pointer"
+                                v-for="n in 2" :key="n">
+                                <div class="flex rounded-full min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover"
+                                :style="{'background-image': 'url()'}">
+                                    <i-mingcute:user-add-fill v-if="true"/>
                                 </div>
-                                <!-- <div class="px-2 py-2 select-none" v-if="filteredUsers.length == 0 && debouncedSearchTerm.trim().length>0">No Results</div> -->
+                                <div class="ml-2">Test {{ n }}</div>
+                                <div class="text-xs text-sky-500 ml-1">@{{ n }}</div>
                             </div>
                         </div>
+                    </div>
                 </div>
             </div>
             <div class="hidden">
