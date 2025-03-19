@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AccountPeek: typeof import('./src/components/Utilities/AccountPeek.vue')['default']
     ConfirmModal: typeof import('./src/components/Utilities/ConfirmModal.vue')['default']
     DbDebugModal: typeof import('./src/components/Debug/DbDebugModal.vue')['default']
     FeedButton: typeof import('./src/components/Navbar/FeedButton.vue')['default']
@@ -22,15 +23,18 @@ declare module 'vue' {
     'IMdi:expandMore': typeof import('~icons/mdi/expand-more')['default']
     'IMdi:gearBox': typeof import('~icons/mdi/gear-box')['default']
     'IMdi:magnifyScan': typeof import('~icons/mdi/magnify-scan')['default']
+    'IMdi:plus': typeof import('~icons/mdi/plus')['default']
     'IMdi:twitterRetweet': typeof import('~icons/mdi/twitter-retweet')['default']
     IMdiRobotAngry: typeof import('~icons/mdi/robot-angry')['default']
     'IMingcute:butterfly2Line': typeof import('~icons/mingcute/butterfly2-line')['default']
+    'IMingcute:checkFill': typeof import('~icons/mingcute/check-fill')['default']
     'IMingcute:closeFill': typeof import('~icons/mingcute/close-fill')['default']
     'IMingcute:edit4Line': typeof import('~icons/mingcute/edit4-line')['default']
     'IMingcute:heartFill': typeof import('~icons/mingcute/heart-fill')['default']
     'IMingcute:leftFill': typeof import('~icons/mingcute/left-fill')['default']
     'IMingcute:lockFill': typeof import('~icons/mingcute/lock-fill')['default']
     'IMingcute:menuLine': typeof import('~icons/mingcute/menu-line')['default']
+    'IMingcute:plusFill': typeof import('~icons/mingcute/plus-fill')['default']
     'IMingcute:refresh3Fill': typeof import('~icons/mingcute/refresh3-fill')['default']
     'IMingcute:repeatLine': typeof import('~icons/mingcute/repeat-line')['default']
     'IMingcute:rightFill': typeof import('~icons/mingcute/right-fill')['default']

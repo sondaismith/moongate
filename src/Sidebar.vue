@@ -94,6 +94,7 @@
         <Transition>
             <UserFocusModal v-if="AppState.isViewingUserAccount"/>
         </Transition>
+        <AccountPeek/>
     </div>
 </template>
 
