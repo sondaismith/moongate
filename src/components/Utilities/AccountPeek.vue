@@ -1,6 +1,7 @@
 <template>
-    <div class="absolute flex flex-col z-10 bg-slate-800 border border-slate-700 p-3 pb-4
-    rounded-md drop-shadow max-w-64 overflow-hidden">
+    <div id="account-peek" class="absolute flex flex-col z-10 bg-slate-800 border
+    border-slate-700 p-3 pb-4 rounded-md drop-shadow max-w-64 overflow-hidden"
+    @mouseenter="AccountPeekState.keepPeekAlive" @mouseleave="AccountPeekState.cancelUserPeek">
         <div class="flex items-start justify-betweens">
             <div class="flex shrink-0 rounded-full bg-blue-500 size-14 items-center justify-center
                 bg-contain" :style="'background-image: url('+accountPFP+')'">
@@ -45,6 +46,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import RichPostText from './RichPostText.vue';
+import { AccountPeekState } from '../../state/AccountPeekState.vue';
 
 export default defineComponent({
     name:'Account Peek',
@@ -53,6 +55,7 @@ export default defineComponent({
     },
     data(){
         return{
+            AccountPeekState,
             accountPFP: 'src/assets/test-media/posts/image04.png',
             accountName: 'Firstname Lastname',
             accountHandle: 'handler',

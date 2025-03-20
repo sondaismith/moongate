@@ -10,8 +10,10 @@
             {{ void "post pfp" }}
             <div class="flex w-full">
                 <div>
-                    <div @click="displaySelectedUserAccount" class="rounded-full bg-stone-500 aspect-square border box-content size-10 bg-contain
-                    hover:border-slate-600 transition-[border-color] ease-linear duration-200 cursor-pointer"
+                    <div @click="displaySelectedUserAccount" @mouseover="AccountPeekState.waitBeforePeekingUser"
+                    @mouseleave="AccountPeekState.cancelUserPeek" class="rounded-full bg-stone-500 aspect-square
+                    border box-content size-10 bg-contain hover:border-slate-600
+                    transition-[border-color] ease-linear duration-200 cursor-pointer"
                     :style="{'background-image' : 'url('+postData?.post.author.avatar+')'}">
                         <!-- <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/> -->
                     </div>
@@ -52,6 +54,7 @@ import { FeedViewPost, isReasonRepost } from '@atproto/api/dist/client/types/app
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
 import { AppState } from '../../state/AppState.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
+import { AccountPeekState } from '../../state/AccountPeekState.vue';
 
 export default defineComponent({
     components:{
@@ -66,6 +69,7 @@ export default defineComponent({
             convertToShortTimestamp,
             convertToLongTimestamp,
             isReasonRepost,
+            AccountPeekState,
         }
     },
     methods:{

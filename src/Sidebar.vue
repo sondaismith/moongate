@@ -94,7 +94,9 @@
         <Transition>
             <UserFocusModal v-if="AppState.isViewingUserAccount"/>
         </Transition>
-        <AccountPeek/>
+        <Transition name="peek">
+            <AccountPeek v-show="AccountPeekState.isUserPeeking"/>
+        </Transition>
     </div>
 </template>
 
@@ -127,6 +129,7 @@ import UserFocusModal from "./components/User/UserFocusModal.vue";
 import { OptionsMenuState } from "./state/OptionsMenuState.vue";
 import { GetBrowsingAgent } from "./lib/api.vue";
 import { SavedFeeds } from "./lib/db/local_db";
+import { AccountPeekState } from "./state/AccountPeekState.vue";
 
 
     export default defineComponent({
@@ -145,6 +148,7 @@ import { SavedFeeds } from "./lib/db/local_db";
                 feedListing: userFeedList,
                 FeedState,
                 OptionsMenuState,
+                AccountPeekState,
                 postDetails,
                 AppState,
                 DebugFlags,
@@ -420,5 +424,17 @@ import { SavedFeeds } from "./lib/db/local_db";
 }
 .feedcolumn-leave-to{
     min-width: unset;
+}
+
+.peek-move,
+.peek-enter-active,
+.peek-leave-active {
+    transition: opacity 0.15s ease, transform 0.2s ease;
+}
+
+.peek-enter-from,
+.peek-leave-to {
+    opacity: 0 !important;
+    transform: translateY(-5px);
 }
 </style>
