@@ -10,7 +10,7 @@
             {{ void "post pfp" }}
             <div class="flex w-full">
                 <div>
-                    <div @click="displaySelectedUserAccount" @mouseover="AccountPeekState.waitBeforePeekingUser"
+                    <div @click="displaySelectedUserAccount" @mouseover="AccountPeekState.waitBeforePeekingUser($event,postData?.post.author.did ? postData.post.author.did : '')"
                     @mouseleave="AccountPeekState.cancelUserPeek" class="rounded-full bg-stone-500 aspect-square
                     border box-content size-10 bg-contain hover:border-slate-600
                     transition-[border-color] ease-linear duration-200 cursor-pointer"

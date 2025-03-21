@@ -32,6 +32,7 @@ declare module 'vue' {
     'IMingcute:edit4Line': typeof import('~icons/mingcute/edit4-line')['default']
     'IMingcute:heartFill': typeof import('~icons/mingcute/heart-fill')['default']
     'IMingcute:leftFill': typeof import('~icons/mingcute/left-fill')['default']
+    'IMingcute:loadingFill': typeof import('~icons/mingcute/loading-fill')['default']
     'IMingcute:lockFill': typeof import('~icons/mingcute/lock-fill')['default']
     'IMingcute:menuLine': typeof import('~icons/mingcute/menu-line')['default']
     'IMingcute:plusFill': typeof import('~icons/mingcute/plus-fill')['default']

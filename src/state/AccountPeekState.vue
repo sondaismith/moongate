@@ -1,5 +1,7 @@
 <script lang="ts">
 import { reactive } from 'vue'
+import { getUserProfile } from '../lib/api/User.vue';
+import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 export const AccountPeekState = reactive({
     /**Indicates if `AccountPeek` component is visible. */
@@ -22,46 +24,66 @@ export const AccountPeekState = reactive({
      * that will hide `AccountPeek` component.
      */
     pfpExit:0,
+    /**
+     * MouseEvent used to determine when a different User's "account peek" has
+     * been requested. Updated in `waitBeforePeekingUser()`.*/
     lastMouseEvent:new MouseEvent('click'),
     /**
      * Boolean indicating if the `AccountPeek` is waiting for a data response
      * from the Bluesky API.
      */
     awaitingAPIResponse:false,
+    profileData: {} as ProfileViewDetailed,
     /**
      * Method that fires when user cursor enters specific element.
      * Used to initially display `AccountPeek` component. Also used
      * to keep component displaying (e.g. moving between PFP and the
      * AccountPeek component).
      * @param event MouseEvent from when mouse enters element area.
+     * @param authorDid The DID of the User you wish to peek the info of.
      */
-    waitBeforePeekingUser(event:MouseEvent){
-        //If the AccountPeek is already being displayed, we only want to
-        //update the lastMouseEvent event and its the Peek position if we
-        //move over a new PFP.
+    waitBeforePeekingUser(event:MouseEvent,authorDid:string){
+        //Runs on first PFP hover/new PFP hover. New PFP hover is determined by checking
+        //`lastMouseEvent.target`. If that changes, update `lastMouseEvent`.
         if((event.target as HTMLElement).id != 'account-peek' && this.lastMouseEvent.target !== event.target){
             this.lastMouseEvent = event;
-            console.log('updating lastMouseEvent');
             //re-display AccountPeek after previous has hidden itself - take note
             //of animation/transition times
-            setTimeout(() => {
+            setTimeout(async() => {
                 this.isUserPeeking = true;
-                var peek = document.getElementById('account-peek');//important
+                var peek = document.getElementById('account-peek');//get peek element
+                //delay to position peek in "awaiting data" state
+                await setTimeout(() => {
+                    if(peek){
+                        let pos = this.getSafePeekPosition(event);
+                        peek.style.top = pos.y+'px';
+                        peek.style.left = pos.x+'px';
+                    }
+                }, 2);
+                if(this.profileData && this.profileData.did!=authorDid) await this.getProfileData(authorDid);
+                //delay to allow menu dimensions to update after being filled with items
                 setTimeout(() => {
-                    let pos = this.getSafePeekPosition(event);
-                    peek.style.top = pos.y+'px';
-                    peek.style.left = pos.x+'px';
+                    if(peek){
+                        let pos = this.getSafePeekPosition(event);
+                        peek.style.top = pos.y+'px';
+                        peek.style.left = pos.x+'px';
+                    }
                 }, 2);
             }, this.delayPeekHide*2);
         }
+        //The PFP of the same user is hovered over - data will not be fetched, so no need to
+        //position `awaiting data` version of peek component
         else{
-            clearTimeout(this.pfpExit);//Stop leaving event
-            //update the position if Peek is not visible or this is a new PFP
+            clearTimeout(this.pfpExit);//Stop mouse leaving event
+            //update the position if Peek is not visible - prevents unnecessary call
+            //on `account-peek` mouseenter
             if(!this.isUserPeeking){
-                this.pfpEnter = setTimeout(() => {
-                    this.isUserPeeking = true;
-                    console.log('peek-a-boo');
-                    var peek = document.getElementById('account-peek');//important
+                this.pfpEnter = setTimeout(async() => {
+                    this.isUserPeeking = true;//display peek
+                    var peek = document.getElementById('account-peek');//get peek element
+                    //Check if profile data is already stored in cache (FUTURE)
+                    //If cache data is old, get latest profile data
+                    // if(this.profileData && this.profileData.did!=authorDid) await this.getProfileData(authorDid);
                     //delay to allow menu dimensions to update after being filled with items
                     setTimeout(() => {
                         if(peek){
@@ -83,8 +105,8 @@ export const AccountPeekState = reactive({
         this.pfpExit = setTimeout(() => {
             var peek = document.getElementById('account-peek');//important
             this.isUserPeeking = false;
-            // if(peek) peek.style.top = '-1000px';
-            console.log('left early');
+            if(peek) peek.style.top = '-1000px';
+            // this.awaitingAPIResponse = false;//Stop waiting for API response
         }, this.delayPeekHide);
     },
     /**
@@ -101,28 +123,43 @@ export const AccountPeekState = reactive({
      * @param event MouseEvent from when mouse enters element area.
      */
     getSafePeekPosition(event:MouseEvent){
-        var menu = document.getElementById('account-peek');//important
+        var peek = document.getElementById('account-peek');//important
         var appViewport = document.getElementById('app-viewport');
-        if(!menu || !appViewport) return; //do not continue if we do not find elements
-        var menuHeight = menu.clientHeight;
-        var menuWidth = menu.clientWidth;
+        if(!peek || !appViewport) return; //do not continue if we do not find elements
+        var peekHeight = peek.offsetHeight;
+        var peekWidth = peek.offsetWidth;
         var viewportHeight = appViewport.offsetHeight;
         var viewportWidth = appViewport.offsetWidth;
-        var menuSafePos = {x:0,y:0};
-        menuSafePos = {x:event.clientX, y:event.clientY};
-        var xTarget = menuSafePos.x;
-        var yTarget = menuSafePos.y;
-        var menuYClearence = viewportHeight - (menuHeight+yTarget);
-        var menuXClearence = viewportWidth - (menuWidth+xTarget);
+        var peekSafePos = {x:0,y:0};
+        peekSafePos = {x:event.clientX, y:event.clientY};
+        var xTarget = peekSafePos.x;
+        var yTarget = peekSafePos.y;
+        var peekYClearence = viewportHeight - (peekHeight+yTarget);
+        var peekXClearence = viewportWidth - (peekWidth+xTarget);
 
-        if(menuYClearence < 0){
-            yTarget = event.clientY-menuHeight;
+        if(peekYClearence < 0){
+            yTarget = event.clientY-peekHeight;
         }
-        if(menuXClearence < 0){
-            xTarget = event.clientX-menuWidth;
+        if(peekXClearence < 0){
+            xTarget = event.clientX-peekWidth;
         }
-        menuSafePos = {x:xTarget, y:yTarget};
-        return menuSafePos;
+        peekSafePos = {x:xTarget, y:yTarget};
+        return peekSafePos;
+    },
+    /**
+     * Method used to get the User data to display in the `AccountPeek` component.
+     * @param authorDid The DID of the User's data you wish to request.
+     */
+    async getProfileData(authorDid:string){
+        this.awaitingAPIResponse = true;
+        //Get profile data, then store it in the local variable +
+        //place a copy in the cache
+        await getUserProfile(authorDid)
+        // GetBrowsingAgent().getProfile()
+        .then(res => this.profileData = res.data)
+        .catch(err => console.log(err));
+        this.awaitingAPIResponse = false;
+        // console.log(this.profileData);//DEBUG
     }
 })
 </script>
