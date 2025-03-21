@@ -2,6 +2,7 @@
 import { reactive } from 'vue'
 import { getUserProfile } from '../lib/api/User.vue';
 import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { postDetails } from './PostDetails.vue';
 
 export const AccountPeekState = reactive({
     /**Indicates if `AccountPeek` component is visible. */
@@ -43,6 +44,10 @@ export const AccountPeekState = reactive({
      * @param authorDid The DID of the User you wish to peek the info of.
      */
     waitBeforePeekingUser(event:MouseEvent,authorDid:string){
+        if(!event || !authorDid || authorDid.trim() == ''){
+            console.log('ERROR: Invalid Request - No MouseEvent or DID has been passed to method.');
+            return;
+        }
         //Runs on first PFP hover/new PFP hover. New PFP hover is determined by checking
         //`lastMouseEvent.target`. If that changes, update `lastMouseEvent`.
         if((event.target as HTMLElement).id != 'account-peek' && this.lastMouseEvent.target !== event.target){
@@ -58,6 +63,8 @@ export const AccountPeekState = reactive({
                         let pos = this.getSafePeekPosition(event);
                         peek.style.top = pos.y+'px';
                         peek.style.left = pos.x+'px';
+                        //If a particular modal/component is already covering the screen
+                        if(postDetails.isFocusVisible) peek.style.zIndex = '20';
                     }
                 }, 2);
                 if(this.profileData && this.profileData.did!=authorDid) await this.getProfileData(authorDid);
@@ -67,6 +74,8 @@ export const AccountPeekState = reactive({
                         let pos = this.getSafePeekPosition(event);
                         peek.style.top = pos.y+'px';
                         peek.style.left = pos.x+'px';
+                        //If a particular modal/component is already covering the screen
+                        if(postDetails.isFocusVisible) peek.style.zIndex = '20';
                     }
                 }, 2);
             }, this.delayPeekHide*2);

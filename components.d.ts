@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AccountPeek: typeof import('./src/components/Utilities/AccountPeek.vue')['default']
+    AvatarRound: typeof import('./src/components/Utilities/AvatarRound.vue')['default']
     ConfirmModal: typeof import('./src/components/Utilities/ConfirmModal.vue')['default']
     DbDebugModal: typeof import('./src/components/Debug/DbDebugModal.vue')['default']
     FeedButton: typeof import('./src/components/Navbar/FeedButton.vue')['default']
@@ -26,6 +27,7 @@ declare module 'vue' {
     'IMdi:plus': typeof import('~icons/mdi/plus')['default']
     'IMdi:twitterRetweet': typeof import('~icons/mdi/twitter-retweet')['default']
     IMdiRobotAngry: typeof import('~icons/mdi/robot-angry')['default']
+    'IMingcute:butterfly2Fill': typeof import('~icons/mingcute/butterfly2-fill')['default']
     'IMingcute:butterfly2Line': typeof import('~icons/mingcute/butterfly2-line')['default']
     'IMingcute:checkFill': typeof import('~icons/mingcute/check-fill')['default']
     'IMingcute:closeFill': typeof import('~icons/mingcute/close-fill')['default']

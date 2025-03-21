@@ -12,7 +12,7 @@
                         :postText="replies.post.record.text" :timestamp="replies.post.indexedAt"
                         :totalComments="replies.post.replyCount" :totalReposts="replies.post.repostCount"
                         :totalLikes="replies.post.likeCount" :replyThreadIndex="0"
-                        :totalThreadReplies="replies.replies.length"/>
+                        :totalThreadReplies="replies.replies.length" :userDid="replies.post.author.did"/>
                     {{ void "displays replies to comment" }}
                     <div v-for="(reply, index) in replies.replies">
                         <PostReply :cid="reply.post.cid" :parentCID="reply.post.record.reply.parent.cid"
@@ -21,7 +21,8 @@
                             :postText="reply.post.record.text" :timestamp="reply.post.indexedAt"
                             :totalComments="reply.post.replyCount" :totalReposts="reply.post.repostCount"
                             :totalLikes="reply.post.likeCount" :replyThreadIndex="index+1"
-                            :totalThreadReplies="replies.replies.length+replies.replies[0].replies.length"/>
+                            :totalThreadReplies="replies.replies.length+replies.replies[0].replies.length"
+                            :userDid="reply.post.author.did"/>
                         <!-- <PostReply v-if="reply.replies.length == 1" :cid="reply.post.cid"
                             :parentCID="reply.post.record.reply.parent.cid" :userName="reply.replies[0].post.author.displayName"
                             :userHandle="reply.replies[0].post.author.handle" :avatar="reply.replies[0].post.author.avatar"
@@ -39,10 +40,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
+import PostReply from './PostReply.vue';
 
 export default defineComponent({
-    setup () {
-        return {}
+    components:{
+        PostReply,
     },
     data(){
         return{

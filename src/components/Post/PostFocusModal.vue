@@ -47,10 +47,8 @@
             {{ void "User Info/Actions" }}
             <div class="p-4">
                 <div class="flex">
-                    <div class="rounded-full shrink-0 overflow-hidden bg-stone-500 aspect-square size-10 self-center">
-                        <!-- <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/> -->
-                        <div class="h-full w-full bg-contain" :style="{'background-image' : 'url('+postDetails.currentThreadView.post.author.avatar+')'}"></div>
-                    </div>
+                    <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
+                    :did="postDetails.currentThreadView.post.author.did"/>
                     <div class="self-center ml-2 overflow-hidden">
                         <div class="font-bold leading-4 text-ellipsis overflow-hidden">{{ postDetails.currentThreadView.post.author.displayName }}</div>
                         <div class="text-feedPostName text-ellipsis overflow-hidden">@{{ postDetails.currentThreadView.post.author.handle }}</div>
@@ -89,10 +87,11 @@ import { postDetails } from '../../state/PostDetails.vue';
 import { convertToLongTimestamp } from '../../helpers/converters';
 import PostThreadView from './PostThreadView.vue';
 import ReplyBreadcrumb from './ReplyBreadcrumb.vue';
+import AvatarRound from '../Utilities/AvatarRound.vue';
 
 export default defineComponent({
-    setup () {
-        return {}
+    components:{
+        AvatarRound,
     },
     data(){
         return{

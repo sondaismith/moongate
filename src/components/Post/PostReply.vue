@@ -1,10 +1,7 @@
 <template>
     <div class="flex">
         <div class="flex-col">
-            <div class="rounded-full overflow-hidden flex-shrink-0 bg-stone-500 aspect-square size-10">
-                <i-mdi-robot-angry v-if="!avatar" class="h-full w-full p-2"/>
-                <div v-if="avatar" class="h-full bg-contain" :style="{'background-image' : 'url('+avatar+')'}"></div>
-            </div>
+            <AvatarRound :avatar="avatar" :did="userDid"/>
             {{ void "below is connector for replies" }}
             <div v-if="(replyThreadIndex!=undefined && totalThreadReplies && replyThreadIndex<totalThreadReplies)" class="h-full bg-slate-700 w-0.5 m-auto"></div>
         </div>
@@ -39,15 +36,21 @@ import { DetailIconList } from '../../fake-data/dumPostData';
 import PostInteractionIcons from './PostInteractionIcons.vue';
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
 import { postDetails } from '../../state/PostDetails.vue';
+import AvatarRound from '../Utilities/AvatarRound.vue';
 
 var postReplyData : IDetailIcon[];
 
 export default defineComponent({
+    components:{
+        AvatarRound,
+        PostInteractionIcons,
+    },
     props:{
         cid: String,
         parentCID: String,
         userName: String,
         userHandle: String,
+        userDid:String,
         avatar: String,
         totalComments: Number, //not going to actually be in final version, just use .length
         totalReposts: Number,
