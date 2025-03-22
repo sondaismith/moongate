@@ -43,7 +43,7 @@ interface IPostDetailsList{
      */
     clickedElement: HTMLElement,
     postDetailIconValues: IDetailIcon[],
-    updatePostDetailIconValues(omments:string, reposts:string, likes:string): void,
+    updatePostDetailIconValues(comments:string, reposts:string, likes:string): void,
     /**
      * DID of the user account that is currently being shown in
      * the `UserFocusModal` component.

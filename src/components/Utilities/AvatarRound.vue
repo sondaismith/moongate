@@ -12,6 +12,7 @@
 import { defineComponent } from 'vue'
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { AppState } from '../../state/AppState.vue';
+import { isDid } from '@atproto/api';
 
 export default defineComponent({
     data(){
@@ -24,13 +25,21 @@ export default defineComponent({
         avatar:String,
         did:String,
     },
+    emits:{
+        /**Emit used to indicate the Avatar element has been clicked. */
+        avatarClicked:(userDid:string|undefined) => {
+            if(isDid(userDid)) return true;
+            else return false;
+        }
+    },
     methods:{
         /**
          * Opens the `UserFocusModal` component to the currently selected
          * user's profile.
          */
         displaySelectedUserAccount(){
-            AppState.ToggleUserFocusModal(this.did);
+            AppState.ShowUserFocusModal(this.did);
+            this.$emit('avatarClicked',this.did);
         }
     }
 })

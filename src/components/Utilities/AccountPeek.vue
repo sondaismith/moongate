@@ -41,7 +41,8 @@
                     <div class="text-slate-400 whitespace-pre"> Following</div>
                 </div>
             </div>
-            <RichPostText class="text-sm text-ellipsis overflow-auto grow shrink" :post-text="AccountPeekState.profileData.description"/>
+            <RichPostText class="text-sm overflow-auto grow shrink break-words"
+            :post-text="AccountPeekState.profileData.description"/>
         </div>
     </div>
 </template>

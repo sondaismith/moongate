@@ -56,7 +56,7 @@ function displayCurrentUsersAccount(){
     var userToCheck;
     try{
         userToCheck = GetBrowsingAgent().assertDid;
-        AppState.ToggleUserFocusModal(userToCheck);
+        AppState.ShowUserFocusModal(userToCheck);
     }
     catch(e){
         //The code below plus the ToastEventBus import allow us to send

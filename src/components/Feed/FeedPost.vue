@@ -94,7 +94,7 @@ export default defineComponent({
          * user's profile.
          */
         displaySelectedUserAccount(){
-            AppState.ToggleUserFocusModal(this.postData?.post.author.did);
+            AppState.ShowUserFocusModal(this.postData?.post.author.did);
         }
     },
     setup () {

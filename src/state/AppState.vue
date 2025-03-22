@@ -6,7 +6,7 @@ import { ToastEventBus } from 'primevue';
 import { authAgent, guestAgent } from '../lib/api.vue';
 import { Agent } from '@atproto/api';
 
-const toast = {
+export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
     removeGroup: (group) => ToastEventBus.emit('remove-group', group),
     removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
@@ -95,6 +95,17 @@ export const AppState = reactive({
         if(userDID && userDID.trim() != ''){
             postDetails.currentUserAccountDID = userDID;
         }
+    },
+    /**Method used to hide the `UserFocusModal`. */
+    ShowUserFocusModal(userDID:string | undefined){
+        if(userDID && userDID.trim() != ''){
+            postDetails.currentUserAccountDID = userDID;
+            AppState.isViewingUserAccount = true;
+        }
+    },
+    /**Method used to hide the `UserFocusModal`. */
+    HideUserFocusModal(){
+        AppState.isViewingUserAccount = false;
     },
     ToggleLoginModal(){
         AppState.isLoggingIntoAccount = !AppState.isLoggingIntoAccount;
