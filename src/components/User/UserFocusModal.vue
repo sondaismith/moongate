@@ -59,51 +59,9 @@
                         {{ void "General Posts" }}
                         <div v-if="isViewingPosts || isViewingReplies"
                         class="flex flex-col flex-wrap items-start py-2 gap-2">
-                            <div v-for="n in currentUserAccountData.filter(x => !x.reply).slice(0,10) as FeedViewPost[]"
+                            <div v-for="n in currentUserAccountData.filter(x => !x.reply).slice(0,15) as FeedViewPost[]"
                             class="w-[30rem] shrink-0">
-                                <FocusFeedPost :post-data="n"/>
-                                <!-- <div v-if="n.reason && isReasonRepost(n.reason)"
-                                class="flex rounded p-1 bg-slate-700 items-center text-sm">
-                                    <div class="flex grow-0 shrink-0 justify-end px-1">
-                                        <i-mdi:twitter-retweet/>
-                                    </div>
-                                    <div class="text-nowrap overflow-hidden text-ellipsis"
-                                    :title="n.reason.by.displayName">
-                                        Reposted by {{ n.reason.by.displayName }}
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <AvatarRound :avatar="n.post.author.avatar" :did="n.post.author.did" @avatar-clicked="updateDisplayedData"/>
-                                    <div class="flex flex-col">
-                                        <div class="text-sm font-semibold">{{ n.post.author.displayName }}</div>
-                                        <div class="text-xs text-slate-400">@{{ n.post.author.handle }}</div>
-                                    </div>
-                                    <div class="text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(n.post.record.createdAt)">{{ convertToShortTimestamp(n.post.record.createdAt) }}</div>
-                                </div>
-                                <RichPostText :post-text="n.post.record.text"/>
-                                <div v-if="n.post.embed && (AppBskyEmbedRecord.isView(n.post.embed))"
-                                class="rounded bg-slate-900 border border-slate-700">Embed Type Record Here</div>
-
-                                {{ void "embed record with media" }}
-                                <div v-if="n.post.embed && (AppBskyEmbedRecordWithMedia.isView(n.post.embed))"
-                                class="flex flex-col rounded-lg gap-2">
-                                    <VideoContainer v-if="n.post.embed.media && AppBskyEmbedVideo.isView(n.post.embed.media)" :video-view="n.post.embed.media"/>
-                                    <div v-for="em in n.post.embed.record" class="flex flex-col rounded-lg bg-purple-800s p-3
-                                    border border-slate-700 text-xs gap-2">
-                                        <div class="flex items-center gap-1">
-                                            <AvatarRound class="size-7" :avatar="(em as ViewRecord).author.avatar"/>
-                                            <div class="flex gap-1">
-                                                <div class="font-semibold">{{ em.author.displayName }}</div>
-                                                <div class="text-slate-400">@{{ em.author.handle }}</div>
-                                            </div>
-                                            <div class="text-nowrap ml-auto" :title="convertToLongTimestamp(em.value.createdAt)">{{ convertToShortTimestamp(em.value.createdAt) }}</div>
-                                        </div>
-                                        <RichPostText :post-text="em.value.text" class="text-sm"/>
-                                        <EmbedExternal v-if="em.value.embed && AppBskyEmbedExternal.isMain(em.value.embed)" :embed="em as ViewRecord"/>
-                                    </div>
-                                </div>
-                                <ImageContainer v-if="n.post.embed && n.post.embed.images"
-                                :images-to-display="n.post.embed?.images"/> -->
+                                <FocusFeedPost :post-data="n.post" :post-reason="n.reason" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
                         </div>
                         {{ void "Media Posts" }}
@@ -144,7 +102,6 @@ import { GetBrowsingAgent } from '../../lib/api.vue';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
-import { ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';

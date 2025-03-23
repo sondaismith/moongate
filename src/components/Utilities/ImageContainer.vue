@@ -1,6 +1,6 @@
 <template>
-    <div ref="imageContainer" class="grid grid-cols-2 grid-flow-col grid-rows-2 w-full gap-0.5 border
-        border-slate-500 rounded overflow-hidden"
+    <div ref="imageContainer" class="grid grid-cols-2 grid-flow-row grid-rows-2 w-full gap-0.5 border
+        border-slate-600 rounded overflow-hidden"
         :style="[
             (imagesToDisplay?.length === 1 ? `aspect-ratio: ${imagesToDisplay[0].aspectRatio?.width} / ${imagesToDisplay[0].aspectRatio?.height}`:''),
             (imagesToDisplay?.length && imagesToDisplay.length > 1 ? 'aspect-ratio: 16 / 9':'')

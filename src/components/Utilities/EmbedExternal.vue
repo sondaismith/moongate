@@ -1,5 +1,6 @@
 <template>
-    <div class="flex flex-col rounded-lg border border-slate-700 overflow-hidden">
+    <div class="flex flex-col rounded-lg border border-slate-700 bg-slate-900
+    overflow-hidden text-xs">
         <div class="border-b-[1px] border-slate-700">
             <img :src="embed.embeds && embed.embeds.length>0 && embed.embeds[0].external ? embed.embeds[0].external.thumb : ''"/>
         </div>
@@ -9,8 +10,8 @@
                 {{embed.value.embed.external.description}}
             </div>
             <div class="h-[1px] bg-slate-600 my-1"></div>
-            <div class="flex text-nowrap gap-1">
-                <i-solar:earth-outline class="size-4"/>
+            <div class="flex text-nowrap gap-1 items-center">
+                <i-solar:earth-outline class="size-4 shrink-0"/>
                 <div class="overflow-hidden text-ellipsis">{{ embed.value.embed.external.uri }}</div>
             </div>
         </div>
