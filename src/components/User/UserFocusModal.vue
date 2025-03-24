@@ -60,7 +60,7 @@
                         <div v-if="isViewingPosts || isViewingReplies"
                         class="flex flex-col flex-wrap items-start py-2 gap-2">
                             <div v-for="n in currentUserAccountData.filter(x => !x.reply).slice(0,15) as FeedViewPost[]"
-                            class="w-[30rem] shrink-0">
+                            class="w-full max-w-[30rem] shrink-0s">
                                 <FocusFeedPost :post-data="n.post" :post-reason="n.reason" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
                         </div>

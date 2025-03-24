@@ -1,6 +1,6 @@
 <template>
     <div ref="imageContainer" class="grid grid-cols-2 grid-flow-row grid-rows-2 w-full gap-0.5 border
-        border-slate-600 rounded overflow-hidden"
+        border-slate-600 rounded-lg overflow-hidden"
         :style="[
             (imagesToDisplay?.length === 1 ? `aspect-ratio: ${imagesToDisplay[0].aspectRatio?.width} / ${imagesToDisplay[0].aspectRatio?.height}`:''),
             (imagesToDisplay?.length && imagesToDisplay.length > 1 ? 'aspect-ratio: 16 / 9':'')
@@ -10,9 +10,9 @@
                         (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2':''),
                         (imagesToDisplay?.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
                         (imagesToDisplay?.length === 2 && index === 1 ? 'col-start-2 row-span-2':''),
-                        (imagesToDisplay?.length === 3 && index === 2 ? 'col-start-2 row-span-2':'')
+                        (imagesToDisplay?.length === 3 && index === 0 ? 'col-start-1 row-span-2':'')
                     ]">
-            <div class="h-full w-full bg-center bg-cover"
+            <div class="h-full w-full bg-center bg-cover bg-no-repeat"
                 :style="{'background-image': 'url('+image.thumb+')'}"></div>
         </div>
     </div>

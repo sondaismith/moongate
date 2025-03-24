@@ -6,8 +6,8 @@
             p-4 drop-shadow-lg">
             <div class="flex gap-2">
                 <div class="text-2xl">{{modalPages[currentPage].title}}</div>
-                <div v-if="AppState.isCreatingFeed" class="bg-green-600 rounded-full px-2 py-1">Creating</div>
-                <div v-if="AppState.isUpdatingFeed" class="bg-orange-600 rounded-full px-2 py-1">Editing</div>
+                <div v-if="AppState.isCreatingFeed" class="flex bg-green-600 rounded-full px-2 py-1 items-center self-center">Creating</div>
+                <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div>
             </div>
             {{ void "Pages" }}
             <div class="flex items-center my-1 w-full">
