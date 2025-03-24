@@ -33,16 +33,12 @@
         :images-to-display="postData.embed?.images" @media-click="(i:number) => openFocusDetails(i)"/>
         <ImageContainer v-else-if="isViewRecord(postData) && postData.embeds && postData.embeds.length>0 && postData.embeds[0].images"
         :images-to-display="postData.embeds[0].images" @media-click="(i:number) => openFocusDetails(i)"/>
-        {{ void "Post Embed Content" }}
-        <!-- <div v-if="postData.embed && (AppBskyEmbedRecord.isView(postData.embed))">
-            <EmbedExternal v-if="(postData.embed.record.value && AppBskyEmbedExternal.isMain(postData.embed.record.value.embed))" :embed="postData.embed.record as ViewRecord"/>
-        </div> -->
-        {{ void "Post Embed Record with Media" }}
-        <!-- <div v-if="postData.embed && (AppBskyEmbedRecordWithMedia.isView(postData.embed))">
-            <EmbedExternal v-if="(postData.embed.record.record.value && AppBskyEmbedExternal.isMain(postData.embed.record.record.value.embed))" :embed="postData.embed.record.record as ViewRecord"/>
-        </div> -->
-        <div v-if="postData.embeds">
-            <EmbedExternal v-if="AppBskyEmbedExternal.isMain(postData.value.embed)" :embed="postData as ViewRecord"/>
+        {{ void "1st Post w/External Embed, 2nd - Repost w/ External Embed" }}
+        <div v-if="postData.embed && AppBskyEmbedExternal.isView(postData.embed)">
+            <EmbedExternal :embed="postData.embed as View"/>
+        </div>
+        <div v-else-if="postData.embeds && postData.embeds.length>0">
+            <EmbedExternal v-if="AppBskyEmbedExternal.isView(postData.embeds[0])" :embed="postData.embeds[0] as View"/>
         </div>
         {{ void "Reposts - ViewRecord and View" }}
         <FocusFeedPost v-if="postData.embed?.record && postData.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postData.embed.record.record)"
@@ -68,6 +64,7 @@ import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import PostInteractionIcons from '../Post/PostInteractionIcons.vue';
 import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { showFocusModal } from '../../state/PostDetails.vue';
+import { View } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 
 export default defineComponent({
     components:{
