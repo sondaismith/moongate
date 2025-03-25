@@ -21,6 +21,7 @@
                     <div class="border-t border-gray-700 space-y-2 px-2 py-2 flex-none">
                         <FeedButton :icon="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
                         <FeedButton :icon="FeedEnums.Icons.RemoveList" tooltip="Remove Feed" @click="removeFeed"/>
+                        <FeedButton :icon="FeedEnums.Icons.CreatePost" tooltip="Create New Post" @click="createNewPost"/>
                     </div>
                 </div>
             </div>
@@ -97,6 +98,9 @@
         <Transition name="peek">
             <AccountPeek v-show="AccountPeekState.isUserPeeking"/>
         </Transition>
+        <Transition name="modal">
+            <CreatePost v-if="AppState.isCreatingNewPost"/>
+        </Transition>
     </div>
 </template>
 
@@ -130,13 +134,17 @@ import { OptionsMenuState } from "./state/OptionsMenuState.vue";
 import { GetBrowsingAgent } from "./lib/api.vue";
 import { SavedFeeds } from "./lib/db/local_db";
 import { AccountPeekState } from "./state/AccountPeekState.vue";
+import FeedButton from "./components/Navbar/FeedButton.vue";
+import CreatePost from "./components/Post/CreatePost.vue"
 
 
     export default defineComponent({
         name:'Sidebar',
         components:{
+            FeedButton,
             FeedEditModal,
             UserFocusModal,
+            CreatePost,
         },
         data(){
             return{
@@ -177,6 +185,10 @@ import { AccountPeekState } from "./state/AccountPeekState.vue";
                 // }
                 stringifyFeedListData(FeedState.FeedList);
                 this.showScrollXPos();
+            },
+            createNewPost(){
+                // if(!AppState.checkIfLoggedIn("post")) return;
+                AppState.showCreatePost();
             },
             /**
              * DEBUG - Displays the current x-axis scroll pos of the Feed Display.

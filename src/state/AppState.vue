@@ -53,6 +53,21 @@ export const AppState = reactive({
         return this.canBrowse;
     },
     /**
+     * Method used to check if the User is logged in. This is called when the User attempts to perform
+     * and action that requires them to have authenicated access to the Bluesky API (e.g. making new Posts).
+     * If they are not logged in a message is displayed and the Login Modal is displayed.
+     * @param action String describing the action that needs authentication to be performed (e.g. post). Used with Toast error message.
+     *
+     */
+    checkIfLoggedIn(action:string){
+        if(!this.isAuthBrowsing){
+            toast.add({summary:"Error", detail:`In order to ${action} you must be logged in.`, severity:'error', group:'tr', life:3000});
+            this.isLoggingIntoAccount = true;
+            return this.isAuthBrowsing;
+        }
+        return this.isAuthBrowsing;
+    },
+    /**
      * Returns the `Agent` to access the Bluesky API with based on
      * the current browsing mode the app is in.
      */
@@ -124,5 +139,15 @@ export const AppState = reactive({
     hideConfirmModal(){
         this.isAskingForConfirmation = false;
     },
+    /**Determines whether or not the `CreatePost` component is currently visible. */
+    isCreatingNewPost:false,
+    /**Sets `CreatePost` to be displayed. */
+    showCreatePost(){
+        this.isCreatingNewPost = true;
+    },
+    /**Sets `CreatePost` to be hidden. */
+    hideCreatePost(){
+        this.isCreatingNewPost = false;
+    }
 })
 </script>

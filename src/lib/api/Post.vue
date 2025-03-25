@@ -2,6 +2,9 @@
 import { AppBskyFeedDefs, isDid } from "@atproto/api";
 import { GetBrowsingAgent } from "../api.vue";
 import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { AppState, toast } from "../../state/AppState.vue";
+import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/post";
+import { showFocusModal } from "../../state/PostDetails.vue";
 
 export class InvalidPostDIDError extends Error{
     constructor(did = ""){
@@ -62,5 +65,27 @@ export async function getPostThread(postToShow:FeedViewPost){
         return threadResult.data.thread as ThreadViewPost;
     }
     return result;
+}
+
+export async function CreateNewPost(postData:Record){
+    console.log(postData);
+    // if(AppState.checkIfLoggedIn('post')){
+    //     await GetBrowsingAgent().post({
+    //         text: postData.text,
+    //         langs: ["en-US"],
+    //         createdAt: postData.createdAt
+    //     })
+    //     .then(async res => {
+    //         toast.add({summary:'Success',detail:'Post (fake) Created!',severity:'success',group:'tr',life:3000});
+    //         //show newly created post
+    //         // let newPostThread = await getBlueskyPostThread(res.uri)
+    //         // .then(res => {
+    //         //     newPostThread = res.thread.replies
+    //         //     showFocusModal(newPostThread,0)
+    //         // })
+    //         // showFocusModal();
+    //     }
+    //     )
+    // }
 }
 </script>
