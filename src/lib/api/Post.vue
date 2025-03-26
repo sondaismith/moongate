@@ -1,7 +1,7 @@
 <script lang="ts">
 import { AppBskyFeedDefs, isDid } from "@atproto/api";
 import { GetBrowsingAgent } from "../api.vue";
-import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { FeedViewPost, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { AppState, toast } from "../../state/AppState.vue";
 import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/post";
 import { showFocusModal } from "../../state/PostDetails.vue";
@@ -14,6 +14,7 @@ export class InvalidPostDIDError extends Error{
 }
 
 /**
+ * DO NOT USE - use getPostThread or [agent].getPostThread
  * Method used to return Post Thread data (a Post and all comments).
  * @param postDID The DID of the Post Thread to be retreieved.
  * @returns The ThreadViewPost data if successful, otherwise throws
@@ -67,25 +68,33 @@ export async function getPostThread(postToShow:FeedViewPost){
     return result;
 }
 
+/**
+ * Method that creates a new standalone post to the currently selected User's account.
+ * @param postData A `Record`-type object describing the content of the new Post.
+ */
 export async function CreateNewPost(postData:Record){
     console.log(postData);
-    // if(AppState.checkIfLoggedIn('post')){
-    //     await GetBrowsingAgent().post({
-    //         text: postData.text,
-    //         langs: ["en-US"],
-    //         createdAt: postData.createdAt
-    //     })
-    //     .then(async res => {
-    //         toast.add({summary:'Success',detail:'Post (fake) Created!',severity:'success',group:'tr',life:3000});
-    //         //show newly created post
-    //         // let newPostThread = await getBlueskyPostThread(res.uri)
-    //         // .then(res => {
-    //         //     newPostThread = res.thread.replies
-    //         //     showFocusModal(newPostThread,0)
-    //         // })
-    //         // showFocusModal();
-    //     }
-    //     )
-    // }
+    if(AppState.checkIfLoggedIn('post')){
+        await GetBrowsingAgent().post({
+            text: postData.text,
+            langs: ["en-US"],
+            createdAt: postData.createdAt
+        })
+        .then(async res => {
+            toast.add({summary:'Success',detail:'Post Created!',severity:'success',group:'tr',life:3000});
+            //show newly created post
+            await GetBrowsingAgent().getPostThread({uri: res.uri})
+            .then(res => {
+                AppState.hideCreatePost();
+                showFocusModal({post: res.data.thread.post as PostView},0);
+            })
+            .catch((err) =>
+                toast.add({summary:'Error',detail:`Error navigating to new post: ${err}`,severity:'error',group:'tr',life:3000})
+            )
+        })
+        .catch((err) =>
+            toast.add({summary:'Error',detail:`Error creating new post: ${err}`,severity:'error',group:'tr',life:3000})
+        );
+    }
 }
 </script>
