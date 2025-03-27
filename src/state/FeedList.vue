@@ -282,24 +282,28 @@ export function addDummyPostToFeed(feedId:String){
  */
 export async function AddSavedFeed(savedFeed:IFeedDBData){
     /**The object that will be added to the FeedList. */
-    var feedResult;
+    var feedResult:FeedViewPost[] = [];
     //Perform required API call based on Feed Type
     switch (savedFeed.type) {
         case FeedEnums.Types.User:
-            // var userFeed = await getAuthorFeed(this.feedFilters.user.did);
-            feedResult = await getAuthorFeed(savedFeed.did);
+            await getAuthorFeed(savedFeed.did)
+            .then(res => feedResult = res.data.feed)
+            .catch(err => toast.add(HandleAPIError(err, 'Error getting saved User Feed posts')));
             break;
         case FeedEnums.Types.Tag:
             // feedResult = await getTagPosts(this.grabHashtags());
-            feedResult = await getTagPosts(savedFeed.tags);
+            // feedResult =
+            await getTagPosts(savedFeed.tags)
+            .then(res => {
+                //Place Posts in a "Feed" shaped Object
+                res.data.posts.forEach(p => {
+                    feedResult.push({post:p});
+                })
+            })
+            .catch(err => toast.add(HandleAPIError(err, 'Error getting saved Tag Feed posts')));
             break;
         default:
             break;
-    }
-    //Check if API call created Error
-    if(IsError(feedResult)){
-        this.$toast.add(HandleAPIError(feedResult as Error));
-        return; //Stop further actions
     }
     console.log(feedResult);//DEBUG
 
@@ -324,24 +328,22 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
     //Select correct returned Object value based on Feed Type
     switch(savedFeed.type) {
         case FeedEnums.Types.User:
-            feedResult = feedResult.data.feed;
             //Get user profile
-            var profile = await getUserProfile(savedFeed.did);
-            profile = profile.data as ProfileView;
+            let profile:ProfileView = {did:'',handle:''};
+            await getUserProfile(savedFeed.did)
+            .then(res => profile = res.data)
+            .catch((err) => {
+                //error occured try to get User Profile
+                toast.add(HandleAPIError(err, 'Error getting User profile while adding saved feeds'));
+            });
             //Update required values of starting `IFeedDescription` template
             desc = {...desc,
                 feedHandle:profile.handle,
-                feedName:profile.displayName,
+                feedName:profile.displayName ? profile.displayName : '[Empty Displayname]',
                 feedSourceDID:profile.did
             }
             break;
         case FeedEnums.Types.Tag:
-            var posts = [];
-            //Place Posts in a "Feed" shaped Object
-            feedResult.data.posts.forEach(p => {
-                posts.push({post:p})
-            });
-            feedResult = posts;
             //Update required values of starting `IFeedDescription` template
             desc = {...desc,
                 feedType:FeedEnums.Types.Tag,

@@ -30,7 +30,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { AppState } from '../../state/AppState.vue';
+import { AppState, toast } from '../../state/AppState.vue';
 import { GetBrowsingAgent, LogoutAgent } from '../../lib/api.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
@@ -81,10 +81,13 @@ function confirmLogout(){
  * Logs the User out of the currently logged in account, and updates the `AppState`
  * to reflext that.
  */
-function logoutOfAccount(){
-    LogoutAgent();
-    AppState.canBrowse = AppState.isGuestBrowsing = AppState.isAuthBrowsing = false;
-    AppState.currentUsername = "Login Here";
+async function logoutOfAccount(){
+    await LogoutAgent()
+    .then(() => {
+        AppState.canBrowse = AppState.isGuestBrowsing = AppState.isAuthBrowsing = false;
+        AppState.currentUsername = "Login Here";
+    })
+    .catch(err => toast.add(HandleAPIError(err, 'Error logging out')));
 }
 
 export default defineComponent({

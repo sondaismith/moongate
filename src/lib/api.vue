@@ -1,6 +1,6 @@
 <script lang="ts">
 // src/lib/api.ts
-import { Agent, AtpAgentLoginOpts, CredentialSession } from "@atproto/api";
+import { Agent, AtpAgentLoginOpts, ComAtprotoServerCreateSession, CredentialSession } from "@atproto/api";
 import { AppState } from '../state/AppState.vue';
 
 // export const agent = new AtpAgent({
@@ -44,14 +44,8 @@ export function GetBrowsingAgent():Agent{
  * @param password The password of the account to use.
  * @returns
  */
-export async function LoginAgent(handle:string, password:string){
-  var result;
-  try{
-    result = await authSession.login({identifier:handle,password:password} as AtpAgentLoginOpts)
-  }
-  catch(error){
-    result = error;
-  }
+export async function LoginAgent(handle:string, password:string):Promise<ComAtprotoServerCreateSession.Response>{
+  var result = await authSession.login({identifier:handle,password:password} as AtpAgentLoginOpts);
   return result;
 }
 
@@ -60,14 +54,20 @@ export async function LoginAgent(handle:string, password:string){
  * authenticated account it is using.
  * @returns The result of trying to logout of the user account.
  */
-export async function LogoutAgent(){
+export async function LogoutAgent():Promise<void>{
   var result;
-  // try{
-    result = await authSession.logout();
-  // }
-  // catch(error){
-  //   result = error;
-  // }
+  // Errors from authSession.logout will NOT get caught by the code below - as of 03/27/25
+  //it will always throw a "400 - Bad Request" error, but the account will be logged out of
+  await authSession.logout()
+  .then(res => {
+    console.log('Logout Success:');
+    console.log(res);
+    result = res;
+  })
+  .catch(err => {
+    console.log('Error:');
+    console.log(err);
+  })
   return result;
 }
 </script>

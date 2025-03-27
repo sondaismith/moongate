@@ -53,6 +53,7 @@ import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs'
 import { HandleAPIError, IsError } from '../../helpers/errors';
 import { SearchForAccounts } from '../../lib/api/Feed.vue';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
+import { toast } from '../../state/AppState.vue';
 
 export default defineComponent({
     name:'User Search Bar',
@@ -132,16 +133,15 @@ export default defineComponent({
                     this.isWaitingForResult = false;
                     var searchbar = (document.getElementById('user-searchbar')?.children[0] as HTMLElement)
                     searchbar.focus();
-                },500)
-                var query = `rocco`
-                var searchResult = await SearchForAccounts(`${this.searchTerm}`);
-                //Check if API call created Error
-                if(IsError(searchResult)){
-                    this.$toast.add(HandleAPIError(searchResult as Error));
-                    return; //stop further actions
-                }
-                console.log(searchResult);
-                this.payloadToUserSearchResult(searchResult.data.actors)
+                },500);
+                var searchResult:ProfileView[] = [];
+                await SearchForAccounts(`${this.searchTerm}`)
+                .then(res => {
+                    searchResult = res.data.actors
+                    this.payloadToUserSearchResult(searchResult);
+                    console.log(searchResult);
+                })
+                .catch(err => toast.add(HandleAPIError(err, 'Error getting User search results')));
             }
             else{
                 this.debouncedSearchTerm = this.searchTerm;//DEBUG, just here to allow clear

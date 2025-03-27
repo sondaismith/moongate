@@ -1,5 +1,5 @@
 <script lang="ts">
-import { AppBskyFeedDefs, isDid } from "@atproto/api";
+import { AppBskyFeedDefs, AppBskyFeedGetPostThread, isDid } from "@atproto/api";
 import { GetBrowsingAgent } from "../api.vue";
 import { FeedViewPost, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { AppState, toast } from "../../state/AppState.vue";
@@ -57,14 +57,8 @@ export async function getBlueskyPostThread(postDID: string){
  * a Post selected in a Feed view.
  * @param postToShow The Post Thread to show based on the Post clicked in a Feed.
  */
-export async function getPostThread(postToShow:FeedViewPost){
-    var threadResult = await GetBrowsingAgent().getPostThread({uri:postToShow.post.uri});
-    var result = undefined;
-    if(threadResult){
-        // postDetails.postThread = threadResult.data.thread as ThreadViewPost;
-        // postDetails.currentThreadView = postDetails.postThread;
-        return threadResult.data.thread as ThreadViewPost;
-    }
+export async function getPostThread(postToShow:FeedViewPost):Promise<AppBskyFeedGetPostThread.Response>{
+    var result = await GetBrowsingAgent().getPostThread({uri:postToShow.post.uri});
     return result;
 }
 

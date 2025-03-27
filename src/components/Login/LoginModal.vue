@@ -75,8 +75,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import InLaInput from '../Utilities/InLaInput.vue';
-import { AppState } from '../../state/AppState.vue';
+import { AppState, toast } from '../../state/AppState.vue';
 import { LoginBskyAccount } from '../../lib/api/Login.vue';
+import { HandleAPIError } from '../../helpers/errors';
 
 export default defineComponent({
     data(){
@@ -93,21 +94,17 @@ export default defineComponent({
             this.attemptingLogin = true;
             this.$toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
             var handleAddress = `${this.enteredUsername}.${this.hostProvider}`;
-            const result = await LoginBskyAccount(handleAddress, this.enteredPassword);
-            // setTimeout(() => {
-            //     this.attemptingLogin = false;
-            // }, 2500);
-            if(result.success){
+            await LoginBskyAccount(handleAddress, this.enteredPassword)
+            .then(res => {
+                console.log(res);
                 AppState.isAuthBrowsing = true;
                 AppState.isGuestBrowsing = false;
                 AppState.currentUsername = "Logged In";
                 AppState.canBrowse = true;
                 AppState.ToggleLoginModal();
-                this.$toast.add({summary:"Login Success", detail:``,severity:'success',group:'tr',life:1000});
-            }
-            else{
-                this.$toast.add({summary:"Login Error", detail:`${result.message}`,severity:'error',group:'tr',life:3000});
-            }
+                toast.add({summary:"Login Success", detail:``,severity:'success',group:'tr',life:3000});
+            })
+            .catch(err => toast.add(HandleAPIError(err, 'Error logging in')));
             this.attemptingLogin = false;
         },
         browseAsGuest(){

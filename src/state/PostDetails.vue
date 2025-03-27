@@ -12,6 +12,8 @@ import SolarShareBold from '~icons/solar/share-bold';
 import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
 import { FeedViewPost, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { getPostThread } from '../lib/api/Post.vue';
+import { toast } from './AppState.vue';
+import { HandleAPIError } from '../helpers/errors';
 
 // export const postDetails : IPostDetailsList = reactive({
 export const postDetails :IPostDetailsList = reactive({
@@ -245,11 +247,12 @@ function discoverBreadcrumbs(parentCID:string, currentPostThread:ThreadViewPost)
  */
 export async function showDetailModal(postToShow:FeedViewPost){
     postDetails.isVisible = true;
-    var postThreadResult = await getPostThread(postToShow);
-    if(postThreadResult){
-        postDetails.postThread = postThreadResult;
-        postDetails.currentThreadView = postThreadResult;
-    }
+    await getPostThread(postToShow)
+    .then(res => {
+        postDetails.postThread = res.data.thread as ThreadViewPost
+        postDetails.currentThreadView = res.data.thread as ThreadViewPost;
+    })
+    .catch(err => toast.add(HandleAPIError(err, 'Error getting Post details for modal')));
 }
 
 /**
@@ -260,10 +263,11 @@ export async function showDetailModal(postToShow:FeedViewPost){
 export async function showFocusModal(postToShow:FeedViewPost, mediaIndex:number){
     postDetails.isFocusVisible = true;
     postDetails.clickedMediaIndex = mediaIndex;
-    var postThreadResult = await getPostThread(postToShow);
-    if(postThreadResult){
-        postDetails.postThread = postThreadResult;
-        postDetails.currentThreadView = postThreadResult;
-    }
+    await getPostThread(postToShow)
+    .then(res => {
+        postDetails.postThread = res.data.thread as ThreadViewPost;
+        postDetails.currentThreadView = res.data.thread as ThreadViewPost;
+    })
+    .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')));
 }
 </script>

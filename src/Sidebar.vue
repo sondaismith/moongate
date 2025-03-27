@@ -109,7 +109,7 @@ import { defineComponent } from "vue";
 import { userFeedList, FeedState, AddFeedToList, createFeedDescription, AddSavedFeed } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
-import { AppState } from "./state/AppState.vue";
+import { AppState, toast } from "./state/AppState.vue";
 import { DebugFlags } from "./state/Debug.vue";
 import { OptionIconList } from "./fake-data/dumPostData";
 import { IPostDetails } from "./interfaces/PostInterfaces";
@@ -136,6 +136,8 @@ import { SavedFeeds } from "./lib/db/local_db";
 import { AccountPeekState } from "./state/AccountPeekState.vue";
 import FeedButton from "./components/Navbar/FeedButton.vue";
 import CreatePost from "./components/Post/CreatePost.vue"
+import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { HandleAPIError } from "./helpers/errors";
 
 
     export default defineComponent({
@@ -266,10 +268,15 @@ import CreatePost from "./components/Post/CreatePost.vue"
                 postDetails.showFocusModalIndex(0);
             },
             async getHomeFeed(){
-                var homeFeed = await getUserHomeFeed();
-                //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
-                var feedDesc = createFeedDescription(1,homeFeed.data.feed[0].post.author.did,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444});
-                AddFeedToList(feedDesc, homeFeed.data.feed);
+                var homeFeed:FeedViewPost[];
+                await getUserHomeFeed()
+                .then(res => {
+                    homeFeed = res.data.feed
+                    //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
+                    var feedDesc = createFeedDescription(1,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444}, homeFeed[0].post.author.did);
+                    AddFeedToList(feedDesc, homeFeed);
+                })
+                .catch(err => toast.add(HandleAPIError(err, 'Error getting Home timeline posts')));
             },
             /**Method used to set up event listeners for app actions.
              * Called during creation of component.

@@ -6,7 +6,7 @@
         <div v-show="!AccountPeekState.awaitingAPIResponse" class="flex flex-col overflow-auto">
             <div class="flex items-start grow-0 shrink-0">
                 <div class="flex shrink-0 rounded-full bg-blue-500 size-14 items-center justify-center
-                    bg-contain" :style="'background-image: url('+AccountPeekState.profileData.avatar+')'">
+                    bg-contain" :style="'background-image: url('+(AccountPeekState.profileData.avatar ? AccountPeekState.profileData.avatar : '')+')'">
                 </div>
                 <div class="relative ml-auto">
                     <Transition :name="isFollowing ? 'slide-left' : 'slide-right'">

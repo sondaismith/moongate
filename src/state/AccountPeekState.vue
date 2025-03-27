@@ -3,6 +3,8 @@ import { reactive } from 'vue'
 import { getUserProfile } from '../lib/api/User.vue';
 import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { postDetails } from './PostDetails.vue';
+import { toast } from './AppState.vue';
+import { HandleAPIError } from '../helpers/errors';
 
 export const AccountPeekState = reactive({
     /**Indicates if `AccountPeek` component is visible. */
@@ -67,7 +69,10 @@ export const AccountPeekState = reactive({
                         if(postDetails.isFocusVisible) peek.style.zIndex = '20';
                     }
                 }, 2);
-                if(this.profileData && this.profileData.did!=authorDid) await this.getProfileData(authorDid);
+                if(this.profileData && this.profileData.did!=authorDid){
+                    await this.getProfileData(authorDid)
+                    .catch((err) => console.log(err));
+                }
                 //delay to allow menu dimensions to update after being filled with items
                 setTimeout(() => {
                     if(peek){
@@ -164,9 +169,10 @@ export const AccountPeekState = reactive({
         //Get profile data, then store it in the local variable +
         //place a copy in the cache
         await getUserProfile(authorDid)
-        // GetBrowsingAgent().getProfile()
         .then(res => this.profileData = res.data)
-        .catch(err => console.log(err));
+        .catch(err => {
+            toast.add(HandleAPIError(err, 'Error getting ProfilePeek data'));
+        });
         this.awaitingAPIResponse = false;
         // console.log(this.profileData);//DEBUG
     }

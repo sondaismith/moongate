@@ -24,7 +24,7 @@ export function IsError(e : any){
  * @param toastPos The Toast position you want the created Toast to use.
  * @returns Object that can be used to create a Toast message.
  */
-export function HandleAPIError(e : Error, toastPos = 'tr'){
+export function HandleAPIError(e : Error, errorAction = '', toastPos = 'tr'){
     var eType = '';
     var eMessage = e.message.toLowerCase();
     //Check Error "type"
@@ -34,5 +34,5 @@ export function HandleAPIError(e : Error, toastPos = 'tr'){
         AppState.isViewingUserAccount = false;
         AppState.ToggleLoginModal();
     }
-    return {summary:`${eType} Error`,detail:`Error: ${e.message}`,severity:'error', life:5000, group:toastPos};
+    return {summary:`${eType} Error`,detail:`${errorAction.trim()=='' ? 'Error':errorAction}: ${e.message}`,severity:'error', life:5000, group:toastPos};
 }

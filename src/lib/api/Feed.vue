@@ -1,15 +1,9 @@
 <script lang="ts">
+import { AppBskyActorSearchActors, AppBskyFeedGetAuthorFeed, AppBskyFeedGetTimeline, AppBskyFeedSearchPosts } from "@atproto/api/dist/client";
 import { GetBrowsingAgent } from "../api.vue";
 
-export async function getUserHomeFeed(){
-    var result;
-    try{
-        result = await GetBrowsingAgent().getTimeline();
-        console.log(result?.data);
-    }
-    catch(error){
-        result = error;
-    }
+export async function getUserHomeFeed():Promise<AppBskyFeedGetTimeline.Response>{
+    let result = await GetBrowsingAgent().getTimeline();
     return result;
 }
 
@@ -22,14 +16,8 @@ export async function getUserHomeFeed(){
  * @returns Collection of User Accounts that match the search term entered
  * if successful, an Error if not.
  */
-export async function SearchForAccounts(searchTerm : string){
-    var result;
-    try{
-        result = await GetBrowsingAgent().searchActors({q: `${searchTerm}`,limit:10});
-    }
-    catch(error){
-        result = error;
-    }
+export async function SearchForAccounts(searchTerm : string):Promise<AppBskyActorSearchActors.Response>{
+    let result = await GetBrowsingAgent().searchActors({q: `${searchTerm}`,limit:10})
     return result;
 }
 
@@ -38,20 +26,14 @@ export async function SearchForAccounts(searchTerm : string){
  * @param did The unique DID identifier of the User you want to return Posts from.
  * @returns Collection of posts from the User's feed if successful, an error if not.
  */
-export async function getAuthorFeed(did:string){
-    var result;
-    try{
-        result = await GetBrowsingAgent().getAuthorFeed(
-            {
-                actor:did,
-                filter:"posts_no_replies",
-                limit:30,
-            }
-        )
-    }
-    catch(error){
-        result = error;
-    }
+export async function getAuthorFeed(did:string):Promise<AppBskyFeedGetAuthorFeed.Response>{
+    let result = await GetBrowsingAgent().getAuthorFeed(
+        {
+            actor:did,
+            filter:"posts_no_replies",
+            limit:30,
+        }
+    )
     return result;
 }
 
@@ -60,19 +42,12 @@ export async function getAuthorFeed(did:string){
  * @param tags String of hashtags, space-separated.
  * @returns Search results returned from the Bluesky API.
  */
-export async function getTagPosts(tags:string){
-    var result;
-    try{
-        console.log(tags)
-        result = await GetBrowsingAgent().app.bsky.feed.searchPosts(
-            {
-                q:`${tags}`,
-            }
-        )
-    }
-    catch(error){
-        result = error;
-    }
+export async function getTagPosts(tags:string):Promise<AppBskyFeedSearchPosts.Response>{
+    let result = await GetBrowsingAgent().app.bsky.feed.searchPosts(
+        {
+            q:`${tags}`,
+        }
+    )
     return result;
 }
 </script>
