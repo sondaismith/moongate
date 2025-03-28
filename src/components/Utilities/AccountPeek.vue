@@ -3,29 +3,13 @@
     border-slate-700 p-3 pb-4 rounded-md drop-shadow min-w-72 max-w-72 max-h-64 overflow-hidden"
     @mouseenter="AccountPeekState.keepPeekAlive" @mouseleave="AccountPeekState.cancelUserPeek">
         <i-mingcute:loading-fill v-show="AccountPeekState.awaitingAPIResponse" class="spinner size-8 self-center"/>
-        <div v-show="!AccountPeekState.awaitingAPIResponse" class="flex flex-col overflow-auto">
+        <div v-show="!AccountPeekState.awaitingAPIResponse" class="flex flex-col overflow-hidden">
             <div class="flex items-start grow-0 shrink-0">
                 <div class="flex shrink-0 rounded-full bg-blue-500 size-14 items-center justify-center
                     bg-contain" :style="'background-image: url('+(AccountPeekState.profileData.avatar ? AccountPeekState.profileData.avatar : '')+')'">
                 </div>
-                <div class="relative ml-auto">
-                    <Transition :name="isFollowing ? 'slide-left' : 'slide-right'">
-                        <div v-if="!isFollowing" @click="toggleAccountFollow" class="flex rounded-full px-2 py-1 text-nowrap
-                            cursor-pointer transition-colors bg-blue-500 hover:bg-blue-400">
-                                <div class="flex items-center gap-1">
-                                    <i-mingcute:plus-fill/>
-                                    <div>Follow</div>
-                                </div>
-                        </div>
-                        <div v-else-if="isFollowing" @click="toggleAccountFollow" class="flex rounded-full px-2 py-1 text-nowrap
-                            cursor-pointer transition-colors bg-slate-500 hover:bg-slate-400">
-                                <div class="flex items-center gap-1">
-                                    <i-mingcute:check-fill/>
-                                    <div>Following</div>
-                                </div>
-                        </div>
-                    </Transition>
-                </div>
+                <FollowUser v-if="!AccountPeekState.awaitingAPIResponse" :is-user-followed="isFollowingUser"
+                :user-did="AccountPeekState.profileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
             </div>
             <div class="grow-0 shrink-0">
                 <div class="font-medium">{{ AccountPeekState.profileData.displayName }}</div>
@@ -51,14 +35,18 @@
 import { defineComponent } from 'vue'
 import RichPostText from './RichPostText.vue';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
+import FollowUser from './FollowUser.vue';
+import { AppState } from '../../state/AppState.vue';
 
 export default defineComponent({
     name:'Account Peek',
     components:{
         RichPostText,
+        FollowUser,
     },
     data(){
         return{
+            AppState,
             AccountPeekState,
             accountPFP: 'src/assets/test-media/posts/image04.png',
             accountName: 'Firstname Lastname',
@@ -72,6 +60,22 @@ export default defineComponent({
     methods:{
         toggleAccountFollow(){
             this.isFollowing = !this.isFollowing;
+        }
+    },
+    computed:{
+        /**
+         * Method that checks to see if the User is following the currently displayed account.
+         * In order for this value to be accurate, we must wait until the API call finishes, so
+         * `AccountPeekState.awaitingAPIResponse` must be false. Currently handled via v-if on
+         * the `FollowUser` component above.
+         */
+        isFollowingUser(){
+            if(AccountPeekState.profileData.viewer && AccountPeekState.profileData.viewer.following){
+                console.log('true!');
+                return true;
+            }
+            console.log('false...');
+            return false;
         }
     },
 })

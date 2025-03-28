@@ -32,4 +32,31 @@ export async function getUserDIDViaHandle(handle:string):Promise<ComAtprotoIdent
     )
     return result;
 }
+
+/**
+ * Follow the realated User with the currently logged in account.
+ * @param userDid The User DID of the User to follow.
+ */
+export async function FollowUser(userDid:string):Promise<{uri: string,cid: string}>{
+    let result = await GetBrowsingAgent().follow(userDid);
+    return result;
+}
+
+/**
+ * Unfollow the realated User with the currently logged in account.
+ * @param userDid The User DID of the User to unfollow.
+ */
+ export async function UnfollowUser(userDid:string):Promise<void>{
+    let result;
+    //Get account details of User to unfollow
+    await GetBrowsingAgent().getProfile({actor:userDid})
+    .then(async res => {
+        let followUri = '';
+        if(res.data.viewer && res.data.viewer.following) followUri = res.data.viewer.following;
+        //DEBUG
+        console.log(followUri);
+        // result = await GetBrowsingAgent().deleteFollow(followUri)
+    })
+    return result;
+}
 </script>

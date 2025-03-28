@@ -16,7 +16,7 @@
                 {{ convertToShortTimestamp(timestamp) }}
             </div>
             </div>
-            <div class="text-sm">
+            <div class="text-sm break-words">
                 {{ postText }}
             </div>
             <div>

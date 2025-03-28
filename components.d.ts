@@ -20,6 +20,7 @@ declare module 'vue' {
     FeedOptionsMenu: typeof import('./src/components/Feed/FeedOptionsMenu.vue')['default']
     FeedPost: typeof import('./src/components/Feed/FeedPost.vue')['default']
     FocusFeedPost: typeof import('./src/components/Feed/FocusFeedPost.vue')['default']
+    FollowUser: typeof import('./src/components/Utilities/FollowUser.vue')['default']
     Hashtag: typeof import('./src/components/Utilities/Hashtag.vue')['default']
     ImageContainer: typeof import('./src/components/Utilities/ImageContainer.vue')['default']
     'IMdi:accountOff': typeof import('~icons/mdi/account-off')['default']

@@ -14,7 +14,8 @@
                     {{ void "User Details Content" }}
                     <div class="flex flex-col mb-2 shrink grow-0">
                         <div class="flex ml-auto gap-2 h-10">
-                            <PillButton>+ Follow</PillButton>
+                            <FollowUser v-if="!awaitingProfileData" class="px-4" :is-user-followed="isUserFollowed"
+                            :user-did="currentUserProfile.did" :is-disabled="!AppState.isAuthBrowsing"/>
                             <PillButton class="aspect-square size-10">...</PillButton>
                         </div>
                         <div class="text-2xl font-semibold">{{currentUserProfile ? currentUserProfile.displayName : "Username Title"}}</div>
@@ -105,10 +106,12 @@ import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/c
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
+import FollowUser from '../Utilities/FollowUser.vue';
 
 export default defineComponent({
     data(){
         return{
+            AppState,
             isImage,
             isReasonRepost,
             GenerateTagLinkText,
@@ -122,6 +125,7 @@ export default defineComponent({
             isViewingPosts:true,
             isViewingReplies:false,
             isViewingMedia:false,
+            awaitingProfileData:false,
             currentUserProfile:{} as ProfileViewDetailed,
             currentUserAccountData:[] as FeedViewPost[],
         }
@@ -135,6 +139,7 @@ export default defineComponent({
         VideoContainer,
         AvatarRound,
         EmbedExternal,
+        FollowUser,
     },
     methods:{
         viewPosts(){
@@ -164,6 +169,7 @@ export default defineComponent({
         },
         async updateDisplayedData(){
             if(isDid(postDetails.currentUserAccountDID)){
+                this.awaitingProfileData = true;
                 var userProfile = await GetBrowsingAgent().getProfile({
                     actor:postDetails.currentUserAccountDID
                 });
@@ -176,7 +182,22 @@ export default defineComponent({
                 this.currentUserProfile = userProfile.data;
                 this.currentUserAccountData = userTL.data.feed;
                 console.log(this.currentUserAccountData);
+                this.awaitingProfileData = false;
             }
+        }
+    },
+    computed:{
+        /**
+         * Method that checks to see if the User is following the currently displayed account.
+         * In order for this value to be accurate, we must wait until the API call finishes, so
+         * `awaitingProfileData` must be false. Currently handled via v-if on the `FollowUser`
+         * component above.
+         */
+        isUserFollowed(){
+            if(this.currentUserProfile.viewer && this.currentUserProfile.viewer.following){
+                return true;
+            }
+            return false;
         }
     },
     async created() {

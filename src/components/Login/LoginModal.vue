@@ -78,6 +78,7 @@ import InLaInput from '../Utilities/InLaInput.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { LoginBskyAccount } from '../../lib/api/Login.vue';
 import { HandleAPIError } from '../../helpers/errors';
+import { AccountPeekState } from '../../state/AccountPeekState.vue';
 
 export default defineComponent({
     data(){
@@ -86,7 +87,8 @@ export default defineComponent({
             enteredPassword: "",
             hostProvider: "bsky.social",
             attemptingLogin: false,
-            AppState
+            AppState,
+            AccountPeekState,
         }
     },
     methods:{
@@ -102,6 +104,8 @@ export default defineComponent({
                 AppState.currentUsername = "Logged In";
                 AppState.canBrowse = true;
                 AppState.ToggleLoginModal();
+                AccountPeekState.lastMouseEvent = new MouseEvent('login');
+                AccountPeekState.profileData = {did:'',handle:''};
                 toast.add({summary:"Login Success", detail:``,severity:'success',group:'tr',life:3000});
             })
             .catch(err => toast.add(HandleAPIError(err, 'Error logging in')));

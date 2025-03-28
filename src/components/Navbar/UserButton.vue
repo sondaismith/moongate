@@ -41,6 +41,7 @@ import ToastEventBus from 'primevue/toasteventbus';
 import MingcuteProfileFill from '~icons/mingcute/profile-fill';
 import MdiUserSwitch from '~icons/mdi/user-switch';
 import MingcuteExitDoorLine from '~icons/mingcute/exit-door-line';
+import { AccountPeekState } from '../../state/AccountPeekState.vue';
 
 let optionsMenu:IOptionMenuItem[] = [
     {Icon:MingcuteProfileFill,Label:'View Profile',Action:displayCurrentUsersAccount},
@@ -86,6 +87,8 @@ async function logoutOfAccount(){
     .then(() => {
         AppState.canBrowse = AppState.isGuestBrowsing = AppState.isAuthBrowsing = false;
         AppState.currentUsername = "Login Here";
+        AccountPeekState.lastMouseEvent = new MouseEvent('logout');
+        AccountPeekState.profileData = {did:'',handle:''};
     })
     .catch(err => toast.add(HandleAPIError(err, 'Error logging out')));
 }
@@ -98,6 +101,7 @@ export default defineComponent({
         return{
             isVisible: true, //DEBUG value
             AppState,
+            AccountPeekState,
         }
     },
     methods:{
