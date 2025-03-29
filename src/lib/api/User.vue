@@ -54,8 +54,9 @@ export async function FollowUser(userDid:string):Promise<{uri: string,cid: strin
         let followUri = '';
         if(res.data.viewer && res.data.viewer.following) followUri = res.data.viewer.following;
         //DEBUG
-        console.log(followUri);
-        // result = await GetBrowsingAgent().deleteFollow(followUri)
+        // console.log(followUri);
+        // throw Error('testing unfollow - still WIP');
+        result = await GetBrowsingAgent().deleteFollow(followUri);
     })
     return result;
 }

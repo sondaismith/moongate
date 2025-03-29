@@ -71,10 +71,10 @@ export default defineComponent({
          */
         isFollowingUser(){
             if(AccountPeekState.profileData.viewer && AccountPeekState.profileData.viewer.following){
-                console.log('true!');
+                // console.log('true!');
                 return true;
             }
-            console.log('false...');
+            // console.log('false...');
             return false;
         }
     },
@@ -114,18 +114,5 @@ export default defineComponent({
     position: absolute;
     opacity: 0;
     transform: translateX(20px);
-}
-
-.spinner{
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
- 0%{
-    transform: rotate(0deg);
-   }
-100%{
-    transform: rotate(360deg);
-   }
 }
 </style>
