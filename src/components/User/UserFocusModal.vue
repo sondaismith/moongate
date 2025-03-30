@@ -92,13 +92,13 @@ import PillButton from '../Utilities/PillButton.vue';
 import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { FeedViewPost, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
+import { AppBskyActorGetProfile, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
 import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { GenerateTagLinkText } from '../../helpers/parsers';
 import Hashtag from '../Utilities/Hashtag.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
-import { HandleAPIError, IsError } from '../../helpers/errors';
+import { HandleAPIError } from '../../helpers/errors';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
@@ -170,17 +170,27 @@ export default defineComponent({
         async updateDisplayedData(){
             if(isDid(postDetails.currentUserAccountDID)){
                 this.awaitingProfileData = true;
-                var userProfile = await GetBrowsingAgent().getProfile({
+                var userProfile:AppBskyActorGetProfile.Response;
+                await GetBrowsingAgent().getProfile({
                     actor:postDetails.currentUserAccountDID
+                })
+                .then(res => {
+                    this.currentUserProfile = res.data
                 });
-                var userTL = await GetBrowsingAgent().getAuthorFeed({
+                var userTL;
+                await GetBrowsingAgent().getAuthorFeed({
                     actor:postDetails.currentUserAccountDID,
-                });
-                if(IsError(userProfile)){
-                    toast.add(HandleAPIError(userProfile as Error))
-                }
-                this.currentUserProfile = userProfile.data;
-                this.currentUserAccountData = userTL.data.feed;
+                    includePins:true
+                })
+                .then(res => {
+                    this.currentUserAccountData = res.data.feed
+                })
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s timeline`)));
+                // if(IsError(userProfile)){
+                //     toast.add(HandleAPIError(userProfile as Error))
+                // }
+                // this.currentUserProfile = userProfile.data;
+                // this.currentUserAccountData = userTL.data.feed;
                 console.log(this.currentUserAccountData);
                 this.awaitingProfileData = false;
             }

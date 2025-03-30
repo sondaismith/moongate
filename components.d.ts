@@ -28,6 +28,8 @@ declare module 'vue' {
     'IMdi:expandMore': typeof import('~icons/mdi/expand-more')['default']
     'IMdi:gearBox': typeof import('~icons/mdi/gear-box')['default']
     'IMdi:magnifyScan': typeof import('~icons/mdi/magnify-scan')['default']
+    'IMdi:pin': typeof import('~icons/mdi/pin')['default']
+    'IMdi:pinOutline': typeof import('~icons/mdi/pin-outline')['default']
     'IMdi:twitterRetweet': typeof import('~icons/mdi/twitter-retweet')['default']
     'IMingcute:butterfly2Fill': typeof import('~icons/mingcute/butterfly2-fill')['default']
     'IMingcute:butterfly2Line': typeof import('~icons/mingcute/butterfly2-line')['default']

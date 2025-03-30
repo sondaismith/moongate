@@ -1,5 +1,11 @@
 <template>
-    <div v-if="postData" class="flex flex-col rounded-lg p-3 border border-slate-600 gap-2">
+    <div v-if="postData" class="flex flex-col rounded-lg p-3 border border-slate-600 gap-2"
+    :class="isReasonPin(postReason) ? 'pt-2' : ''">
+        <div v-if="isReasonPin(postReason)" class="flex items-center text-slate-400 border-b
+        border-slate-700 pb-1 select-none">
+            <i-mdi:pin class="text-sm"/>
+            <div class="font-bold text-xs">Pinned</div>
+        </div>
         {{ void "Retweet Label" }}
         <div v-if="postReason && isReasonRepost(postReason) && !isViewRecord(postData)"
         class="flex rounded p-1 bg-slate-700 items-center text-sm">
@@ -52,11 +58,11 @@
 </template>
 
 <script lang="ts">
-import { isReasonRepost, PostView, ReasonPin, ReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid, RepostRecord } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
-import { isViewRecord, ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
@@ -81,6 +87,7 @@ export default defineComponent({
     data(){
         return{
             isReasonRepost,
+            isReasonPin,
             isImage,
             isViewRecord,
             convertToLongTimestamp,

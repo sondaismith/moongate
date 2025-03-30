@@ -2,6 +2,11 @@
     <div class="w-full pb-2">
         {{ void "feed post" }}
         <div class="flex flex-col rounded bg-slate-400 p-1 pr-3 w-full drop-shadow-md justify-between">
+            <div v-if="isReasonPin(postData?.reason)" class="flex items-center text-slate-600 border-b
+            border-slate-500 pb-0.5 mb-1 select-none">
+                <i-mdi:pin class="text-xs"/>
+                <div class="font-bold text-xs">Pinned</div>
+            </div>
             <div v-if="postData?.reason && isReasonRepost(postData.reason)"
             class="flex text-xs font-medium mb-1 items-center p-0.5 rounded bg-slate-600">
                 <div class="flex grow-0 shrink-0 w-12 justify-end pr-1"><i-mdi:twitter-retweet/></div>
@@ -50,7 +55,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import { postDetails, showDetailModal, showFocusModal } from '../../state/PostDetails.vue';
-import { FeedViewPost, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
 import { AppState } from '../../state/AppState.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
@@ -69,6 +74,7 @@ export default defineComponent({
             convertToShortTimestamp,
             convertToLongTimestamp,
             isReasonRepost,
+            isReasonPin,
             AccountPeekState,
         }
     },

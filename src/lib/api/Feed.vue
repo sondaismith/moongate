@@ -32,6 +32,7 @@ export async function getAuthorFeed(did:string):Promise<AppBskyFeedGetAuthorFeed
             actor:did,
             filter:"posts_no_replies",
             limit:30,
+            includePins:true
         }
     )
     return result;
