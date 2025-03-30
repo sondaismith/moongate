@@ -1,17 +1,24 @@
 <template>
-    <a :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
-        @click="highlightFeed" @contextmenu="showFeedOptionsMenu" class="group cursor-pointer relative flex justify-center
-        rounded-xl drop-shadow-md bg-blue-200 border border-blue-200 transition-[border]
-        hover:border-gray-800 h-10">
-        <FeedIcon :icon="icon" class="h-full text-2xl text-slate-800"/>
+    <div class="relative" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
+    @click="highlightFeed" @contextmenu="showFeedOptionsMenu">
+        <a class="group cursor-pointer relative flex justify-center
+            rounded-xl drop-shadow-md bg-blue-200 border border-blue-200 transition-[border]
+            hover:border-gray-800 h-10 overflow-hidden">
+            <FeedIcon v-if="!userDid" :icon="icon" class="h-full text-2xl text-slate-800"/>
+            <i-mingcute:loading-fill v-show="awaitingPFPRequest" class="absolute text-black spinner self-center"/>
+            <div v-if="userPfp" class="absolute h-full w-full bg-cover bg-center bg-no-repeat"
+            :style="{'background-image': 'url('+userPfp+')'}"></div>
+        </a>
         <UnreadMsgCount :unreadCount="newPosts"/>
-    </a>
+    </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { FeedState, UpdateSelectedFeed } from '../../state/FeedList.vue';
-import { FeedEnums } from '../../enums/FeedEnums';
+import { getUserProfile } from '../../lib/api/User.vue';
+import { toast } from '../../state/AppState.vue';
+import { HandleAPIError } from '../../helpers/errors';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to
@@ -26,13 +33,16 @@ export function calculateValidTargetPos(target:number):number{
 export default defineComponent({
     data(){
         return{
-            isScrolling: false
+            isScrolling: false,
+            userPfp:'',
+            awaitingPFPRequest:false,
         }
     },
     props: {
         feedId: String,
         tooltip: String,
         icon: String,
+        userDid:String,
         newPosts: Number,
     },
     methods:{
@@ -180,13 +190,25 @@ export default defineComponent({
                     menu.style.left = event.clientX+'px';
                 }
             }
+        },
+        /**
+         * Method used to get the Avatar/PFP of the User associated with a
+         * User Feed `FeedButton`.
+         */
+        async GetUserFeedPFP(){
+            if(this.userDid && this.userDid.trim() != ''){
+                this.awaitingPFPRequest = true
+                await getUserProfile(this.userDid)
+                .then(res => {
+                    this.userPfp = res.data.avatar ? res.data.avatar : '';
+                    this.awaitingPFPRequest = false;
+                })
+                .catch(err => toast.add(HandleAPIError(err, 'Error getting UserButton profile avatar')));
+            }
         }
     },
-    setup (props) {
-        props.feedId,
-        props.type,
-        props.tooltip,
-        props.newPosts
+    created(){
+        this.GetUserFeedPFP();
     }
 })
 </script>

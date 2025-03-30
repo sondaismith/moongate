@@ -14,7 +14,7 @@
                             <FeedButton :icon="FeedEnums.Icons.Home" tooltip="Home"/>
                             <TransitionGroup name="feedbutton">
                                 <!-- <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/> -->
-                                <FeedButton v-for="feed in FeedState.FeedList" :key="feed" :feedId="feed.description.feedId" :icon="feed.description.feedIcon" :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"/>
+                                <FeedButton v-for="feed in FeedState.FeedList" :key="feed" :feedId="feed.description.feedId" :icon="feed.description.feedIcon" :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts" :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"/>
                             </TransitionGroup>
                         </div>
                     </div>
