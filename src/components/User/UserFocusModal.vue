@@ -75,8 +75,12 @@
                             class="relative flex bg-violet-500 hover:bg-violet-300
                             cursor-pointer rounded aspect-square size-44 bg-no-repeat bg-center bg-cover"
                             :style="'background-image: url('+(n.post.embed.images ? n.post.embed.images[0].thumb : n.post.embed?.thumbnail)+')'">
-                                <div v-if="n.post.embed.images" class="absolute rounded-md bottom-1 right-2 p-1 text-xs bg-black/70">Photo</div>
-                                <div v-else class="absolute rounded-md bottom-1 right-2 p-1 text-xs bg-black/70">Video</div>
+                                <div v-if="n.post.embed.images && n.post.embed.images.length>1" class="select-none">
+                                    <div class="absolute z-[1] flex rounded top-1 right-1 size-6 bg-slate-300 backdrop-blur-sm text-slate-900 font-bold items-center justify-center drop-shadow">{{ n.post.embed?.images.length }}</div>
+                                    <div class="absolute flex rounded top-1.5 right-0.5 size-6 bg-slate-300/60 text-slate-900 font-bold items-center justify-center drop-shadow"></div>
+                                </div>
+                                <div v-if="n.post.embed.images" class="absolute rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Photo</div>
+                                <div v-else class="absolute rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Video</div>
                             </div>
                         </div>
                     </div>
