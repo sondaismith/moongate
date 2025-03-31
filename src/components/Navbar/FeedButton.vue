@@ -1,12 +1,12 @@
 <template>
     <div class="relative" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
     @click="highlightFeed" @contextmenu="showFeedOptionsMenu">
-        <a class="group cursor-pointer relative flex justify-center
+        <a class="group cursor-pointer relative flex justify-center items-center
             rounded-xl drop-shadow-md bg-blue-200 border border-blue-200 transition-[border]
-            hover:border-gray-800 h-10 overflow-hidden">
+            hover:border-gray-800 button-size !w-full overflow-hidden">
             <FeedIcon v-if="!userDid" :icon="icon" class="h-full text-2xl text-slate-800"/>
             <i-mingcute:loading-fill v-show="awaitingPFPRequest" class="absolute text-black spinner self-center"/>
-            <div v-if="userPfp" class="absolute h-full w-full bg-cover bg-center bg-no-repeat"
+            <div v-if="userPfp" class="button-size bg-contain bg-centers scale-[1.15] bg-no-repeat"
             :style="{'background-image': 'url('+userPfp+')'}"></div>
         </a>
         <UnreadMsgCount :unreadCount="newPosts"/>
@@ -214,5 +214,8 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
+.button-size{
+    width: 2.5rem;
+    height: 2.5rem;
+}
 </style>

@@ -27,18 +27,20 @@
             </div>
             <div class="hiddens">
                 {{ void "close button" }}
-                <div class="relative">
-                    <div v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full border-red-500
-                        w-8 aspect-square text-red-500 hover:text-red-700 hover:border-red-700
-                        justify-center items-center cursor-pointer">
+                <div class="relative top-1">
+                    <div v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full
+                    border-red-500 size-7 text-sm text-red-500 hover:text-red-700 hover:border-red-700
+                    justify-center items-center cursor-pointer">
                         <i-mingcute:close-fill/>
                     </div>
                 </div>
                 {{ void "login form" }}
-                <form>
-                    <div class="text-3xl text-blue-700 font-extrabold">Login</div>
-                    <div class="text-sm md:text-lg font-bold">Enter your username and password</div>
-                    <div class="h-[1px] bg-slate-500 my-2"></div>
+                <form class="flex flex-col gap-2">
+                    <div>
+                        <div class="text-3xl text-blue-700 font-extrabold ">Login</div>
+                        <div class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">Enter your username and password</div>
+                    </div>
+                    <div class="h-[1px] bg-slate-500"></div>
                     <div class="flex flex-col">
                         <!-- <div>Hosting Provider</div>
                         <div>bsky.social</div> -->
