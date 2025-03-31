@@ -90,7 +90,7 @@
                 </div>
             </div>
         </div>
-        <div class="h-full py-2 pl-2 pr-1 bg-slate-600 preload-gutter overflow-y-auto">
+        <div class="h-full py-2 pl-2 pr-1 bg-slate-600 preload-gutter overflow-y-auto" @scroll.passive="toggleScrollToTop">
             <TransitionGroup name="feedpost">
                 <!-- <FeedPost v-for="n in PostCollection" :key="n" :postData="n" /> -->
                 <FeedPost v-for="n in feedData?.data" :key="n" :postData="n" />
@@ -101,6 +101,9 @@
                 <div>MousePos: {{ mousePosition }}</div>
                 <div>OriginalWidth: {{ columnWidth }}</div>
             </div>
+            <Transition name="feedpost">
+                <ToContainerTop v-show="isScrollToTopVisible"/>
+            </Transition>
         </div>
         <div data-test="feedColumn-highlight" class="absolute pointer-events-none h-full left-0 right-0 border-2 rounded-sm border-sky-500/0 transition-colors"></div>
     </div>
@@ -115,6 +118,8 @@ import { IPostDetails } from '../../interfaces/PostInterfaces';
 import { createPost } from '../../fake-data/PostFactory'
 import { addDummyPostToFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
+import ToContainerTop from '../Utilities/ToContainerTop.vue';
+import { debounce, debounce2 } from '../../helpers/debouncer';
 
 var colElement;
 
@@ -123,12 +128,9 @@ var colElement;
 // }
 
 export default defineComponent({
-    // props: {
-    //     feedCollection: {
-    //         type: Object as PropType<FeedCollection>,
-    //         required: true
-    //     }
-    // },
+    components:{
+        ToContainerTop,
+    },
     data(){
         return{
             lastUpdate: new Date(),
@@ -142,6 +144,7 @@ export default defineComponent({
             feedOptionContentSettingsShown: false,
             feedOptionAuthorSettingsShown: false,
             feedOptionPreferencesShown: false,
+            isScrollToTopVisible:false,
             testData:{} as IFeedListing
         }
     },
@@ -177,7 +180,7 @@ export default defineComponent({
                 default:
                     break;
             }
-        }
+        },
     },
     methods: {
         generateRandomDate(start: Date, end: Date){
@@ -284,6 +287,11 @@ export default defineComponent({
             // this.getFeedElement().classList.remove('medium');
             this.selectedWidthSetting = 2;
         },
+        /**
+         * Method used to scroll back to the top of a Feed list. Defined in the
+         * "created()" section.
+         */
+        toggleScrollToTop(e:Event){},
     },
     mounted(){
         this.generateRandomDate(new Date(2012, 0, 1), new Date())
@@ -291,6 +299,17 @@ export default defineComponent({
             this.PostCollection.push(createPost(8));
         }
         if(this.feedData) this.testData = this.feedData;
+    },
+    created() {
+        /**Defines actions for the `toggleScrollToTop` function */
+        this.toggleScrollToTop = debounce(e => {
+            if((e.target as HTMLElement).scrollTop<8){
+                this.isScrollToTopVisible = false;
+            }
+            else{
+                this.isScrollToTopVisible = true;
+            }
+        },100);
     },
 })
 </script>

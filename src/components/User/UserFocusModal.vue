@@ -10,7 +10,7 @@
             :style="'background-image: url('+currentUserProfile.avatar+')'">{{currentUserProfile ? '' : 'PFP'}}</div>
             {{ void "Main Container" }}
             <div class="p-4 h-full overflow-auto">
-                <div class="flex flex-col h-full overflow-hiddens">
+                <div class="flex flex-col h-full">
                     {{ void "User Details Content" }}
                     <div class="flex flex-col mb-2 shrink grow-0">
                         <div class="flex ml-auto gap-2 h-10">
@@ -85,6 +85,7 @@
                         </div>
                     </div>
                 </div>
+                <ToContainerTop class="right-3 bottom-2"/>
             </div>
         </div>
     </div>
@@ -111,6 +112,7 @@ import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
 import FollowUser from '../Utilities/FollowUser.vue';
+import ToContainerTop from '../Utilities/ToContainerTop.vue';
 
 export default defineComponent({
     data(){
@@ -144,6 +146,7 @@ export default defineComponent({
         AvatarRound,
         EmbedExternal,
         FollowUser,
+        ToContainerTop,
     },
     methods:{
         viewPosts(){
