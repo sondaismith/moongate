@@ -430,14 +430,19 @@ import { HandleAPIError } from "./helpers/errors";
     transform: translateY(-10px);
 }
 
+.feedcolumn-move,
 .feedcolumn-enter-active,
 .feedcolumn-leave-active {
-    transition: opacity 0.2s ease, transform 0.2s ease, width 0.6s ease;
+    transition: opacity 0.2s ease, transform 0.4s ease;
+}
+.feedcolumn-leave-active {
+    position: absolute;
+    /* z-index: -1; */
 }
 
 .feedcolumn-enter-from,
 .feedcolumn-leave-to {
-    width: 0 !important;
+    /* width: 0 !important; */
     opacity: 0;
     transform: translateX(-10px);
 }

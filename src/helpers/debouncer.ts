@@ -7,16 +7,3 @@ export function debounce<T extends (...args: any[]) => void>(fn: T, delay: numbe
         }, delay);
     } as T;
 }
-
-export function debounce2(fn, wait:number){
-    let timer;
-    return function(...args){
-        if(timer) {
-            clearTimeout(timer); // clear any pre-existing timer
-        }
-        const context = this; // get the current context
-        timer = setTimeout(()=>{
-            fn.apply(context, args); // call the function if time expires
-        }, wait);
-    }
-}

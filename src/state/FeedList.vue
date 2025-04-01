@@ -253,7 +253,8 @@ export function addDummyPostToFeed(feedId:String){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     if(feed){//Ensure matching Feed was found
         var randomHandleNum = `${Math.floor((Math.random()*100))+1}_${Math.floor((Math.random()*100))+1}`;
-        feed.data.push({
+        feed.data.splice(Math.floor(Math.random()*feed.data.length),0,{ //Place at random location
+        // feed.data.push({ //Place at end
             post:{
                 author:{
                     did:`test${GenerateUniqueId(10)}`,
@@ -283,28 +284,9 @@ export function addDummyPostToFeed(feedId:String){
 export async function AddSavedFeed(savedFeed:IFeedDBData){
     /**The object that will be added to the FeedList. */
     var feedResult:FeedViewPost[] = [];
-    //Perform required API call based on Feed Type
-    switch (savedFeed.type) {
-        case FeedEnums.Types.User:
-            await getAuthorFeed(savedFeed.did)
-            .then(res => feedResult = res.data.feed)
-            .catch(err => toast.add(HandleAPIError(err, 'Error getting saved User Feed posts')));
-            break;
-        case FeedEnums.Types.Tag:
-            // feedResult = await getTagPosts(this.grabHashtags());
-            // feedResult =
-            await getTagPosts(savedFeed.tags)
-            .then(res => {
-                //Place Posts in a "Feed" shaped Object
-                res.data.posts.forEach(p => {
-                    feedResult.push({post:p});
-                })
-            })
-            .catch(err => toast.add(HandleAPIError(err, 'Error getting saved Tag Feed posts')));
-            break;
-        default:
-            break;
-    }
+    await GetFeedDataForFeedType(savedFeed.type,savedFeed.did,savedFeed.tags)
+    .then(res => feedResult = res)
+    .catch(err => toast.add(HandleAPIError(err, 'Error getting posts for Saved Feed')));
     console.log(feedResult);//DEBUG
 
     /**Default FeedColumn settings */
@@ -358,6 +340,36 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
 }
 
 /**
+ * Method used to get Feed data. It uses the Feed Type to choose the correct process needed
+ * to return the correct data.
+ * @param feedType The type of Feed this data is for. Of type `FeedEnums.Types`.
+ * @param did The DID associated with the User Feed to retrieve.
+ * @param tags The hashtags associated with the Tag Feed to retrieve.
+ */
+export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string='',tags:string=''):Promise<FeedViewPost[]>{
+    /**Object that will hold the returned Feed data. */
+    var feedResult:FeedViewPost[] = [];
+    switch (feedType) {
+        case FeedEnums.Types.User:
+            await getAuthorFeed(did)
+            .then(res => feedResult = res.data.feed);
+            break;
+        case FeedEnums.Types.Tag:
+            await getTagPosts(tags)
+            .then(res => {
+                //Place Posts in a "Feed" shaped Object
+                res.data.posts.forEach(p => {
+                    feedResult.push({post:p});
+                })
+            });
+            break;
+        default:
+            break;
+    }
+    return feedResult;
+}
+
+/**
  * Method that returns a specific Feed's IFeedListing object.
  * @param feedId Id of the Feed you wish get the IFeedListing object of.
  */
@@ -372,7 +384,7 @@ export function GetFeed(feedId:string){
  * @param description The updated IFeedDescription for the Feed.
  * @param feedData The new Feed content retrieved using the updated specifications.
  */
-export function UpdateFeed(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]){
+export function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     //If feed found
     if(feed){
@@ -391,6 +403,31 @@ export function RemoveFeed(feedId:String){
         var removeIndex = FeedState.FeedList.indexOf(feed);
         //Remove item
         FeedState.FeedList.splice(removeIndex,1);
+    }
+}
+
+/**
+ * Method used to refresh the data held in a currently displayed Feed.
+ * @param feedId The ID of the loaded Feed that you want to refresh.
+ */
+export async function RefreshFeed(feedId:String, lastUpdate:Date){
+    var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
+    if(feed){//Ensure matching Feed was found
+        //Code below was to cause the update to happen in a more smooth looking way
+        // feed.data = [];
+        // await new Promise(res => setTimeout(res,500));
+        await GetFeedDataForFeedType(feed.description.feedType,feed.description.feedSourceDID,feed.description.feedTags)
+        .then(res => {
+            if(feed){
+                // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
+                let newPosts = res.filter(post => new Date(post.post.indexedAt) >= lastUpdate)
+                //Update only if there are new posts
+                // if(newPosts.length > 0) feed.data = [...pinned, ...newPosts, ...feed.data.slice(pinned.length)];
+                feed.data = res.slice();
+                feed.description.newPosts = newPosts.length;
+            }
+        })
+        .catch(err => toast.add(HandleAPIError(err, 'Error refreshing feed')));
     }
 }
 

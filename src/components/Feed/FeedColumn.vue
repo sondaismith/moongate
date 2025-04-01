@@ -17,9 +17,13 @@
                 </div>
                 <div class="flex self-center ml-auto">
                         <!-- <div title="Add - DEBUG" @click="addNewPost" class="cursor-pointer hover:text-cyan-400"><i-mingcute:plus-fill/></div> -->
-                        <div title="Refresh" @click="refreshFeed"><i-mingcute:refresh-3-fill class="text-2xl cursor-pointer hover:text-cyan-400"/></div>
+                        <div title="Refresh" @click="refreshFeed(feedData?.description.feedId)"
+                        class="text-2xl cursor-pointer hover:text-cyan-400 size-7 bg-[auto_0] bg-gradient-to-t from-slate-400 to-slate-800"
+                        :class="{'!cursor-not-allowed text-slate-400 hover:text-slate-400 refresh-timeout' : isAwaitingRefreshTimeout}">
+                            <i-mingcute:refresh-3-fill/>
+                        </div>
                         <div title="Options" @click="toggleFeedColumnOptionsMenu()" class="text-2xl cursor-pointer hover:text-cyan-400"><i-mingcute:settings-6-fill/></div>
-                        <div title="Reorder" @click="removePost"><i-mingcute:menu-line title="Reorder" class="text-2xl cursor-grab hover:text-cyan-400"/></div>
+                        <div title="Reorder" @click="addNewPost"><i-mingcute:menu-line title="Reorder" class="text-2xl cursor-grab hover:text-cyan-400"/></div>
                 </div>
             </div>
         </div>
@@ -116,10 +120,11 @@ import { DebugFlags } from '../../state/Debug.vue';
 import { IFeedListing } from '../../interfaces/FeedInterfaces';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
 import { createPost } from '../../fake-data/PostFactory'
-import { addDummyPostToFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
+import { addDummyPostToFeed, RefreshFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
-import { debounce, debounce2 } from '../../helpers/debouncer';
+import { debounce } from '../../helpers/debouncer';
+import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 var colElement;
 
@@ -134,6 +139,10 @@ export default defineComponent({
     data(){
         return{
             lastUpdate: new Date(),
+            /**Determines if the refresh command is currently "on cooldown". */
+            isAwaitingRefreshTimeout:false,
+            /**Holds a collection of new Posts that are available but not shown in the Feed list. */
+            newPostsWaiting: [] as FeedViewPost[],
             DebugFlags,
             PostCollection: [] as IPostDetails[],
             isDragging: false,
@@ -145,7 +154,6 @@ export default defineComponent({
             feedOptionAuthorSettingsShown: false,
             feedOptionPreferencesShown: false,
             isScrollToTopVisible:false,
-            testData:{} as IFeedListing
         }
     },
     props: {
@@ -198,9 +206,18 @@ export default defineComponent({
             // this.PostCollection.pop();
             RemoveFeed(this.feedData.description.feedId);
         },
-        refreshFeed(){
-            this.generateRandomDate(new Date(2012, 0, 1), new Date);
-            this.addNewPost();
+        /**Method used to updated the list of Posts associated with this component's Feed. */
+        async refreshFeed(feedId:string|undefined){
+            if(feedId && !this.isAwaitingRefreshTimeout){
+                this.isAwaitingRefreshTimeout = true;
+                await RefreshFeed(feedId, this.lastUpdate);
+                this.lastUpdate = new Date();
+                await setTimeout(() => {
+                    this.isAwaitingRefreshTimeout = false;
+                    console.log('refresh message inside timeout');
+                }, 3000);
+                console.log('refresh message outside timeout');
+            }
         },
         startDrag(e: MouseEvent){
             if(!this.feedId) return;
@@ -294,11 +311,10 @@ export default defineComponent({
         toggleScrollToTop(e:Event){},
     },
     mounted(){
-        this.generateRandomDate(new Date(2012, 0, 1), new Date())
         for (let i = 0; i < this.feedData.totalPosts; i++) {
             this.PostCollection.push(createPost(8));
         }
-        if(this.feedData) this.testData = this.feedData;
+        this.lastUpdate = new Date();
     },
     created() {
         /**Defines actions for the `toggleScrollToTop` function */
@@ -345,7 +361,7 @@ export default defineComponent({
     width: 37.5rem; /*600px*/
 }
 
-/* .feedpost-move, */
+.feedpost-move,
 .feedpost-enter-active,
 .feedpost-leave-active {
     transition: opacity 0.2s ease, transform 0.2s ease;
@@ -354,6 +370,27 @@ export default defineComponent({
 .feedpost-enter-from,
 .feedpost-leave-to {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
+}
+
+.feedpost-leave-active {
+    position: absolute;
+}
+
+.refresh-timeout{
+    background-size: auto 56px;
+    background-position: 0 -28px;
+    background-repeat: no-repeat;
+    animation: cooldown 3s ease 1;
+    animation-fill-mode: forwards;
+}
+
+@keyframes cooldown {
+    0% {
+        background-position: 0 -28px;
+    }
+    100% {
+        background-position: 0 28px;
+    }
 }
 </style>
