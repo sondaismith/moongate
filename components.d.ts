@@ -24,6 +24,7 @@ declare module 'vue' {
     Hashtag: typeof import('./src/components/Utilities/Hashtag.vue')['default']
     ImageContainer: typeof import('./src/components/Utilities/ImageContainer.vue')['default']
     'IMdi:accountOff': typeof import('~icons/mdi/account-off')['default']
+    'IMdi:block': typeof import('~icons/mdi/block')['default']
     'IMdi:dotsHorizontal': typeof import('~icons/mdi/dots-horizontal')['default']
     'IMdi:expandMore': typeof import('~icons/mdi/expand-more')['default']
     'IMdi:formatVerticalAlignTop': typeof import('~icons/mdi/format-vertical-align-top')['default']

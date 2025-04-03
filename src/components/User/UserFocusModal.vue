@@ -14,8 +14,10 @@
                     {{ void "User Details Content" }}
                     <div class="flex flex-col mb-2 shrink grow-0">
                         <div class="flex ml-auto gap-2 h-10">
-                            <FollowUser v-if="!awaitingProfileData" class="px-4" :is-user-followed="isUserFollowed"
-                            :user-did="currentUserProfile.did" :is-disabled="!AppState.isAuthBrowsing"/>
+                            <Transition name="smooth">
+                                <FollowUser v-if="!awaitingProfileData" class="px-4" :is-user-followed="isUserFollowed"
+                                :user-did="currentUserProfile.did" :is-disabled="!AppState.isAuthBrowsing"/>
+                            </Transition>
                             <PillButton class="aspect-square size-10">...</PillButton>
                         </div>
                         <div class="text-2xl font-semibold">{{currentUserProfile ? currentUserProfile.displayName : "Username Title"}}</div>
@@ -42,7 +44,7 @@
                         <RichPostText :post-text="currentUserProfile ? currentUserProfile.description : 'No Description'"/>
                     </div>
                     {{ void "Posts + Post Type Filters" }}
-                    <div class="flex flex-col min-h-0 grow">
+                    <div class="flex flex-col min-h-0 grow items-center">
                         <div class="flex w-full text-center justify-between border-b border-slate-600">
                             <div @click="viewPosts" class="w-full hover:bg-slate-700 cursor-pointer">
                                 <div class="pt-2 pb-1">Posts</div>
@@ -59,28 +61,54 @@
                         </div>
                         {{ void "General Posts" }}
                         <div v-if="isViewingPosts || isViewingReplies"
-                        class="flex flex-col flex-wrap items-start py-2 gap-2">
-                            <div v-for="n in currentUserAccountData.filter(x => !x.reply).slice(0,30) as FeedViewPost[]"
-                            class="w-full max-w-[30rem] shrink-0s">
+                        class="flex flex-col flex-wrap items-start py-2 gap-2 max-w-[30rem] w-full">
+                            <div v-for="n in currentUserAccountTimelineData.data.filter(x => !x.reply) as FeedViewPost[]"
+                            class="w-full shrink-0s">
                                 <FocusFeedPost :post-data="n.post" :post-reason="n.reason" @focus-post-avatar-clicked="updateDisplayedData"/>
+                            </div>
+                            <div v-if="!currentUserAccountTimelineData.cursor"
+                            class="flex justify-center rounded p-1 gap-1 w-full items-center
+                            border border-slate-600 bg-slate-700 select-none">
+                                <i-mdi:block/>
+                                <div>End of posts</div>
+                            </div>
+                            <div v-else @click="loadOlderPosts"
+                            class="flex justify-center rounded p-1 gap-1 w-full items-center cursor-pointer
+                            border border-slate-600 bg-slate-700 hover:bg-slate-600">
+                                <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
+                                <i-mingcute:plus-fill v-else/>
+                                <div>Load more</div>
                             </div>
                         </div>
                         {{ void "Media Posts" }}
-                        <div v-if="isViewingMedia" class="py-4 w-full grid gap-2 self-center
-                        grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] justify-items-center
-                        overflow-x-hiddens">
-                            <div @click="showMediaContent(n)" v-for="n in currentUserAccountData.filter(
-                                x => x.post.embed && x.post.author.did == currentUserProfile.did &&
-                                (AppBskyEmbedImages.isView(x.post.embed) || AppBskyEmbedVideo.isView(x.post.embed)))"
-                            class="relative flex bg-violet-500 hover:bg-violet-300
-                            cursor-pointer rounded aspect-square size-44 bg-no-repeat bg-center bg-cover"
-                            :style="'background-image: url('+(n.post.embed.images ? n.post.embed.images[0].thumb : n.post.embed?.thumbnail)+')'">
-                                <div v-if="n.post.embed.images && n.post.embed.images.length>1" class="select-none">
-                                    <div class="absolute z-[1] flex rounded top-1 right-1 size-6 bg-slate-300 backdrop-blur-sm text-slate-900 font-bold items-center justify-center drop-shadow">{{ n.post.embed?.images.length }}</div>
-                                    <div class="absolute flex rounded top-1.5 right-0.5 size-6 bg-slate-300/60 text-slate-900 font-bold items-center justify-center drop-shadow"></div>
+                        <div v-if="isViewingMedia" class="py-4 w-full">
+                            <div class="grid gap-2 self-center
+                            grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] justify-items-center
+                            overflow-x-hiddens">
+                                <div @click="showMediaContent(n)" v-for="n in currentUserAccountTimelineData.data.filter(
+                                    x => x.post.embed && x.post.author.did == currentUserProfile.did &&
+                                    (AppBskyEmbedImages.isView(x.post.embed) || AppBskyEmbedVideo.isView(x.post.embed)))"
+                                class="relative flex bg-violet-500 hover:bg-violet-300
+                                cursor-pointer rounded aspect-square size-44 bg-no-repeat bg-center bg-cover"
+                                :style="'background-image: url('+(n.post.embed.images ? n.post.embed.images[0].thumb : n.post.embed?.thumbnail)+')'">
+                                    <div v-if="n.post.embed.images && n.post.embed.images.length>1" class="select-none">
+                                        <div class="absolute z-[1] flex rounded top-1 right-1 size-6 bg-slate-300 backdrop-blur-sm text-slate-900 font-bold items-center justify-center drop-shadow">{{ n.post.embed?.images.length }}</div>
+                                        <div class="absolute flex rounded top-1.5 right-0.5 size-6 bg-slate-300/60 text-slate-900 font-bold items-center justify-center drop-shadow"></div>
+                                    </div>
+                                    <div v-if="n.post.embed.images" class="absolute rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Photo</div>
+                                    <div v-else class="absolute rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Video</div>
                                 </div>
-                                <div v-if="n.post.embed.images" class="absolute rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Photo</div>
-                                <div v-else class="absolute rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Video</div>
+                            </div>
+                            <div v-if="!currentUserAccountTimelineData.cursor"
+                            class="flex justify-center rounded p-1 gap-1 mt-4 w-full items-center
+                            border border-slate-600 bg-slate-700 select-none">
+                                <i-mdi:block/>
+                                <div>End of posts</div>
+                            </div>
+                            <div v-else @click="loadOlderPosts"
+                            class="flex justify-center rounded p-1 gap-1 mt-4 w-fulls items-center cursor-pointer
+                            border border-slate-600 bg-slate-700 hover:bg-slate-600">
+                                <div>Load more</div>
                             </div>
                         </div>
                     </div>
@@ -113,6 +141,9 @@ import VideoContainer from '../Utilities/VideoContainer.vue';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
 import FollowUser from '../Utilities/FollowUser.vue';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
+import { IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces';
+import { GetFeedDataForFeedType } from '../../state/FeedList.vue';
+import { FeedEnums } from '../../enums/FeedEnums';
 
 export default defineComponent({
     data(){
@@ -132,8 +163,10 @@ export default defineComponent({
             isViewingReplies:false,
             isViewingMedia:false,
             awaitingProfileData:false,
+            isAwaitingTabSwitchData:false,
+            isAwaitingLoadMorePosts:false,
             currentUserProfile:{} as ProfileViewDetailed,
-            currentUserAccountData:[] as FeedViewPost[],
+            currentUserAccountTimelineData:{data:[],cursor:''} as IFeedReturnedPostResults,
         }
     },
     components:{
@@ -149,9 +182,20 @@ export default defineComponent({
         ToContainerTop,
     },
     methods:{
-        viewPosts(){
+        async viewPosts(){
             this.isViewingPosts = true;
             this.isViewingReplies = this.isViewingMedia = false;
+            this.isAwaitingTabSwitchData = true;
+            await GetBrowsingAgent().getAuthorFeed({
+                actor:postDetails.currentUserAccountDID,
+                includePins:true
+            })
+            .then(res => {
+                this.currentUserAccountTimelineData.data = res.data.feed;
+                this.currentUserAccountTimelineData.cursor = res.data.cursor;
+            })
+            .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s timeline`)));
+            this.isAwaitingTabSwitchData = false;
         },
         viewReplies(){
             this.isViewingReplies = true;
@@ -160,12 +204,30 @@ export default defineComponent({
         async viewMedia(){
             this.isViewingMedia = true;
             this.isViewingPosts = this.isViewingReplies = false;
+            this.isAwaitingTabSwitchData = true;
             //Get media posts
-            var userMedia = await GetBrowsingAgent().getAuthorFeed({
+            await GetBrowsingAgent().getAuthorFeed({
                 actor:postDetails.currentUserAccountDID,
                 filter:'posts_with_media',
-            });
-            this.currentUserAccountData = userMedia.data.feed;
+            })
+            .then(res => {
+                this.currentUserAccountTimelineData.data = res.data.feed;
+                this.currentUserAccountTimelineData.cursor = res.data.cursor;
+            })
+            .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s media`)));
+            this.isAwaitingTabSwitchData = false;
+        },
+        async loadOlderPosts(){
+            this.isAwaitingLoadMorePosts = true;
+            await GetFeedDataForFeedType(FeedEnums.Types.User,this.currentUserProfile.did,'',this.currentUserAccountTimelineData.cursor)
+            .then(res => {
+                res.data.forEach(post => {
+                    this.currentUserAccountTimelineData.data.push(post);
+                });
+                this.currentUserAccountTimelineData.cursor = res.cursor;
+            })
+            .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
+            this.isAwaitingLoadMorePosts = false;
         },
         closeModal(){
             AppState.HideUserFocusModal();
@@ -190,15 +252,11 @@ export default defineComponent({
                     includePins:true
                 })
                 .then(res => {
-                    this.currentUserAccountData = res.data.feed
+                    this.currentUserAccountTimelineData.data = res.data.feed;
+                    this.currentUserAccountTimelineData.cursor = res.data.cursor;
                 })
                 .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s timeline`)));
-                // if(IsError(userProfile)){
-                //     toast.add(HandleAPIError(userProfile as Error))
-                // }
-                // this.currentUserProfile = userProfile.data;
-                // this.currentUserAccountData = userTL.data.feed;
-                console.log(this.currentUserAccountData);
+                console.log(this.currentUserAccountTimelineData);
                 this.awaitingProfileData = false;
             }
         }
@@ -218,12 +276,31 @@ export default defineComponent({
         }
     },
     async created() {
-        this.updateDisplayedData();
+        await this.updateDisplayedData();
     }
 })
 
 </script>
 
 <style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.2s ease;
+}
 
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+
+.smooth-enter-active,
+.smooth-leave-active {
+  transition: opacity 0.3s ease, transform 0.4s ease;
+}
+
+.smooth-enter-from,
+.smooth-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
+}
 </style>
