@@ -26,13 +26,14 @@ export async function SearchForAccounts(searchTerm : string):Promise<AppBskyActo
  * @param did The unique DID identifier of the User you want to return Posts from.
  * @returns Collection of posts from the User's feed if successful, an error if not.
  */
-export async function getAuthorFeed(did:string):Promise<AppBskyFeedGetAuthorFeed.Response>{
+export async function getAuthorFeed(did:string, cursor:string=''):Promise<AppBskyFeedGetAuthorFeed.Response>{
     let result = await GetBrowsingAgent().getAuthorFeed(
         {
             actor:did,
             filter:"posts_no_replies",
             limit:30,
-            includePins:true
+            includePins:true,
+            cursor:cursor
         }
     )
     return result;
@@ -43,10 +44,11 @@ export async function getAuthorFeed(did:string):Promise<AppBskyFeedGetAuthorFeed
  * @param tags String of hashtags, space-separated.
  * @returns Search results returned from the Bluesky API.
  */
-export async function getTagPosts(tags:string):Promise<AppBskyFeedSearchPosts.Response>{
+export async function getTagPosts(tags:string,cursor:string=''):Promise<AppBskyFeedSearchPosts.Response>{
     let result = await GetBrowsingAgent().app.bsky.feed.searchPosts(
         {
             q:`${tags}`,
+            // cursor:cursor //as of April 3rd 2025 there's some sort of issue with `searchPosts` - disabling for now
         }
     )
     return result;

@@ -76,11 +76,10 @@ import PillButton from '../Utilities/PillButton.vue';
 import InLaInput from '../Utilities/InLaInput.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import UserSearchBar from '../Utilities/UserSearchBar.vue';
-import { AppState } from '../../state/AppState.vue';
-import { getAuthorFeed, getTagPosts } from '../../lib/api/Feed.vue';
-import { AddFeedToList, FeedState, GenerateUniqueId, GetFeed, UpdateFeedDetails } from '../../state/FeedList.vue';
-import { HandleAPIError, IsError } from '../../helpers/errors.ts';
-import { IFeedColumnSettings, IFeedDescription } from '../../interfaces/FeedInterfaces.ts';
+import { AppState, toast } from '../../state/AppState.vue';
+import { AddFeedToList, FeedState, GenerateUniqueId, GetFeed, GetFeedDataForFeedType, UpdateFeedDetails } from '../../state/FeedList.vue';
+import { HandleAPIError } from '../../helpers/errors.ts';
+import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces.ts';
 
 export default defineComponent({
     components:{
@@ -159,7 +158,7 @@ export default defineComponent({
          * Feed they wish to create.
          * @param feedType The feed type the user wishes to create.
          */
-        selectFeedType(feedType:string){
+        selectFeedType(feedType:FeedEnums.Types){
             this.selectedFeedType = feedType;
             console.log(this.selectedFeedType);
             this.forwardOnePage();
@@ -200,26 +199,15 @@ export default defineComponent({
         async createFeed(){
             this.attemptingToCreateFeed = true;
             /**The object that will be added to the FeedList. */
-            var feedResult;
-            //Perform required API call based on Feed Type
-            switch (this.selectedFeedType) {
-                case FeedEnums.Types.User:
-                    // var userFeed = await getAuthorFeed(this.feedFilters.user.did);
-                    feedResult = await getAuthorFeed(this.feedFilters.user.did);
-                    break;
-                case FeedEnums.Types.Tag:
-                    // feedResult = await getTagPosts(this.grabHashtags());
-                    feedResult = await getTagPosts(this.validTags.join(' '));
-                    break;
-                default:
-                    break;
-            }
-            //Check if API call created Error
-            if(IsError(feedResult)){
-                this.$toast.add(HandleAPIError(feedResult as Error));
-                this.attemptingToCreateFeed = false;
-                return; //Stop further actions
-            }
+            var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
+
+            //Perform required API call
+            await GetFeedDataForFeedType(this.selectedFeedType as FeedEnums.Types,this.feedFilters.user.did,this.feedFilters.tag)//(<any>FeedEnums.Types)[this.selectedFeedType]
+            .then(res => feedResult = res)
+            .catch(err => {
+                console.log(err);
+                toast.add(HandleAPIError(err, 'Error getting data for creating feed'))
+            });
             console.log(feedResult);//DEBUG
             var defaultAppearance:IFeedColumnSettings = {
                 width: FeedEnums.Widths.Small,
@@ -245,7 +233,6 @@ export default defineComponent({
             //Select correct returned Object value based on Feed Type
             switch (this.selectedFeedType) {
                 case FeedEnums.Types.User:
-                    feedResult = feedResult.data.feed;
                     //Generate Feed Description based on selected options
                     desc = {...desc,
                         feedHandle:this.feedFilters.user.handle,
@@ -254,12 +241,6 @@ export default defineComponent({
                     }
                     break;
                 case FeedEnums.Types.Tag:
-                    var posts = [];
-                    //Place Posts in a "Feed" shaped Object
-                    feedResult.data.posts.forEach(p => {
-                        posts.push({post:p})
-                    });
-                    feedResult = posts;
                     //Generate Feed Description based on selected options
                     desc = {...desc,
                         feedType:FeedEnums.Types.Tag,
@@ -272,10 +253,10 @@ export default defineComponent({
             }
             //Create the Feed
             if(AppState.isCreatingFeed){
-                AddFeedToList(desc,feedResult);
+                AddFeedToList(desc,feedResult.data, feedResult.cursor);
             }
             else if(AppState.isUpdatingFeed){
-                UpdateFeedDetails(FeedState.selectedFeed,desc,feedResult);
+                UpdateFeedDetails(FeedState.selectedFeed,desc,feedResult.data,feedResult.cursor);
             }
             this.closeModal();
         },

@@ -98,6 +98,18 @@
             <TransitionGroup name="feedpost">
                 <!-- <FeedPost v-for="n in PostCollection" :key="n" :postData="n" /> -->
                 <FeedPost v-for="n in feedData?.data" :key="n" :postData="n" />
+                <div v-if="!feedData?.cursor"
+                class="flex rounded justify-center p-1 bg-slate-500 text-slate-300 select-none">
+                    End of Posts
+                </div>
+                <div v-else-if="feedData.description.feedType != FeedEnums.Types.Tag" @click="loadMorePosts(feedData.description.feedId)"
+                class="flex rounded border border-slate-700 justify-center items-center p-1 gap-1 bg-slate-500 text-slate-300
+                cursor-pointer hover:bg-slate-400 hover:text-slate-200 transition-colors select-none"
+                :class="{'bg-slate-700 hover:bg-slate-700 text-slate-500 hover:text-slate-500 pointer-events-none' : isAwaitingLoadMore}">
+                    <i-mingcute:loading-fill v-if="isAwaitingLoadMore" class="spinner"/>
+                    <i-mingcute:plus-fill/>
+                    <div>Load more</div>
+                </div>
             </TransitionGroup>
             <div v-if="DebugFlags.showFeedColumnCenter" class="relative h-full w-0.5 left-1/2 bg-blue-900/60"></div>
             <div v-if="DebugFlags.showFeedColumnDragResizeStats" class="absolute left-0 top-16 px-2 py-1 bg-orange-500/80 content-center">
@@ -120,7 +132,7 @@ import { DebugFlags } from '../../state/Debug.vue';
 import { IFeedListing } from '../../interfaces/FeedInterfaces';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
 import { createPost } from '../../fake-data/PostFactory'
-import { addDummyPostToFeed, RefreshFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
+import { addDummyPostToFeed, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { debounce } from '../../helpers/debouncer';
@@ -143,6 +155,11 @@ export default defineComponent({
             isAwaitingRefreshTimeout:false,
             /**Holds a collection of new Posts that are available but not shown in the Feed list. */
             newPostsWaiting: [] as FeedViewPost[],
+            /**
+             * Indicates if the application is still waiting for a response from the API returning
+             * older Feed posts.
+             * */
+            isAwaitingLoadMore:false,
             DebugFlags,
             PostCollection: [] as IPostDetails[],
             isDragging: false,
@@ -154,6 +171,7 @@ export default defineComponent({
             feedOptionAuthorSettingsShown: false,
             feedOptionPreferencesShown: false,
             isScrollToTopVisible:false,
+            FeedEnums,
         }
     },
     props: {
@@ -212,11 +230,21 @@ export default defineComponent({
                 this.isAwaitingRefreshTimeout = true;
                 await RefreshFeed(feedId, this.lastUpdate);
                 this.lastUpdate = new Date();
+                //Disable ability to refresh for 3 seconds
                 await setTimeout(() => {
                     this.isAwaitingRefreshTimeout = false;
                     console.log('refresh message inside timeout');
                 }, 3000);
                 console.log('refresh message outside timeout');
+            }
+        },
+        async loadMorePosts(feedId:string|undefined){
+            if(feedId && !this.isAwaitingLoadMore){
+                this.isAwaitingLoadMore = true;
+                console.log(feedId);
+                //request older posts from feed
+                await LoadMoreFeedPosts(feedId, this.feedData?.cursor);
+                this.isAwaitingLoadMore = false;
             }
         },
         startDrag(e: MouseEvent){

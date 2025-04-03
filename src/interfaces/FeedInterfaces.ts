@@ -67,6 +67,26 @@ interface IFeedListing{
     description : IFeedDescription,
     /**Collection of Posts that are part of the Feed. */
     data : FeedViewPost[],
+    /**
+     * Value used to indicate the point at which the current data collection ends, in
+     * relation to data held on Bluesky.
+     * Used when requesting additional Posts, or "paginating" through Posts.
+     */
+    cursor?: string,
+}
+
+/**
+ * Interface used to hold Post data returned from the Bluesky API.
+ */
+interface IFeedReturnedPostResults{
+    /**Collection of Posts that are part of the Feed. */
+    data : FeedViewPost[],
+    /**
+     * Value used to indicate the point at which the current data collection ends, in
+     * relation to data held on Bluesky.
+     * Used when requesting additional Posts, or "paginating" through Posts.
+     */
+    cursor?: string,
 }
 
 interface IFeedColumnSettings{
@@ -98,4 +118,4 @@ interface IFeedIconTypes{
     icon : FunctionalComponent
 }
 
-export type {IFeedDescription, IFeedListing, IFeedColumnSettings, IFeedDBData, IFeedIconTypes}
+export type {IFeedDescription, IFeedListing, IFeedReturnedPostResults, IFeedColumnSettings, IFeedDBData, IFeedIconTypes}
