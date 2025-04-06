@@ -84,19 +84,23 @@
                         <div v-if="isViewingMedia" class="py-4 w-full">
                             <div class="grid gap-2 self-center
                             grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] justify-items-center
-                            overflow-x-hiddens">
-                                <div @click="showMediaContent(n)" v-for="n in currentUserAccountTimelineData.data.filter(
+                            backdrop-blur-0 overflow-x-hiddens">
+                                <div v-for="n in currentUserAccountTimelineData.data.filter(
                                     x => x.post.embed && x.post.author.did == currentUserProfile.did &&
                                     (AppBskyEmbedImages.isView(x.post.embed) || AppBskyEmbedVideo.isView(x.post.embed)))"
-                                class="relative flex bg-violet-500 hover:bg-violet-300
-                                cursor-pointer rounded aspect-square size-44 bg-no-repeat bg-center bg-cover"
-                                :style="'background-image: url('+(n.post.embed.images ? n.post.embed.images[0].thumb : n.post.embed?.thumbnail)+')'">
+                                    class="relative rounded aspect-square size-44 overflow-hidden border border-slate-600">
                                     <div v-if="n.post.embed.images && n.post.embed.images.length>1" class="select-none">
-                                        <div class="absolute z-[1] flex rounded top-1 right-1 size-6 bg-slate-300 backdrop-blur-sm text-slate-900 font-bold items-center justify-center drop-shadow">{{ n.post.embed?.images.length }}</div>
-                                        <div class="absolute flex rounded top-1.5 right-0.5 size-6 bg-slate-300/60 text-slate-900 font-bold items-center justify-center drop-shadow"></div>
+                                        <div class="absolute z-[3] flex rounded top-1 right-1 size-6 bg-slate-300 backdrop-blur-sm text-slate-900 font-bold items-center justify-center drop-shadow">{{ n.post.embed?.images.length }}</div>
+                                        <div class="absolute z-[2] flex rounded top-1.5 right-0.5 size-6 bg-slate-300/60 text-slate-900 font-bold items-center justify-center drop-shadow"></div>
                                     </div>
-                                    <div v-if="n.post.embed.images" class="absolute rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Photo</div>
-                                    <div v-else class="absolute rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Video</div>
+                                    <div v-if="n.post.embed.images" class="absolute z-[2] rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Photo</div>
+                                    <div v-else class="absolute z-[2] rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Video</div>
+                                    <SpoilerOverlay class="z-[1]" :labels="n.post.labels" :has-sensitive-content="hasSensitiveContent(n)"/>
+                                    <div @click="showMediaContent(n)" class="relative flex bg-violet-500 hover:bg-violet-300
+                                    cursor-pointer w-full h-full bg-no-repeat bg-center bg-cover
+                                    overflow-hidden backdrop-blur-0"
+                                    :style="'background-image: url('+(n.post.embed.images ? n.post.embed.images[0].thumb : n.post.embed?.thumbnail)+')'">
+                                    </div>
                                 </div>
                             </div>
                             <div v-if="!currentUserAccountTimelineData.cursor"
@@ -144,6 +148,7 @@ import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces';
 import { GetFeedDataForFeedType } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
+import SpoilerOverlay from '../Utilities/SpoilerOverlay.vue';
 
 export default defineComponent({
     data(){
@@ -176,6 +181,7 @@ export default defineComponent({
         RichPostText,
         ImageContainer,
         VideoContainer,
+        SpoilerOverlay,
         AvatarRound,
         EmbedExternal,
         FollowUser,
@@ -259,6 +265,14 @@ export default defineComponent({
                 console.log(this.currentUserAccountTimelineData);
                 this.awaitingProfileData = false;
             }
+        },
+        /**
+         * Method that determines if a particular Post's media contains
+         * Sensitive Content.
+         * */
+        hasSensitiveContent(n:FeedViewPost){
+            if(n.post.labels && n.post.labels.length>0) return true;
+            return false;
         }
     },
     computed:{
@@ -273,7 +287,7 @@ export default defineComponent({
                 return true;
             }
             return false;
-        }
+        },
     },
     async created() {
         await this.updateDisplayedData();

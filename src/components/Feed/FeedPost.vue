@@ -39,7 +39,8 @@
                     </div>
                     {{ void "image-type media" }}
                     <ImageContainer v-if="postData?.post.embed?.images"
-                    :imagesToDisplay="postData?.post.embed.images"
+                    :imagesToDisplay="postData?.post.embed.images as ViewImage[]"
+                    :labels="postData.post.labels"
                     @media-click="(i:number) => openFocusDetails(i)"/>
                     <div class="flex flex-row h-8">
                         <PostInteractionIcons class="text-slate-50 text-s" :noShareButton="true"
@@ -60,10 +61,13 @@ import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/c
 import { AppState } from '../../state/AppState.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
+import ImageContainer from '../Utilities/ImageContainer.vue';
+import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 
 export default defineComponent({
     components:{
         RichPostText,
+        ImageContainer,
     },
     props:{
         postData: Object as PropType<FeedViewPost>
@@ -102,9 +106,6 @@ export default defineComponent({
         displaySelectedUserAccount(){
             AppState.ShowUserFocusModal(this.postData?.post.author.did);
         }
-    },
-    setup () {
-        return {}
     },
 })
 </script>
