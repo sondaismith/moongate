@@ -1,51 +1,58 @@
 <template>
     <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
-        <div class="relative z-20 flex flex-col w-4/5 md:w-2/3s h-4/5 mx-auto my-auto rounded bg-slate-800
+        <div class="relative z-20 flex flex-col max-w-[40rem] w-4/5 md:w-2/3s h-4/5 mx-auto my-auto rounded bg-slate-800
             drop-shadow-lg overflow-hidden">
-            <div class="bg-red-400 w-full h-40 shrink-0 bg-no-repeat bg-center bg-cover"
-            :style="'background-image: url('+currentUserProfile.banner+')'">Banner</div>
-            <div class="absolute flex bg-sky-400 rounded-full aspect-square size-24 top-28 left-4
-            items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover"
-            :style="'background-image: url('+currentUserProfile.avatar+')'">{{currentUserProfile ? '' : 'PFP'}}</div>
             {{ void "Main Container" }}
-            <div class="p-4 h-full overflow-auto">
+            <div class="h-full overflow-auto">
                 <div class="flex flex-col h-full">
-                    {{ void "User Details Content" }}
-                    <div class="flex flex-col mb-2 shrink grow-0">
-                        <div class="flex ml-auto gap-2 h-10">
-                            <Transition name="smooth">
-                                <FollowUser v-if="!awaitingProfileData" class="px-4" :is-user-followed="isUserFollowed"
-                                :user-did="currentUserProfile.did" :is-disabled="!AppState.isAuthBrowsing"/>
-                            </Transition>
-                            <PillButton class="aspect-square size-10">...</PillButton>
-                        </div>
-                        <div class="text-2xl font-semibold">{{currentUserProfile ? currentUserProfile.displayName : "Username Title"}}</div>
-                        <div class="text-xs">{{currentUserProfile ? '@'+currentUserProfile.handle : '@handle'}}</div>
-                        <div class="flex mt-2">
-                            <div class="flex text-sm pr-2">
-                                <div class="font-bold pr-1">{{currentUserProfile ? currentUserProfile.followersCount : '1'}}</div>
-                                <div class="text-slate-400">followers</div>
-                            </div>
-                            <div class="flex text-sm pr-2">
-                                <div class="font-bold pr-1">{{currentUserProfile ? currentUserProfile.followsCount : '33'}}</div>
-                                <div class="text-slate-400">following</div>
-                            </div>
-                            <div class="flex text-sm pr-2">
-                                <div class="font-bold pr-1">{{currentUserProfile ? currentUserProfile.postsCount : '7'}}</div>
-                                <div class="text-slate-400">posts</div>
-                            </div>
-                        </div>
-                        <!-- <div v-html="currentUserProfile ? GenerateTagLinkText(currentUserProfile.description) : 'No Description'" class="leading-4 mt-2 whitespace-pre-wrap">
-                        </div> -->
-                        <!-- <div class="leading-4 mt-2 whitespace-pre-wrap">
-                            {{ currentUserProfile ? currentUserProfile.description : 'No Description' }}
-                        </div> -->
-                        <RichPostText :post-text="currentUserProfile ? currentUserProfile.description : 'No Description'"/>
-                    </div>
                     {{ void "Posts + Post Type Filters" }}
-                    <div class="flex flex-col min-h-0 grow items-center">
-                        <div class="flex w-full text-center justify-between border-b border-slate-600">
+                    <div class="flex flex-col min-h-0s grow items-center">
+                        <div class="relative w-full">
+                            <div class="bg-red-400 w-full max-h-40 aspect-[3/1] shrink-0 bg-no-repeat bg-center bg-cover"
+                            :style="'background-image: url('+currentUserProfile.banner+')'"/>
+                            <div class="absolute z-[3] flex bg-sky-400 rounded-full aspect-square size-24 top-[4.5rem]s top-28 left-4
+                            items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover"
+                            :style="'background-image: url('+currentUserProfile.avatar+')'">{{currentUserProfile ? '' : 'PFP'}}</div>
+                        </div>
+                        {{ void "User Details Content" }}
+                        <div id="user-summary" class="flex z-[2] w-full sticky top-0 mt-10 py-2 px-4 bg-slate-800">
+                            <div class="flex flex-col w-full">
+                                <div class="flex justify-between overflow-hiddens">
+                                    <div class="overflow-hidden">
+                                        <div class="text-2xl font-semibold overflow-hidden text-ellipsis">{{currentUserProfile ? currentUserProfile.displayName : "Username Title"}}</div>
+                                        <div class="text-xs">{{currentUserProfile ? '@'+currentUserProfile.handle : '@handle'}}</div>
+                                    </div>
+                                    <div class="relative flex items-center mt-1 gap-2 h-8">
+                                        <Transition name="smooth">
+                                            <FollowUser v-if="!awaitingProfileData" class="px-4" :is-user-followed="isUserFollowed"
+                                            :user-did="currentUserProfile.did" :is-disabled="!AppState.isAuthBrowsing"/>
+                                        </Transition>
+                                        <PillButton class="aspect-square size-10">...</PillButton>
+                                    </div>
+                                </div>
+                                <div class="flex mt-2">
+                                    <div class="flex text-sm pr-2">
+                                        <div class="font-bold pr-1">{{currentUserProfile ? currentUserProfile.followersCount : '1'}}</div>
+                                        <div class="text-slate-400">followers</div>
+                                    </div>
+                                    <div class="flex text-sm pr-2">
+                                        <div class="font-bold pr-1">{{currentUserProfile ? currentUserProfile.followsCount : '33'}}</div>
+                                        <div class="text-slate-400">following</div>
+                                    </div>
+                                    <div class="flex text-sm pr-2">
+                                        <div class="font-bold pr-1">{{currentUserProfile ? currentUserProfile.postsCount : '7'}}</div>
+                                        <div class="text-slate-400">posts</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col py-2 px-4 mb-2 w-full border-y border-slate-600 shrink grow-0 self-start">
+                            <div class="text-xs text-slate-500">Bio</div>
+                            <RichPostText :post-text="currentUserProfile ? currentUserProfile.description : 'No Description'"/>
+                        </div>
+                        <div class="flex z-[2] w-full sticky text-center justify-between border-b border-slate-600 bg-slate-800"
+                        :style="{'top':userSummaryHeight+'px'}">
                             <div @click="viewPosts" class="w-full hover:bg-slate-700 cursor-pointer">
                                 <div class="pt-2 pb-1">Posts</div>
                                 <div v-if="isViewingPosts" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
@@ -172,6 +179,7 @@ export default defineComponent({
             isAwaitingLoadMorePosts:false,
             currentUserProfile:{} as ProfileViewDetailed,
             currentUserAccountTimelineData:{data:[],cursor:''} as IFeedReturnedPostResults,
+            userSummaryHeight:0
         }
     },
     components:{
@@ -265,6 +273,8 @@ export default defineComponent({
                 console.log(this.currentUserAccountTimelineData);
                 this.awaitingProfileData = false;
             }
+            //check to see if user-summary height has changed
+            this.getUserSummaryHeight();
         },
         /**
          * Method that determines if a particular Post's media contains
@@ -273,6 +283,16 @@ export default defineComponent({
         hasSensitiveContent(n:FeedViewPost){
             if(n.post.labels && n.post.labels.length>0) return true;
             return false;
+        },
+        /**
+         * Method that gets the height of the `user-summary` element.
+         * Used to make sure the "post category tabs" element is properly
+         * "stickied".
+         */
+        getUserSummaryHeight(){
+            console.log('Getting user-summary element:')
+            console.log((document.getElementById('user-summary') as HTMLElement).clientHeight);
+            this.userSummaryHeight = (document.getElementById('user-summary') as HTMLElement).clientHeight;
         }
     },
     computed:{
@@ -291,6 +311,7 @@ export default defineComponent({
     },
     async created() {
         await this.updateDisplayedData();
+        this.getUserSummaryHeight();
     }
 })
 

@@ -145,9 +145,9 @@ export default defineComponent({
         },
     },
     created(){
-        console.log(this.postData); //DEBUG - missing object/variable catching
-        console.log('Has this post been deleted?');
-        console.log(isViewNotFound(this.postData));
+        // console.log(this.postData); //DEBUG - missing object/variable catching
+        // console.log('Has this post been deleted?');
+        // console.log(isViewNotFound(this.postData));
     }
 })
 </script>
