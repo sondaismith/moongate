@@ -148,6 +148,22 @@ export const AppState = reactive({
     /**Sets `CreatePost` to be hidden. */
     hideCreatePost(){
         this.isCreatingNewPost = false;
-    }
+    },
+    /**
+     * Value used to determine if modal for saving Post media
+     * is currently visible.
+     */
+    isSavingMediaModalVisible:false,
+    /**Value holding the URL of the media to download/save. */
+    saveMediaURL:'',
+    /**Value used to hold the default file name to use for media being saved. */
+    fileSaveDefaultFilename:'',
+    /**Value used to indicate the progress of downloading a media file. */
+    fileSaveDownloadPercent:0,
+    /**
+     * Value used to store the last directory chosen to save
+     * Post media to.
+     */
+    lastMediaSaveDirectory:''
 })
 </script>

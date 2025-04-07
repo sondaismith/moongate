@@ -40,7 +40,7 @@
                     {{ void "image-type media" }}
                     <ImageContainer v-if="postData?.post.embed?.images"
                     :imagesToDisplay="postData?.post.embed.images as ViewImage[]"
-                    :labels="postData.post.labels"
+                    :labels="postData.post.labels" :author="postData.post.author.handle"
                     @media-click="(i:number) => openFocusDetails(i)"/>
                     <div class="flex flex-row h-8">
                         <PostInteractionIcons class="text-slate-50 text-s" :noShareButton="true"

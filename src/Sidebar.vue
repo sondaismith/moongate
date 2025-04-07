@@ -87,6 +87,9 @@
         <Transition name="modal">
             <ConfirmModal v-show="AppState.isAskingForConfirmation"/>
         </Transition>
+        <Transition name="modal">
+            <SaveMediaModal v-if="AppState.isSavingMediaModalVisible"/>
+        </Transition>
         <PostDetailModal/>
         <PostFocusModal/>
         <Transition name="modal">
@@ -138,6 +141,7 @@ import FeedButton from "./components/Navbar/FeedButton.vue";
 import CreatePost from "./components/Post/CreatePost.vue"
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { HandleAPIError } from "./helpers/errors";
+import SaveMediaModal from "./components/Utilities/SaveMediaModal.vue";
 
 
     export default defineComponent({

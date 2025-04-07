@@ -36,9 +36,11 @@
         <VideoContainer v-else-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed)"
         :video-view="postData.embed"/>
         <ImageContainer v-if="!isViewRecord(postData) && postData.embed && postData.embed.images"
-        :images-to-display="postData.embed?.images" :labels="postData.labels" @media-click="(i:number) => openFocusDetails(i)"/>
+        :images-to-display="postData.embed?.images" :labels="postData.labels"
+        :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>
         <ImageContainer v-else-if="isViewRecord(postData) && postData.embeds && postData.embeds.length>0 && postData.embeds[0].images"
-        :images-to-display="postData.embeds[0].images" @media-click="(i:number) => openFocusDetails(i)"/>
+        :images-to-display="postData.embeds[0].images" :labels="postData.labels"
+        :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>
         {{ void "1st Post w/External Embed, 2nd - Repost w/ External Embed" }}
         <div v-if="postData.embed && AppBskyEmbedExternal.isView(postData.embed)">
             <EmbedExternal :embed="postData.embed as View"/>

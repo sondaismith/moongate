@@ -7,13 +7,14 @@
             (imagesToDisplay?.length && imagesToDisplay.length > 1 ? 'aspect-ratio: 16 / 9':'')
         ]">
         <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0"/>
-        <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" class="overflow-hidden cursor-pointer"
+        <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image.fullsize, author)" class="overflow-hidden cursor-pointer"
             :class="[
                         (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
                         (imagesToDisplay?.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
                         (imagesToDisplay?.length === 2 && index === 1 ? 'col-start-2 row-span-2':''),
                         (imagesToDisplay?.length === 3 && index === 0 ? 'col-start-1 row-span-2':'')
                     ]">
+            <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
             <div class="h-full w-full bg-center bg-no-repeat"
             :class="(imagesToDisplay?.length === 1 && !image.aspectRatio ? 'bg-contain' : 'bg-cover')"
                 :style="{'background-image': 'url('+image.thumb+')'}"></div>
@@ -27,13 +28,33 @@ import { postDetails } from '../../state/PostDetails.vue';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { Label } from '@atproto/api/dist/client/types/com/atproto/label/defs';
 import SpoilerOverlay from './SpoilerOverlay.vue';
+import { IOptionMenuItem } from './OptionsMenu.vue';
+import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
+import { AppState } from '../../state/AppState.vue';
 
+//Option Menu icons
+import MdiImageOutline from '~icons/mdi/image-outline';
+import MdiImagePlusOutline from '~icons/mdi/image-plus-outline';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
     const aspectRatio = 9/16;
     var newMinHeight = Math.floor(elWidth*aspectRatio);
     return newMinHeight;
+}
+
+/**
+ * Method used to display the `SaveMediaModal` component.
+ * @param url The URL of the image to save.
+ * @param author Value used to reference the author (uploader) of this image.
+ */
+async function saveImageWithAuthor(url:string, author:string|undefined){
+    AppState.saveMediaURL = url;
+    let fileName = url.split('\/').pop()?.split('@')[0];
+    let safeHandle = '';
+    if(author) safeHandle =  author.replace (/\./g,'_');
+    AppState.fileSaveDefaultFilename = `${fileName} by ${safeHandle}.jpg`;
+    AppState.isSavingMediaModalVisible = true;
 }
 
 export default defineComponent({
@@ -44,6 +65,7 @@ export default defineComponent({
     props:{
         imagesToDisplay: Object as PropType<ViewImage[]>,
         labels: Object as PropType<Label[]>,
+        author: String,
     },
     methods:{
         /**
@@ -59,6 +81,27 @@ export default defineComponent({
         showMediaFocusModal(index:number){
             this.$emit('media-click', index);
         },
+        /**
+         * Scans a given Image URL to get its ending file extension.
+         * @param url The URL string to parse for the file extension.
+         */
+        getImageExtension(url:string):string{
+            if(url.endsWith('jpeg')) return 'jpg'
+            else if(url.endsWith('png')) return 'png'
+            return 'N/A';
+        },
+        /**
+         * Shows Options Menu allowing user to perform different actions
+         * relating to Images.
+         */
+        showOptionsMenu(e:MouseEvent, url:string, author:string|undefined){
+            e.preventDefault();
+            OptionsMenuState.currentMenuItems = [
+                {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(url,author)}},
+                {Icon:MdiImageOutline,Label:'Save Image',Action:()=>void 0},
+            ] as IOptionMenuItem[]
+            OptionsMenuState.showOptionMenu(e);
+        },
     },
     data(){
         return{
@@ -67,6 +110,7 @@ export default defineComponent({
     },
     mounted(){
         this.setImageContainerHeight();
+        // if(this.imagesToDisplay) this.images = this.imagesToDisplay;
     }
 })
 </script>

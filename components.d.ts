@@ -73,6 +73,7 @@ declare module 'vue' {
     PostThreadView: typeof import('./src/components/Post/PostThreadView.vue')['default']
     ReplyBreadcrumb: typeof import('./src/components/Post/ReplyBreadcrumb.vue')['default']
     RichPostText: typeof import('./src/components/Utilities/RichPostText.vue')['default']
+    SaveMediaModal: typeof import('./src/components/Utilities/SaveMediaModal.vue')['default']
     SpoilerOverlay: typeof import('./src/components/Utilities/SpoilerOverlay.vue')['default']
     SquareButton: typeof import('./src/components/Utilities/SquareButton.vue')['default']
     ToContainerTop: typeof import('./src/components/Utilities/ToContainerTop.vue')['default']

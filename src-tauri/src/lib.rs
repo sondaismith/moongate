@@ -9,12 +9,14 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_upload::init())
+        .plugin(tauri_plugin_dialog::init())
         //Create window programatically
         .setup(|app| {
             tauri::WebviewWindowBuilder::new(
                 app,
                 "main",
-                tauri::WebviewUrl::App("index.html".into())
+                tauri::WebviewUrl::App("index.html".into()),
             )
             .title("moongate app")
             .center()
@@ -25,7 +27,11 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_sql::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![get_app_window_size, show_main_window, position_on_monitor])
+        .invoke_handler(tauri::generate_handler![
+            get_app_window_size,
+            show_main_window,
+            position_on_monitor
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -40,7 +46,7 @@ fn get_app_window_size() -> [i16; 2] {
 }
 
 #[tauri::command]
-fn show_main_window(app_handle: tauri::AppHandle){
+fn show_main_window(app_handle: tauri::AppHandle) {
     let main_window = app_handle.get_webview_window("main");
     //show main window
     match main_window.as_ref().unwrap().show() {
@@ -48,7 +54,7 @@ fn show_main_window(app_handle: tauri::AppHandle){
         Err(error) => panic!("Problem showing `main` WebviewWindow: {error:?}"),
     };
     //focus main window - bring to front
-    match main_window.as_ref().unwrap().set_focus(){
+    match main_window.as_ref().unwrap().set_focus() {
         Ok(result) => result,
         Err(error) => panic!("Problem focusing `main` WebviewWindow: {error:?}"),
     };
@@ -56,7 +62,7 @@ fn show_main_window(app_handle: tauri::AppHandle){
 }
 
 #[tauri::command]
-fn position_on_monitor(app_handle: tauri::AppHandle, monitor_name:String){
+fn position_on_monitor(app_handle: tauri::AppHandle, monitor_name: String) {
     //Get main window
     let main_window = app_handle.get_webview_window("main");
     //Get list of all monitors
@@ -67,7 +73,9 @@ fn position_on_monitor(app_handle: tauri::AppHandle, monitor_name:String){
     // }
     //Look for matching monitor based on name
     // println!("Passed monitor name: {0:?}",&monitor_name);//DEBUG
-    let last_monitor = monitors.iter().find(|&monitor|monitor.name().unwrap() == &monitor_name);
+    let last_monitor = monitors
+        .iter()
+        .find(|&monitor| monitor.name().unwrap() == &monitor_name);
     // println!("App was closed on Monitor: {0:?}", last_monitor);//DEBUG
     //fallback position if monitor was not found
     let mut x_pos = 0;
@@ -79,7 +87,10 @@ fn position_on_monitor(app_handle: tauri::AppHandle, monitor_name:String){
     }
     // println!("Grabbed monitor position values, X:{0:?} Y:{1:?}", x_pos,y_pos);//DEBUG
     //place window on correct monitor
-    match main_window.unwrap().set_position(PhysicalPosition::new(x_pos, y_pos)) {
+    match main_window
+        .unwrap()
+        .set_position(PhysicalPosition::new(x_pos, y_pos))
+    {
         Ok(result) => result,
         Err(error) => panic!("Problem placing `main` WebviewWindow: {error:?}"),
     };
