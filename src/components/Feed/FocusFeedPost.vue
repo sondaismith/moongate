@@ -1,5 +1,17 @@
 <template>
-    <div v-if="postData && !isViewBlocked(postData)" class="flex flex-col rounded-lg p-3 border border-slate-600 gap-2"
+    <div v-if="postData && isViewBlocked(postData)">
+        <div class="flex rounded-lg p-2 gap-1 border border-slate-700 items-center">
+            <i-mingcute:information-line class="size-4"/>
+            <div>Blocked</div>
+        </div>
+    </div>
+    <div v-else-if="postData && isViewNotFound(postData)">
+        <div class="flex rounded-lg p-2 gap-1 border border-slate-700 items-center">
+            <i-mingcute:information-line class="size-4"/>
+            <div>Deleted</div>
+        </div>
+    </div>
+    <div v-else-if="postData" class="flex flex-col rounded-lg p-3 border border-slate-600 gap-2"
     :class="isReasonPin(postReason) ? 'pt-2' : ''">
         <div v-if="isReasonPin(postReason)" class="flex items-center text-slate-400 border-b
         border-slate-700 pb-1 select-none">
@@ -57,12 +69,6 @@
         <PostInteractionIcons class="pb-0" :num-comments="postData.replyCount"
         :num-shares="postData.repostCount" :num-likes="postData.likeCount"/>
     </div>
-    <div v-else>
-        <div class="flex rounded-lg p-2 gap-1 border border-slate-700 items-center">
-            <i-mingcute:information-line class="size-4"/>
-            <div>Blocked</div>
-        </div>
-    </div>
 </template>
 
 <script lang="ts">
@@ -70,7 +76,7 @@ import { isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost } from '
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid, RepostRecord } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
-import { isViewBlocked, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { isViewBlocked, isViewNotFound, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
@@ -99,6 +105,7 @@ export default defineComponent({
             isImage,
             isViewRecord,
             isViewBlocked,
+            isViewNotFound,
             convertToLongTimestamp,
             convertToShortTimestamp,
             AppBskyEmbedImages,
@@ -138,7 +145,9 @@ export default defineComponent({
         },
     },
     created(){
-        // console.log(this.postData); //DEBUG - missing object/variable catching
+        console.log(this.postData); //DEBUG - missing object/variable catching
+        console.log('Has this post been deleted?');
+        console.log(isViewNotFound(this.postData));
     }
 })
 </script>
