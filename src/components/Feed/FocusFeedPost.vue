@@ -1,5 +1,5 @@
 <template>
-    <div v-if="postData" class="flex flex-col rounded-lg p-3 border border-slate-600 gap-2"
+    <div v-if="postData && !isViewBlocked(postData)" class="flex flex-col rounded-lg p-3 border border-slate-600 gap-2"
     :class="isReasonPin(postReason) ? 'pt-2' : ''">
         <div v-if="isReasonPin(postReason)" class="flex items-center text-slate-400 border-b
         border-slate-700 pb-1 select-none">
@@ -25,7 +25,7 @@
                 <div class="text-xs text-slate-400 overflow-hidden text-ellipsis" :title="postData.author.handle">@{{ postData.author.handle }}</div>
             </div>
             <div v-if="!isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.record.createdAt)">{{ convertToShortTimestamp(postData.record.createdAt) }}</div>
-            <div v-else-if="isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.value.createdAt)">{{ convertToShortTimestamp(postData.value.createdAt) }}</div>
+            <!-- <div v-else-if="isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.value.createdAt)">{{ convertToShortTimestamp(postData.value.createdAt) }}</div> -->
         </div>
         {{ void "Post Text Content" }}
         <RichPostText v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
@@ -57,6 +57,12 @@
         <PostInteractionIcons class="pb-0" :num-comments="postData.replyCount"
         :num-shares="postData.repostCount" :num-likes="postData.likeCount"/>
     </div>
+    <div v-else>
+        <div class="flex rounded-lg p-2 gap-1 border border-slate-700 items-center">
+            <i-mingcute:information-line class="size-4"/>
+            <div>Blocked</div>
+        </div>
+    </div>
 </template>
 
 <script lang="ts">
@@ -64,7 +70,7 @@ import { isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost } from '
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid, RepostRecord } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
-import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { isViewBlocked, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
@@ -92,6 +98,7 @@ export default defineComponent({
             isReasonPin,
             isImage,
             isViewRecord,
+            isViewBlocked,
             convertToLongTimestamp,
             convertToShortTimestamp,
             AppBskyEmbedImages,
