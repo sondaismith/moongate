@@ -91,7 +91,9 @@
             <SaveMediaModal v-if="AppState.isSavingMediaModalVisible"/>
         </Transition>
         <PostDetailModal/>
-        <PostFocusModal/>
+        <Transition>
+            <PostFocusModal v-if="postDetails.isFocusVisible"/>
+        </Transition>
         <Transition name="modal">
             <FeedEditModal v-if="AppState.isCreatingFeed || AppState.isUpdatingFeed"/>
         </Transition>
@@ -142,6 +144,7 @@ import CreatePost from "./components/Post/CreatePost.vue"
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { HandleAPIError } from "./helpers/errors";
 import SaveMediaModal from "./components/Utilities/SaveMediaModal.vue";
+import PostFocusModal from "./components/Post/PostFocusModal.vue";
 
 
     export default defineComponent({
@@ -149,6 +152,7 @@ import SaveMediaModal from "./components/Utilities/SaveMediaModal.vue";
         components:{
             FeedButton,
             FeedEditModal,
+            PostFocusModal,
             UserFocusModal,
             CreatePost,
         },

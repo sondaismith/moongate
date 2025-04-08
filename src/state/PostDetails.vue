@@ -16,9 +16,14 @@ import { toast } from './AppState.vue';
 import { HandleAPIError } from '../helpers/errors';
 
 // export const postDetails : IPostDetailsList = reactive({
-export const postDetails :IPostDetailsList = reactive({
+export const postDetails = reactive({
     isVisible: false,
     isFocusVisible: false,
+    /**
+     * Value indicating if app is waiting for a response from the API in regards to Post data.
+     * Mainly used by `PostFocusModal`.
+     */
+    isAwaitingFocusData:false,
     clickedMediaIndex: 0,
     getClickedMediaIndex() {
         return this.clickedMediaIndex;
@@ -261,12 +266,14 @@ export async function showDetailModal(postToShow:FeedViewPost){
  * the Bluesky API.
  */
 export async function showFocusModal(postToShow:FeedViewPost, mediaIndex:number){
+    postDetails.isAwaitingFocusData = true;
     postDetails.isFocusVisible = true;
     postDetails.clickedMediaIndex = mediaIndex;
     await getPostThread(postToShow)
     .then(res => {
         postDetails.postThread = res.data.thread as ThreadViewPost;
         postDetails.currentThreadView = res.data.thread as ThreadViewPost;
+        postDetails.isAwaitingFocusData = false;
     })
     .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')));
 }

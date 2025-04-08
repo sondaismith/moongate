@@ -1,5 +1,5 @@
 <template>
-    <div @click="scrollToTopOfContainer" class="absolute rounded p-1
+    <div @click="scrollToTopOfContainer" class="absolute z-[5] rounded p-1
     bg-slate-200 opacity-40 hover:opacity-60 text-slate-600 text-3xl transition-opacity
     cursor-pointer"
     :class="$attrs.class ? $attrs.class : 'bottom-2 left-3'"
