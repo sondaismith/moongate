@@ -94,7 +94,28 @@
                 </div>
             </div>
         </div>
-        <div class="h-full py-2 pl-2 pr-1 bg-slate-600 preload-gutter overflow-y-auto" @scroll.passive="toggleScrollToTop">
+        <div class="flex flex-col h-full py-2 pl-2 pr-1 gap-2 bg-slate-600 preload-gutter overflow-y-auto" @scroll.passive="toggleScrollToTop">
+            {{ void "Placeholder Post" }}
+            <div v-if="feedData?.isAwaitingFeedData" class="flex rounded bg-slate-400 pl-1 pr-3 py-2 w-full">
+                <div class="animate-pulse drop-shadow-md">
+                    <div class="rounded-full bg-slate-500 aspect-square size-10"></div>
+                </div>
+                <div class="animate-pulse flex flex-col pl-2 w-full overflow-hidden gap-1">
+                    <div class="flex gap-2 mb-1">
+                        <div class="h-3 w-full rounded-sm bg-slate-500"></div>
+                        <div class="h-3 w-10 rounded-sm bg-slate-500"></div>
+                    </div>
+                    <div class="h-4 w-full rounded-sm bg-slate-500"></div>
+                    <div class="h-4 w-full rounded-sm bg-slate-500"></div>
+                    <div class="h-4 w-4/5 rounded-sm bg-slate-500"></div>
+                    <div class="aspect-square w-full mt-1 rounded-sm bg-slate-500"></div>
+                    <div class="flex gap-4 mt-1 w-full">
+                        <div class="size-5 rounded-md bg-slate-500"></div>
+                        <div class="size-5 rounded-md bg-slate-500"></div>
+                        <div class="size-5 rounded-md bg-slate-500"></div>
+                    </div>
+                </div>
+            </div>
             <TransitionGroup name="feedpost">
                 <!-- <FeedPost v-for="n in PostCollection" :key="n" :postData="n" /> -->
                 <FeedPost v-for="n in feedData?.data" :key="n" :postData="n" />
@@ -132,7 +153,7 @@ import { DebugFlags } from '../../state/Debug.vue';
 import { IFeedListing } from '../../interfaces/FeedInterfaces';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
 import { createPost } from '../../fake-data/PostFactory'
-import { addDummyPostToFeed, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
+import { addDummyPostToFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { debounce } from '../../helpers/debouncer';
@@ -172,6 +193,7 @@ export default defineComponent({
             feedOptionPreferencesShown: false,
             isScrollToTopVisible:false,
             FeedEnums,
+            FeedState,
         }
     },
     props: {

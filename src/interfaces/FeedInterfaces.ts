@@ -73,6 +73,8 @@ interface IFeedListing{
      * Used when requesting additional Posts, or "paginating" through Posts.
      */
     cursor?: string,
+    /**Value indicating if application is waiting for an API response related to Feed data.*/
+    isAwaitingFeedData: boolean,
 }
 
 /**

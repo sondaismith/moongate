@@ -39,6 +39,8 @@ export const FeedState = reactive({
     FeedList : [] as IFeedListing[],
     selectedFeed: '',
     isFeedOptionMenuVisible: false,
+    /**Value indicating if application is waiting for an API response related to Feed data.*/
+    isAwaitingFeedData:false,
 })
 
 /**
@@ -51,6 +53,7 @@ export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[],
         description:description,
         data:feed,
         cursor:cursor,
+        isAwaitingFeedData:false,
     })
 }
 
@@ -421,8 +424,9 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     if(feed){//Ensure matching Feed was found
         //Code below was to cause the update to happen in a more smooth looking way
-        // feed.data = [];
-        // await new Promise(res => setTimeout(res,500));
+        feed.isAwaitingFeedData = true;
+        feed.data = [];
+        await new Promise(res => setTimeout(res,500));
         await GetFeedDataForFeedType(feed.description.feedType,feed.description.feedSourceDID,feed.description.feedTags)
         .then(res => {
             if(feed){
@@ -432,9 +436,13 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date){
                 // if(newPosts.length > 0) feed.data = [...pinned, ...newPosts, ...feed.data.slice(pinned.length)];
                 feed.data = res.data.slice();
                 feed.description.newPosts = newPosts.length;
+                feed.isAwaitingFeedData = false;
             }
         })
-        .catch(err => toast.add(HandleAPIError(err, 'Error refreshing feed')));
+        .catch(err => {
+            toast.add(HandleAPIError(err, 'Error refreshing feed'));
+            if(feed) feed.isAwaitingFeedData = false;
+        });
     }
 }
 

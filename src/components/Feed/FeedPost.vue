@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full pb-2">
+    <div class="w-full">
         {{ void "feed post" }}
         <div class="flex flex-col rounded bg-slate-400 p-1 pr-3 w-full drop-shadow-md justify-between">
             <div v-if="isReasonPin(postData?.reason)" class="flex items-center text-slate-600 border-b
