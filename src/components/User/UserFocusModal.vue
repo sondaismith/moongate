@@ -4,11 +4,17 @@
         <div class="relative z-20 flex flex-col max-w-[40rem] w-4/5 md:w-2/3s h-4/5 mx-auto my-auto rounded bg-slate-800
             drop-shadow-lg overflow-hidden">
             {{ void "Main Container" }}
-            <div class="h-full overflow-auto">
+            <div id="user-focus-container" class="h-full overflow-auto">
                 <div class="flex flex-col h-full">
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0s grow items-center">
-                        <div class="relative w-full">
+                        {{ void "Banner+PFP Placeholder" }}
+                        <div v-if="awaitingProfileData" class="relative w-full animate-pulse z-[3]">
+                            <div class="bg-slate-500 w-full max-h-40 aspect-[3/1] shrink-0"/>
+                            <div class="absolute bg-slate-400 rounded-full size-24 top-[4.5rem]s top-28 left-4
+                            shrink-0 border-2 border-slate-800"></div>
+                        </div>
+                        <div v-else class="relative w-full">
                             <div class="bg-red-400 w-full max-h-40 aspect-[3/1] shrink-0 bg-no-repeat bg-center bg-cover"
                             :style="'background-image: url('+currentUserProfile.banner+')'"/>
                             <div class="absolute z-[3] flex bg-sky-400 rounded-full aspect-square size-24 top-[4.5rem]s top-28 left-4
@@ -16,8 +22,34 @@
                             :style="'background-image: url('+currentUserProfile.avatar+')'">{{currentUserProfile ? '' : 'PFP'}}</div>
                         </div>
                         {{ void "User Details Content" }}
-                        <div id="user-summary" class="flex z-[2] w-full sticky top-0 mt-10 py-2 px-4 bg-slate-800">
-                            <div class="flex flex-col w-full">
+                        <div id="user-summary" class="flex flex-col z-[2] w-full sticky top-0 mt-10 py-2 px-4 bg-slate-800">
+                            <div v-if="awaitingProfileData" class="flex flex-col w-full mt-1 gap-2 animate-pulse">
+                                <div class="flex gap-2">
+                                    <div class="flex flex-col w-full gap-1">
+                                        <div class="h-9 rounded bg-slate-500"></div>
+                                        <div class="h-3 w-48 rounded bg-slate-500"></div>
+                                    </div>
+                                    <div class="relative flex gap-3">
+                                        <div class="h-9 w-[6.5rem] rounded-full bg-slate-500"></div>
+                                        <div class="h-9 aspect-square rounded-full bg-slate-500"></div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-8 bg-slate-500 rounded"></div>
+                                        <div class="h-5 w-16 bg-slate-500 rounded"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-8 bg-slate-500 rounded"></div>
+                                        <div class="h-5 w-16 bg-slate-500 rounded"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-8 bg-slate-500 rounded"></div>
+                                        <div class="h-5 w-16 bg-slate-500 rounded"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else class="flex flex-col w-full">
                                 <div class="flex justify-between overflow-hiddens">
                                     <div class="overflow-hidden">
                                         <div class="text-2xl font-semibold overflow-hidden text-ellipsis">{{currentUserProfile ? currentUserProfile.displayName : "Username Title"}}</div>
@@ -47,11 +79,16 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-col py-2 px-4 mb-2 w-full border-y border-slate-600 shrink grow-0 self-start">
+                        <div id="user-focus-bio" class="flex flex-col py-2 px-4 mb-2s w-full border-y border-slate-600 shrink grow-0 self-start">
                             <div class="text-xs text-slate-500">Bio</div>
-                            <RichPostText :post-text="currentUserProfile ? currentUserProfile.description : 'No Description'"/>
+                            <div v-if="awaitingProfileData" class="flex flex-col gap-1 animate-pulse">
+                                <div class="bg-slate-500 rounded h-4 w-4/5"></div>
+                                <div class="bg-slate-500 rounded h-4 w-2/3"></div>
+                                <div class="bg-slate-500 rounded h-4 w-3/5"></div>
+                            </div>
+                            <RichPostText v-else :post-text="currentUserProfile ? currentUserProfile.description : 'No Description'"/>
                         </div>
-                        <div class="flex z-[2] w-full sticky text-center justify-between border-b border-slate-600 bg-slate-800"
+                        <div id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-slate-600 bg-slate-800"
                         :style="{'top':userSummaryHeight+'px'}">
                             <div @click="viewPosts" class="w-full hover:bg-slate-700 cursor-pointer">
                                 <div class="pt-2 pb-1">Posts</div>
@@ -69,7 +106,48 @@
                         {{ void "General Posts" }}
                         <div v-if="isViewingPosts || isViewingReplies"
                         class="flex flex-col flex-wrap items-start py-2 gap-2 max-w-[30rem] w-full">
-                            <div v-for="n in currentUserAccountTimelineData.data.filter(x => !x.reply) as FeedViewPost[]"
+                            {{ void "Placeholder Post" }}
+                            <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
+                                <div class="flex h-10 gap-2">
+                                    <div class="rounded-full size-10 bg-slate-500"></div>
+                                    <div class="flex flex-col gap-1 overflow-hidden">
+                                        <div class="h-5 w-24 rounded bg-slate-500"></div>
+                                        <div class="h-4 w-20 rounded bg-slate-500"></div>
+                                    </div>
+                                    <div class="h-3 w-20 rounded bg-slate-500 ml-auto"></div>
+                                </div>
+                                <div class="flex flex-col w-full gap-1 mt-1">
+                                    <div class="h-5 w-3/5 rounded bg-slate-500"></div>
+                                    <div class="h-5 w-4/5 rounded bg-slate-500"></div>
+                                    <div class="h-5 w-2/5 rounded bg-slate-500"></div>
+                                </div>
+                                <div class="h-48 rounded-lg p-2 border border-slate-600">
+                                    <div class="w-full h-full rounded bg-slate-500"></div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else-if="!awaitingProfileData" v-for="n in currentUserAccountTimelineData.data.filter(x => !x.reply) as FeedViewPost[]"
                             class="w-full shrink-0s">
                                 <FocusFeedPost :post-data="n.post" :post-reason="n.reason" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
@@ -79,7 +157,7 @@
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
-                            <div v-else @click="loadOlderPosts"
+                            <div v-else-if="currentUserAccountTimelineData.cursor && !awaitingProfileData" @click="loadOlderPosts"
                             class="flex justify-center rounded p-1 gap-1 w-full items-center cursor-pointer
                             border border-slate-600 bg-slate-700 hover:bg-slate-600">
                                 <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
@@ -89,7 +167,12 @@
                         </div>
                         {{ void "Media Posts" }}
                         <div v-if="isViewingMedia" class="py-4 w-full">
-                            <div class="grid gap-2 self-center
+                            <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="grid gap-2 self-center
+                            grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] justify-items-center
+                            backdrop-blur-0 overflow-x-hiddens">
+                                <div v-for="x in 6" class="size-44 rounded bg-slate-500 border border-slate-600 animate-pulse"></div>
+                            </div>
+                            <div v-else-if="!awaitingProfileData" class="grid gap-2 self-center
                             grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] justify-items-center
                             backdrop-blur-0 overflow-x-hiddens">
                                 <div v-for="n in currentUserAccountTimelineData.data.filter(
@@ -116,7 +199,7 @@
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
-                            <div v-else @click="loadOlderPosts"
+                            <div v-else-if="currentUserAccountTimelineData.cursor && !isAwaitingTabSwitchData" @click="loadOlderPosts"
                             class="flex justify-center rounded p-1 gap-1 mt-4 w-fulls items-center cursor-pointer
                             border border-slate-600 bg-slate-700 hover:bg-slate-600">
                                 <div>Load more</div>
@@ -196,40 +279,50 @@ export default defineComponent({
         ToContainerTop,
     },
     methods:{
+        /**Prepares and displays data when the "Posts" tab is clicked. */
         async viewPosts(){
-            this.isViewingPosts = true;
-            this.isViewingReplies = this.isViewingMedia = false;
-            this.isAwaitingTabSwitchData = true;
-            await GetBrowsingAgent().getAuthorFeed({
-                actor:postDetails.currentUserAccountDID,
-                includePins:true
-            })
-            .then(res => {
-                this.currentUserAccountTimelineData.data = res.data.feed;
-                this.currentUserAccountTimelineData.cursor = res.data.cursor;
-            })
-            .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s timeline`)));
-            this.isAwaitingTabSwitchData = false;
+            if(!this.awaitingProfileData){
+                this.repositionScrollOnTabSwitch();
+                this.isViewingPosts = true;
+                this.isViewingReplies = this.isViewingMedia = false;
+                this.isAwaitingTabSwitchData = true;
+                await GetBrowsingAgent().getAuthorFeed({
+                    actor:postDetails.currentUserAccountDID,
+                    includePins:true
+                })
+                .then(res => {
+                    this.currentUserAccountTimelineData.data = res.data.feed;
+                    this.currentUserAccountTimelineData.cursor = res.data.cursor;
+                })
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s timeline`)));
+                this.isAwaitingTabSwitchData = false;
+            }
         },
         viewReplies(){
-            this.isViewingReplies = true;
-            this.isViewingPosts = this.isViewingMedia = false;
+            if(!this.awaitingProfileData){
+                this.isViewingReplies = true;
+                this.isViewingPosts = this.isViewingMedia = false;
+            }
         },
+        /**Prepares and displays data when the "Media" tab is clicked. */
         async viewMedia(){
-            this.isViewingMedia = true;
-            this.isViewingPosts = this.isViewingReplies = false;
-            this.isAwaitingTabSwitchData = true;
-            //Get media posts
-            await GetBrowsingAgent().getAuthorFeed({
-                actor:postDetails.currentUserAccountDID,
-                filter:'posts_with_media',
-            })
-            .then(res => {
-                this.currentUserAccountTimelineData.data = res.data.feed;
-                this.currentUserAccountTimelineData.cursor = res.data.cursor;
-            })
-            .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s media`)));
-            this.isAwaitingTabSwitchData = false;
+            if(!this.awaitingProfileData){
+                this.repositionScrollOnTabSwitch();
+                this.isViewingMedia = true;
+                this.isViewingPosts = this.isViewingReplies = false;
+                this.isAwaitingTabSwitchData = true;
+                //Get media posts
+                await GetBrowsingAgent().getAuthorFeed({
+                    actor:postDetails.currentUserAccountDID,
+                    filter:'posts_with_media',
+                })
+                .then(res => {
+                    this.currentUserAccountTimelineData.data = res.data.feed;
+                    this.currentUserAccountTimelineData.cursor = res.data.cursor;
+                })
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s media`)));
+                this.isAwaitingTabSwitchData = false;
+            }
         },
         async loadOlderPosts(){
             this.isAwaitingLoadMorePosts = true;
@@ -253,6 +346,10 @@ export default defineComponent({
         async updateDisplayedData(){
             if(isDid(postDetails.currentUserAccountDID)){
                 this.awaitingProfileData = true;
+                setTimeout(() => {
+                    this.getUserSummaryHeight();
+                    this.scrollToModalPos(0);
+                }, 10);
                 var userProfile:AppBskyActorGetProfile.Response;
                 await GetBrowsingAgent().getProfile({
                     actor:postDetails.currentUserAccountDID
@@ -272,9 +369,14 @@ export default defineComponent({
                 .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s timeline`)));
                 console.log(this.currentUserAccountTimelineData);
                 this.awaitingProfileData = false;
+
             }
+
             //check to see if user-summary height has changed
-            this.getUserSummaryHeight();
+            //small delay to allow DOM to update
+            setTimeout(() => {
+                this.getUserSummaryHeight();
+            }, 10);
         },
         /**
          * Method that determines if a particular Post's media contains
@@ -290,9 +392,47 @@ export default defineComponent({
          * "stickied".
          */
         getUserSummaryHeight(){
-            console.log('Getting user-summary element:')
-            console.log((document.getElementById('user-summary') as HTMLElement).clientHeight);
-            this.userSummaryHeight = (document.getElementById('user-summary') as HTMLElement).clientHeight;
+            // console.log('Getting user-summary element:')
+            // console.log((document.getElementById('user-summary') as HTMLElement).clientHeight);
+            this.userSummaryHeight = (document.getElementById('user-summary') as HTMLElement).getBoundingClientRect().height;
+        },
+        /**
+         * Method that returns the scroll-top position needed so the "post tabs" will be
+         * exactly at the top of the modal. Used by `repositionScrollOnTabSwitch()`
+         * when switching tabs.
+         */
+        getUserFocusTabsScrollTopPos(){
+            let bio = document.getElementById('user-focus-bio');
+            let summary = document.getElementById('user-summary');
+            if(summary){
+                let bioBottomPos = bio ? bio.offsetTop+bio.getBoundingClientRect().height : 0;
+                return bioBottomPos-(summary.getBoundingClientRect().height);
+            }
+            return 0;
+        },
+        /**
+         * Method used to adjust `user-focus-container` scroll position when tab is switched.
+         * Will only update scroll when user has scrolled "past" tabs (the Post content has scrolled
+         * up past the tabs). Used when switching tabs.
+         */
+        repositionScrollOnTabSwitch(){
+            let userFocusContainer = (document.getElementById('user-focus-container') as HTMLElement);
+            let targetTabPos = this.getUserFocusTabsScrollTopPos();
+            //only reposition if user has scrolled past tabs
+            if(userFocusContainer && userFocusContainer.scrollTop >= targetTabPos){
+                this.scrollToModalPos(targetTabPos);
+            }
+        },
+        /**
+         * Method used to scroll to position in `UserFocusModal`. Used
+         * when loading/switching "main content" to improve the UX.
+         * @param newPos The scroll position to move to.
+         */
+        scrollToModalPos(newPos:number){
+            let userFocusContainer = (document.getElementById('user-focus-container') as HTMLElement);
+            // console.log(userFocusContainer.scrollTop);
+            userFocusContainer.scrollTo({top:newPos,behavior:'instant'});
+            // console.log(userFocusContainer.scrollTop);
         }
     },
     computed:{
