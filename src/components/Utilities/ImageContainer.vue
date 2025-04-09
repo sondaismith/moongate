@@ -7,7 +7,7 @@
             (imagesToDisplay?.length && imagesToDisplay.length > 1 ? 'aspect-ratio: 16 / 9':'')
         ]">
         <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0"/>
-        <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image.fullsize, author)" class="overflow-hidden cursor-pointer"
+        <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, author)" class="overflow-hidden cursor-pointer"
             :class="[
                         (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
                         (imagesToDisplay?.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
@@ -48,9 +48,9 @@ export function calculateImageContainerMinHeight(elWidth:number):number{
  * @param url The URL of the image to save.
  * @param author Value used to reference the author (uploader) of this image.
  */
-async function saveImageWithAuthor(url:string, author:string|undefined){
-    AppState.saveMediaURL = url;
-    let fileName = url.split('\/').pop()?.split('@')[0];
+async function saveImageWithAuthor(image:ViewImage, author:string|undefined){
+    AppState.saveMedia = image;
+    let fileName = image.fullsize.split('\/').pop()?.split('@')[0];
     let safeHandle = '';
     if(author) safeHandle =  author.replace (/\./g,'_');
     AppState.fileSaveDefaultFilename = `${fileName} by ${safeHandle}.jpg`;
@@ -94,10 +94,10 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to Images.
          */
-        showOptionsMenu(e:MouseEvent, url:string, author:string|undefined){
+        showOptionsMenu(e:MouseEvent, image:ViewImage, author:string|undefined){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(url,author)}},
+                {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,author)}},
                 {Icon:MdiImageOutline,Label:'Save Image',Action:()=>void 0},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);

@@ -1,9 +1,14 @@
 <template>
     <div class="absolute flex z-50 w-full h-full">
         <div @click="closeModal" class="absolute w-full h-full bg-slate-800/60 backdrop-blur-sm"></div>
-        <div class="relative flex flex-col w-4/5 m-auto z-50 rounded bg-slate-700 border border-slate-800">
+        <div class="relative flex flex-col max-w-[48rem] w-4/5 m-auto z-50
+        rounded bg-slate-700 border border-slate-800 overflow-hidden">
             <div class="px-2 py-1 bg-slate-800 border-b border-slate-500">Save as</div>
-            <div class="flex flex-col gap-2 p-3">
+            <div class="flex flex-col gap-2 p-3 overflow-hidden">
+                <div class="self-start rounded h-32 bg-slate-500 overflow-hidden"
+                :style="`aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}`">
+                    <div class="h-full bg-cover" :style="`background-image: url(${AppState.saveMedia.thumb})`"></div>
+                </div>
                 <InLaInput class="h-10 text-[12px]" text-label="Filename" :model-value="AppState.fileSaveDefaultFilename" @update:model-value="updateFileName"/>
                 <div class="relative">
                     <div @click="selectFolder" title="Select/Change folder" class="absolute z-[1] w-full h-full
@@ -64,7 +69,7 @@ export default defineComponent({
             this.progressGoal = 0;
             this.isDownloading = true;
             await download(
-                AppState.saveMediaURL,
+                AppState.saveMedia.fullsize,
                 `${AppState.lastMediaSaveDirectory}\\${AppState.fileSaveDefaultFilename}`,
                 ({ progress, total }) => {
                     this.progressSum += progress;
