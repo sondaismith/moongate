@@ -56,7 +56,7 @@ export const AccountPeekState = reactive({
             this.lastMouseEvent = event;
             //re-display AccountPeek after previous has hidden itself - take note
             //of animation/transition times
-            setTimeout(async() => {
+            this.pfpEnter = setTimeout(async() => {
                 this.isUserPeeking = true;
                 var peek = document.getElementById('account-peek');//get peek element
                 //delay to position peek in "awaiting data" state
@@ -83,7 +83,7 @@ export const AccountPeekState = reactive({
                         if(postDetails.isFocusVisible) peek.style.zIndex = '20';
                     }
                 }, 2);
-            }, this.delayPeekHide*2);
+            }, this.delayPeekShow);
         }
         //The PFP of the same user is hovered over - data will not be fetched, so no need to
         //position `awaiting data` version of peek component
