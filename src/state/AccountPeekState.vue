@@ -145,17 +145,19 @@ export const AccountPeekState = reactive({
         var viewportHeight = appViewport.offsetHeight;
         var viewportWidth = appViewport.offsetWidth;
         var peekSafePos = {x:0,y:0};
-        peekSafePos = {x:event.clientX, y:event.clientY};
+        var trigger = (event.target as HTMLElement).getBoundingClientRect();
+        var triggerBottomLeft = {x:trigger.left, y: trigger.top+trigger.height};
+        peekSafePos = {x:triggerBottomLeft.x, y:triggerBottomLeft.y};
         var xTarget = peekSafePos.x;
         var yTarget = peekSafePos.y;
         var peekYClearence = viewportHeight - (peekHeight+yTarget);
         var peekXClearence = viewportWidth - (peekWidth+xTarget);
 
         if(peekYClearence < 0){
-            yTarget = event.clientY-peekHeight;
+            yTarget = trigger.y-peekHeight;
         }
         if(peekXClearence < 0){
-            xTarget = event.clientX-peekWidth;
+            xTarget = trigger.x-peekWidth;
         }
         peekSafePos = {x:xTarget, y:yTarget};
         return peekSafePos;
