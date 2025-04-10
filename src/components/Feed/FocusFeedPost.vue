@@ -12,7 +12,7 @@
         </div>
     </div>
     <div v-else-if="postData" class="flex flex-col rounded-lg p-3 border border-slate-600 gap-2"
-    :class="isReasonPin(postReason) ? 'pt-2' : ''">
+    :class="[$attrs.class, isReasonPin(postReason) ? 'pt-2' : '']">
         <div v-if="isReasonPin(postReason)" class="flex items-center text-slate-400 border-b
         border-slate-700 pb-1 select-none">
             <i-mdi:pin class="text-sm"/>
@@ -33,41 +33,44 @@
         <div class="flex items-center gap-2">
             <AvatarRound :avatar="postData.author.avatar" :did="postData.author.did" @avatar-clicked="callFocusPostAvatarClicked(postData.author.did)"/>
             <div class="flex flex-col overflow-hidden">
-                <div class="text-sm font-semibold overflow-hidden text-ellipsis" :title="postData.author.displayName">{{ postData.author.displayName }}</div>
-                <div class="text-xs text-slate-400 overflow-hidden text-ellipsis" :title="postData.author.handle">@{{ postData.author.handle }}</div>
+                <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.displayName">{{ postData.author.displayName }}</div>
+                <div class="text-xs text-slate-400 whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.handle">@{{ postData.author.handle }}</div>
             </div>
             <div v-if="!isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.record.createdAt)">{{ convertToShortTimestamp(postData.record.createdAt) }}</div>
             <!-- <div v-else-if="isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.value.createdAt)">{{ convertToShortTimestamp(postData.value.createdAt) }}</div> -->
         </div>
-        {{ void "Post Text Content" }}
-        <RichPostText v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
-        <RichPostText v-else :post-text="postData.value.text"/>
-        {{ void "Post Media" }}
-        <VideoContainer v-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed.media)"
-        :video-view="postData.embed.media"/>
-        <VideoContainer v-else-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed)"
-        :video-view="postData.embed"/>
-        <ImageContainer v-if="!isViewRecord(postData) && postData.embed && postData.embed.images"
-        :images-to-display="postData.embed?.images" :labels="postData.labels"
-        :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>
-        <ImageContainer v-else-if="isViewRecord(postData) && postData.embeds && postData.embeds.length>0 && postData.embeds[0].images"
-        :images-to-display="postData.embeds[0].images" :labels="postData.labels"
-        :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>
-        {{ void "1st Post w/External Embed, 2nd - Repost w/ External Embed" }}
-        <div v-if="postData.embed && AppBskyEmbedExternal.isView(postData.embed)">
-            <EmbedExternal :embed="postData.embed as View"/>
+        <div class="flex flex-col gap-2"
+        :class="[isFeedPostStyle ? 'pl-12 pr-3' : '']">
+            {{ void "Post Text Content" }}
+            <RichPostText v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
+            <RichPostText v-else :post-text="postData.value.text"/>
+            {{ void "Post Media" }}
+            <VideoContainer v-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed.media)"
+            :video-view="postData.embed.media"/>
+            <VideoContainer v-else-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed)"
+            :video-view="postData.embed"/>
+            <ImageContainer v-if="!isViewRecord(postData) && postData.embed && postData.embed.images"
+            :images-to-display="postData.embed?.images" :labels="postData.labels"
+            :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>
+            <ImageContainer v-else-if="isViewRecord(postData) && postData.embeds && postData.embeds.length>0 && postData.embeds[0].images"
+            :images-to-display="postData.embeds[0].images" :labels="postData.labels"
+            :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>
+            {{ void "1st Post w/External Embed, 2nd - Repost w/ External Embed" }}
+            <div v-if="postData.embed && AppBskyEmbedExternal.isView(postData.embed)">
+                <EmbedExternal :embed="postData.embed as View"/>
+            </div>
+            <div v-else-if="postData.embeds && postData.embeds.length>0">
+                <EmbedExternal v-if="AppBskyEmbedExternal.isView(postData.embeds[0])" :embed="postData.embeds[0] as View"/>
+            </div>
+            {{ void "Reposts - ViewRecord and View" }}
+            <FocusFeedPost v-if="postData.embed?.record && postData.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postData.embed.record.record)"
+            :post-data="postData.embed.record.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
+            <FocusFeedPost v-else-if="postData.embed && AppBskyEmbedRecord.isView(postData.embed)"
+            :post-data="postData.embed.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
+            {{ void "Post Interaction Buttons/Icons" }}
+            <PostInteractionIcons class="pb-0" :num-comments="postData.replyCount"
+            :num-shares="postData.repostCount" :num-likes="postData.likeCount"/>
         </div>
-        <div v-else-if="postData.embeds && postData.embeds.length>0">
-            <EmbedExternal v-if="AppBskyEmbedExternal.isView(postData.embeds[0])" :embed="postData.embeds[0] as View"/>
-        </div>
-        {{ void "Reposts - ViewRecord and View" }}
-        <FocusFeedPost v-if="postData.embed?.record && postData.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postData.embed.record.record)"
-        :post-data="postData.embed.record.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
-        <FocusFeedPost v-else-if="postData.embed && AppBskyEmbedRecord.isView(postData.embed)"
-        :post-data="postData.embed.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
-        {{ void "Post Interaction Buttons/Icons" }}
-        <PostInteractionIcons class="pb-0" :num-comments="postData.replyCount"
-        :num-shares="postData.repostCount" :num-likes="postData.likeCount"/>
     </div>
 </template>
 
@@ -96,7 +99,11 @@ export default defineComponent({
     },
     props:{
         postData: Object as PropType<PostView>,
-        postReason: Object as PropType<ReasonRepost|ReasonPin>
+        postReason: Object as PropType<ReasonRepost|ReasonPin>,
+        isFeedPostStyle:{
+            type:Boolean,
+            default:false
+        }
     },
     data(){
         return{

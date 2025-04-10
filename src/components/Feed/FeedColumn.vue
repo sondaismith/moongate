@@ -117,8 +117,11 @@
                 </div>
             </div>
             <TransitionGroup name="feedpost">
-                <!-- <FeedPost v-for="n in PostCollection" :key="n" :postData="n" /> -->
-                <FeedPost v-for="n in feedData?.data" :key="n" :postData="n" />
+                <!-- <FeedPost v-for="n in feedData?.data" :key="n" :postData="n" /> -->
+                <div v-for="n in feedData?.data" class="flex flex-col rounded bg-slate-400 w-full
+                drop-shadow-md justify-between text-sm">
+                    <FocusFeedPost class="border-0 !p-1.5" :post-data="n.post" :post-reason="n.reason" :is-feed-post-style="true"/>
+                </div>
                 <div v-if="!feedData?.cursor"
                 class="flex rounded justify-center p-1 bg-slate-500 text-slate-300 select-none">
                     End of Posts
@@ -158,6 +161,8 @@ import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { debounce } from '../../helpers/debouncer';
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import FocusFeedPost from './FocusFeedPost.vue';
+import FeedPost from './FeedPost.vue';
 
 var colElement;
 
@@ -168,6 +173,8 @@ var colElement;
 export default defineComponent({
     components:{
         ToContainerTop,
+        FeedPost,
+        FocusFeedPost,
     },
     data(){
         return{
