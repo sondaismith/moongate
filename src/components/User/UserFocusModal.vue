@@ -189,6 +189,7 @@
                                     <div @click="showMediaContent(n)" class="relative flex bg-violet-500 hover:bg-violet-300
                                     cursor-pointer w-full h-full bg-no-repeat bg-center bg-cover
                                     overflow-hidden backdrop-blur-0"
+                                    :title="n.post.embed?.images ? n.post.embed?.images[0].alt : null"
                                     :style="'background-image: url('+(n.post.embed.images ? n.post.embed.images[0].thumb : n.post.embed?.thumbnail)+')'">
                                     </div>
                                 </div>

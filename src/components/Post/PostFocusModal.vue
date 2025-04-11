@@ -34,12 +34,16 @@
                     </div>
                 </div>
             </div>
+            <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mt-2 mb-8 px-2 py-1 h-16 animate-pulse text-sm bg-slate-500/20"></div>
+            <div v-else-if="postDetails.currentThreadView.post.embed.images[0].alt.trim() != ''" class="flex rounded-lg mx-8 mt-2 mb-8 px-2 py-1 text-sm bg-slate-500/20">
+                <div class="flex bg-pink-400s min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed.images[postDetails.clickedMediaIndex].alt }}</div>
+            </div>
             {{ void "Post Details" }}
-            <div class="flex space-x-2 mx-8 px-2 py-4 ">
+            <!-- <div class="flex space-x-2 mx-8 px-2 py-4 ">
                 <div>Comments</div>
                 <div>Likes</div>
                 <div>Share</div>
-            </div>
+            </div> -->
         </div>
         {{ void "Comments Section" }}
         <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-slate-950 overflow-scroll">

@@ -118,7 +118,7 @@
             </div>
             <TransitionGroup name="feedpost">
                 <!-- <FeedPost v-for="n in feedData?.data" :key="n" :postData="n" /> -->
-                <div v-for="n in feedData?.data" class="flex flex-col rounded bg-slate-400 w-full
+                <div v-for="n in feedData?.data" :key="n.post.cid" class="flex flex-col rounded bg-slate-400 w-full
                 drop-shadow-md justify-between text-sm">
                     <FocusFeedPost class="border-0 !p-1.5" :post-data="n.post" :post-reason="n.reason" :is-feed-post-style="true"/>
                 </div>

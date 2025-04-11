@@ -16,6 +16,7 @@
                     ]">
             <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
             <div class="h-full w-full bg-center bg-no-repeat"
+            :title="image.alt"
             :class="(imagesToDisplay?.length === 1 && !image.aspectRatio ? 'bg-contain' : 'bg-cover')"
                 :style="{'background-image': 'url('+image.thumb+')'}"></div>
         </div>
