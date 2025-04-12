@@ -10,7 +10,7 @@
         </div>
         <video controls class="w-full"
         :style="{'aspect-ratio':`${videoView?.aspectRatio?.width}/${videoView?.aspectRatio?.height}`}">
-            <source :src="videoView?.playlist">
+            <source :src="videoView?.playlist" type="application/x-mpegURL">
         </video>
     </div>
 </template>

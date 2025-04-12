@@ -34,9 +34,9 @@
                     </div>
                 </div>
             </div>
-            <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mt-2 mb-8 px-2 py-1 h-16 animate-pulse text-sm bg-slate-500/20"></div>
-            <div v-else-if="postDetails.currentThreadView.post.embed.images[0].alt.trim() != ''" class="flex rounded-lg mx-8 mt-2 mb-8 px-2 py-1 text-sm bg-slate-500/20">
-                <div class="flex bg-pink-400s min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed.images[postDetails.clickedMediaIndex].alt }}</div>
+            <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 h-16 animate-pulse text-sm bg-slate-500/30"></div>
+            <div v-else-if="hasEmbededImagesWithAltText" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 text-sm bg-slate-500/20">
+                <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed.images[postDetails.clickedMediaIndex].alt }}</div>
             </div>
             {{ void "Post Details" }}
             <!-- <div class="flex space-x-2 mx-8 px-2 py-4 ">
@@ -140,6 +140,7 @@ import { convertToLongTimestamp } from '../../helpers/converters';
 import PostThreadView from './PostThreadView.vue';
 import ReplyBreadcrumb from './ReplyBreadcrumb.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
+import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 
 export default defineComponent({
     components:{
@@ -170,6 +171,24 @@ export default defineComponent({
         },
         hideModal(){
             postDetails.hideFocusModal();
+        }
+    },
+    computed:{
+        /**Checks to see if the current post contains any images. */
+        hasEmbededImages(){
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.images) return true;
+            return false;
+        },
+        /**
+         * Checks to see if the current post contains any images, and if
+         * the first one has any descriptive ALT text.
+         */
+        hasEmbededImagesWithAltText(){
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.images &&
+            (postDetails.currentThreadView.post.embed.images as ViewImage[])[0].alt.trim() != '') return true;
+            return false;
         }
     },
     mounted(){

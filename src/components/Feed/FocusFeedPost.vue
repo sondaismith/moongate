@@ -37,7 +37,7 @@
                 <div class="text-xs text-slate-400 whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.handle">@{{ postData.author.handle }}</div>
             </div>
             <div v-if="!isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.record.createdAt)">{{ convertToShortTimestamp(postData.record.createdAt) }}</div>
-            <!-- <div v-else-if="isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.value.createdAt)">{{ convertToShortTimestamp(postData.value.createdAt) }}</div> -->
+            <div v-else-if="isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.value.createdAt)">{{ convertToShortTimestamp(postData.value.createdAt) }}</div>
         </div>
         <div class="flex flex-col gap-2"
         :class="[isFeedPostStyle ? 'pl-12 pr-3' : '']">
