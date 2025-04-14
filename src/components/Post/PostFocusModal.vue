@@ -1,16 +1,16 @@
 <template>
     <div data-test="post-focus-modal"
-    class="absolute z-20 h-full w-full flex justify-between bg-slate-900/90">
+    class="absolute z-20 h-full w-full flex bg-slate-900/90">
         {{ void "Media Section" }}
-        <div class="flex flex-col w-full">
+        <div class="flex flex-col w-3/5 grow">
             {{ void "Close Button" }}
             <div @click="hideModal" class="flex shrink-0 ml-auto bg-blue-300 py-2 w-10
                 justify-center text-2xl cursor-pointer">
                 <i-mingcute:close-fill/>
             </div>
             {{ void "Media Container" }}
-            <div class="flex items-center h-full">
-                <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
+            <div class="flex items-center h-full justify-center overflow-hidden">
+                <div class="flex shrink-0 text-2xl bg-blue-400 w-10">
                     <div @click="decreaseCurrentMediaIndex"
                     v-if="postDetails.currentThreadView.post.embed?.images &&
                     postDetails.clickedMediaIndex != 0 &&
@@ -24,6 +24,11 @@
                 class="rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
                 :style="{'background-image' : 'url('+postDetails.currentThreadView.post.embed.images[postDetails.clickedMediaIndex].fullsize+')'}">
                 </div>
+                <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
+                class="relative flex flex-col max-w-full h-full justify-center p-5"
+                :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
+                :video-view="postDetails.currentThreadView.post.embed">
+                </video-container>
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
                     <div @click="increaseCurrentMediaIndex"
                     v-if="postDetails.currentThreadView.post.embed?.images &&
@@ -38,6 +43,9 @@
             <div v-else-if="hasEmbededImagesWithAltText" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 text-sm bg-slate-500/20">
                 <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed.images[postDetails.clickedMediaIndex].alt }}</div>
             </div>
+            <div v-else-if="hasEmbededVideoWithAltText" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 text-sm bg-slate-500/20">
+                <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed?.alt }}</div>
+            </div>
             {{ void "Post Details" }}
             <!-- <div class="flex space-x-2 mx-8 px-2 py-4 ">
                 <div>Comments</div>
@@ -46,7 +54,7 @@
             </div> -->
         </div>
         {{ void "Comments Section" }}
-        <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-slate-950 overflow-scroll">
+        <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-slate-950 overflow-y-scroll">
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
             <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s p-4 w-full">
                 <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
@@ -140,13 +148,16 @@ import { convertToLongTimestamp } from '../../helpers/converters';
 import PostThreadView from './PostThreadView.vue';
 import ReplyBreadcrumb from './ReplyBreadcrumb.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
-import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isView as isImageView, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isView as isVideoView, View as ViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
+import VideoContainer from '../Utilities/VideoContainer.vue';
 
 export default defineComponent({
     components:{
         AvatarRound,
         PostThreadView,
-        ReplyBreadcrumb
+        ReplyBreadcrumb,
+        VideoContainer,
     },
     data(){
         return{
@@ -158,6 +169,8 @@ export default defineComponent({
             ],
             postDetails,
             convertToLongTimestamp,
+            isImageView,
+            isVideoView
         }
     },
     methods:{
@@ -174,10 +187,11 @@ export default defineComponent({
         }
     },
     computed:{
-        /**Checks to see if the current post contains any images. */
-        hasEmbededImages(){
+        /**Checks to see if the current post contains any media. */
+        hasEmbededMedia(){
             if(postDetails.currentThreadView.post.embed &&
-            postDetails.currentThreadView.post.embed.images) return true;
+            (isImageView(postDetails.currentThreadView.post.embed) ||
+            isVideoView(postDetails.currentThreadView.post.embed))) return true;
             return false;
         },
         /**
@@ -187,7 +201,18 @@ export default defineComponent({
         hasEmbededImagesWithAltText(){
             if(postDetails.currentThreadView.post.embed &&
             postDetails.currentThreadView.post.embed.images &&
-            (postDetails.currentThreadView.post.embed.images as ViewImage[])[0].alt.trim() != '') return true;
+            (postDetails.currentThreadView.post.embed.images as ViewImage[])[postDetails.clickedMediaIndex].alt.trim() != '') return true;
+            return false;
+        },
+        /**
+         * Checks to see if the current post contains a video, and if
+         * it has any descriptive ALT text.
+         */
+         hasEmbededVideoWithAltText(){
+            if(postDetails.currentThreadView.post.embed &&
+            isVideoView(postDetails.currentThreadView.post.embed) &&
+            (postDetails.currentThreadView.post.embed as ViewVideo).alt &&
+            (postDetails.currentThreadView.post.embed as ViewVideo).alt.trim() != '') return true;
             return false;
         }
     },

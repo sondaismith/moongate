@@ -1,7 +1,7 @@
 <template>
     <div>
-        <div class="relative flex bg-slate-600 rounded-t-lg aspect-video items-center
-        justify-center overflow-hidden group cursor-pointer bg-contain bg-center bg-no-repeat
+        <div class="relative bg-black rounded-t-lg aspect-video items-center
+        overflow-hidden group cursor-pointer bg-contain bg-center bg-no-repeat
         border border-slate-600"
         :class="[{'rounded-lg' : !isVideoPlayerVisible}]"
         :style="{'background-image' : `url(${videoView?.thumbnail})`,
