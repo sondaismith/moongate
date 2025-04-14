@@ -1,27 +1,67 @@
 <template>
     <div>
-        <div class="relative flex bg-slate-600 rounded-lg aspect-video items-center
-        justify-center overflow-hidden group cursor-pointer bg-contain bg-center bg-no-repeat"
+        <div class="relative flex bg-slate-600 rounded-t-lg aspect-video items-center
+        justify-center overflow-hidden group cursor-pointer bg-contain bg-center bg-no-repeat
+        border border-slate-600"
+        :class="[{'rounded-lg' : !isVideoPlayerVisible}]"
         :style="{'background-image' : `url(${videoView?.thumbnail})`,
         'aspect-ratio' : `${videoView?.aspectRatio?.width} / ${videoView?.aspectRatio?.height}`}">
-            <div class="bg-slate-400/0 w-full h-full group-hover:bg-slate-400/30
-            transition-colors"></div>
-            <i-solar:play-bold class="absolute size-12 drop-shadow group-hover:scale-125 transition-transform"/>
+            <div v-if="!isVideoPlayerVisible" @click="showVideo" class="flex w-full h-full items-center justify-center">
+                <div class="bg-slate-400/0 w-full h-full group-hover:bg-slate-400/30
+                transition-colors"></div>
+                <i-solar:play-bold class="absolute size-12 drop-shadow group-hover:scale-125 transition-transform"/>
+            </div>
+            <div v-if="isVideoPlayerVisible" class="w-full h-full z-[1]">
+                <video-player :options="videoOptions"/>
+            </div>
         </div>
-        <video controls class="w-full"
-        :style="{'aspect-ratio':`${videoView?.aspectRatio?.width}/${videoView?.aspectRatio?.height}`}">
-            <source :src="videoView?.playlist" type="application/x-mpegURL">
-        </video>
+        <div @click="hideVideo" v-if="isVideoPlayerVisible"
+        class="relative flex items-center gap-1 rounded-b-md -top-1 pt-2 pb-1 px-2
+        border border-slate-600 bg-slate-700 hover:bg-slate-500 cursor-pointer">
+            <i-mingcute:close-circle-fill class="text-base text-red-00"/>
+            <div>Close Video</div>
+        </div>
     </div>
 </template>
 
 <script lang="ts">
 import { AppBskyEmbedVideo } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
+// import videojs from 'video.js'
+import 'video.js/dist/video-js.css';
+// import Player from 'video.js/dist/types/player';
+import VideoPlayer from './VideoPlayer.vue';
 
 export default defineComponent({
+    components:{
+        VideoPlayer,
+    },
     props:{
         videoView: Object as PropType<AppBskyEmbedVideo.View>
+    },
+    data(){
+        return{
+            // player: {} as Player
+            videoOptions: {
+                autoplay: false,
+                controls: true,
+                sources: [
+                    {
+                        src:this.videoView?.playlist,
+                        type:'application/x-mpegURL'
+                    }
+                ]
+            },
+            isVideoPlayerVisible:false
+        }
+    },
+    methods:{
+        showVideo(){
+            this.isVideoPlayerVisible = true;
+        },
+        hideVideo(){
+            this.isVideoPlayerVisible = false;
+        }
     }
 })
 </script>
