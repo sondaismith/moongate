@@ -8,6 +8,13 @@
                 <div class="flex flex-col h-full">
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0s grow items-center">
+                        <div id="user-modal-navbar" class="flex z-[4] bg-slate-800 sticky top-0 h-8 w-full self-start
+                        *:h-full *:cursor-pointer *:w-12">
+                            <i-mingcute:arrow-left-fill @click="goToPreviousNavHistory"
+                            class="hover:bg-slate-600" :class="[{'text-gray-600' : !hasPrevNavRecords}]"/>
+                            <i-mingcute:arrow-right-fill @click="goToNextNavHistory"
+                            class="hover:bg-slate-600" :class="[{'text-gray-600' : !hasNextNavRecords}]"/>
+                        </div>
                         {{ void "Banner+PFP Placeholder" }}
                         <div v-if="awaitingProfileData" class="relative w-full animate-pulse z-[3]">
                             <div class="bg-slate-500 w-full max-h-40 aspect-[3/1] shrink-0"/>
@@ -16,13 +23,13 @@
                         </div>
                         <div v-else class="relative w-full">
                             <div class="bg-red-400 w-full max-h-40 aspect-[3/1] shrink-0 bg-no-repeat bg-center bg-cover"
-                            :style="'background-image: url('+currentUserProfile.banner+')'"/>
+                            :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.banner+')'"/>
                             <div class="absolute z-[3] flex bg-sky-400 rounded-full aspect-square size-24 top-[4.5rem]s top-28 left-4
                             items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover"
-                            :style="'background-image: url('+currentUserProfile.avatar+')'">{{currentUserProfile ? '' : 'PFP'}}</div>
+                            :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar+')'">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '' : 'PFP'}}</div>
                         </div>
                         {{ void "User Details Content" }}
-                        <div id="user-summary" class="flex flex-col z-[2] w-full sticky top-0 mt-10 py-2 px-4 bg-slate-800">
+                        <div id="user-summary" class="flex flex-col z-[2] w-full sticky top-8 mt-10 py-2 px-4 bg-slate-800">
                             <div v-if="awaitingProfileData" class="flex flex-col w-full mt-1 gap-2 animate-pulse">
                                 <div class="flex gap-2">
                                     <div class="flex flex-col w-full gap-1">
@@ -52,28 +59,28 @@
                             <div v-else class="flex flex-col w-full">
                                 <div class="flex justify-between overflow-hiddens">
                                     <div class="overflow-hidden">
-                                        <div class="text-2xl font-semibold overflow-hidden text-ellipsis">{{currentUserProfile ? currentUserProfile.displayName : "Username Title"}}</div>
-                                        <div class="text-xs">{{currentUserProfile ? '@'+currentUserProfile.handle : '@handle'}}</div>
+                                        <div class="text-2xl font-semibold overflow-hidden text-ellipsis">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.displayName : "Username Title"}}</div>
+                                        <div class="text-xs">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '@'+UserFocusModalState.GetCurrentHistoryData().ProfileData.handle : '@handle'}}</div>
                                     </div>
                                     <div class="relative flex items-center mt-1 gap-2 h-8">
                                         <Transition name="smooth">
                                             <FollowUser v-if="!awaitingProfileData" class="px-4" :is-user-followed="isUserFollowed"
-                                            :user-did="currentUserProfile.did" :is-disabled="!AppState.isAuthBrowsing"/>
+                                            :user-did="UserFocusModalState.GetCurrentHistoryData().ProfileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
                                         </Transition>
                                         <PillButton class="aspect-square size-10">...</PillButton>
                                     </div>
                                 </div>
                                 <div class="flex mt-2">
                                     <div class="flex text-sm pr-2">
-                                        <div class="font-bold pr-1">{{currentUserProfile ? currentUserProfile.followersCount : '1'}}</div>
+                                        <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.followersCount : '1'}}</div>
                                         <div class="text-slate-400">followers</div>
                                     </div>
                                     <div class="flex text-sm pr-2">
-                                        <div class="font-bold pr-1">{{currentUserProfile ? currentUserProfile.followsCount : '33'}}</div>
+                                        <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.followsCount : '33'}}</div>
                                         <div class="text-slate-400">following</div>
                                     </div>
                                     <div class="flex text-sm pr-2">
-                                        <div class="font-bold pr-1">{{currentUserProfile ? currentUserProfile.postsCount : '7'}}</div>
+                                        <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.postsCount : '7'}}</div>
                                         <div class="text-slate-400">posts</div>
                                     </div>
                                 </div>
@@ -86,10 +93,10 @@
                                 <div class="bg-slate-500 rounded h-4 w-2/3"></div>
                                 <div class="bg-slate-500 rounded h-4 w-3/5"></div>
                             </div>
-                            <RichPostText v-else :post-text="currentUserProfile ? currentUserProfile.description : 'No Description'"/>
+                            <RichPostText v-else :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
                         </div>
                         <div id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-slate-600 bg-slate-800"
-                        :style="{'top':userSummaryHeight+'px'}">
+                        :style="{'top':userSummaryBottomPos+'px'}">
                             <div @click="viewPosts" class="w-full hover:bg-slate-700 cursor-pointer">
                                 <div class="pt-2 pb-1">Posts</div>
                                 <div v-if="isViewingPosts" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
@@ -147,17 +154,17 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-else-if="!awaitingProfileData" v-for="n in currentUserAccountTimelineData.data.filter(x => !x.reply) as FeedViewPost[]"
+                            <div v-else-if="!awaitingProfileData" v-for="n in UserFocusModalState.GetCurrentHistoryData().FeedData.data.filter(x => !x.reply) as FeedViewPost[]"
                             class="w-full shrink-0s">
                                 <FocusFeedPost :post-data="n.post" :post-reason="n.reason" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
-                            <div v-if="!currentUserAccountTimelineData.cursor"
+                            <div v-if="!awaitingProfileData && !UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
                             class="flex justify-center rounded p-1 gap-1 w-full items-center
                             border border-slate-600 bg-slate-700 select-none">
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
-                            <div v-else-if="currentUserAccountTimelineData.cursor && !awaitingProfileData" @click="loadOlderPosts"
+                            <div v-else-if="!awaitingProfileData && UserFocusModalState.GetCurrentHistoryData().FeedData.cursor" @click="loadOlderPosts"
                             class="flex justify-center rounded p-1 gap-1 w-full items-center cursor-pointer
                             border border-slate-600 bg-slate-700 hover:bg-slate-600">
                                 <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
@@ -175,8 +182,8 @@
                             <div v-else-if="!awaitingProfileData" class="grid gap-2 self-center
                             grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] justify-items-center
                             backdrop-blur-0 overflow-x-hiddens">
-                                <div v-for="n in currentUserAccountTimelineData.data.filter(
-                                    x => x.post.embed && x.post.author.did == currentUserProfile.did &&
+                                <div v-for="n in UserFocusModalState.GetCurrentHistoryData().FeedData.data.filter(
+                                    x => x.post.embed && x.post.author.did == UserFocusModalState.currentUserAccountDID &&
                                     (AppBskyEmbedImages.isView(x.post.embed) || AppBskyEmbedVideo.isView(x.post.embed)))"
                                     class="relative rounded aspect-square size-44 overflow-hidden border border-slate-600">
                                     <div v-if="n.post.embed.images && n.post.embed.images.length>1" class="select-none">
@@ -240,11 +247,13 @@ import { IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces';
 import { GetFeedDataForFeedType } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import SpoilerOverlay from '../Utilities/SpoilerOverlay.vue';
+import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
 
 export default defineComponent({
     data(){
         return{
             AppState,
+            UserFocusModalState,
             isImage,
             isReasonRepost,
             GenerateTagLinkText,
@@ -263,7 +272,7 @@ export default defineComponent({
             isAwaitingLoadMorePosts:false,
             currentUserProfile:{} as ProfileViewDetailed,
             currentUserAccountTimelineData:{data:[],cursor:''} as IFeedReturnedPostResults,
-            userSummaryHeight:0
+            userSummaryBottomPos:0
         }
     },
     components:{
@@ -288,7 +297,7 @@ export default defineComponent({
                 this.isViewingReplies = this.isViewingMedia = false;
                 this.isAwaitingTabSwitchData = true;
                 await GetBrowsingAgent().getAuthorFeed({
-                    actor:postDetails.currentUserAccountDID,
+                    actor:UserFocusModalState.currentUserAccountDID,
                     includePins:true
                 })
                 .then(res => {
@@ -314,7 +323,7 @@ export default defineComponent({
                 this.isAwaitingTabSwitchData = true;
                 //Get media posts
                 await GetBrowsingAgent().getAuthorFeed({
-                    actor:postDetails.currentUserAccountDID,
+                    actor:UserFocusModalState.currentUserAccountDID,
                     filter:'posts_with_media',
                 })
                 .then(res => {
@@ -345,27 +354,37 @@ export default defineComponent({
             showFocusModal(post,0);
         },
         async updateDisplayedData(){
-            if(isDid(postDetails.currentUserAccountDID)){
+            if(isDid(UserFocusModalState.currentUserAccountDID)){
+                //Update the current navigation history item if we are navigating to a new
+                //user account after the initial starting one
+                if(UserFocusModalState.navigationHistory.length > 0) this.updateCurrentNavHistoryScrollPos();
                 this.awaitingProfileData = true;
-                setTimeout(() => {
-                    this.getUserSummaryHeight();
-                    this.scrollToModalPos(0);
-                }, 10);
                 var userProfile:AppBskyActorGetProfile.Response;
                 await GetBrowsingAgent().getProfile({
-                    actor:postDetails.currentUserAccountDID
+                    actor:UserFocusModalState.currentUserAccountDID
                 })
                 .then(res => {
                     this.currentUserProfile = res.data
                 });
                 var userTL;
                 await GetBrowsingAgent().getAuthorFeed({
-                    actor:postDetails.currentUserAccountDID,
+                    actor:UserFocusModalState.currentUserAccountDID,
                     includePins:true
                 })
                 .then(res => {
                     this.currentUserAccountTimelineData.data = res.data.feed;
                     this.currentUserAccountTimelineData.cursor = res.data.cursor;
+                    //If the current history index is not at the end of the array, drop
+                    //all of the items in front of the current index
+                    if(UserFocusModalState.currentNavIndex < UserFocusModalState.navigationHistory.length-1) UserFocusModalState.navigationHistory.splice(UserFocusModalState.currentNavIndex+1);
+                    //Add the latest User Account page to the history array
+                    UserFocusModalState.navigationHistory.push({FeedData:{data:res.data.feed,cursor:res.data.cursor},ProfileData:this.currentUserProfile,scrollPos:0});
+                    //Move to the newly added User account - will not occur if there is only one item (initial state)
+                    if(UserFocusModalState.navigationHistory.length > 1) this.goToNextNavHistory(false);
+                    // setTimeout(() => {
+                    //     this.setUserSummaryBottomPos();
+                    //     this.scrollToModalPos(0);
+                    // }, 10);
                 })
                 .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s timeline`)));
                 console.log(this.currentUserAccountTimelineData);
@@ -376,7 +395,7 @@ export default defineComponent({
             //check to see if user-summary height has changed
             //small delay to allow DOM to update
             setTimeout(() => {
-                this.getUserSummaryHeight();
+                this.setUserSummaryBottomPos();
             }, 10);
         },
         /**
@@ -388,14 +407,15 @@ export default defineComponent({
             return false;
         },
         /**
-         * Method that gets the height of the `user-summary` element.
+         * Method that sets the bottom position of the `user-summary` element.
          * Used to make sure the "post category tabs" element is properly
          * "stickied".
          */
-        getUserSummaryHeight(){
+        setUserSummaryBottomPos(){
             // console.log('Getting user-summary element:')
             // console.log((document.getElementById('user-summary') as HTMLElement).clientHeight);
-            this.userSummaryHeight = (document.getElementById('user-summary') as HTMLElement).getBoundingClientRect().height;
+            let navbarHeight = (document.getElementById('user-modal-navbar') as HTMLElement).getBoundingClientRect().height;
+            this.userSummaryBottomPos = navbarHeight + (document.getElementById('user-summary') as HTMLElement).getBoundingClientRect().height;
         },
         /**
          * Method that returns the scroll-top position needed so the "post tabs" will be
@@ -428,12 +448,50 @@ export default defineComponent({
          * Method used to scroll to position in `UserFocusModal`. Used
          * when loading/switching "main content" to improve the UX.
          * @param newPos The scroll position to move to.
+         * @param behavior The scroll behavior to use. Defaults to instant.
          */
-        scrollToModalPos(newPos:number){
+        scrollToModalPos(newPos:number, behavior:ScrollBehavior = 'instant'){
             let userFocusContainer = (document.getElementById('user-focus-container') as HTMLElement);
             // console.log(userFocusContainer.scrollTop);
-            userFocusContainer.scrollTo({top:newPos,behavior:'instant'});
+            userFocusContainer.scrollTo({top:newPos,behavior:behavior});
             // console.log(userFocusContainer.scrollTop);
+        },
+        /**
+         * Method that calls `PrevNavHistory` to display the previous
+         * User Account in the modal's navigation history.
+         */
+        goToPreviousNavHistory(){
+            this.updateCurrentNavHistoryScrollPos();
+            UserFocusModalState.PrevNavHistory();
+            this.restoreScrollPosAfterNavHistoryChange();
+        },
+        /**
+         * Method that calls `NextNavHistory` to display the next
+         * User Account in the modal's navigation history.
+         */
+        goToNextNavHistory(updateScrollPos:boolean = true){
+            if(updateScrollPos) this.updateCurrentNavHistoryScrollPos();
+            UserFocusModalState.NextNavHistory();
+            this.restoreScrollPosAfterNavHistoryChange();
+        },
+        /**
+         * Method that updates the currently viewed "Navigation History" object's
+         * `scrollPos`. Used to keep track of the scroll position the user was in
+         * the feed before navigating forward or backwards.
+         */
+        updateCurrentNavHistoryScrollPos(){
+            let userFocusContainer = (document.getElementById('user-focus-container') as HTMLElement);
+            UserFocusModalState.GetCurrentHistoryData().scrollPos = userFocusContainer.scrollTop;
+        },
+        /**
+         * Method that restores the last scroll position the `UserFocusModal` had when
+         * viewing the "Navigation History" object that has just been displayed. Called
+         * when navigating forwards and backwards through the history.
+         */
+        restoreScrollPosAfterNavHistoryChange(){
+            setTimeout(() => {
+                this.scrollToModalPos(UserFocusModalState.GetCurrentHistoryData().scrollPos);
+            }, 100);
         }
     },
     computed:{
@@ -444,16 +502,28 @@ export default defineComponent({
          * component above.
          */
         isUserFollowed(){
-            if(this.currentUserProfile.viewer && this.currentUserProfile.viewer.following){
+            if(UserFocusModalState.GetCurrentHistoryData().ProfileData.viewer && UserFocusModalState.GetCurrentHistoryData().ProfileData.viewer.following){
                 return true;
             }
             return false;
         },
+        hasPrevNavRecords(){
+            if(UserFocusModalState.currentNavIndex < 1) return false;
+            return true;
+        },
+        hasNextNavRecords(){
+            if(UserFocusModalState.currentNavIndex < UserFocusModalState.navigationHistory.length-1) return true;
+            return false;
+        }
     },
     async created() {
         await this.updateDisplayedData();
-        this.getUserSummaryHeight();
-    }
+        this.setUserSummaryBottomPos();
+    },
+    beforeUnmount() {
+        UserFocusModalState.currentNavIndex = 0;
+        UserFocusModalState.navigationHistory = [];
+    },
 })
 
 </script>

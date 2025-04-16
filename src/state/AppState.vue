@@ -1,11 +1,11 @@
 <script lang="ts">
 import { reactive } from 'vue'
-import { postDetails } from './PostDetails.vue';
 import { IConfirmationTask } from '../components/Utilities/ConfirmModal.vue';
 import { ToastEventBus } from 'primevue';
 import { authAgent, guestAgent } from '../lib/api.vue';
 import { Agent } from '@atproto/api';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { UserFocusModalState } from './UserFocusModalState.vue';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -109,13 +109,13 @@ export const AppState = reactive({
     ToggleUserFocusModal(userDID:string | undefined){
         AppState.isViewingUserAccount = !AppState.isViewingUserAccount;
         if(userDID && userDID.trim() != ''){
-            postDetails.currentUserAccountDID = userDID;
+            UserFocusModalState.currentUserAccountDID = userDID;
         }
     },
     /**Method used to hide the `UserFocusModal`. */
     ShowUserFocusModal(userDID:string | undefined){
         if(userDID && userDID.trim() != ''){
-            postDetails.currentUserAccountDID = userDID;
+            UserFocusModalState.currentUserAccountDID = userDID;
             AppState.isViewingUserAccount = true;
         }
     },

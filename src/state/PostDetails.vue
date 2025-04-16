@@ -187,11 +187,6 @@ export const postDetails = reactive({
         if(reposts) this.postDetailIconValues[1].label = reposts;
         if(likes) this.postDetailIconValues[2].label = likes;
     },
-    /**
-     * DID of the user account details that are currently being shown in
-     * the `UserFocusModal` component.
-     */
-    currentUserAccountDID:'',
 })
 
 function updatePostDetails(postToOpen:IPostDetails):IPostDetails{
