@@ -8,12 +8,12 @@
                 <div class="flex flex-col h-full">
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0s grow items-center">
-                        <div id="user-modal-navbar" class="flex z-[4] bg-slate-800 sticky top-0 h-8 w-full self-start
-                        *:h-full *:cursor-pointer *:w-12">
+                        <div id="user-modal-navbar" class="flex z-[4] bg-slate-900 sticky top-0 h-8 w-full self-start
+                        border-b border-slate-700 *:h-full *:cursor-pointer *:w-12">
                             <i-mingcute:arrow-left-fill @click="goToPreviousNavHistory"
-                            class="hover:bg-slate-600" :class="[{'text-gray-600' : !hasPrevNavRecords}]"/>
+                            class="hover:bg-slate-700" :class="[{'text-gray-600' : !hasPrevNavRecords}]"/>
                             <i-mingcute:arrow-right-fill @click="goToNextNavHistory"
-                            class="hover:bg-slate-600" :class="[{'text-gray-600' : !hasNextNavRecords}]"/>
+                            class="hover:bg-slate-700" :class="[{'text-gray-600' : !hasNextNavRecords}]"/>
                         </div>
                         {{ void "Banner+PFP Placeholder" }}
                         <div v-if="awaitingProfileData" class="relative w-full animate-pulse z-[3]">
@@ -208,8 +208,10 @@
                                 <div>End of posts</div>
                             </div>
                             <div v-else-if="currentUserAccountTimelineData.cursor && !isAwaitingTabSwitchData" @click="loadOlderPosts"
-                            class="flex justify-center rounded p-1 gap-1 mt-4 w-fulls items-center cursor-pointer
+                            class="flex justify-center rounded p-1 gap-1 mt-4 mx-4 w-fulls items-center cursor-pointer
                             border border-slate-600 bg-slate-700 hover:bg-slate-600">
+                                <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
+                                <i-mingcute:plus-fill v-else/>
                                 <div>Load more</div>
                             </div>
                         </div>
@@ -303,6 +305,8 @@ export default defineComponent({
                 .then(res => {
                     this.currentUserAccountTimelineData.data = res.data.feed;
                     this.currentUserAccountTimelineData.cursor = res.data.cursor;
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
                 .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s timeline`)));
                 this.isAwaitingTabSwitchData = false;
@@ -329,6 +333,8 @@ export default defineComponent({
                 .then(res => {
                     this.currentUserAccountTimelineData.data = res.data.feed;
                     this.currentUserAccountTimelineData.cursor = res.data.cursor;
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
                 .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s media`)));
                 this.isAwaitingTabSwitchData = false;
@@ -336,12 +342,15 @@ export default defineComponent({
         },
         async loadOlderPosts(){
             this.isAwaitingLoadMorePosts = true;
-            await GetFeedDataForFeedType(FeedEnums.Types.User,this.currentUserProfile.did,'',this.currentUserAccountTimelineData.cursor)
+            // await GetFeedDataForFeedType(FeedEnums.Types.User,this.currentUserProfile.did,'',this.currentUserAccountTimelineData.cursor)
+            await GetFeedDataForFeedType(FeedEnums.Types.User,UserFocusModalState.currentUserAccountDID,'', UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
             .then(res => {
                 res.data.forEach(post => {
                     this.currentUserAccountTimelineData.data.push(post);
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
                 });
                 this.currentUserAccountTimelineData.cursor = res.cursor;
+                UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.cursor;
             })
             .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
             this.isAwaitingLoadMorePosts = false;
@@ -426,8 +435,9 @@ export default defineComponent({
             let bio = document.getElementById('user-focus-bio');
             let summary = document.getElementById('user-summary');
             if(summary){
+                let navbarHeight = (document.getElementById('user-modal-navbar') as HTMLElement).getBoundingClientRect().height;
                 let bioBottomPos = bio ? bio.offsetTop+bio.getBoundingClientRect().height : 0;
-                return bioBottomPos-(summary.getBoundingClientRect().height);
+                return bioBottomPos-(navbarHeight + summary.getBoundingClientRect().height);
             }
             return 0;
         },
