@@ -511,6 +511,15 @@ export default defineComponent({
             }
             // else if(!e.repeat) console.log('Other key pressed: '+e.key);
         },
+        /**
+         * Method that adds support for navigating through the modal navigation history
+         * using the Mouse "Browser Back" and "Browser Forwards" buttons.
+         * @param e The MouseEvent fired.
+         */
+        onMouseShortcutEntered(e:MouseEvent){
+            if(e.button == 3) this.goToPreviousNavHistory();
+            else if (e.button == 4) this.goToNextNavHistory();
+        }
     },
     computed:{
         /**
@@ -542,6 +551,7 @@ export default defineComponent({
         //Add keyboard shortcut listener
         let modal = document.getElementById('user-focus-container');
         this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
+        this.$el.addEventListener('mouseup', this.onMouseShortcutEntered);
         if(modal) modal.focus(); //focus modal
     },
     beforeUnmount() {
@@ -549,6 +559,7 @@ export default defineComponent({
         UserFocusModalState.navigationHistory = [];
         //Remove keyboard shortcut listener
         this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
+        this.$el.removeEventListener('mouseup', this.onMouseShortcutEntered);
     },
 })
 
