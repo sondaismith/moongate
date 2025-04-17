@@ -1,6 +1,6 @@
 <template>
-    <div data-test="post-focus-modal"
-    class="absolute z-20 h-full w-full flex bg-slate-900/90">
+    <div data-test="post-focus-modal" id="post-focus-modal" tabindex="0"
+    class="absolute z-20 h-full w-full flex bg-slate-900/90 outline-none">
         {{ void "Media Section" }}
         <div class="flex flex-col w-3/5 grow">
             {{ void "Close Button" }}
@@ -151,6 +151,7 @@ import AvatarRound from '../Utilities/AvatarRound.vue';
 import { isView as isImageView, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { isView as isVideoView, View as ViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import VideoContainer from '../Utilities/VideoContainer.vue';
+import { AppState } from '../../state/AppState.vue';
 
 export default defineComponent({
     components:{
@@ -217,7 +218,12 @@ export default defineComponent({
         }
     },
     mounted(){
-    }
+        (this.$el as HTMLElement).focus();
+    },
+    beforeUnmount() {
+        console.log('Closing PostFocusModal...');
+        AppState.handleFocusOnComponentClose();
+    },
 })
 </script>
 

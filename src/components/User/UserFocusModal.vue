@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm">
+    <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         <div class="relative z-20 flex flex-col max-w-[40rem] w-4/5 md:w-2/3s h-4/5 mx-auto my-auto rounded bg-slate-800
             drop-shadow-lg overflow-hidden">
@@ -492,7 +492,21 @@ export default defineComponent({
             setTimeout(() => {
                 this.scrollToModalPos(UserFocusModalState.GetCurrentHistoryData().scrollPos);
             }, 100);
-        }
+        },
+        /**
+         * Method used to navigate through the modal navigation history
+         * if the shortcut Alt + Left Arrow or Alt + Right Arrow is pressed.
+         * @param e Key down event.
+         */
+        onKeyboardShorcutEntered(e:KeyboardEvent){
+            if(e.key == 'ArrowLeft' && e.altKey && !e.repeat){
+                this.goToPreviousNavHistory();
+            }
+            else if(e.key == 'ArrowRight' && e.altKey && !e.repeat){
+                this.goToNextNavHistory();
+            }
+            // else if(!e.repeat) console.log('Other key pressed: '+e.key);
+        },
     },
     computed:{
         /**
@@ -514,15 +528,22 @@ export default defineComponent({
         hasNextNavRecords(){
             if(UserFocusModalState.currentNavIndex < UserFocusModalState.navigationHistory.length-1) return true;
             return false;
-        }
+        },
     },
     async created() {
         await this.updateDisplayedData();
         this.setUserSummaryBottomPos();
     },
+    mounted() {
+        //Add keyboard shortcut listener
+        this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
+        this.$el.focus(); //focus modal
+    },
     beforeUnmount() {
         UserFocusModalState.currentNavIndex = 0;
         UserFocusModalState.navigationHistory = [];
+        //Remove keyboard shortcut listener
+        this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
     },
 })
 

@@ -165,6 +165,27 @@ export const AppState = reactive({
      * Value used to store the last directory chosen to save
      * Post media to.
      */
-    lastMediaSaveDirectory:''
+    lastMediaSaveDirectory:'',
+    /**
+     * Method that handles focusing the most important component/element when
+     * another is closed/hidden.
+     */
+    handleFocusOnComponentClose(){
+        //Right now this handles `UserFocusModal` and `PostFocusModal`
+        //since they are the only components that can overlay. In the
+        //future the code here should handle focusing the right element
+        //whenever it would be useful in relation to accessibility/usability.
+
+        //`PostFocusModal` can overlay `UserFocusModal` - when it is closed we
+        //should focus the `UserFocusModal` if it's still open
+        if(this.isViewingUserAccount){
+            let userFocusModal = document.getElementById('user-focus-container');
+            if(userFocusModal) userFocusModal.focus();
+        }
+        else{
+            //there's no modal/overlay open, focus whatever is useful in the
+            //main application window
+        }
+    }
 })
 </script>
