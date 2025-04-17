@@ -4,7 +4,7 @@
         <div class="relative z-20 flex flex-col max-w-[40rem] w-4/5 md:w-2/3s h-4/5 mx-auto my-auto rounded bg-slate-800
             drop-shadow-lg overflow-hidden">
             {{ void "Main Container" }}
-            <div id="user-focus-container" class="h-full overflow-auto">
+            <div id="user-focus-container" class="h-full overflow-auto outline-none" tabindex="0">
                 <div class="flex flex-col h-full">
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0s grow items-center">
@@ -201,13 +201,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-if="!currentUserAccountTimelineData.cursor"
+                            <div v-if="!UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
                             class="flex justify-center rounded p-1 gap-1 mt-4 w-full items-center
                             border border-slate-600 bg-slate-700 select-none">
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
-                            <div v-else-if="currentUserAccountTimelineData.cursor && !isAwaitingTabSwitchData" @click="loadOlderPosts"
+                            <div v-else-if="UserFocusModalState.GetCurrentHistoryData().FeedData.cursor && !isAwaitingTabSwitchData" @click="loadOlderPosts"
                             class="flex justify-center rounded p-1 gap-1 mt-4 mx-4 w-fulls items-center cursor-pointer
                             border border-slate-600 bg-slate-700 hover:bg-slate-600">
                                 <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
@@ -303,8 +303,8 @@ export default defineComponent({
                     includePins:true
                 })
                 .then(res => {
-                    this.currentUserAccountTimelineData.data = res.data.feed;
-                    this.currentUserAccountTimelineData.cursor = res.data.cursor;
+                    // this.currentUserAccountTimelineData.data = res.data.feed;
+                    // this.currentUserAccountTimelineData.cursor = res.data.cursor;
                     UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
@@ -331,8 +331,6 @@ export default defineComponent({
                     filter:'posts_with_media',
                 })
                 .then(res => {
-                    this.currentUserAccountTimelineData.data = res.data.feed;
-                    this.currentUserAccountTimelineData.cursor = res.data.cursor;
                     UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
@@ -346,10 +344,8 @@ export default defineComponent({
             await GetFeedDataForFeedType(FeedEnums.Types.User,UserFocusModalState.currentUserAccountDID,'', UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
             .then(res => {
                 res.data.forEach(post => {
-                    this.currentUserAccountTimelineData.data.push(post);
                     UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
                 });
-                this.currentUserAccountTimelineData.cursor = res.cursor;
                 UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.cursor;
             })
             .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
@@ -381,8 +377,6 @@ export default defineComponent({
                     includePins:true
                 })
                 .then(res => {
-                    this.currentUserAccountTimelineData.data = res.data.feed;
-                    this.currentUserAccountTimelineData.cursor = res.data.cursor;
                     //If the current history index is not at the end of the array, drop
                     //all of the items in front of the current index
                     if(UserFocusModalState.currentNavIndex < UserFocusModalState.navigationHistory.length-1) UserFocusModalState.navigationHistory.splice(UserFocusModalState.currentNavIndex+1);
@@ -396,7 +390,7 @@ export default defineComponent({
                     // }, 10);
                 })
                 .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s timeline`)));
-                console.log(this.currentUserAccountTimelineData);
+                console.log(UserFocusModalState.GetCurrentHistoryData().ProfileData);
                 this.awaitingProfileData = false;
 
             }
@@ -546,8 +540,9 @@ export default defineComponent({
     },
     mounted() {
         //Add keyboard shortcut listener
+        let modal = document.getElementById('user-focus-container');
         this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
-        this.$el.focus(); //focus modal
+        if(modal) modal.focus(); //focus modal
     },
     beforeUnmount() {
         UserFocusModalState.currentNavIndex = 0;
