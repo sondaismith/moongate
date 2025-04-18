@@ -1,8 +1,13 @@
 <template>
     <Transition>
         <div v-if="hasSensitiveContent && isSpoilered"
-        class="absolute flex flex-col backdrop-blur-lg bg-slate-800/80 w-full h-full text-sm
+        class="absolute z-[1] flex flex-col backdrop-blur-lg bg-slate-800/80 w-full h-full text-sm
         justify-center items-center text-center">
+                <div :title="mediaType" class="absolute p-1 rounded *:w-full *:h-full
+                left-1 top-1 text-xl bg-yellow-500/80 text-black border border-slate-800">
+                    <i-mingcute:photo-album-line v-if="mediaType == MediaType.Image"/>
+                    <i-mingcute:video-line v-else-if="mediaType == MediaType.Video"/>
+                </div>
                 <div>Content Warning:</div>
                 <div class="capitalize">{{ spoilerReasons }}</div>
             <div @click="isSpoilered = !isSpoilered" class="text-blue-400 hover:text-blue-300 cursor-pointer">Show</div>
@@ -21,14 +26,17 @@
 <script lang="ts">
 import { Label } from '@atproto/api/dist/client/types/com/atproto/label/defs'
 import { defineComponent, PropType } from 'vue'
+import { MediaType } from '../../enums/PostEnums';
 
 export default defineComponent({
     props:{
         labels: Object as PropType<Label[]>,
         hasSensitiveContent: Boolean,
+        mediaType: Object as PropType<MediaType>,
     },
     data(){
         return{
+            MediaType,
             isSpoilered:true
         }
     },

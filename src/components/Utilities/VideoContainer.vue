@@ -6,6 +6,7 @@
         :class="[{'rounded-lg' : !isVideoPlayerVisible}]"
         :style="{'background-image' : `url(${videoView?.thumbnail})`,
         'aspect-ratio' : `${videoView?.aspectRatio?.width} / ${videoView?.aspectRatio?.height}`}">
+            <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Video"/>
             <div v-if="!isVideoPlayerVisible" @click="showVideo" class="flex w-full h-full items-center justify-center">
                 <div class="bg-slate-400/0 w-full h-full group-hover:bg-slate-400/30
                 transition-colors"></div>
@@ -25,23 +26,29 @@
 </template>
 
 <script lang="ts">
-import { AppBskyEmbedVideo } from '@atproto/api';
+import { AppBskyEmbedVideo, Label } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 // import videojs from 'video.js'
 import 'video.js/dist/video-js.css';
 // import Player from 'video.js/dist/types/player';
 import VideoPlayer from './VideoPlayer.vue';
+import SpoilerOverlay from './SpoilerOverlay.vue';
+import { MediaType } from '../../enums/PostEnums';
 
 export default defineComponent({
     components:{
         VideoPlayer,
+        SpoilerOverlay,
     },
     props:{
-        videoView: Object as PropType<AppBskyEmbedVideo.View>
+        videoView: Object as PropType<AppBskyEmbedVideo.View>,
+        labels: Object as PropType<Label[]>,
+        author: String,
     },
     data(){
         return{
             // player: {} as Player
+            MediaType,
             videoOptions: {
                 autoplay: false,
                 controls: true,

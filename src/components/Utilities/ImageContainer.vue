@@ -6,7 +6,7 @@
             (imagesToDisplay?.length === 1 && imagesToDisplay[0].aspectRatio ? `aspect-ratio: ${imagesToDisplay[0].aspectRatio?.width} / ${imagesToDisplay[0].aspectRatio?.height}`:''),
             (imagesToDisplay?.length && imagesToDisplay.length > 1 ? 'aspect-ratio: 16 / 9':'')
         ]">
-        <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0"/>
+        <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Image"/>
         <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, author)" class="overflow-hidden cursor-pointer"
             :class="[
                         (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
@@ -36,6 +36,7 @@ import { AppState } from '../../state/AppState.vue';
 //Option Menu icons
 import MdiImageOutline from '~icons/mdi/image-outline';
 import MdiImagePlusOutline from '~icons/mdi/image-plus-outline';
+import { MediaType } from '../../enums/PostEnums';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
@@ -106,6 +107,7 @@ export default defineComponent({
     },
     data(){
         return{
+            MediaType,
             postDetails,
         }
     },

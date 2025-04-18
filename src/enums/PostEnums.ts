@@ -12,3 +12,7 @@ export enum PostTypes{
     Quote = "quote",
     Link = "link",
 }
+export enum MediaType{
+    Image = 'image',
+    Video = 'video',
+}

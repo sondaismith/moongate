@@ -46,9 +46,9 @@
             <RichPostText v-else :post-text="postData.value.text"/>
             {{ void "Post Media" }}
             <VideoContainer v-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed.media)"
-            :video-view="postData.embed.media"/>
+            :video-view="postData.embed.media" :labels="postData.labels" :author="postData.author.handle"/>
             <VideoContainer v-else-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed)"
-            :video-view="postData.embed"/>
+            :video-view="postData.embed" :labels="postData.labels" :author="postData.author.handle"/>
             <ImageContainer v-if="!isViewRecord(postData) && postData.embed && postData.embed.images"
             :images-to-display="postData.embed?.images" :labels="postData.labels"
             :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>

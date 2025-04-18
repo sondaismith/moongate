@@ -187,12 +187,12 @@
                                     (AppBskyEmbedImages.isView(x.post.embed) || AppBskyEmbedVideo.isView(x.post.embed)))"
                                     class="relative rounded aspect-square size-44 overflow-hidden border border-slate-600">
                                     <div v-if="n.post.embed.images && n.post.embed.images.length>1" class="select-none">
-                                        <div class="absolute z-[3] flex rounded top-1 right-1 size-6 bg-slate-300 backdrop-blur-sm text-slate-900 font-bold items-center justify-center drop-shadow">{{ n.post.embed?.images.length }}</div>
-                                        <div class="absolute z-[2] flex rounded top-1.5 right-0.5 size-6 bg-slate-300/60 text-slate-900 font-bold items-center justify-center drop-shadow"></div>
+                                        <div class="absolute z-[3] flex rounded top-2 right-2 size-6 bg-slate-300 backdrop-blur-sm text-slate-900 font-bold items-center justify-center drop-shadow">{{ n.post.embed?.images.length }}</div>
+                                        <div class="absolute z-[2] flex rounded top-[5px] right-[5px] size-6 bg-slate-300/60 text-slate-900 font-bold items-center justify-center drop-shadow"></div>
                                     </div>
-                                    <div v-if="n.post.embed.images" class="absolute z-[2] rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Photo</div>
-                                    <div v-else class="absolute z-[2] rounded-md bottom-1 right-2 p-1 text-xs bg-black/70 select-none">Video</div>
-                                    <SpoilerOverlay class="z-[1]" :labels="n.post.labels" :has-sensitive-content="hasSensitiveContent(n)"/>
+                                    <div v-if="n.post.embed.images" class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs bg-black/70 select-none">Photo</div>
+                                    <div v-else class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs bg-black/70 select-none">Video</div>
+                                    <SpoilerOverlay class="z-[1]" :labels="n.post.labels" :has-sensitive-content="hasSensitiveContent(n)" :media-type="n.post.embed?.images ? MediaType.Image : MediaType.Video"/>
                                     <div @click="showMediaContent(n)" class="relative flex bg-violet-500 hover:bg-violet-300
                                     cursor-pointer w-full h-full bg-no-repeat bg-center bg-cover
                                     overflow-hidden backdrop-blur-0"
@@ -250,12 +250,14 @@ import { GetFeedDataForFeedType } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import SpoilerOverlay from '../Utilities/SpoilerOverlay.vue';
 import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
+import { MediaType } from '../../enums/PostEnums';
 
 export default defineComponent({
     data(){
         return{
             AppState,
             UserFocusModalState,
+            MediaType,
             isImage,
             isReasonRepost,
             GenerateTagLinkText,
