@@ -32,7 +32,7 @@ export default defineComponent({
     props:{
         labels: Object as PropType<Label[]>,
         hasSensitiveContent: Boolean,
-        mediaType: Object as PropType<MediaType>,
+        mediaType: String as PropType<MediaType>,
     },
     data(){
         return{

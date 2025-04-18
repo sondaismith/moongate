@@ -1,6 +1,6 @@
 <template>
     <div @click="displaySelectedUserAccount" @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
-    @mouseleave="AccountPeekState.cancelUserPeek" class="rounded-full bg-slate-300 aspect-square
+    @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="rounded-full bg-slate-300 aspect-square
     border box-content size-10 bg-contain hover:border-slate-600
     transition-[border-color] ease-linear duration-200 cursor-pointer"
     :style="{'background-image' : 'url('+avatar+')'}">
@@ -38,6 +38,8 @@ export default defineComponent({
          * user's profile.
          */
         displaySelectedUserAccount(){
+            //Cancel displaying `AccountPeek`
+            AccountPeekState.cancelUserPeek(true);
             AppState.ShowUserFocusModal(this.did);
             this.$emit('avatarClicked',this.did);
         }

@@ -113,15 +113,16 @@ export const AccountPeekState = reactive({
     /**
      * Method that fires when user cursor leaves specific element.
      * Used to hide `AccountPeek` component.
+     * @param hideInstantly Value determining if the `AccountPeek` component should be removed instantly, or after its normal delay.
      */
-    cancelUserPeek(){
+    cancelUserPeek(hideInstantly:boolean = false){
         clearTimeout(this.pfpEnter);//Stop enter event
         this.pfpExit = setTimeout(() => {
             var peek = document.getElementById('account-peek');//important
             this.isUserPeeking = false;
             if(peek) peek.style.top = '-1000px';
             // this.awaitingAPIResponse = false;//Stop waiting for API response
-        }, this.delayPeekHide);
+        }, hideInstantly ? 2 : this.delayPeekHide);
     },
     /**
      * Method used to prevent `AccountPeek` from disappearing.
@@ -130,6 +131,20 @@ export const AccountPeekState = reactive({
      */
     keepPeekAlive(){
         clearTimeout(this.pfpExit);//Stop leaving event
+    },
+    /**
+     * Method used to clear the `pfpEnter` timeout. Intended to be used by
+     * components other than `AccountPeek`.
+     */
+    clearPFPEnter(){
+        clearTimeout(this.pfpEnter);
+    },
+    /**
+     * Method used to clear the `pfpExit` timeout. Intended to be used by
+     * components other than `AccountPeek`.
+     */
+     clearPFPExit(){
+        clearTimeout(this.pfpExit);
     },
     /**
      * Method used to ensure `AccountPeek` component will not be displayed
