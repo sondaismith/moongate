@@ -42,8 +42,10 @@
         <div class="flex flex-col gap-2"
         :class="[isFeedPostStyle ? 'pl-12 pr-3' : '']">
             {{ void "Post Text Content" }}
-            <RichPostText v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
-            <RichPostText v-else :post-text="postData.value.text"/>
+            <!-- <RichPostText v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
+            <RichPostText v-else :post-text="postData.value.text"/> -->
+            <RichPostTextBsky v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
+            <RichPostTextBsky v-else :post-text="postData.value.text"/>
             {{ void "Post Media" }}
             <VideoContainer v-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed.media)"
             :video-view="postData.embed.media" :labels="postData.labels" :author="postData.author.handle"/>
@@ -88,12 +90,14 @@ import PostInteractionIcons from '../Post/PostInteractionIcons.vue';
 import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { showFocusModal } from '../../state/PostDetails.vue';
 import { View } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 
 export default defineComponent({
     components:{
         ImageContainer,
         VideoContainer,
         RichPostText,
+        RichPostTextBsky,
         EmbedExternal,
         PostInteractionIcons,
     },

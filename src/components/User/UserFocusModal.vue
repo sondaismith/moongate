@@ -93,7 +93,8 @@
                                 <div class="bg-slate-500 rounded h-4 w-2/3"></div>
                                 <div class="bg-slate-500 rounded h-4 w-3/5"></div>
                             </div>
-                            <RichPostText v-else :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
+                            <!-- <RichPostText v-else :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/> -->
+                            <RichPostTextBsky v-else-if="!awaitingProfileData" :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
                         </div>
                         <div id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-slate-600 bg-slate-800"
                         :style="{'top':userSummaryBottomPos+'px'}">
@@ -251,6 +252,7 @@ import { FeedEnums } from '../../enums/FeedEnums';
 import SpoilerOverlay from '../Utilities/SpoilerOverlay.vue';
 import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
 import { MediaType } from '../../enums/PostEnums';
+import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 
 export default defineComponent({
     data(){
@@ -284,6 +286,7 @@ export default defineComponent({
         Hashtag,
         FocusFeedPost,
         RichPostText,
+        RichPostTextBsky,
         ImageContainer,
         VideoContainer,
         SpoilerOverlay,
