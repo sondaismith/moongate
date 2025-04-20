@@ -1,5 +1,6 @@
 <template>
-    <span class="underline font-light hover:text-blue-400 cursor-pointer"
+    <span title="Open link"
+    class="underline font-light hover:text-blue-400 cursor-pointer"
     :href="URL">
         <slot></slot>
     </span>

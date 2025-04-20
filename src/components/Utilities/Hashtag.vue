@@ -1,5 +1,6 @@
 <template>
-    <span @click="createTagFeed" class="rounded cursor-pointer whitespace-nowrap text-blue-500 hover:text-blue-400">
+    <span @click="createTagFeed" :title="`Create Feed for '#${tagValue}'`"
+    class="rounded cursor-pointer whitespace-normal text-blue-500 hover:text-blue-400">
         <slot></slot>
     </span>
 </template>

@@ -1,5 +1,6 @@
 <template>
-    <span @click="createUserFeed" class="p-1 rounded bg-blue-700 hover:bg-blue-500 text-[12px] leading-3 cursor-pointer">
+    <span @click="createUserFeed" :title="`Create Feed for ${userlinkValue}`"
+    class="p-1 rounded bg-blue-700 hover:bg-blue-500 text-[12px] leading-3 cursor-pointer">
         <slot></slot>
     </span>
 </template>
