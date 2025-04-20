@@ -186,7 +186,8 @@ button {
 }
 
 .feed-highlight{
-  border-color: #eab308 !important;
+  border-color: var(--color-feed-highlight) !important;
+  /* border-color: #eab308 !important; */
   /* border-color: #0ea5e9 !important; */
 }
 

@@ -54,7 +54,7 @@
             </div> -->
         </div>
         {{ void "Comments Section" }}
-        <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-slate-950 overflow-y-scroll">
+        <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-postFocusBG overflow-y-scroll">
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
             <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s p-4 w-full">
                 <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
@@ -86,7 +86,7 @@
                 <div class="flex">
                     <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
                     :did="postDetails.currentThreadView.post.author.did"/>
-                    <div class="self-center ml-2 overflow-hidden">
+                    <div class="self-center ml-2 overflow-hidden text-primary">
                         <div class="font-bold leading-4 text-ellipsis overflow-hidden">{{ postDetails.currentThreadView.post.author.displayName }}</div>
                         <div class="text-feedPostName text-ellipsis overflow-hidden">@{{ postDetails.currentThreadView.post.author.handle }}</div>
                     </div>
@@ -97,13 +97,13 @@
                     </div>
                 </div>
                 {{ void "Post Content - Text" }}
-                <div class="text-sm pt-2">
+                <div class="text-sm pt-2 text-primary">
                     {{ postDetails.currentThreadView ? postDetails.currentThreadView.post.record.text : "initial state - undefined" }}
                 </div>
                 {{ void "Post Metadata" }}
                 <div class="border-slate-600 divide-y divide-inherit !mt-0">
                     <div class="py-1">
-                        <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
+                        <div class="text-feedPostName text-secondary cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
                     </div>
                     <PostInteractionIcons :numComments="postDetails.currentThreadView.post.replyCount"
                         :numShares="postDetails.currentThreadView.post.repostCount" :numLikes="postDetails.currentThreadView.post.likeCount"/>

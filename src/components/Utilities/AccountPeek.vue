@@ -1,6 +1,6 @@
 <template>
-    <div id="account-peek" class="absolute flex flex-col z-10 bg-slate-800 border
-    border-slate-700 p-3 pb-4 rounded-md drop-shadow min-w-72 max-w-72 max-h-64 overflow-hidden"
+    <div id="account-peek" class="absolute flex flex-col z-10 bg-focusBG border
+    border-outline p-3 pb-4 rounded-md drop-shadow min-w-72 max-w-72 max-h-64 overflow-hidden"
     @mouseenter="AccountPeekState.keepPeekAlive" @mouseleave="AccountPeekState.cancelUserPeek">
         <i-mingcute:loading-fill v-show="AccountPeekState.awaitingAPIResponse" class="spinner size-8 self-center"/>
         <div v-show="!AccountPeekState.awaitingAPIResponse" class="flex flex-col overflow-hidden">
@@ -12,17 +12,17 @@
                 :user-did="AccountPeekState.profileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
             </div>
             <div class="grow-0 shrink-0">
-                <div class="font-medium">{{ AccountPeekState.profileData.displayName }}</div>
-                <div class="text-slate-500 leading-3">@{{ AccountPeekState.profileData.handle }}</div>
+                <div class="text-primary font-medium">{{ AccountPeekState.profileData.displayName }}</div>
+                <div class="text-secondary leading-3">@{{ AccountPeekState.profileData.handle }}</div>
             </div>
-            <div class="flex text-sm mt-2 mb-1 gap-1 grow-0 shrink-0">
+            <div class="flex text-sm text-primary mt-2 mb-1 gap-1 grow-0 shrink-0">
                 <div class="flex hover:underline cursor-pointer">
                     <div>{{ AccountPeekState.profileData.followersCount }}</div>
-                    <div class="text-slate-400 whitespace-pre"> Followers</div>
+                    <div class="text-secondary whitespace-pre"> Followers</div>
                 </div>
                 <div class="flex hover:underline cursor-pointer">
                     <div>{{ AccountPeekState.profileData.followsCount }}</div>
-                    <div class="text-slate-400 whitespace-pre"> Following</div>
+                    <div class="text-secondary whitespace-pre"> Following</div>
                 </div>
             </div>
             <RichPostText class="text-sm overflow-auto grow shrink break-words"

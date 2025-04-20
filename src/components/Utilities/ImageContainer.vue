@@ -1,6 +1,6 @@
 <template>
     <div ref="imageContainer" class="@container relative grid grid-cols-2 grid-flow-row grid-rows-2 w-full gap-0.5 border
-        border-slate-600 rounded-lg overflow-hidden backdrop-blur-0 cursor-pointer"
+        border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 cursor-pointer"
         :style="[
             (imagesToDisplay?.length === 1 && !imagesToDisplay[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),
             (imagesToDisplay?.length === 1 && imagesToDisplay[0].aspectRatio ? `aspect-ratio: ${imagesToDisplay[0].aspectRatio?.width} / ${imagesToDisplay[0].aspectRatio?.height}`:''),
@@ -14,7 +14,7 @@
                         (imagesToDisplay?.length === 2 && index === 1 ? 'col-start-2 row-span-2':''),
                         (imagesToDisplay?.length === 3 && index === 0 ? 'col-start-1 row-span-2':'')
                     ]">
-            <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
+            <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
             <div class="h-full w-full bg-center bg-no-repeat"
             :title="image.alt"
             :class="(imagesToDisplay?.length === 1 && !image.aspectRatio ? 'bg-contain' : 'bg-cover')"

@@ -2,9 +2,9 @@
     <div class="relative" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
     @click="highlightFeed" @contextmenu="showFeedOptionsMenu">
         <a class="group cursor-pointer relative flex justify-center items-center
-            rounded-xl drop-shadow-md bg-blue-200 border border-blue-200 transition-[border]
-            hover:border-gray-800 button-size !w-full overflow-hidden">
-            <FeedIcon v-if="!userDid" :icon="icon" class="h-full text-2xl text-slate-800"/>
+            rounded-xl drop-shadow-md bg-feedBtn border border-outline transition-[border]
+            hover:border-secondary button-size !w-full overflow-hidden">
+            <FeedIcon v-if="!userDid" :icon="icon" class="h-full text-2xl text-primary"/>
             <i-mingcute:loading-fill v-show="awaitingPFPRequest" class="absolute text-black spinner self-center"/>
             <div v-if="userPfp" class="button-size bg-contain bg-centers scale-[1.15] bg-no-repeat"
             :style="{'background-image': 'url('+userPfp+')'}"></div>

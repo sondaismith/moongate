@@ -1,26 +1,26 @@
 <template>
     <div v-if="postData && isViewBlocked(postData)">
-        <div class="flex rounded-lg p-2 gap-1 border border-slate-700 items-center">
+        <div class="flex rounded-lg p-2 gap-1 border border-outline items-center">
             <i-mingcute:information-line class="size-4"/>
             <div>Blocked</div>
         </div>
     </div>
     <div v-else-if="postData && isViewNotFound(postData)">
-        <div class="flex rounded-lg p-2 gap-1 border border-slate-700 items-center">
+        <div class="flex rounded-lg p-2 gap-1 border border-outline items-center">
             <i-mingcute:information-line class="size-4"/>
             <div>Deleted</div>
         </div>
     </div>
-    <div v-else-if="postData" class="flex flex-col rounded-lg p-3 border border-slate-600 gap-2"
+    <div v-else-if="postData" class="flex flex-col rounded-lg p-3 border border-slate-600 gap-2 text-primary"
     :class="[$attrs.class, isReasonPin(postReason) ? 'pt-2' : '']">
-        <div v-if="isReasonPin(postReason)" class="flex items-center text-slate-400 border-b
-        border-slate-700 pb-1 select-none">
+        <div v-if="isReasonPin(postReason)" class="flex items-center text-secondary border-b
+        border-outline pb-1 select-none">
             <i-mdi:pin class="text-sm"/>
             <div class="font-bold text-xs">Pinned</div>
         </div>
         {{ void "Retweet Label" }}
         <div v-if="postReason && isReasonRepost(postReason) && !isViewRecord(postData)"
-        class="flex rounded p-1 bg-slate-700 items-center text-sm">
+        class="flex rounded p-1 bg-postMsg items-center text-sm">
             <div class="flex grow-0 shrink-0 justify-end px-1">
                 <i-mdi:twitter-retweet/>
             </div>
@@ -34,10 +34,10 @@
             <AvatarRound :avatar="postData.author.avatar" :did="postData.author.did" @avatar-clicked="callFocusPostAvatarClicked(postData.author.did)"/>
             <div class="flex flex-col overflow-hidden">
                 <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.displayName">{{ postData.author.displayName }}</div>
-                <div class="text-xs text-slate-400 whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.handle">@{{ postData.author.handle }}</div>
+                <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.handle">@{{ postData.author.handle }}</div>
             </div>
-            <div v-if="!isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.record.createdAt)">{{ convertToShortTimestamp(postData.record.createdAt) }}</div>
-            <div v-else-if="isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-slate-400 hover:text-slate-200 transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.value.createdAt)">{{ convertToShortTimestamp(postData.value.createdAt) }}</div>
+            <div v-if="!isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.record.createdAt)">{{ convertToShortTimestamp(postData.record.createdAt) }}</div>
+            <div v-else-if="isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.value.createdAt)">{{ convertToShortTimestamp(postData.value.createdAt) }}</div>
         </div>
         <div class="flex flex-col gap-2"
         :class="[isFeedPostStyle ? 'pl-12 pr-3' : '']">

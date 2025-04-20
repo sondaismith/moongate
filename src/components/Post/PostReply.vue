@@ -6,10 +6,10 @@
             <div v-if="(replyThreadIndex!=undefined && totalThreadReplies && replyThreadIndex<totalThreadReplies)" class="h-full bg-slate-700 w-0.5 m-auto"></div>
         </div>
         <div class="w-full pl-2 min-w-0">
-            <div class="flex leading-5 text-sm text-slate-400 items-center">
-                <div class="font-bold text-white text-nowrap overflow-hidden text-ellipsis">{{ userName }}</div>
-                <div class="flex-1 text-feedPostName pl-1 min-w-[60px] text-nowrap overflow-hidden text-ellipsis">@{{ userHandle }}</div>
-                <div class="text-feedPostName px-1 ml-auto text-nowrap cursor-pointer hover:text-slate-300"
+            <div class="flex leading-5 text-sm text-primary items-center">
+                <div class="font-bold text-nowrap overflow-hidden text-ellipsis">{{ userName }}</div>
+                <div class="flex-1 text-feedPostName text-secondary pl-1 min-w-[60px] text-nowrap overflow-hidden text-ellipsis">@{{ userHandle }}</div>
+                <div class="text-feedPostName text-secondary px-1 ml-auto text-nowrap cursor-pointer hover:text-secondaryHover"
                 :title="convertToLongTimestamp(timestamp)"
                 @click="postDetails.setCurrentThreadView(cid)"
                 >

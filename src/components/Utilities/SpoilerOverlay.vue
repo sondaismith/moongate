@@ -2,7 +2,7 @@
     <Transition>
         <div v-if="hasSensitiveContent && isSpoilered"
         class="absolute z-[1] flex flex-col backdrop-blur-lg bg-slate-800/80 w-full h-full text-sm
-        justify-center items-center text-center">
+        justify-center items-center text-center text-white">
                 <div :title="mediaType" class="absolute p-1 rounded *:w-full *:h-full
                 left-1 top-1 text-xl bg-yellow-500/80 text-black border border-slate-800">
                     <i-mingcute:photo-album-line v-if="mediaType == MediaType.Image"/>

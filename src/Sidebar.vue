@@ -1,7 +1,8 @@
 <template>
-    <div data-test="app-viewport" id="app-viewport" class="flex flex-row h-screen w-screen">
+    <div data-test="app-viewport" id="app-viewport" class="flex flex-row h-screen w-screen"
+    :class="{'theme-light':!AppState.isDarkMode}">
         {{ void "sidebar" }}
-        <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-slate-400 min-w-16 items-center">
+        <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar min-w-16 items-center">
             {{ void "App Logo" }}
             <div class="w-full border-b border-gray-700 p-2 flex-none">
                 <UserButton tooltip="[logo here]"/>
@@ -145,6 +146,7 @@ import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs"
 import { HandleAPIError } from "./helpers/errors";
 import SaveMediaModal from "./components/Utilities/SaveMediaModal.vue";
 import PostFocusModal from "./components/Post/PostFocusModal.vue";
+import App from "./App.vue";
 
 
     export default defineComponent({

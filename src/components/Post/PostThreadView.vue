@@ -1,7 +1,7 @@
 <template>
     <!-- <ReplyBreadcrumb class="px-4"/> -->
     <div class="flex pl-4 overflow-y-scroll">
-        <div class="flex flex-col w-full text-xl text-slate-200">
+        <div class="flex flex-col w-full text-xl text-primary">
             <!-- <div class="w-auto">No Replies</div> -->
             <div class="flex flex-col bg-orange-400s preload-gutter divide-y border-slate-600 divide-inherit">
                 {{ void "replies" }}

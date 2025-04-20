@@ -1,5 +1,5 @@
 <template>
-    <div :class="textColorClass" class="flex flex-wrap text-slate-400 py-2 gap-1 *:h-5 justify-around">
+    <div :class="textColorClass" class="flex flex-wrap text-secondary py-2 gap-1 *:h-5 justify-around">
         <div class="group flex items-center cursor-pointer hover:text-slate-300">
             <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-500"/>
             <div class="pl-1" :title="numComments?.toString()">{{ getCompactNumberValue(numComments ? numComments : 0) }}</div>
@@ -16,7 +16,7 @@
             <i-solar:share-bold class="pointer-events-none group-hover:text-blue-500"/>
         </div>
         <div @click="postDetails.showPostOptionsMenu" class="group flex items-center cursor-pointer hover:text-slate-300">
-            <i-mdi:dots-horizontal class="pointer-events-none group-hover:text-white"/>
+            <i-mdi:dots-horizontal class="pointer-events-none group-hover:text-primary"/>
         </div>
     </div>
 </template>

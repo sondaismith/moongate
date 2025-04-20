@@ -1,5 +1,5 @@
 <template>
-    <div class="break-words">
+    <div class="break-words text-primary">
         <component v-if="transformed.template && transformed.template.length>0" :is="transformed"></component>
     </div>
 </template>

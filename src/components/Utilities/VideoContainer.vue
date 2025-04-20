@@ -2,7 +2,7 @@
     <div>
         <div class="relative bg-black rounded-t-lg aspect-video items-center
         overflow-hidden group cursor-pointer bg-contain bg-center bg-no-repeat
-        border border-slate-600"
+        border border-outlineLighter"
         :class="[{'rounded-lg' : !isVideoPlayerVisible}]"
         :style="{'background-image' : `url(${videoView?.thumbnail})`,
         'aspect-ratio' : `${videoView?.aspectRatio?.width} / ${videoView?.aspectRatio?.height}`}">
@@ -10,7 +10,7 @@
             <div v-if="!isVideoPlayerVisible" @click="showVideo" class="flex w-full h-full items-center justify-center">
                 <div class="bg-slate-400/0 w-full h-full group-hover:bg-slate-400/30
                 transition-colors"></div>
-                <i-solar:play-bold class="absolute size-12 drop-shadow group-hover:scale-125 transition-transform"/>
+                <i-solar:play-bold class="absolute size-12 text-white drop-shadow group-hover:scale-125 transition-transform"/>
             </div>
             <div v-if="isVideoPlayerVisible" class="w-full h-full z-[1]">
                 <video-player :options="videoOptions"/>
@@ -18,7 +18,7 @@
         </div>
         <div @click="hideVideo" v-if="isVideoPlayerVisible"
         class="relative flex items-center gap-1 rounded-b-md -top-1 pt-2 pb-1 px-2
-        border border-slate-600 bg-slate-700 hover:bg-slate-500 cursor-pointer">
+        border border-slate-600 bg-postMsg hover:bg-slate-500 cursor-pointer">
             <i-mingcute:close-circle-fill class="text-base text-red-00"/>
             <div>Close Video</div>
         </div>

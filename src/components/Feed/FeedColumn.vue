@@ -1,9 +1,9 @@
 <template>
     <div data-test="feed-column" :id="feedData?.description.feedId"
-    class="flex flex-col relative w-72 pr-1 bg-slate-900
+    class="flex flex-col relative w-72 pr-1 bg-banner
     overflow-hidden max-w-[600px] origin-top-left" :style="`min-width:${feedData?.description.feedColumnSettings.width}px`">
         {{ void "feed title" }}
-        <div class="flex w-full shrink-0 border-b-2 border-white pl-2 pr-1 pt-2 pb-1">
+        <div class="flex w-full shrink-0 border-b-2 border-outline bg-banner pl-2 pr-1 pt-2 pb-1 text-primary">
             <div class="flex w-full items-center">
                 <div class="p-1 pr-3">
                     <FeedIcon :icon="feedData?.description.feedIcon"/>
@@ -13,7 +13,7 @@
                         <div class="font-semibold leading-none pr-1 truncate">{{ feedData?.description.feedName }}</div>
                         <div class="text-xs truncate">@{{ feedData?.description.feedHandle }}</div>
                     </div>
-                    <div class="text-feedTimestamp leading-4 text-nowrap content-end text-slate-400">Updated: {{ getTimeStampFormat() }}</div>
+                    <div class="text-feedTimestamp leading-4 text-nowrap content-end text-secondary">Updated: {{ getTimeStampFormat() }}</div>
                 </div>
                 <div class="flex self-center ml-auto">
                         <!-- <div title="Add - DEBUG" @click="addNewPost" class="cursor-pointer hover:text-cyan-400"><i-mingcute:plus-fill/></div> -->
@@ -94,7 +94,7 @@
                 </div>
             </div>
         </div>
-        <div class="flex flex-col h-full py-2 pl-2 pr-1 gap-2 bg-slate-600 preload-gutter overflow-y-auto" @scroll.passive="toggleScrollToTop">
+        <div class="flex flex-col h-full py-2 pl-1 pr-1 gap-2 bg-feedColumnBG preload-gutter overflow-y-auto" @scroll.passive="toggleScrollToTop">
             {{ void "Placeholder Post" }}
             <div v-if="feedData?.isAwaitingFeedData" class="flex rounded bg-slate-400 pl-1 pr-3 py-2 w-full">
                 <div class="animate-pulse drop-shadow-md">
@@ -118,18 +118,18 @@
             </div>
             <TransitionGroup name="feedpost">
                 <!-- <FeedPost v-for="n in feedData?.data" :key="n" :postData="n" /> -->
-                <div v-for="n in feedData?.data" :key="n.post.cid" class="flex flex-col rounded bg-slate-400 w-full
+                <div v-for="n in feedData?.data" :key="n.post.cid" class="flex flex-col rounded bg-feedColumnBG border border-outline w-full
                 drop-shadow-md justify-between text-sm">
                     <FocusFeedPost class="border-0 !p-1.5" :post-data="n.post" :post-reason="n.reason" :is-feed-post-style="true"/>
                 </div>
                 <div v-if="!feedData?.cursor"
-                class="flex rounded justify-center p-1 bg-slate-500 text-slate-300 select-none">
+                class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
                     End of Posts
                 </div>
                 <div v-else-if="feedData.description.feedType != FeedEnums.Types.Tag" @click="loadMorePosts(feedData.description.feedId)"
-                class="flex rounded border border-slate-700 justify-center items-center p-1 gap-1 bg-slate-500 text-slate-300
-                cursor-pointer hover:bg-slate-400 hover:text-slate-200 transition-colors select-none"
-                :class="{'bg-slate-700 hover:bg-slate-700 text-slate-500 hover:text-slate-500 pointer-events-none' : isAwaitingLoadMore}">
+                class="flex rounded border border-outline justify-center items-center p-1 gap-1 bg-postMsg text-btnText
+                cursor-pointer hover:bg-hover hover:text-slate-200 transition-colors select-none"
+                :class="{'!bg-outline hover:bg-hover text-hover hover:text-hover pointer-events-none' : isAwaitingLoadMore}">
                     <i-mingcute:loading-fill v-if="isAwaitingLoadMore" class="spinner"/>
                     <i-mingcute:plus-fill/>
                     <div>Load more</div>

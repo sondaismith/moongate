@@ -1,19 +1,19 @@
 <template>
     <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
-        <div class="relative z-20 flex flex-col max-w-[40rem] w-4/5 md:w-2/3s h-4/5 mx-auto my-auto rounded bg-slate-800
-            drop-shadow-lg overflow-hidden">
+        <div class="relative z-20 flex flex-col max-w-[40rem] w-4/5 md:w-2/3s h-4/5 mx-auto my-auto rounded bg-focusBG
+            text-primary drop-shadow-lg overflow-hidden">
             {{ void "Main Container" }}
             <div id="user-focus-container" class="h-full overflow-auto outline-none" tabindex="0">
                 <div class="flex flex-col h-full">
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0s grow items-center">
-                        <div id="user-modal-navbar" class="flex z-[4] bg-slate-900 sticky top-0 h-8 w-full self-start
-                        border-b border-slate-700 *:h-full *:cursor-pointer *:w-12">
+                        <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8 w-full self-start
+                        border-b border-outlineLighter *:h-full *:cursor-pointer *:w-12">
                             <i-mingcute:arrow-left-fill @click="goToPreviousNavHistory"
-                            class="hover:bg-slate-700" :class="[{'text-gray-600' : !hasPrevNavRecords}]"/>
+                            class="hover:bg-outline" :class="[{'text-disabled' : !hasPrevNavRecords}]"/>
                             <i-mingcute:arrow-right-fill @click="goToNextNavHistory"
-                            class="hover:bg-slate-700" :class="[{'text-gray-600' : !hasNextNavRecords}]"/>
+                            class="hover:bg-outline" :class="[{'text-disabled' : !hasNextNavRecords}]"/>
                         </div>
                         {{ void "Banner+PFP Placeholder" }}
                         <div v-if="awaitingProfileData" class="relative w-full animate-pulse z-[3]">
@@ -29,7 +29,7 @@
                             :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar+')'">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '' : 'PFP'}}</div>
                         </div>
                         {{ void "User Details Content" }}
-                        <div id="user-summary" class="flex flex-col z-[2] w-full sticky top-8 mt-10 py-2 px-4 bg-slate-800">
+                        <div id="user-summary" class="flex flex-col z-[2] w-full sticky top-8 mt-10 py-2 px-4 bg-focusBG">
                             <div v-if="awaitingProfileData" class="flex flex-col w-full mt-1 gap-2 animate-pulse">
                                 <div class="flex gap-2">
                                     <div class="flex flex-col w-full gap-1">
@@ -73,21 +73,21 @@
                                 <div class="flex mt-2">
                                     <div class="flex text-sm pr-2">
                                         <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.followersCount : '1'}}</div>
-                                        <div class="text-slate-400">followers</div>
+                                        <div class="text-secondary">followers</div>
                                     </div>
                                     <div class="flex text-sm pr-2">
                                         <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.followsCount : '33'}}</div>
-                                        <div class="text-slate-400">following</div>
+                                        <div class="text-secondary">following</div>
                                     </div>
                                     <div class="flex text-sm pr-2">
                                         <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.postsCount : '7'}}</div>
-                                        <div class="text-slate-400">posts</div>
+                                        <div class="text-secondary">posts</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div id="user-focus-bio" class="flex flex-col py-2 px-4 mb-2s w-full border-y border-slate-600 shrink grow-0 self-start">
-                            <div class="text-xs text-slate-500">Bio</div>
+                        <div id="user-focus-bio" class="flex flex-col py-2 px-4 mb-2s w-full border-y border-outlineLighter shrink grow-0 self-start">
+                            <div class="text-xs text-hover">Bio</div>
                             <div v-if="awaitingProfileData" class="flex flex-col gap-1 animate-pulse">
                                 <div class="bg-slate-500 rounded h-4 w-4/5"></div>
                                 <div class="bg-slate-500 rounded h-4 w-2/3"></div>
@@ -96,17 +96,17 @@
                             <!-- <RichPostText v-else :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/> -->
                             <RichPostTextBsky v-else-if="!awaitingProfileData" :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
                         </div>
-                        <div id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-slate-600 bg-slate-800"
+                        <div id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
                         :style="{'top':userSummaryBottomPos+'px'}">
-                            <div @click="viewPosts" class="w-full hover:bg-slate-700 cursor-pointer">
+                            <div @click="viewPosts" class="w-full hover:bg-hover cursor-pointer">
                                 <div class="pt-2 pb-1">Posts</div>
                                 <div v-if="isViewingPosts" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div @click="viewReplies" class="w-full hover:bg-slate-700 cursor-pointer">
+                            <div @click="viewReplies" class="w-full hover:bg-hover cursor-pointer">
                                 <div class="pt-2 pb-1">Replies</div>
                                 <div v-if="isViewingReplies" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div @click="viewMedia" class="w-full hover:bg-slate-700 cursor-pointer">
+                            <div @click="viewMedia" class="w-full hover:bg-hover cursor-pointer">
                                 <div class="pt-2 pb-1">Media</div>
                                 <div v-if="isViewingMedia" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
@@ -178,7 +178,7 @@
                             <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="grid gap-2 self-center
                             grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] justify-items-center
                             backdrop-blur-0 overflow-x-hiddens">
-                                <div v-for="x in 6" class="size-44 rounded bg-slate-500 border border-slate-600 animate-pulse"></div>
+                                <div v-for="x in 6" class="size-44 rounded bg-slate-500 border border-outlineLighter animate-pulse"></div>
                             </div>
                             <div v-else-if="!awaitingProfileData" class="grid gap-2 self-center
                             grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] justify-items-center
@@ -186,13 +186,13 @@
                                 <div v-for="n in UserFocusModalState.GetCurrentHistoryData().FeedData.data.filter(
                                     x => x.post.embed && x.post.author.did == UserFocusModalState.currentUserAccountDID &&
                                     (AppBskyEmbedImages.isView(x.post.embed) || AppBskyEmbedVideo.isView(x.post.embed)))"
-                                    class="relative rounded aspect-square size-44 overflow-hidden border border-slate-600">
+                                    class="relative rounded aspect-square size-44 overflow-hidden border border-outlineLighter">
                                     <div v-if="n.post.embed.images && n.post.embed.images.length>1" class="select-none">
                                         <div class="absolute z-[3] flex rounded top-2 right-2 size-6 bg-slate-300 backdrop-blur-sm text-slate-900 font-bold items-center justify-center drop-shadow">{{ n.post.embed?.images.length }}</div>
                                         <div class="absolute z-[2] flex rounded top-[5px] right-[5px] size-6 bg-slate-300/60 text-slate-900 font-bold items-center justify-center drop-shadow"></div>
                                     </div>
-                                    <div v-if="n.post.embed.images" class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs bg-black/70 select-none">Photo</div>
-                                    <div v-else class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs bg-black/70 select-none">Video</div>
+                                    <div v-if="n.post.embed.images" class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs text-white bg-black/70 select-none">Photo</div>
+                                    <div v-else class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs text-white bg-black/70 select-none">Video</div>
                                     <SpoilerOverlay class="z-[1]" :labels="n.post.labels" :has-sensitive-content="hasSensitiveContent(n)" :media-type="n.post.embed?.images ? MediaType.Image : MediaType.Video"/>
                                     <div @click="showMediaContent(n)" class="relative flex bg-violet-500 hover:bg-violet-300
                                     cursor-pointer w-full h-full bg-no-repeat bg-center bg-cover
@@ -204,13 +204,13 @@
                             </div>
                             <div v-if="!UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
                             class="flex justify-center rounded p-1 gap-1 mt-4 w-full items-center
-                            border border-slate-600 bg-slate-700 select-none">
+                            border border-outlineLighter bg-outline select-none">
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
                             <div v-else-if="UserFocusModalState.GetCurrentHistoryData().FeedData.cursor && !isAwaitingTabSwitchData" @click="loadOlderPosts"
                             class="flex justify-center rounded p-1 gap-1 mt-4 mx-4 w-fulls items-center cursor-pointer
-                            border border-slate-600 bg-slate-700 hover:bg-slate-600">
+                            border border-outline bg-outlineLighter hover:bg-outline">
                                 <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
                                 <i-mingcute:plus-fill v-else/>
                                 <div>Load more</div>

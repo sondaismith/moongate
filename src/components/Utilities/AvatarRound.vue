@@ -1,7 +1,7 @@
 <template>
     <div @click="displaySelectedUserAccount" @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
     @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="rounded-full bg-slate-300 aspect-square
-    border box-content size-10 bg-contain hover:border-slate-600
+    border border-primary box-content size-10 bg-contain hover:border-hover
     transition-[border-color] ease-linear duration-200 cursor-pointer"
     :style="{'background-image' : 'url('+avatar+')'}">
         <i-mingcute:butterfly-2-fill v-if="!avatar" class="text-2xl h-full w-full p-1 text-blue-600"/>
