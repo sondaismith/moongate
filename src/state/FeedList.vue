@@ -85,7 +85,7 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
                     {
                         handle:userData.handle
                     }
-                ).then(res => did = res.data.did)
+                ).then(res => userData.did = did = res.data.did)
                 .catch(_ => did = '');
             }
             //If we do not have a profile name
