@@ -29,7 +29,7 @@
             {{ void "Navbar Footer" }}
             <div class="w-full flex-none !mt-auto">
                 <div class="p-2 space-y-2">
-                    <FeedButton :icon="FeedEnums.Icons.Settings" tooltip="App Settings"/>
+                    <FeedButton :icon="FeedEnums.Icons.Settings" tooltip="App Settings" @click="showSettingsPanel"/>
                     <UserButton :tooltip="AppState.currentUsername"/>
                 </div>
             </div>
@@ -107,6 +107,9 @@
         <Transition name="modal">
             <CreatePost v-if="AppState.isCreatingNewPost"/>
         </Transition>
+        <Transition name="modal">
+            <SettingsPanel v-if="AppState.isSettingsPanelVisible"/>
+        </Transition>
     </div>
 </template>
 
@@ -147,6 +150,7 @@ import { HandleAPIError } from "./helpers/errors";
 import SaveMediaModal from "./components/Utilities/SaveMediaModal.vue";
 import PostFocusModal from "./components/Post/PostFocusModal.vue";
 import App from "./App.vue";
+import SettingsPanel from "./components/Settings/SettingsPanel.vue";
 
 
     export default defineComponent({
@@ -157,6 +161,7 @@ import App from "./App.vue";
             PostFocusModal,
             UserFocusModal,
             CreatePost,
+            SettingsPanel,
         },
         data(){
             return{
@@ -201,6 +206,9 @@ import App from "./App.vue";
             createNewPost(){
                 // if(!AppState.checkIfLoggedIn("post")) return;
                 AppState.showCreatePost();
+            },
+            showSettingsPanel(){
+                AppState.ShowSettingsPanel();
             },
             /**
              * DEBUG - Displays the current x-axis scroll pos of the Feed Display.

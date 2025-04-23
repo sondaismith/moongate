@@ -166,6 +166,12 @@ export const AppState = reactive({
      * Post media to.
      */
     lastMediaSaveDirectory:'',
+    /**Variable that indicates if the Settings Panel component is visible or not. */
+    isSettingsPanelVisible: false,
+    /**Method that causes the Settings Panel to be displayed. */
+    ShowSettingsPanel(){ this.isSettingsPanelVisible = true;},
+    /**Method that causes the Settings Panel to be hidden. */
+    HideSettingsPanel(){ this.isSettingsPanelVisible = false;},
     /**
      * Method that handles focusing the most important component/element when
      * another is closed/hidden.

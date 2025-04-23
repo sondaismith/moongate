@@ -1,7 +1,7 @@
 <template>
-    <div class="flex flex-col rounded-lg border border-slate-700 bg-slate-900
+    <div class="flex flex-col rounded-lg border border-outline bg-postBG
     overflow-hidden text-xs">
-        <div class="relative border-b-[1px] border-slate-700 aspect-[1.91/1]">
+        <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
             <img class="absolute w-full h-full object-center object-cover" :src="embed && embed.external ? embed.external.thumb : ''"/>
         </div>
         <div class="p-2">
