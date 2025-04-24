@@ -9,6 +9,7 @@ import Material from "@primevue/themes/material";
 import Nora from "@primevue/themes/nora";
 import Toast from "primevue/toast";
 import ToastService from "primevue/toastservice";
+import MultiSelect from 'primevue/multiselect';
 import { definePreset } from "@primevue/themes";
 
 const PrimeVueCustomTheme = definePreset(Aura,{
@@ -29,5 +30,6 @@ app.use(PrimeVue, {
 });
 app.use(ToastService);
 app.component("Toast", Toast);
+app.component("MultiSelect", MultiSelect);
 
 app.mount("#app");

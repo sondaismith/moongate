@@ -7,33 +7,52 @@
                 <i-mingcute:settings-2-line/>
                 <div>Application Settings</div>
             </div>
-            <div class="flex grow">
+            <div class="flex grow overflow-hidden">
                 <div class="flex flex-col gap-1 bg-postBG text-primary p-2 drop-shadow min-w-36">
                     <SettingsCategory v-for="(category, index) in SetttingData.Options" :index="index"
                     :selected="index == selectedCategoryIndex" @category-clicked="switchCategory">
                         {{ category.name }}
                     </SettingsCategory>
                 </div>
-                <div class="grow p-2">
-                    <div class="p-2 rounded border border-outline h-full overflow-hidden">
-                        <div class="relative ">
+                <div class="relative grow p-2 h-full">
+                    <div class="relative p-2 rounded border border-outline h-full overflow-hidden">
+                        <div class="relative h-full overflow-hidden">
                             <TransitionGroup>
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[0]">
                                     <div class="flex gap-1"><input type="checkbox" :checked="AppState.isDarkMode" @change="toggleTheme">Dark Mode?</input></div>
                                 </div>
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[1]"
-                                class="relative flex flex-col gap-2">
+                                class="relative flex flex-col gap-2 w-full h-full overflow-hidden">
                                     <div class="font-thin text-2xl">Language Selection</div>
-                                    <div class="flex gap-1"><input type="checkbox" :checked="SetttingData.Options.PostFilters.data.acceptAllLanguages">Accept Posts in All Languages</input></div>
-                                    <!-- <InLaInput text-label="Language Whitelist" title="This is a placeholder control" :is-disabled="true" :model-value="SetttingData.Options.PostFilters.data.languageWhitelist"/> -->
-                                    <div class="flex gap-1">
-                                        <input type="checkbox"/>
-                                        <div>Whitelist/Blacklist</div>
+                                    <div class="flex gap-1"><input type="checkbox" v-model="AppSettingsState.isAcceptingAllLanguages">Accept Posts in All Languages</input></div>
+                                    <div class="flex gap-1" :class="{'text-disabled' : AppSettingsState.isAcceptingAllLanguages}">
+                                        <input type="checkbox" :checked="AppSettingsState.isWhitelist"
+                                        @change="toggleAllowListType" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
+                                        <div>Whitelist</div>
                                     </div>
+                                    <div class="flex gap-1" :class="{'text-disabled' : AppSettingsState.isAcceptingAllLanguages}">
+                                        <input type="checkbox" :checked="!AppSettingsState.isWhitelist"
+                                        @change="toggleAllowListType" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
+                                        <div>Blacklist</div>
+                                    </div>
+                                    <ToggleButton left-option="Whitelist" right-option="Blacklist"
+                                    :toggle-value="AppSettingsState.isWhitelist"
+                                    @toggle-action="toggleAllowListType" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
+                                    <!-- <MultiSelect @change="console.log(SetttingData.Options.PostFilters.data.languageBlacklist)" :model-value="SetttingData.Options.PostFilters.data.languageBlacklist" filter :options="LocalesObject" :max-selected-labels="2" size="large" placeholder="Select Languages" class="w-full"/> -->
+                                    <!-- <div class="relative h-full overflow-hidden bg-lime-400"> -->
+                                    <FilterSelect ref="languageSelector" placeholder="Select Languages" :options="LocalesObject" value-key="name"
+                                    @selected-options-changed="updateSelectedLanguages"/>
+                                    <!-- </div> -->
                                     <div class="flex flex-wrap gap-1 w-fulls">
-                                        <div v-for="locale in TestLocales" class="rounded-full px-2 py-1 bg-postMsg hover:bg-hover cursor-pointer">{{ locale[0] }}</div>
+                                        <div v-for="locale in SetttingData.Options.PostFilters.data.languageBlacklist" class="rounded-full px-2 py-1 bg-postMsg hover:bg-hover cursor-pointer">{{ locale }}</div>
                                     </div>
-                                    <InLaInput text-label="Tag Blacklist" :model-value="SetttingData.Options.PostFilters.data.tagBlacklist"/>
+                                    <div>AppSettingsState Variable Version:</div>
+                                    <div class="flex flex-wrap w-full gap-1 overflow-y-scroll">
+                                        <div v-for="n in AppSettingsState.selectedLanguages"
+                                        @click="toggleLanguageOption(n)"
+                                        class="rounded-full px-2 py-0.5 bg-blue-800 cursor-pointer">{{ n .name}}</div>
+                                    </div>
+                                    <!-- <InLaInput text-label="Tag Blacklist" :model-value="SetttingData.Options.PostFilters.data.tagBlacklist"/> -->
                                 </div>
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[2]">
                                     <div class="italic">Account Settings are still not supported. Check back later!</div>
@@ -52,13 +71,18 @@ import { defineComponent } from 'vue'
 import { AppState } from '../../state/AppState.vue'
 import SettingsCategory from './SettingsCategory.vue';
 import InLaInput from '../Utilities/InLaInput.vue';
-import { TestLocales } from '../../enums/Locales';
+import { LocalesObject } from '../../enums/Locales';
+import FilterSelect from '../Utilities/FilterSelect.vue';
+import { AppSettingsState, LangCode } from '../../state/AppSettingsState.vue';
+import ToggleButton from '../Utilities/ToggleButton.vue';
+
 
 export default defineComponent({
     data(){
         return{
             AppState,
-            TestLocales,
+            AppSettingsState,
+            LocalesObject,
             SetttingData: {
                 Options:{
                     General:{
@@ -90,6 +114,8 @@ export default defineComponent({
     components:{
         SettingsCategory,
         InLaInput,
+        FilterSelect,
+        ToggleButton,
     },
     methods:{
         closeModal(){
@@ -98,8 +124,23 @@ export default defineComponent({
         toggleTheme(){
             AppState.isDarkMode = !AppState.isDarkMode;
         },
+        /**Switch the currently viewed settings category. */
         switchCategory(category:string|undefined){
             if(category) this.selectedCategoryIndex = category;
+        },
+        toggleAllowListType(){
+            AppSettingsState.isWhitelist = !AppSettingsState.isWhitelist;
+        },
+        updateSelectedLanguages(newSelection:LangCode[]){
+            AppSettingsState.selectedLanguages = newSelection;
+        },
+        /**Used to cause the child `FilterSelect` component to update its
+         * state by removing one of the selected options. Currently the event
+         * jumps from `SettingsPanel`->`FilterSelect`->back to `SettingsPanel`.
+         */
+        toggleLanguageOption(option:LangCode){
+            this.$refs.languageSelector.parentRemoveSelectedOption(option);
+            // AppSettingsState.selectedLanguages.splice(AppSettingsState.selectedLanguages.indexOf(option),1);
         }
     }
 })

@@ -20,6 +20,8 @@ export default {
         banner: "var(--color-banner)",
         focusBG: "var(--color-user-focus-bg)",
         disabled: "var(--color-disabled)",
+        toggleButton: "var(--color-toggle-button)",
+        toggleGutter: "var(--color-toggle-gutter)",
         feedHighlight: "var(--color-feed-highlight)",
       },
       fontSize:{
