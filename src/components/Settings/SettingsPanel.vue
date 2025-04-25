@@ -19,13 +19,25 @@
                         <div class="relative h-full overflow-hidden">
                             <TransitionGroup>
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[0]">
-                                    <div class="flex gap-1"><input type="checkbox" :checked="AppState.isDarkMode" @change="toggleTheme">Dark Mode?</input></div>
+                                    <div class="flex gap-1">
+                                        <div class="flex gap-1">
+                                            <input type="checkbox" :checked="AppState.isDarkMode" @change="toggleTheme"/>
+                                            <div>Dark Mode?</div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[1]"
                                 class="relative flex flex-col gap-2 w-full h-full overflow-hidden">
                                     <div class="font-thin text-2xl">Language Selection</div>
-                                    <div class="flex gap-1"><input type="checkbox" v-model="AppSettingsState.isAcceptingAllLanguages">Accept Posts in All Languages</input></div>
-                                    <div class="flex gap-1" :class="{'text-disabled' : AppSettingsState.isAcceptingAllLanguages}">
+                                    <div class="flex gap-1">
+                                            <input type="checkbox" :checked="AppState.isDarkMode" @change="toggleTheme"/>
+                                            <div>Dark Mode?</div>
+                                        </div>
+                                    <div class="flex gap-1">
+                                        <input type="checkbox" v-model="AppSettingsState.isAcceptingAllLanguages"/>
+                                        <div>Accept Posts in All Languages</div>
+                                    </div>
+                                    <!-- <div class="flex gap-1" :class="{'text-disabled' : AppSettingsState.isAcceptingAllLanguages}">
                                         <input type="checkbox" :checked="AppSettingsState.isWhitelist"
                                         @change="toggleAllowListType" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
                                         <div>Whitelist</div>
@@ -34,23 +46,39 @@
                                         <input type="checkbox" :checked="!AppSettingsState.isWhitelist"
                                         @change="toggleAllowListType" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
                                         <div>Blacklist</div>
-                                    </div>
+                                    </div> -->
                                     <ToggleButton left-option="Whitelist" right-option="Blacklist"
                                     :toggle-value="AppSettingsState.isWhitelist"
                                     @toggle-action="toggleAllowListType" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
                                     <!-- <MultiSelect @change="console.log(SetttingData.Options.PostFilters.data.languageBlacklist)" :model-value="SetttingData.Options.PostFilters.data.languageBlacklist" filter :options="LocalesObject" :max-selected-labels="2" size="large" placeholder="Select Languages" class="w-full"/> -->
                                     <!-- <div class="relative h-full overflow-hidden bg-lime-400"> -->
                                     <FilterSelect ref="languageSelector" placeholder="Select Languages" :options="LocalesObject" value-key="name"
-                                    @selected-options-changed="updateSelectedLanguages"/>
+                                    @selected-options-changed="updateSelectedLanguages" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
                                     <!-- </div> -->
-                                    <div class="flex flex-wrap gap-1 w-fulls">
+                                    <!-- <div class="flex flex-wrap gap-1 w-fulls">
                                         <div v-for="locale in SetttingData.Options.PostFilters.data.languageBlacklist" class="rounded-full px-2 py-1 bg-postMsg hover:bg-hover cursor-pointer">{{ locale }}</div>
-                                    </div>
-                                    <div>AppSettingsState Variable Version:</div>
-                                    <div class="flex flex-wrap w-full gap-1 overflow-y-scroll">
-                                        <div v-for="n in AppSettingsState.selectedLanguages"
-                                        @click="toggleLanguageOption(n)"
-                                        class="rounded-full px-2 py-0.5 bg-blue-800 cursor-pointer">{{ n .name}}</div>
+                                    </div> -->
+                                    <div class="relative flex flex-col gap-1 bg-red-500s h-full"
+                                    :class="{'text-disabled' : langControlsDisabled}">
+                                        <div>Selected Languages:</div>
+                                        <div class="flex flex-wrap bg-pink-400s grows items-start gap-1 select-none overflow-y-scroll">
+                                            <div v-for="n in AppSettingsState.selectedLanguages"
+                                            @click="toggleLanguageOption(n)"
+                                            class="relative group flex justify-center items-center rounded-full px-2 py-0.5 bg-btn hover:bg-btnHover
+                                            border border-outline overflow-hidden cursor-pointer"
+                                            :class="{'!bg-disabledBG !border-disabled pointer-events-none' : langControlsDisabled}"
+                                            title="Remove">
+                                                <div>{{n.name}}</div>
+                                                <div class="absolute flex items-center justify-center bg-focusBG/90 text-red-600 w-full h-full rounded-full
+                                                transition-transform translate-y-full group-hover:translate-y-0">
+                                                    <i-mingcute:delete-2-fill/>
+                                                </div>
+                                            </div>
+                                            <Transition>
+                                                <div v-if="AppSettingsState.selectedLanguages.length < 1"
+                                                class="bg-slate-400s italic text-btnText">~~None~~</div>
+                                            </Transition>
+                                        </div>
                                     </div>
                                     <!-- <InLaInput text-label="Tag Blacklist" :model-value="SetttingData.Options.PostFilters.data.tagBlacklist"/> -->
                                 </div>
@@ -142,6 +170,12 @@ export default defineComponent({
             this.$refs.languageSelector.parentRemoveSelectedOption(option);
             // AppSettingsState.selectedLanguages.splice(AppSettingsState.selectedLanguages.indexOf(option),1);
         }
+    },
+    computed:{
+        langControlsDisabled(){
+            if(AppSettingsState.isAcceptingAllLanguages) return true;
+            return false;
+        }
     }
 })
 </script>
@@ -157,5 +191,20 @@ export default defineComponent({
   opacity: 0;
   position: absolute;
   transform: translateX(20px);
+}
+
+.option-move,
+.option-enter-active,
+.option-leave-active {
+  /* transition: opacity 0.3s ease, transform 0.4s ease; */
+  transition: all 0.5s ease;
+}
+.option-enter-from,
+.option-leave-to {
+  /* opacity: 0; */
+  transform: translateY(-10px);
+}
+.option-leave-active {
+  /* position: absolute; */
 }
 </style>

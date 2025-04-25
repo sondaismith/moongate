@@ -1,13 +1,15 @@
 <template>
     <div @blurw="hideOptions" tabindex="0" class="relative flex flex-col overflow-hiddens h-fulls">
-        <div @click="toggleOptions" class="flex items-center justify-between p-2 rounded-md bg-postBG border
+        <div @click="disabled ? {} : toggleOptions()"
+        class="flex items-center justify-between p-2 rounded-md bg-postBG border
         transition-colors border-outline hover:border-outlineLighter
-        text-secondaryHover cursor-pointer select-none">
+        text-primary cursor-pointer select-none"
+        :class="{'!bg-disabledBG !text-disabled !border-disabled pointer-events-none' : disabled}">
             <div>{{ placeholder ? placeholder : 'Select' }}</div>
             <i-mingcute:down-line class="text-xl"/>
         </div>
         <Transition>
-            <div v-if="isOptionsVisible" class="relative w-full h-full overflow-hiddens">
+            <div v-if="isOptionsVisible" class="relative z-[1] w-full h-full overflow-hiddens">
                 <div class="absolute w-full bg-focusBG border border-t-0 border-outline">
                     <div class="flex p-2 gap-2 border-b border-outline">
                         <input type="checkbox" :checked="isAllVisibleSelected" title="Select all visible"
@@ -15,10 +17,10 @@
                         <input v-model="filterText" type="text" class="w-full px-2 py-1 bg-postFocusBG border border-outline"
                         placeholder="Filter">
                     </div>
-                    <div class="px-2 pb-2 max-h-32 h-fulls overflow-y-scroll ">
+                    <div class="p-2 max-h-32 h-fulls overflow-y-scroll ">
                         <div v-for="item in filteredOptions" class="flex gap-2 py-1 items-center
-                        transition-colors hover:bg-hover cursor-pointer"
-                        :class="{'text-green-400' : item.selected}"
+                        transition-colors hover:bg-btnHover cursor-pointer"
+                        :class="{'text-green-600' : item.selected}"
                         @click="toggleSelectedOption(item)">
                             <input type="checkbox" :checked="item.selected"/>
                             <div>{{ valueKey ? (item.option as IIndexable)[valueKey] : item.option.name }}</div>
@@ -56,6 +58,8 @@ export default defineComponent({
         placeholder:String,
         /**Specifies what value from the `options` object will be displayed in the control. */
         valueKey:String,
+        /**Is the control disabled? */
+        disabled:Boolean,
     },
     data(){
         return{

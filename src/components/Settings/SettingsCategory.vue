@@ -1,6 +1,6 @@
 <template>
     <div class="border-b border-outline p-0.5 rounded-sm cursor-pointer transition-colors
-    hover:bg-hover" :class="{'bg-feedColumnBG' : selected}" @click="clickCategory">
+    hover:bg-btnHover" :class="{'bg-feedColumnBG' : selected}" @click="clickCategory">
         <slot></slot>
     </div>
 </template>
