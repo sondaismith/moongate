@@ -1,6 +1,7 @@
 <script lang="ts">
 import { AppBskyActorSearchActors, AppBskyFeedGetAuthorFeed, AppBskyFeedGetTimeline, AppBskyFeedSearchPosts } from "@atproto/api/dist/client";
 import { GetBrowsingAgent } from "../api.vue";
+import { AppSettingsState } from "../../state/AppSettingsState.vue";
 
 export async function getUserHomeFeed():Promise<AppBskyFeedGetTimeline.Response>{
     let result = await GetBrowsingAgent().getTimeline();
@@ -45,9 +46,20 @@ export async function getAuthorFeed(did:string, cursor:string=''):Promise<AppBsk
  * @returns Search results returned from the Bluesky API.
  */
 export async function getTagPosts(tags:string,cursor:string=''):Promise<AppBskyFeedSearchPosts.Response>{
+    if(!AppSettingsState.isAcceptingAllLanguages && AppSettingsState.selectedLanguages.length>0){
+        console.log(`Here's a list of the currently selected languages:`);
+        console.log(AppSettingsState.prepareSelectedLanguages());
+    }
+    let langs = ''
+    if(!AppSettingsState.isAcceptingAllLanguages && AppSettingsState.selectedLanguages.length>0){
+        //Only one language can be passed through. Will have to create
+        //custom solution to work with multiple.
+        langs = AppSettingsState.prepareSelectedLanguages();
+    }
     let result = await GetBrowsingAgent().app.bsky.feed.searchPosts(
         {
             q:`${tags}`,
+            lang:langs,
             // cursor:cursor //as of April 3rd 2025 there's some sort of issue with `searchPosts` - disabling for now
         }
     )

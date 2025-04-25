@@ -37,6 +37,12 @@
                                         <input type="checkbox" v-model="AppSettingsState.isAcceptingAllLanguages"/>
                                         <div>Accept Posts in All Languages</div>
                                     </div>
+                                    <div class="text-sm">
+                                        Please note: Currently only
+                                        <span class="font-bold italic">one</span>
+                                        language will be used to filter returned Posts. The first item shown under
+                                        "Selected Languages" will be the one used.
+                                    </div>
                                     <!-- <div class="flex gap-1" :class="{'text-disabled' : AppSettingsState.isAcceptingAllLanguages}">
                                         <input type="checkbox" :checked="AppSettingsState.isWhitelist"
                                         @change="toggleAllowListType" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
