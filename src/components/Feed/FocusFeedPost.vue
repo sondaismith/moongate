@@ -18,11 +18,27 @@
                 <!-- <AvatarRound :avatar="postData.avatar"/> -->
                 <div class="bg-primary size-10 rounded-sm bg-contain border border-outline" :style="'background-image:url('+postData.avatar+')'"></div>
                 <div class="flex flex-col gap-1s">
-                    <div class="leading-5">{{ postData.name }}</div>
-                    <div class="text-sm text-secondary">Moderation list by @{{ postData.creator.handle }}</div>
+                    <div class="leading-5">{{ postData.record }}</div>
+                    <div class="text-sm text-secondary">Starter Pack by @{{ postData.creator.handle }}</div>
                 </div>
             </div>
             <div class="flex text-sm leading-4">{{ postData.description }}</div>
+        </div>
+    </div>
+    <div v-else-if="postData && isStarterPackViewBasic(postData)">
+        <div class="flex flex-col rounded-lg p-2 gap-1 border border-outline overflow-hidden select-none"
+        title="Starter Packs are not yet supported">
+            <div class="flex gap-2">
+                <div class="relative shrink-0 size-10 rounded-sm text-postFocusBG bg-contain border border-outline" :style="'background-image:url('+postData.creator.avatar+')'">
+                    <i-solar:box-minimalistic-bold-duotone class="absolute z-[1] w-full h-full"/>
+                    <div class="absolute w-full h-full bg-primary/10s"></div>
+                </div>
+                <div class="flex flex-col overflow-hidden">
+                    <div class="leading-5 text-nowrap overflow-hidden text-ellipsis">{{ postData.record.name }}</div>
+                    <div class="text-sm text-secondary text-nowrap w-full overflow-hidden text-ellipsis">By @{{ postData.creator.handle }}</div>
+                </div>
+            </div>
+            <div class="flex text-sm leading-4">{{ postData.record.description }}</div>
         </div>
     </div>
     <div v-else-if="postData" class="flex flex-col rounded-lg p-3 border border-slate-600 gap-2 text-primary"
@@ -106,7 +122,7 @@ import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { showFocusModal } from '../../state/PostDetails.vue';
 import { View } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
-import { isListView } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
+import { isListView, isStarterPackView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 
 export default defineComponent({
     components:{
@@ -135,6 +151,7 @@ export default defineComponent({
             isViewBlocked,
             isViewNotFound,
             isListView,
+            isStarterPackViewBasic,
             convertToLongTimestamp,
             convertToShortTimestamp,
             AppBskyEmbedImages,
@@ -174,7 +191,7 @@ export default defineComponent({
         },
     },
     created(){
-        // console.log(this.postData); //DEBUG - missing object/variable catching
+        console.log(this.postData); //DEBUG - missing object/variable catching
         // console.log('Has this post been deleted?');
         // console.log(isViewNotFound(this.postData));
     }
