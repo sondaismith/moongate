@@ -94,7 +94,7 @@
                                 <div class="bg-slate-500 rounded h-4 w-3/5"></div>
                             </div>
                             <!-- <RichPostText v-else :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/> -->
-                            <RichPostTextBsky v-else-if="!awaitingProfileData" :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
+                            <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory" :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
                         </div>
                         <div id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
                         :style="{'top':userSummaryBottomPos+'px'}">
@@ -155,7 +155,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-else-if="!awaitingProfileData" v-for="n in UserFocusModalState.GetCurrentHistoryData().FeedData.data.filter(x => !x.reply) as FeedViewPost[]"
+                            <div v-else-if="!awaitingProfileData && !isNavigatingHistory" v-for="n in UserFocusModalState.GetCurrentHistoryData().FeedData.data.filter(x => !x.reply) as FeedViewPost[]"
                             class="w-full shrink-0s">
                                 <FocusFeedPost :post-data="n.post" :post-reason="n.reason" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
@@ -276,6 +276,11 @@ export default defineComponent({
             awaitingProfileData:false,
             isAwaitingTabSwitchData:false,
             isAwaitingLoadMorePosts:false,
+            /**
+             * Indicates if we are currently switching between already viewed pages.
+             * Used to update component content when using page history navigation.
+             */
+            isNavigatingHistory:false,
             currentUserProfile:{} as ProfileViewDetailed,
             currentUserAccountTimelineData:{data:[],cursor:''} as IFeedReturnedPostResults,
             userSummaryBottomPos:0
@@ -471,8 +476,12 @@ export default defineComponent({
          */
         goToPreviousNavHistory(){
             this.updateCurrentNavHistoryScrollPos();
+            this.isNavigatingHistory = true;
             UserFocusModalState.PrevNavHistory();
-            this.restoreScrollPosAfterNavHistoryChange();
+            setTimeout(() => {
+                this.restoreScrollPosAfterNavHistoryChange();
+                this.isNavigatingHistory = false;
+            }, 1);
         },
         /**
          * Method that calls `NextNavHistory` to display the next
@@ -480,8 +489,12 @@ export default defineComponent({
          */
         goToNextNavHistory(updateScrollPos:boolean = true){
             if(updateScrollPos) this.updateCurrentNavHistoryScrollPos();
+            this.isNavigatingHistory = true;
             UserFocusModalState.NextNavHistory();
-            this.restoreScrollPosAfterNavHistoryChange();
+            setTimeout(() => {
+                this.restoreScrollPosAfterNavHistoryChange();
+                this.isNavigatingHistory = false;
+            }, 1);
         },
         /**
          * Method that updates the currently viewed "Navigation History" object's

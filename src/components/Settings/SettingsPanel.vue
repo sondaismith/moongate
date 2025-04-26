@@ -34,7 +34,7 @@
                                             <div>Dark Mode?</div>
                                         </div>
                                     <div class="flex gap-1">
-                                        <input type="checkbox" v-model="AppSettingsState.isAcceptingAllLanguages"/>
+                                        <input type="checkbox" v-model="AppSettingsState.Settings.isAcceptingAllLanguages"/>
                                         <div>Accept Posts in All Languages</div>
                                     </div>
                                     <div class="text-sm">
@@ -54,12 +54,12 @@
                                         <div>Blacklist</div>
                                     </div> -->
                                     <ToggleButton left-option="Whitelist" right-option="Blacklist"
-                                    :toggle-value="AppSettingsState.isWhitelist"
-                                    @toggle-action="toggleAllowListType" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
+                                    :toggle-value="AppSettingsState.Settings.isWhitelist"
+                                    @toggle-action="toggleAllowListType" :disabled="AppSettingsState.Settings.isAcceptingAllLanguages"/>
                                     <!-- <MultiSelect @change="console.log(SetttingData.Options.PostFilters.data.languageBlacklist)" :model-value="SetttingData.Options.PostFilters.data.languageBlacklist" filter :options="LocalesObject" :max-selected-labels="2" size="large" placeholder="Select Languages" class="w-full"/> -->
                                     <!-- <div class="relative h-full overflow-hidden bg-lime-400"> -->
                                     <FilterSelect ref="languageSelector" placeholder="Select Languages" :options="LocalesObject" value-key="name"
-                                    @selected-options-changed="updateSelectedLanguages" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
+                                    @selected-options-changed="updateSelectedLanguages" :disabled="AppSettingsState.Settings.isAcceptingAllLanguages"/>
                                     <!-- </div> -->
                                     <!-- <div class="flex flex-wrap gap-1 w-fulls">
                                         <div v-for="locale in SetttingData.Options.PostFilters.data.languageBlacklist" class="rounded-full px-2 py-1 bg-postMsg hover:bg-hover cursor-pointer">{{ locale }}</div>
@@ -68,7 +68,7 @@
                                     :class="{'text-disabled' : langControlsDisabled}">
                                         <div>Selected Languages:</div>
                                         <div class="flex flex-wrap bg-pink-400s grows items-start gap-1 select-none overflow-y-scroll">
-                                            <div v-for="n in AppSettingsState.selectedLanguages"
+                                            <div v-for="n in AppSettingsState.Settings.selectedLanguages"
                                             @click="toggleLanguageOption(n)"
                                             class="relative group flex justify-center items-center rounded-full px-2 py-0.5 bg-btn hover:bg-btnHover
                                             border border-outline overflow-hidden cursor-pointer"
@@ -81,7 +81,7 @@
                                                 </div>
                                             </div>
                                             <Transition>
-                                                <div v-if="AppSettingsState.selectedLanguages.length < 1"
+                                                <div v-if="AppSettingsState.Settings.selectedLanguages.length < 1"
                                                 class="bg-slate-400s italic text-btnText">~~None~~</div>
                                             </Transition>
                                         </div>
@@ -163,10 +163,10 @@ export default defineComponent({
             if(category) this.selectedCategoryIndex = category;
         },
         toggleAllowListType(){
-            AppSettingsState.isWhitelist = !AppSettingsState.isWhitelist;
+            AppSettingsState.Settings.isWhitelist = !AppSettingsState.Settings.isWhitelist;
         },
         updateSelectedLanguages(newSelection:LangCode[]){
-            AppSettingsState.selectedLanguages = newSelection;
+            AppSettingsState.Settings.selectedLanguages = newSelection;
         },
         /**Used to cause the child `FilterSelect` component to update its
          * state by removing one of the selected options. Currently the event
@@ -179,7 +179,7 @@ export default defineComponent({
     },
     computed:{
         langControlsDisabled(){
-            if(AppSettingsState.isAcceptingAllLanguages) return true;
+            if(AppSettingsState.Settings.isAcceptingAllLanguages) return true;
             return false;
         }
     }

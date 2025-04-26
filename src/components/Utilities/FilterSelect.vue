@@ -154,7 +154,7 @@ export default defineComponent({
                 this.heldOptions.push({option:item,selected:false})
             });
             //Ensure selected options stored in state are reflected in the control
-            AppSettingsState.selectedLanguages.forEach(selected => {
+            AppSettingsState.Settings.selectedLanguages.forEach(selected => {
                 let foundOption = this.heldOptions.find(x=>x.option == selected);
                 if(foundOption) foundOption.selected = true;
             });

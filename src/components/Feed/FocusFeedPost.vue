@@ -122,7 +122,7 @@ import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { showFocusModal } from '../../state/PostDetails.vue';
 import { View } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
-import { isListView, isStarterPackView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
+import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 
 export default defineComponent({
     components:{
@@ -191,7 +191,7 @@ export default defineComponent({
         },
     },
     created(){
-        console.log(this.postData); //DEBUG - missing object/variable catching
+        // console.log(this.postData); //DEBUG - missing object/variable catching
         // console.log('Has this post been deleted?');
         // console.log(isViewNotFound(this.postData));
     }
