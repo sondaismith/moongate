@@ -56,15 +56,16 @@ export async function getTagPosts(tags:string,cursor:string=''):Promise<AppBskyF
         //custom solution to work with multiple.
         langs = AppSettingsState.prepareSelectedLanguages();
     }
-    // let result = await GetBrowsingAgent().app.bsky.feed.searchPosts(
-    //     {
-    //         q:`${tags}`,
-    //         lang:langs,
-    //         // cursor:cursor //as of April 3rd 2025 there's some sort of issue with `searchPosts` - disabling for now
-    //     }
-    // )
-    //Commented out because tag feeds/search seems to be broken atm - 04/26/25
-    let result = {} as Promise<AppBskyFeedSearchPosts.Response>;
+    //Commented out below because tag feeds/search seems to be broken atm - 04/26/25
+    let result = await GetBrowsingAgent().app.bsky.feed.searchPosts(
+        {
+            q:`${tags}`,
+            lang:langs,
+            // cursor:cursor //as of April 3rd 2025 there's some sort of issue with `searchPosts` - disabling for now
+        }
+    )
+    //Code below was used because tag feeds/search was broken - 04/26/25
+    // let result = {} as Promise<AppBskyFeedSearchPosts.Response>;
     return result;
 }
 </script>

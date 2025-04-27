@@ -21,7 +21,7 @@
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[0]">
                                     <div class="flex gap-1">
                                         <div class="flex gap-1">
-                                            <input type="checkbox" :checked="AppState.isDarkMode" @change="toggleTheme"/>
+                                            <input type="checkbox" :checked="AppSettingsState.Settings.isDarkMode" @change="toggleTheme"/>
                                             <div>Dark Mode?</div>
                                         </div>
                                     </div>
@@ -30,7 +30,7 @@
                                 class="relative flex flex-col gap-2 w-full h-full overflow-hidden">
                                     <div class="font-thin text-2xl">Language Selection</div>
                                     <div class="flex gap-1">
-                                            <input type="checkbox" :checked="AppState.isDarkMode" @change="toggleTheme"/>
+                                            <input type="checkbox" :checked="AppSettingsState.Settings.isDarkMode" @change="toggleTheme"/>
                                             <div>Dark Mode?</div>
                                         </div>
                                     <div class="flex gap-1">
@@ -102,13 +102,14 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { AppState } from '../../state/AppState.vue'
+import { AppState, toast } from '../../state/AppState.vue'
 import SettingsCategory from './SettingsCategory.vue';
 import InLaInput from '../Utilities/InLaInput.vue';
 import { LocalesObject } from '../../enums/Locales';
 import FilterSelect from '../Utilities/FilterSelect.vue';
 import { AppSettingsState, LangCode } from '../../state/AppSettingsState.vue';
 import ToggleButton from '../Utilities/ToggleButton.vue';
+import { AppSettings, updateAppSettings } from '../../lib/db/local_db';
 
 
 export default defineComponent({
@@ -156,7 +157,7 @@ export default defineComponent({
             AppState.HideSettingsPanel();
         },
         toggleTheme(){
-            AppState.isDarkMode = !AppState.isDarkMode;
+            AppSettingsState.Settings.isDarkMode = !AppSettingsState.Settings.isDarkMode;
         },
         /**Switch the currently viewed settings category. */
         switchCategory(category:string|undefined){
@@ -182,6 +183,12 @@ export default defineComponent({
             if(AppSettingsState.Settings.isAcceptingAllLanguages) return true;
             return false;
         }
+    },
+    async beforeUnmount(){
+        //Save application settings when
+        await updateAppSettings({collection:AppSettingsState.prepareSettingsToSaveToDB()} as AppSettings)
+        .then(res => toast.add({summary:'Settings Saved', severity:'success', group:'tr', life:3000}))
+        .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'tr', life:3000}))
     }
 })
 </script>

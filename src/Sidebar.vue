@@ -1,6 +1,6 @@
 <template>
     <div data-test="app-viewport" id="app-viewport" class="flex flex-row h-screen w-screen"
-    :class="{'theme-light':!AppState.isDarkMode}">
+    :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
         {{ void "sidebar" }}
         <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar min-w-16 items-center">
             {{ void "App Logo" }}
@@ -149,8 +149,8 @@ import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs"
 import { HandleAPIError } from "./helpers/errors";
 import SaveMediaModal from "./components/Utilities/SaveMediaModal.vue";
 import PostFocusModal from "./components/Post/PostFocusModal.vue";
-import App from "./App.vue";
 import SettingsPanel from "./components/Settings/SettingsPanel.vue";
+import { AppSettingsState } from "./state/AppSettingsState.vue";
 
 
     export default defineComponent({
@@ -176,6 +176,7 @@ import SettingsPanel from "./components/Settings/SettingsPanel.vue";
                 AccountPeekState,
                 postDetails,
                 AppState,
+                AppSettingsState,
                 DebugFlags,
                 iconTypes:PostEnums.IconTypes,
                 scrollXPos : 0,
@@ -338,6 +339,7 @@ import SettingsPanel from "./components/Settings/SettingsPanel.vue";
                 }
                 if(!tableExist){
                     console.log("`app_settings` table missing - creating table");
+                    await createAppSettingTable();
                     await initializeAppSettingsTable();
                 }
             },
@@ -383,6 +385,9 @@ import SettingsPanel from "./components/Settings/SettingsPanel.vue";
                 var curWindow = await getCurrentWindow();
                 curWindow.setPosition(loadedWindowPosition);
                 curWindow.setSize(loadedWindowSize);
+
+                //Load application settings
+                AppSettingsState.loadSettingsFromDB(appSettings[0].collection);
 
                 //Load saved Feeds
                 var lastOpenFeeds = await loadSavedFeedsRecords() as SavedFeeds[];

@@ -1,6 +1,6 @@
 import { Monitor, PhysicalPosition, PhysicalSize } from "@tauri-apps/api/window";
 import { BaseDirectory, exists, remove } from "@tauri-apps/plugin-fs";
-import Database from "@tauri-apps/plugin-sql";
+import Database, { QueryResult } from "@tauri-apps/plugin-sql";
 import { IFeedDBData, IFeedListing } from "../../interfaces/FeedInterfaces";
 
 const APPLICATION_DB = "sqlite:moongate_app.db";
@@ -25,7 +25,7 @@ export enum QueryAction{
  * Holds details specifying table name (key) and number of columns (value).
  */
 export enum DBTable{
-    app_settings = 8,
+    app_settings = 9,
     user_accounts = 4,
     saved_feeds = 1,
 }
@@ -43,6 +43,7 @@ export type AppSettings = {
     lastWindowPosY?: number,
     lastMonitor?: string,
     lastUpdatedAt?: string,
+    collection?:string,
 }
 
 /**
@@ -142,7 +143,8 @@ export async function createAppSettingTable(){
     try{
         const newTableQuery = 'CREATE TABLE app_settings (id INTEGER PRIMARY KEY,currentUserId INTEGER DEFAULT 1,'
         +'darkModeOn INTEGER DEFAULT 0,lastWindowWidth INTEGER,lastWindowHeight INTEGER,lastWindowPosX INTEGER,'
-        +'lastWindowPosY INTEGER,lastMonitor TEXT DEFAULT "\\\\.\\DISPLAY1",lastUpdatedAt datetime DEFAULT "now")';
+        +'lastWindowPosY INTEGER,lastMonitor TEXT DEFAULT "\\\\.\\DISPLAY1",lastUpdatedAt datetime DEFAULT "now",'
+        +'collection TEXT DEFAULT "")';
         result = await db.execute(newTableQuery);
     }
     catch(error){
@@ -210,7 +212,7 @@ export async function initializeAppSettingsTable(){
     try{
         //create variable with initial values
         var initialValues = {currentUserId: 1,darkModeOn:0,lastWindowWidth:800,lastWindowHeight:600,lastWindowPosX:560,
-            lastWindowPosY:240,lastMonitor:"\\\\.\\DISPLAY1",lastUpdatedAt:new Date().toISOString()} as AppSettings;
+            lastWindowPosY:240,lastMonitor:"\\\\.\\DISPLAY1",lastUpdatedAt:new Date().toISOString(),collection:''} as AppSettings;
         //generate query
         var query = createQueryString(QueryAction.INSERT,initialValues,DBTable.app_settings);
         if(query == undefined) addInitialResult = "ERROR: Creation of initialize 'app_settings' table query failed";
@@ -231,23 +233,16 @@ export async function initializeAppSettingsTable(){
  * @param newValues The values to update the `app_settings` table with.
  * @returns
  */
-export async function updateAppSettings(newValues:AppSettings|Object) {
+export async function updateAppSettings(newValues:AppSettings|Object):Promise<QueryResult> {
     const db = await Database.load(APPLICATION_DB);
-    var result;
-    var updateQueryResult;
+    let result:QueryResult = {rowsAffected:0};
 
-    try{
-        var query = createQueryString(QueryAction.UPDATE, newValues, DBTable.app_settings);
-        if(query == undefined) updateQueryResult = "ERROR: Creation of 'update' query failed";
-        else
-            updateQueryResult = await db.execute(query,Object.values(newValues));
-        result = updateQueryResult;
-    }
-    catch (error){
-        result = error;
-    }
-    await db.close(); //close connection
-    return checkIfError(result);
+    var query = createQueryString(QueryAction.UPDATE, newValues, DBTable.app_settings);
+    if(query == undefined) throw new Error("ERROR: Creation of 'update' query failed");
+    await db.execute(query,Object.values(newValues))
+    .then(res => result = res)
+    .finally(() => db.close());
+    return result;
 }
 
 /**

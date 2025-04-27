@@ -155,7 +155,7 @@ export default defineComponent({
             });
             //Ensure selected options stored in state are reflected in the control
             AppSettingsState.Settings.selectedLanguages.forEach(selected => {
-                let foundOption = this.heldOptions.find(x=>x.option == selected);
+                let foundOption = this.heldOptions.find(x=>x.option.code == selected.code);
                 if(foundOption) foundOption.selected = true;
             });
         }
