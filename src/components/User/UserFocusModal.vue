@@ -4,7 +4,7 @@
         <div class="relative z-20 flex flex-col max-w-[40rem] w-4/5 md:w-2/3s h-4/5 mx-auto my-auto rounded bg-focusBG
             text-primary drop-shadow-lg overflow-hidden">
             {{ void "Main Container" }}
-            <div id="user-focus-container" class="h-full overflow-auto outline-none" tabindex="0">
+            <div id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="0">
                 <div class="flex flex-col h-full">
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0s grow items-center">
