@@ -1,5 +1,5 @@
 <template>
-    <div ref="imageContainer" class="@container relative grid grid-cols-2 grid-flow-row grid-rows-2 w-full gap-0.5 border
+    <div v-if="Array.isArray(imagesToDisplay)" ref="imageContainer" class="@container relative grid grid-cols-2 grid-flow-row grid-rows-2 w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 cursor-pointer"
         :style="[
             (imagesToDisplay?.length === 1 && !imagesToDisplay[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),
@@ -21,12 +21,22 @@
                 :style="{'background-image': 'url('+image.thumb+')'}"></div>
         </div>
     </div>
+    <div v-else ref="imageContainer" class="@container relative w-full gap-0.5 border
+    border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 cursor-pointer">
+        <div class="overflow-hidden cursor-pointer w-full h-full" @contextmenu="showOptionsMenu($event, imagesToDisplay, author)">
+            <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div>
+            <!-- <div class="h-full w-full bg-center bg-contain bg-no-repeat"
+            :title="imagesToDisplay?.title"
+            :style="{'background-image': 'url('+imagesToDisplay?.uri+')'}"></div> -->
+            <img :title="imagesToDisplay?.title" :src="imagesToDisplay?.uri"/>
+        </div>
+    </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
-import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isViewImage, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { Label } from '@atproto/api/dist/client/types/com/atproto/label/defs';
 import SpoilerOverlay from './SpoilerOverlay.vue';
 import { IOptionMenuItem } from './OptionsMenu.vue';
@@ -37,6 +47,7 @@ import { AppState } from '../../state/AppState.vue';
 import MdiImageOutline from '~icons/mdi/image-outline';
 import MdiImagePlusOutline from '~icons/mdi/image-plus-outline';
 import { MediaType } from '../../enums/PostEnums';
+import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
@@ -50,12 +61,21 @@ export function calculateImageContainerMinHeight(elWidth:number):number{
  * @param url The URL of the image to save.
  * @param author Value used to reference the author (uploader) of this image.
  */
-async function saveImageWithAuthor(image:ViewImage, author:string|undefined){
+async function saveImageWithAuthor(image:ViewImage|ViewExternal, author:string|undefined){
+    let fileName = undefined;
+    let safeHandle = undefined;
     AppState.saveMedia = image;
-    let fileName = image.fullsize.split('\/').pop()?.split('@')[0];
-    let safeHandle = '';
-    if(author) safeHandle =  author.replace (/\./g,'_');
-    AppState.fileSaveDefaultFilename = `${fileName} by ${safeHandle}.jpg`;
+    if(!image.uri){//not Tenor GIF
+        fileName = (image as ViewImage).fullsize.split('\/').pop()?.split('@')[0];
+        safeHandle = '';
+        if(author) safeHandle =  author.replace (/\./g,'_');
+        AppState.fileSaveDefaultFilename = `${fileName} by ${safeHandle}.jpg`;
+    }
+    else{
+        fileName = (image as ViewExternal).uri.split('\/').pop()?.split('@')[0];
+        fileName = fileName ? fileName.split('.gif')[0] : '';
+        AppState.fileSaveDefaultFilename = `${fileName}.gif`;
+    }
     AppState.isSavingMediaModalVisible = true;
 }
 
@@ -65,7 +85,7 @@ export default defineComponent({
     },
     name:'ImageContainer',
     props:{
-        imagesToDisplay: Object as PropType<ViewImage[]>,
+        imagesToDisplay: Object as PropType<ViewImage[]>|PropType<ViewExternal>,
         labels: Object as PropType<Label[]>,
         author: String,
     },
@@ -96,7 +116,7 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to Images.
          */
-        showOptionsMenu(e:MouseEvent, image:ViewImage, author:string|undefined){
+        showOptionsMenu(e:MouseEvent, image:ViewImage|ViewExternal, author:string|undefined){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
                 {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,author)}},

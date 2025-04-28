@@ -77,12 +77,18 @@
             <RichPostTextBsky v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
             <RichPostTextBsky v-else :post-text="postData.value.text"/>
             {{ void "Post Media" }}
-            <VideoContainer v-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed.media)"
-            :video-view="postData.embed.media" :labels="postData.labels" :author="postData.author.handle"/>
-            <VideoContainer v-else-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed)"
+            <!-- <VideoContainer v-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed.media)"
+            :video-view="postData.embed.media" :labels="postData.labels" :author="postData.author.handle"/> -->
+            <VideoContainer v-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed)"
             :video-view="postData.embed" :labels="postData.labels" :author="postData.author.handle"/>
+            <VideoContainer v-else-if="postData.embeds && AppBskyEmbedVideo.isView(postData.embeds[0])"
+            :video-view="postData.embeds[0]" :labels="postData.labels" :author="postData.author.handle"/>
+            <!-- Above conditions ~ 1:Post w/ Video, 2:RT w/ Video, 3:QRT w/ Video -->
             <ImageContainer v-if="!isViewRecord(postData) && postData.embed && postData.embed.images"
             :images-to-display="postData.embed?.images" :labels="postData.labels"
+            :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>
+            <ImageContainer v-else-if="!isViewRecord(postData) && postData.embed && AppBskyEmbedRecordWithMedia.isView(postData.embed) && postData.embed.media.images"
+            :images-to-display="postData.embed?.media.images" :labels="postData.labels"
             :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>
             <ImageContainer v-else-if="isViewRecord(postData) && postData.embeds && postData.embeds.length>0 && postData.embeds[0].images"
             :images-to-display="postData.embeds[0].images" :labels="postData.labels"
@@ -93,6 +99,9 @@
             </div>
             <div v-else-if="postData.embeds && postData.embeds.length>0">
                 <EmbedExternal v-if="AppBskyEmbedExternal.isView(postData.embeds[0])" :embed="postData.embeds[0] as View"/>
+            </div>
+            <div v-else-if="postData.embed && postData.embed.media && AppBskyEmbedExternal.isView(postData.embed.media)">
+                <EmbedExternal :embed="postData.embed.media as View"/>
             </div>
             {{ void "Reposts - ViewRecord and View" }}
             <FocusFeedPost v-if="postData.embed?.record && postData.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postData.embed.record.record)"

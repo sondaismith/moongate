@@ -6,6 +6,7 @@ import { authAgent, guestAgent } from '../lib/api.vue';
 import { Agent } from '@atproto/api';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { UserFocusModalState } from './UserFocusModalState.vue';
+import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -156,7 +157,7 @@ export const AppState = reactive({
      */
     isSavingMediaModalVisible:false,
     /**Value holding details relating to the media to download/save. */
-    saveMedia:{} as ViewImage,
+    saveMedia:{} as ViewImage|ViewExternal,
     /**Value used to hold the default file name to use for media being saved. */
     fileSaveDefaultFilename:'',
     /**Value used to indicate the progress of downloading a media file. */

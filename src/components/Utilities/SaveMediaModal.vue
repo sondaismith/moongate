@@ -5,9 +5,12 @@
         rounded bg-slate-700 border border-slate-800 overflow-hidden">
             <div class="px-2 py-1 bg-slate-800 border-b border-slate-500">Save as</div>
             <div class="flex flex-col gap-2 p-3 overflow-hidden">
-                <div class="self-start rounded h-32 bg-slate-500 overflow-hidden"
+                <div v-if="!AppState.saveMedia.uri" class="self-start rounded h-32 bg-slate-500 overflow-hidden"
                 :style="`aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}`">
                     <div class="h-full bg-cover" :style="`background-image: url(${AppState.saveMedia.thumb})`"></div>
+                </div>
+                <div v-else class="self-start rounded size-32 bg-slate-500 overflow-hidden" @contextmenu.prevent>
+                    <div class="h-full bg-contain bg-no-repeat bg-center" :style="`background-image: url(${AppState.saveMedia.uri})`"></div>
                 </div>
                 <InLaInput class="h-10 text-[12px]" text-label="Filename" :model-value="AppState.fileSaveDefaultFilename" @update:model-value="updateFileName"/>
                 <div class="relative">
@@ -36,6 +39,8 @@ import InLaInput from './InLaInput.vue';
 import SquareButton from './SquareButton.vue';
 import { open } from '@tauri-apps/plugin-dialog';
 import { exists } from '@tauri-apps/plugin-fs';
+import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 
 export default defineComponent({
     components:{
@@ -68,8 +73,11 @@ export default defineComponent({
             this.progressSum = 0;
             this.progressGoal = 0;
             this.isDownloading = true;
+            let downloadURL = '';
+            if(!AppState.saveMedia.uri) downloadURL = (AppState.saveMedia as ViewImage).fullsize
+            else downloadURL = (AppState.saveMedia as ViewExternal).uri
             await download(
-                AppState.saveMedia.fullsize,
+                downloadURL,
                 `${AppState.lastMediaSaveDirectory}\\${AppState.fileSaveDefaultFilename}`,
                 ({ progress, total }) => {
                     this.progressSum += progress;

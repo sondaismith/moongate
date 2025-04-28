@@ -3,6 +3,7 @@
         <div class="relative bg-black rounded-t-lg aspect-video items-center
         overflow-hidden group cursor-pointer bg-contain bg-center bg-no-repeat
         border border-outlineLighter"
+        :title="videoView?.alt"
         :class="[{'rounded-lg' : !isVideoPlayerVisible}]"
         :style="{'background-image' : `url(${videoView?.thumbnail})`,
         'aspect-ratio' : `${videoView?.aspectRatio?.width} / ${videoView?.aspectRatio?.height}`}">
