@@ -72,36 +72,16 @@
         <div class="flex flex-col gap-2"
         :class="[isFeedPostStyle ? 'pl-12 pr-3' : '']">
             {{ void "Post Text Content" }}
-            <!-- <RichPostText v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
-            <RichPostText v-else :post-text="postData.value.text"/> -->
             <RichPostTextBsky v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
             <RichPostTextBsky v-else :post-text="postData.value.text"/>
             {{ void "Post Media" }}
-            <!-- <VideoContainer v-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed.media)"
-            :video-view="postData.embed.media" :labels="postData.labels" :author="postData.author.handle"/> -->
-            <VideoContainer v-if="postData.embed && AppBskyEmbedVideo.isView(postData.embed)"
-            :video-view="postData.embed" :labels="postData.labels" :author="postData.author.handle"/>
-            <VideoContainer v-else-if="postData.embeds && AppBskyEmbedVideo.isView(postData.embeds[0])"
-            :video-view="postData.embeds[0]" :labels="postData.labels" :author="postData.author.handle"/>
-            <!-- Above conditions ~ 1:Post w/ Video, 2:RT w/ Video, 3:QRT w/ Video -->
-            <ImageContainer v-if="!isViewRecord(postData) && postData.embed && postData.embed.images"
-            :images-to-display="postData.embed?.images" :labels="postData.labels"
-            :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>
-            <ImageContainer v-else-if="!isViewRecord(postData) && postData.embed && AppBskyEmbedRecordWithMedia.isView(postData.embed) && postData.embed.media.images"
-            :images-to-display="postData.embed?.media.images" :labels="postData.labels"
-            :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>
-            <ImageContainer v-else-if="isViewRecord(postData) && postData.embeds && postData.embeds.length>0 && postData.embeds[0].images"
-            :images-to-display="postData.embeds[0].images" :labels="postData.labels"
-            :author="postData.author.handle" @media-click="(i:number) => openFocusDetails(i)"/>
-            {{ void "1st Post w/External Embed, 2nd - Repost w/ External Embed" }}
-            <div v-if="postData.embed && AppBskyEmbedExternal.isView(postData.embed)">
-                <EmbedExternal :embed="postData.embed as View"/>
-            </div>
-            <div v-else-if="postData.embeds && postData.embeds.length>0">
-                <EmbedExternal v-if="AppBskyEmbedExternal.isView(postData.embeds[0])" :embed="postData.embeds[0] as View"/>
-            </div>
-            <div v-else-if="postData.embed && postData.embed.media && AppBskyEmbedExternal.isView(postData.embed.media)">
-                <EmbedExternal :embed="postData.embed.media as View"/>
+            <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
+            :labels="postData.labels" :author="postData.author.handle"
+            @media-click="(i:number) => openFocusDetails(i)"/>
+            <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
+            :labels="postData.labels" :author="postData.author.handle"/>
+            <div v-if="postContainsExternalEmbed">
+                <EmbedExternal :embed="getPostEmbed"/>
             </div>
             {{ void "Reposts - ViewRecord and View" }}
             <FocusFeedPost v-if="postData.embed?.record && postData.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postData.embed.record.record)"
@@ -127,7 +107,7 @@ import AvatarRound from '../Utilities/AvatarRound.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import PostInteractionIcons from '../Post/PostInteractionIcons.vue';
-import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isImage, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { showFocusModal } from '../../state/PostDetails.vue';
 import { View } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
@@ -198,6 +178,157 @@ export default defineComponent({
                 // postDetails.updatePostDetailIconValues(this.postData.post.replyCount.toString(),this.postData.post.repostCount.toString(),this.postData.post.likeCount.toString());
             }
         },
+    },
+    computed:{
+        /**
+         * Determines if the current Post data held by the component contains any images.
+         */
+        postContainsImage(){
+            //This is the standalone/parent Post, not a QRT (Quote Retweet)
+            if(!isViewRecord(this.postData)){
+                if(this.postData?.embed && this.postData.embed.images){
+                    //Is a parent Post with image(s)
+                    return true;
+                }
+                else if(this.postData?.embed && AppBskyEmbedRecordWithMedia.isView(this.postData.embed) && this.postData.embed.media.images){
+                    //Is a parent Post with image(s) and a QRT
+                    return true;
+                }
+            }
+            else{
+                //This is a QRT
+                if(this.postData?.embeds && this.postData.embeds.length>0 && this.postData.embeds[0].images){
+                    //Is a QRT with image(s)
+                    return true;
+                }
+            }
+            return false;
+        },
+        /**
+         * Determines if the current Post data held by the component contains any video.
+         */
+        postContainsVideo(){
+            //This is the standalone/parent Post, not a QRT (Quote Retweet)
+            if(!isViewRecord(this.postData)){
+                if(this.postData?.embed && AppBskyEmbedVideo.isView(this.postData.embed)){
+                    //Is a parent Post with video
+                    return true;
+                }
+                else if(this.postData?.embed && AppBskyEmbedVideo.isView(this.postData.embed.media)){
+                    //Is a parent Post with video and a QRT
+                    return true;
+                }
+            }
+            else{
+                //This is a QRT
+                if(this.postData?.embeds && AppBskyEmbedVideo.isView(this.postData.embeds[0])){
+                    //Is a QRT with video
+                    return true;
+                }
+            }
+            return false;
+        },
+        /**
+         * Determines if the current Post data held by the component contains external embed content.
+         */
+         postContainsExternalEmbed(){
+            //This is the standalone/parent Post, not a QRT (Quote Retweet)
+            if(!isViewRecord(this.postData)){
+                if(this.postData?.embed && AppBskyEmbedExternal.isView(this.postData.embed)){
+                    //Is a parent Post with external embed
+                    return true;
+                }
+                else if(this.postData?.embed && this.postData.embed.media && AppBskyEmbedExternal.isView(this.postData.embed.media)){
+                    //Is a parent Post with video and a QRT
+                    return true;
+                }
+            }
+            else{
+                //This is a QRT
+                if(this.postData?.embeds && AppBskyEmbedExternal.isView(this.postData.embeds[0])){
+                    //Is a QRT with video
+                    return true;
+                }
+            }
+            return false;
+        },
+        /**
+         * Method that figures out what object to pass on to the `ImageContainer` component
+         * based on what type of data configuration the current Post has.
+         * @returns `ViewImage[]` containing Post images.
+         */
+        getPostImages():ViewImage[]{
+            //This is a standalone/parent Post, not a QRT (Quote Retweet)
+            if(!isViewRecord(this.postData)){
+                if(this.postData?.embed && this.postData.embed.images){
+                    //Is a parent Post with image(s)
+                    return this.postData.embed.images as ViewImage[];
+                }
+                else if(this.postData?.embed && AppBskyEmbedRecordWithMedia.isView(this.postData.embed) && this.postData.embed.media.images){
+                    //Is a parent Post with image(s) and a QRT
+                    return this.postData.embed.media.images as ViewImage[];
+                }
+            }
+            else{
+                //This is a QRT
+                if(this.postData?.embeds && this.postData.embeds.length>0 && this.postData.embeds[0].images){
+                    //Is a QRT with image(s)
+                    return this.postData.embeds[0].images as ViewImage[];
+                }
+            }
+            return [];
+        },
+        /**
+         * Method that figures out what object to pass on to the `VideoContainer` component
+         * based on what type of data configuration the current Post has.
+         * @returns `AppBskyEmbedVideo.View` containing Video details.
+         */
+        getPostVideo():AppBskyEmbedVideo.View|undefined{
+            if(!isViewRecord(this.postData)){
+                if(this.postData?.embed && AppBskyEmbedVideo.isView(this.postData.embed)){
+                    //Is a parent Post with video
+                    return this.postData.embed;
+                }
+                else if(this.postData?.embed && AppBskyEmbedVideo.isView(this.postData.embed.media)){
+                    //Is a parent Post with video and a QRT
+                    return this.postData.embed.media;
+                }
+            }
+            else{
+                //This is a QRT
+                if(this.postData?.embeds && AppBskyEmbedVideo.isView(this.postData.embeds[0])){
+                    //Is a QRT with video
+                    return this.postData.embeds[0];
+                }
+            }
+            // return {cid:'',playlist:''};//Empty AppBskyEmbedVideo.View object, shouldn't ever be returned
+            return undefined;
+        },
+        /**
+         * Method that figures out what object to pass on to the `EmbedExternal` component
+         * based on what type of data configuration the current Post has.
+         * @returns `AppBskyEmbedExternal.View` containing external embed details.
+         */
+        getPostEmbed():AppBskyEmbedExternal.View|undefined{
+            //This is the standalone/parent Post, not a QRT (Quote Retweet)
+            if(!isViewRecord(this.postData)){
+                if(this.postData?.embed && AppBskyEmbedExternal.isView(this.postData.embed)){
+                    //Is a parent Post with external embed
+                    return this.postData.embed;
+                }
+                else if(this.postData?.embed && this.postData.embed.media && AppBskyEmbedExternal.isView(this.postData.embed.media)){
+                    //Is a parent Post with external embed and a QRT
+                    return this.postData.embed.media;
+                }
+            }
+            else{
+                //This is a QRT
+                if(this.postData?.embeds && AppBskyEmbedExternal.isView(this.postData.embeds[0])){
+                    //Is a QRT with video
+                    return this.postData.embeds[0];
+                }
+            }
+        }
     },
     created(){
         // console.log(this.postData); //DEBUG - missing object/variable catching
