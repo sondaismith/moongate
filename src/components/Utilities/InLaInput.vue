@@ -1,7 +1,7 @@
 <template>
     <div class="relative flex flex-col" :class="fillContainer ? 'w-full' : ''">
         <input @keyup.enter="emitValue" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"
-            class="peer bg-slate-900 leading-8 pl-2 pt-3 h-11
+            class="peer bg-slate-900 leading-8 px-2 pt-3 h-11
             border-gray-500 hover:border-blue-400 focus:border-blue-600 rounded-md
             disabled:border-gray-700 disabled:text-gray-500
             w-full" :class="$attrs.class" :type="isPasswordInput ? 'password' : 'text'"

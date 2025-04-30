@@ -76,7 +76,7 @@
             <RichPostTextBsky v-else :post-text="postData.value.text"/>
             {{ void "Post Media" }}
             <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
-            :labels="postData.labels" :author="postData.author.handle"
+            :labels="postData.labels" :author="postData.author.handle" :post-text="getPostText"
             @media-click="(i:number) => openFocusDetails(i)"/>
             <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
             :labels="postData.labels" :author="postData.author.handle"/>
@@ -328,6 +328,10 @@ export default defineComponent({
                     return this.postData.embeds[0];
                 }
             }
+        },
+        getPostText():string{
+            if(!isViewRecord(this.postData)) return this.postData?.record.text;
+            else return this.postData.value.text;
         }
     },
     created(){

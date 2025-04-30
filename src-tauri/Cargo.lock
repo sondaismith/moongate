@@ -2216,6 +2216,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4ee93343901ab17bd981295f2cf0026d4ad018c7c31ba84549a4ddbb47a45104"
 
 [[package]]
+name = "little_exif"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a26fae30c5254b9ef1c26a82a5adf0b9dad82ef923a8bf298655470599e33e77"
+dependencies = [
+ "crc",
+ "miniz_oxide",
+ "paste",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2322,6 +2333,7 @@ dependencies = [
 name = "moongate"
 version = "0.1.2"
 dependencies = [
+ "little_exif",
  "serde",
  "serde_json",
  "tauri",
@@ -2858,6 +2870,12 @@ dependencies = [
  "smallvec",
  "windows-targets 0.52.6",
 ]
+
+[[package]]
+name = "paste"
+version = "1.0.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pathdiff"

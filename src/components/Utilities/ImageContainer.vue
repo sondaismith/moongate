@@ -7,7 +7,7 @@
             (imagesToDisplay?.length && imagesToDisplay.length > 1 ? 'aspect-ratio: 16 / 9':'')
         ]">
         <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Image"/>
-        <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, author)" class="overflow-hidden cursor-pointer"
+        <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, author, postText)" class="overflow-hidden cursor-pointer"
             :class="[
                         (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
                         (imagesToDisplay?.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
@@ -23,11 +23,9 @@
     </div>
     <div v-else ref="imageContainer" class="@container relative w-full gap-0.5 border
     border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 cursor-pointer">
-        <div class="overflow-hidden cursor-pointer w-full h-full" @contextmenu="showOptionsMenu($event, imagesToDisplay, author)">
+        <div class="overflow-hidden cursor-pointer w-full h-full" @contextmenu="showOptionsMenu($event, imagesToDisplay, author, postText)">
             <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div>
-            <!-- <div class="h-full w-full bg-center bg-contain bg-no-repeat"
-            :title="imagesToDisplay?.title"
-            :style="{'background-image': 'url('+imagesToDisplay?.uri+')'}"></div> -->
+            <!-- GIF -->
             <img :title="imagesToDisplay?.title" :src="imagesToDisplay?.uri"/>
         </div>
     </div>
@@ -48,6 +46,7 @@ import MdiImageOutline from '~icons/mdi/image-outline';
 import MdiImagePlusOutline from '~icons/mdi/image-plus-outline';
 import { MediaType } from '../../enums/PostEnums';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import { isTauri } from '@tauri-apps/api/core';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
@@ -61,7 +60,7 @@ export function calculateImageContainerMinHeight(elWidth:number):number{
  * @param url The URL of the image to save.
  * @param author Value used to reference the author (uploader) of this image.
  */
-async function saveImageWithAuthor(image:ViewImage|ViewExternal, author:string|undefined){
+async function saveImageWithAuthor(image:ViewImage|ViewExternal, author:string|undefined, postText:string|undefined){
     let fileName = undefined;
     let safeHandle = undefined;
     AppState.saveMedia = image;
@@ -69,12 +68,21 @@ async function saveImageWithAuthor(image:ViewImage|ViewExternal, author:string|u
         fileName = (image as ViewImage).fullsize.split('\/').pop()?.split('@')[0];
         safeHandle = '';
         if(author) safeHandle =  author.replace (/\./g,'_');
-        AppState.fileSaveDefaultFilename = `${fileName} by ${safeHandle}.jpg`;
+        AppState.fileSaveDetails.full = `${fileName} by ${safeHandle}`;
+        AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
+        AppState.fileSaveDetails.extension = '.jpg'; //Need to create method that parses image URL to determine extension (the @jpeg part)
+        AppState.fileSaveDetails.handle = author ? author : '';
+        AppState.fileSaveDetails.postText = postText ? postText : '';
+
     }
     else{
         fileName = (image as ViewExternal).uri.split('\/').pop()?.split('@')[0];
         fileName = fileName ? fileName.split('.gif')[0] : '';
-        AppState.fileSaveDefaultFilename = `${fileName}.gif`;
+        AppState.fileSaveDetails.full = `${fileName}`;
+        AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
+        AppState.fileSaveDetails.extension = '.gif';
+        AppState.fileSaveDetails.handle = '';
+        AppState.fileSaveDetails.postText = postText ? postText : '';
     }
     AppState.isSavingMediaModalVisible = true;
 }
@@ -88,6 +96,7 @@ export default defineComponent({
         imagesToDisplay: Object as PropType<ViewImage[]>|PropType<ViewExternal>,
         labels: Object as PropType<Label[]>,
         author: String,
+        postText: String
     },
     methods:{
         /**
@@ -116,13 +125,15 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to Images.
          */
-        showOptionsMenu(e:MouseEvent, image:ViewImage|ViewExternal, author:string|undefined){
-            e.preventDefault();
-            OptionsMenuState.currentMenuItems = [
-                {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,author)}},
-                {Icon:MdiImageOutline,Label:'Save Image',Action:()=>void 0},
-            ] as IOptionMenuItem[]
-            OptionsMenuState.showOptionMenu(e);
+        showOptionsMenu(e:MouseEvent, image:ViewImage|ViewExternal, author:string|undefined, postText:string|undefined){
+            // if(isTauri()){
+                e.preventDefault();
+                OptionsMenuState.currentMenuItems = [
+                    {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,author,postText)}},
+                    {Icon:MdiImageOutline,Label:'Save Image',Action:()=>void 0},
+                ] as IOptionMenuItem[]
+                OptionsMenuState.showOptionMenu(e);
+            // }
         },
     },
     data(){

@@ -159,7 +159,18 @@ export const AppState = reactive({
     /**Value holding details relating to the media to download/save. */
     saveMedia:{} as ViewImage|ViewExternal,
     /**Value used to hold the default file name to use for media being saved. */
-    fileSaveDefaultFilename:'',
+    fileSaveDetails:{
+        /**The full filename that will be used when saving the file. Can be updated by control on `SaveMediaModal`. */
+        full:'',
+        /**The original filename the image had on the server. */
+        originalFilename:'',
+        /**The file extension of the file to be downloaded. */
+        extension:'.jpg',
+        /**The handle of the account that posted/shared the image. */
+        handle:'',
+        /**The text (if any) that was posted along with the image. */
+        postText:''
+    },
     /**Value used to indicate the progress of downloading a media file. */
     fileSaveDownloadPercent:0,
     /**

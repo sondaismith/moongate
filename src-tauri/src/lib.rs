@@ -1,4 +1,6 @@
 use tauri::{utils::config::Position, window, Emitter, Manager, PhysicalPosition};
+use little_exif::metadata::Metadata;
+use little_exif::exif_tag::ExifTag;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -30,7 +32,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_app_window_size,
             show_main_window,
-            position_on_monitor
+            position_on_monitor,
+            write_metadata_to_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -94,4 +97,42 @@ fn position_on_monitor(app_handle: tauri::AppHandle, monitor_name: String) {
         Ok(result) => result,
         Err(error) => panic!("Problem placing `main` WebviewWindow: {error:?}"),
     };
+}
+
+#[tauri::command]
+fn write_metadata_to_file(image_file:String, user_handle:String, description:String){
+    println!("This is where the metadata would be written to file: {}",image_file);
+    let image_path = std::path::Path::new(&image_file);
+    let metadata = Metadata::new_from_path(&image_path);
+    // let mut metadata = Metadata::new_from_path(&image_path);
+
+    // metadata.unwrap().set_tag(
+    //     // ExifTag::ImageDescription("Hello World!".to_string())
+    //     ExifTag::ImageDescription(image_file)
+    // );
+    match metadata {
+        Ok(mut m) =>{
+            m.set_tag(
+                //Using "Title" field because the "Description" field is an IPTC field, which is not supported
+                ExifTag::ImageDescription(description.to_string()) //"Title" field
+            );
+            m.set_tag(
+                ExifTag::Artist(user_handle.to_string())
+            );
+            let _ = m.write_to_file(&image_path);
+        },
+        Err(e) =>{
+            println!("Error: {}",e);
+        }
+    }
+    // match metadata {
+    //     Ok(m) => {
+    //         m.write_to_file(&image_path);
+    //     },
+    //     Err(e) => {
+    //         println!("Error: {}",e);
+    //     }
+    // }
+    // metadata.unwrap().write_to_file(&image_path);
+    // Ok(())
 }
