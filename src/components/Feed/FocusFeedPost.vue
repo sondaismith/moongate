@@ -231,7 +231,7 @@ export default defineComponent({
         /**
          * Determines if the current Post data held by the component contains external embed content.
          */
-         postContainsExternalEmbed(){
+        postContainsExternalEmbed(){
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
             if(!isViewRecord(this.postData)){
                 if(this.postData?.embed && AppBskyEmbedExternal.isView(this.postData.embed)){
@@ -239,14 +239,18 @@ export default defineComponent({
                     return true;
                 }
                 else if(this.postData?.embed && this.postData.embed.media && AppBskyEmbedExternal.isView(this.postData.embed.media)){
-                    //Is a parent Post with video and a QRT
+                    //Is a parent Post with external embed and a QRT
                     return true;
                 }
             }
             else{
                 //This is a QRT
                 if(this.postData?.embeds && AppBskyEmbedExternal.isView(this.postData.embeds[0])){
-                    //Is a QRT with video
+                    //Is a QRT with external embed
+                    return true;
+                }
+                else if(this.postData?.embeds && this.postData.embeds.length>0 && AppBskyEmbedExternal.isView(this.postData.embeds[0].media)){
+                    //Is a QRT with external embed (GIF) with Text ?? not sure
                     return true;
                 }
             }
@@ -324,8 +328,12 @@ export default defineComponent({
             else{
                 //This is a QRT
                 if(this.postData?.embeds && AppBskyEmbedExternal.isView(this.postData.embeds[0])){
-                    //Is a QRT with video
+                    //Is a QRT with external embed
                     return this.postData.embeds[0];
+                }
+                else if(this.postData?.embeds && this.postData.embeds.length>0 && AppBskyEmbedExternal.isView(this.postData.embeds[0].media)){
+                    //Is a QRT with external embed (GIF) with Text ?? not sure
+                    return this.postData?.embeds[0].media;
                 }
             }
         },

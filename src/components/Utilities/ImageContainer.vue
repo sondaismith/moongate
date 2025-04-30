@@ -23,7 +23,7 @@
     </div>
     <div v-else ref="imageContainer" class="@container relative w-full gap-0.5 border
     border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 cursor-pointer">
-        <div class="overflow-hidden cursor-pointer w-full h-full" @contextmenu="showOptionsMenu($event, imagesToDisplay, author, postText)">
+        <div class="flex justify-center overflow-hidden cursor-pointer w-full h-full" @contextmenu="showOptionsMenu($event, imagesToDisplay, author, postText)">
             <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div>
             <!-- GIF -->
             <img :title="imagesToDisplay?.title" :src="imagesToDisplay?.uri"/>
