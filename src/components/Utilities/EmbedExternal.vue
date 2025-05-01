@@ -1,10 +1,11 @@
 <template>
     <div class="flex flex-col rounded-lg border border-outline bg-postBG
     overflow-hidden text-xs">
-        <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
+        <div class="relative border-outline aspect-[1.91/1]"
+        :class="{'border-b-[1px]':!isTenorGIF}">
             <img v-if="!isTenorGIF" class="absolute w-full h-full object-center object-cover"
             :src="embed && embed.external ? embed.external.thumb : ''"/>
-            <ImageContainer v-else class="absolute w-full h-full object-center object-cover"
+            <ImageContainer v-else class="absolute w-full h-full object-center object-cover border-0"
             :title="embed.external.title"
             :src="embed && embed.external ? embed.external.uri : ''"
             :images-to-display="embed.external"/>
