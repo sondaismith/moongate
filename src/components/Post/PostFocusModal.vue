@@ -12,28 +12,25 @@
             <div class="flex items-center h-full justify-center overflow-hidden">
                 <div class="flex shrink-0 text-2xl bg-blue-400 w-10">
                     <div @click="decreaseCurrentMediaIndex"
-                    v-if="postDetails.currentThreadView.post.embed?.images &&
-                    postDetails.clickedMediaIndex != 0 &&
-                    postDetails.clickedMediaIndex>=0"
+                    v-if="canDecreaseMediaIndex"
                     class="cursor-pointer">
                         <i-mingcute:left-fill/>
                     </div>
                 </div>
                 <div v-if="postDetails.isAwaitingFocusData" class="h-full w-full rounded-sm border-0 bg-slate-500 animate-pulse"></div>
-                <div v-else-if="postDetails.currentThreadView.post.embed?.images && !postDetails.isAwaitingFocusData"
+                <div v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
                 class="rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
-                :style="{'background-image' : 'url('+postDetails.currentThreadView.post.embed.images[postDetails.clickedMediaIndex].fullsize+')'}">
+                :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[postDetails.clickedMediaIndex] as ViewImage).fullsize+')'}">
                 </div>
                 <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
                 class="relative flex flex-col max-w-full h-full justify-center p-5"
                 :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
                 :video-view="postDetails.currentThreadView.post.embed">
                 </video-container>
+                <EmbedExternal v-else-if="hasEmbedGIFMedia" :embed="getEmbedGIFMedia"/>
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
                     <div @click="increaseCurrentMediaIndex"
-                    v-if="postDetails.currentThreadView.post.embed?.images &&
-                    postDetails.clickedMediaIndex+1 != postDetails.currentThreadView.post.embed?.images.length &&
-                    postDetails.clickedMediaIndex>=0"
+                    v-if="canIncreaseMediaIndex"
                     class="cursor-pointer">
                         <i-mingcute:right-fill/>
                     </div>
@@ -41,7 +38,7 @@
             </div>
             <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 h-16 animate-pulse text-sm bg-slate-500/30"></div>
             <div v-else-if="hasEmbededImagesWithAltText" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 text-sm bg-slate-500/20">
-                <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed.images[postDetails.clickedMediaIndex].alt }}</div>
+                <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ getEmbededImageAltText }}</div>
             </div>
             <div v-else-if="hasEmbededVideoWithAltText" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 text-sm bg-slate-500/20">
                 <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed?.alt }}</div>
@@ -153,6 +150,8 @@ import { isView as isImageView, ViewImage } from '@atproto/api/dist/client/types
 import { isView as isVideoView, View as ViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import { AppState } from '../../state/AppState.vue';
+import { AppBskyEmbedExternal, AppBskyEmbedRecordWithMedia } from '@atproto/api';
+import EmbedExternal from '../Utilities/EmbedExternal.vue';
 
 export default defineComponent({
     components:{
@@ -160,6 +159,7 @@ export default defineComponent({
         PostThreadView,
         ReplyBreadcrumb,
         VideoContainer,
+        EmbedExternal,
     },
     data(){
         return{
@@ -172,7 +172,8 @@ export default defineComponent({
             postDetails,
             convertToLongTimestamp,
             isImageView,
-            isVideoView
+            isVideoView,
+            AppBskyEmbedRecordWithMedia,
         }
     },
     methods:{
@@ -189,11 +190,30 @@ export default defineComponent({
         }
     },
     computed:{
-        /**Checks to see if the current post contains any media. */
-        hasEmbededMedia(){
-            if(postDetails.currentThreadView.post.embed &&
-            (isImageView(postDetails.currentThreadView.post.embed) ||
-            isVideoView(postDetails.currentThreadView.post.embed))) return true;
+        /**Checks to see if the current post contains any image media. */
+        hasImageMedia(){
+            //Image Post
+            if((postDetails.currentThreadView.post.embed &&
+            isImageView(postDetails.currentThreadView.post.embed)))
+                return true;
+            //Image Post w/ QRT
+            if(AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            isImageView(postDetails.currentThreadView.post.embed.media))
+                return true;
+            return false;
+        },
+        /**Checks to see if the current post contains an embeded GIF. */
+        hasEmbedGIFMedia(){
+            //GIF Post
+            if((postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.media &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed.media)))
+                return true;
+            //GIF Post in QRT
+            if((postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.external &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed)))
+                return true;
             return false;
         },
         /**
@@ -201,9 +221,18 @@ export default defineComponent({
          * the first one has any descriptive ALT text.
          */
         hasEmbededImagesWithAltText(){
+            //Image Post
             if(postDetails.currentThreadView.post.embed &&
             postDetails.currentThreadView.post.embed.images &&
-            (postDetails.currentThreadView.post.embed.images as ViewImage[])[postDetails.clickedMediaIndex].alt.trim() != '') return true;
+            (postDetails.currentThreadView.post.embed.images as ViewImage[])[postDetails.clickedMediaIndex].alt.trim() != '')
+                return true;
+            //Image Post w/ QRT
+            else if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            postDetails.currentThreadView.post.embed.media.images &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0 &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[0].alt.trim() != '')
+                return true;
             return false;
         },
         /**
@@ -215,6 +244,75 @@ export default defineComponent({
             isVideoView(postDetails.currentThreadView.post.embed) &&
             (postDetails.currentThreadView.post.embed as ViewVideo).alt &&
             (postDetails.currentThreadView.post.embed as ViewVideo).alt.trim() != '') return true;
+            return false;
+        },
+        /**
+         * Method that returns the ALT text attached to an image. This is a helper method that
+         * simplifies the proceess of locating the ALT text data based on the type of the Post
+         * object.
+         */
+        getEmbededImageAltText():string{
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.images)
+                return (postDetails.currentThreadView.post.embed.images as ViewImage[])[postDetails.clickedMediaIndex].alt;
+            else if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
+                return (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[0].alt;
+            return '';
+        },
+        /**
+         * Method used to return the image collection held by the currently
+         * selected Post. Resolves the location of the data based on the type of
+         * the Post object.
+         */
+        getEmbededImageViewImageObjects():ViewImage[]{
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.images)
+                return (postDetails.currentThreadView.post.embed.images as ViewImage[]);
+            else if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            postDetails.currentThreadView.post.embed.media.images &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
+                return (postDetails.currentThreadView.post.embed.media.images as ViewImage[]);
+            return [];
+        },
+        /**
+         * Method that returns the GIF EmbedExternal object. This is a helper method that
+         * simplifies the proceess of locating the embed data based on the type of the Post
+         * object.
+         */
+        getEmbedGIFMedia():AppBskyEmbedExternal.View|undefined{
+            //GIF Post
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.media &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed.media
+            ))
+                return postDetails.currentThreadView.post.embed.media
+            //GIF Post in QRT
+            if((postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.external &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed)))
+                return postDetails.currentThreadView.post.embed;
+        },
+        /**Determines if the current media index can be decreased.*/
+        canDecreaseMediaIndex(){
+            let currentImages = this.getEmbededImageViewImageObjects;
+            if(currentImages.length>0){
+                if(postDetails.clickedMediaIndex != 0 &&
+                postDetails.clickedMediaIndex>=0)
+                    return true;
+            }
+            return false;
+        },
+        /**Determines if the current media index can be increased.*/
+        canIncreaseMediaIndex(){
+            let currentImages = this.getEmbededImageViewImageObjects;
+            if(currentImages.length>0){
+                if(postDetails.clickedMediaIndex+1 != currentImages.length &&
+                postDetails.clickedMediaIndex>=0)
+                    return true;
+            }
             return false;
         }
     },
