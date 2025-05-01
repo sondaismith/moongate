@@ -85,7 +85,8 @@
             <div v-if="!postDetails.isAwaitingFocusData" class="p-4">
                 <div class="flex">
                     <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
-                    :did="postDetails.currentThreadView.post.author.did"/>
+                    :did="postDetails.currentThreadView.post.author.did"
+                    :handle="postDetails.currentThreadView.post.author.handle"/>
                     <div class="self-center ml-2 overflow-hidden text-primary">
                         <div class="font-bold leading-4 text-ellipsis overflow-hidden">{{ postDetails.currentThreadView.post.author.displayName }}</div>
                         <div class="text-feedPostName text-ellipsis overflow-hidden">@{{ postDetails.currentThreadView.post.author.handle }}</div>

@@ -61,7 +61,8 @@
         </div>
         {{ void "Post Profile Header" }}
         <div class="flex items-center gap-2">
-            <AvatarRound :avatar="postData.author.avatar" :did="postData.author.did" @avatar-clicked="callFocusPostAvatarClicked(postData.author.did)"/>
+            <AvatarRound :avatar="postData.author.avatar" :did="postData.author.did" :handle="postData.author.handle"
+            @avatar-clicked="callFocusPostAvatarClicked(postData.author.did)"/>
             <div class="flex flex-col overflow-hidden">
                 <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.displayName">{{ postData.author.displayName }}</div>
                 <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.handle">@{{ postData.author.handle }}</div>
