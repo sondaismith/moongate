@@ -106,7 +106,7 @@ import { isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost } from '
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid, RepostRecord } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
-import { isViewBlocked, isViewNotFound, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { isViewBlocked, isViewNotFound, isViewRecord, ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
@@ -209,8 +209,12 @@ export default defineComponent({
                     //Is a QRT with image(s)
                     return true;
                 }
+                else if(this.postData?.embeds && this.postData.embeds.length>0 && this.postData.embeds[0].media &&
+                    this.postData.embeds[0].media.images && this.postData.embeds[0].media.images.length>0){
+                    //Is a QRT with image(s)
+                    return true;
+                }
             }
-            return false;
         },
         /**
          * Determines if the current Post data held by the component contains any video.
@@ -286,6 +290,11 @@ export default defineComponent({
                 if(this.postData?.embeds && this.postData.embeds.length>0 && this.postData.embeds[0].images){
                     //Is a QRT with image(s)
                     return this.postData.embeds[0].images as ViewImage[];
+                }
+                else if(this.postData?.embeds && this.postData.embeds.length>0 && this.postData.embeds[0].media &&
+                    this.postData.embeds[0].media.images){
+                    //Is a QRT with image(s)
+                    return this.postData.embeds[0].media.images as ViewImage[];
                 }
             }
             return [];
