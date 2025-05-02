@@ -59,7 +59,12 @@
                             <div v-else class="flex flex-col w-full">
                                 <div class="flex justify-between overflow-hiddens">
                                     <div class="overflow-hidden">
-                                        <div class="text-2xl font-semibold overflow-hidden text-ellipsis">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.displayName : "Username Title"}}</div>
+                                        <div class="flex flex-wrap items-center gap-1 *:leading-6s">
+                                            <div class="flex text-2xl font-semibold overflow-hidden text-ellipsis">
+                                                {{UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.displayName : "Username Title"}}
+                                            </div>
+                                            <VerifiedBadge v-if="isUserVerified"/>
+                                        </div>
                                         <div class="text-xs">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '@'+UserFocusModalState.GetCurrentHistoryData().ProfileData.handle : '@handle'}}</div>
                                     </div>
                                     <div class="relative flex items-center mt-1 gap-2 h-8">
@@ -253,6 +258,7 @@ import SpoilerOverlay from '../Utilities/SpoilerOverlay.vue';
 import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
 import { MediaType } from '../../enums/PostEnums';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
+import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 
 export default defineComponent({
     data(){
@@ -298,6 +304,7 @@ export default defineComponent({
         AvatarRound,
         EmbedExternal,
         FollowUser,
+        VerifiedBadge,
         ToContainerTop,
     },
     methods:{
@@ -550,6 +557,15 @@ export default defineComponent({
             if(UserFocusModalState.GetCurrentHistoryData().ProfileData.viewer && UserFocusModalState.GetCurrentHistoryData().ProfileData.viewer.following){
                 return true;
             }
+            return false;
+        },
+        /**
+         * Method used to see if the viewed User is verified.
+         */
+        isUserVerified(){
+            let profile = UserFocusModalState.GetCurrentHistoryData().ProfileData;
+            if(profile.verification && profile.verification.verifiedStatus == 'valid')
+                return true;
             return false;
         },
         hasPrevNavRecords(){

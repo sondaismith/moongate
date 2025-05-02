@@ -64,7 +64,12 @@
             <AvatarRound :avatar="postData.author.avatar" :did="postData.author.did" :handle="postData.author.handle"
             @avatar-clicked="callFocusPostAvatarClicked(postData.author.did)"/>
             <div class="flex flex-col overflow-hidden">
-                <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.displayName">{{ postData.author.displayName }}</div>
+                <div class="flex items-center gap-1">
+                    <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.displayName">
+                        {{ postData.author.displayName }}
+                    </div>
+                    <VerifiedBadge v-if="isUserVerified" class="size-4"/>
+                </div>
                 <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.handle">@{{ postData.author.handle }}</div>
             </div>
             <div v-if="!isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.record.createdAt)">{{ convertToShortTimestamp(postData.record.createdAt) }}</div>
@@ -113,6 +118,7 @@ import { showFocusModal } from '../../state/PostDetails.vue';
 import { View } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
+import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 
 export default defineComponent({
     components:{
@@ -122,6 +128,7 @@ export default defineComponent({
         RichPostText,
         RichPostTextBsky,
         EmbedExternal,
+        VerifiedBadge,
         PostInteractionIcons,
     },
     props:{
@@ -341,7 +348,16 @@ export default defineComponent({
         getPostText():string{
             if(!isViewRecord(this.postData)) return this.postData?.record.text;
             else return this.postData.value.text;
-        }
+        },
+        /**
+         * Method used to see if the User of the focused Post is verified.
+         */
+        isUserVerified(){
+            let profile = this.postData?.author;
+            if(profile != undefined && profile.verification && profile.verification.verifiedStatus == 'valid')
+                return true;
+            return false;
+        },
     },
     created(){
         // console.log(this.postData); //DEBUG - missing object/variable catching

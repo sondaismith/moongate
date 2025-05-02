@@ -11,8 +11,11 @@
                 <FollowUser v-if="!AccountPeekState.awaitingAPIResponse" :is-user-followed="isFollowingUser"
                 :user-did="AccountPeekState.profileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
             </div>
-            <div class="grow-0 shrink-0">
-                <div class="text-primary font-medium">{{ AccountPeekState.profileData.displayName }}</div>
+            <div class="flex flex-col gap-1 grow-0 shrink-0">
+                <div class="flex flex-wrap items-center *:leading-5 leading-5 gap-1">
+                    <div class="inline text-primary font-medium">{{ AccountPeekState.profileData.displayName }}</div>
+                    <VerifiedBadge v-if="isUserVerified" class="size-4"/>
+                </div>
                 <div class="text-secondary leading-3">@{{ AccountPeekState.profileData.handle }}</div>
             </div>
             <div class="flex text-sm text-primary mt-2 mb-1 gap-1 grow-0 shrink-0">
@@ -37,11 +40,13 @@ import RichPostText from './RichPostText.vue';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import FollowUser from './FollowUser.vue';
 import { AppState } from '../../state/AppState.vue';
+import VerifiedBadge from './VerifiedBadge.vue';
 
 export default defineComponent({
     name:'Account Peek',
     components:{
         RichPostText,
+        VerifiedBadge,
         FollowUser,
     },
     data(){
@@ -76,7 +81,16 @@ export default defineComponent({
             }
             // console.log('false...');
             return false;
-        }
+        },
+        /**
+         * Method used to see if the viewed User is verified.
+         */
+        isUserVerified(){
+            let profile = AccountPeekState.profileData;
+            if(profile != undefined && profile.verification && profile.verification.verifiedStatus == 'valid')
+                return true;
+            return false;
+        },
     },
 })
 </script>

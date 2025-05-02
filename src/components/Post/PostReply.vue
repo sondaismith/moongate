@@ -7,7 +7,11 @@
         </div>
         <div class="w-full pl-2 min-w-0">
             <div class="flex leading-5 text-sm text-primary items-center">
-                <div class="font-bold text-nowrap overflow-hidden text-ellipsis">{{ userName }}</div>
+                <div class="flex items-center gap-1 overflow-hidden">
+                    <div class="font-bold text-nowrap overflow-hidden text-ellipsis"
+                    :title="userName">{{ userName }}</div>
+                    <VerifiedBadge v-if="isUserVerified" class="size-4"/>
+                </div>
                 <div class="flex-1 text-feedPostName text-secondary pl-1 min-w-[60px] text-nowrap overflow-hidden text-ellipsis">@{{ userHandle }}</div>
                 <div class="text-feedPostName text-secondary px-1 ml-auto text-nowrap cursor-pointer hover:text-secondaryHover"
                 :title="convertToLongTimestamp(timestamp)"
@@ -29,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, PropType } from 'vue'
 import * as PostEnums from "../../enums/PostEnums";
 import { IDetailIcon } from '../../interfaces/PostInterfaces';
 import { DetailIconList } from '../../fake-data/dumPostData';
@@ -37,6 +41,8 @@ import PostInteractionIcons from './PostInteractionIcons.vue';
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
 import { postDetails } from '../../state/PostDetails.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
+import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
+import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 var postReplyData : IDetailIcon[];
 
@@ -44,6 +50,7 @@ export default defineComponent({
     components:{
         AvatarRound,
         PostInteractionIcons,
+        VerifiedBadge,
     },
     props:{
         cid: String,
@@ -59,6 +66,7 @@ export default defineComponent({
         timestamp: String,
         replyThreadIndex: Number,
         totalThreadReplies: Number,
+        profileData:{} as PropType<ProfileView>,
         // postMedia?: String,
         // timestamp?: Date
     },
@@ -73,6 +81,17 @@ export default defineComponent({
     },
     created(){
         this.replyData = DetailIconList
+    },
+    computed:{
+        /**
+         * Method used to see if the author of the Post is verified.
+         */
+        isUserVerified(){
+            if(this.profileData && this.profileData != undefined &&
+            this.profileData.verification && this.profileData.verification.verifiedStatus == 'valid')
+                return true;
+            return false;
+        },
     }
 })
 </script>

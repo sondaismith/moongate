@@ -39,6 +39,7 @@ declare module 'vue' {
     'IMingcute:arrowRightFill': typeof import('~icons/mingcute/arrow-right-fill')['default']
     'IMingcute:butterfly2Fill': typeof import('~icons/mingcute/butterfly2-fill')['default']
     'IMingcute:butterfly2Line': typeof import('~icons/mingcute/butterfly2-line')['default']
+    'IMingcute:checkCircleFill': typeof import('~icons/mingcute/check-circle-fill')['default']
     'IMingcute:checkFill': typeof import('~icons/mingcute/check-fill')['default']
     'IMingcute:closeCircleFill': typeof import('~icons/mingcute/close-circle-fill')['default']
     'IMingcute:closeFill': typeof import('~icons/mingcute/close-fill')['default']
@@ -97,6 +98,7 @@ declare module 'vue' {
     UserFocusModal: typeof import('./src/components/User/UserFocusModal.vue')['default']
     Userlink: typeof import('./src/components/Utilities/Userlink.vue')['default']
     UserSearchBar: typeof import('./src/components/Utilities/UserSearchBar.vue')['default']
+    VerifiedBadge: typeof import('./src/components/Utilities/VerifiedBadge.vue')['default']
     VideoContainer: typeof import('./src/components/Utilities/VideoContainer.vue')['default']
     VideoPlayer: typeof import('./src/components/Utilities/VideoPlayer.vue')['default']
   }

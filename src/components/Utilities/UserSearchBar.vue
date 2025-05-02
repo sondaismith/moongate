@@ -29,15 +29,16 @@
         border-inherit border-slate-500 rounded-b flex bg-slate-800 overflow-auto"
         :class="[filteredUsers.length<1 ? 'border-none' : 'border']">
             <div class="relative flex flex-col w-full">
-                <div @click="selectUser(result)" class="flex items-center hover:bg-gray-700 px-2 py-2
-                    cursor-pointer"
+                <div @click="selectUser(result)" class="flex items-center hover:bg-gray-700 p-2
+                    cursor-pointer gap-1"
                     v-for="result, index in filteredUsers" :key="index">
                     <div class="flex rounded-full min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover"
-                    :style="{'background-image': 'url('+result.pfp+')'}">
-                        <i-mingcute:user-add-fill v-if="!result.pfp"/>
+                    :style="{'background-image': 'url('+result.avatar+')'}">
+                        <i-mingcute:user-add-fill v-if="!result.avatar"/>
                     </div>
-                    <div class="ml-2">{{ result.name }}</div>
-                    <div class="text-xs text-sky-500 ml-1">@{{ result.handle }}</div>
+                    <div class="ml-1">{{ result.displayName }}</div>
+                    <VerifiedBadge v-if="isUserVerified(result)" class="size-4"/>
+                    <div class="text-xs text-sky-500">@{{ result.handle }}</div>
                 </div>
                 <!-- <div class="px-2 py-2 select-none" v-if="filteredUsers.length == 0 && debouncedSearchTerm.trim().length>0">No Results</div> -->
             </div>
@@ -54,11 +55,13 @@ import { HandleAPIError, IsError } from '../../helpers/errors';
 import { SearchForAccounts } from '../../lib/api/Feed.vue';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 import { toast } from '../../state/AppState.vue';
+import VerifiedBadge from './VerifiedBadge.vue';
 
 export default defineComponent({
     name:'User Search Bar',
     components:{
         InLaInput,
+        VerifiedBadge,
     },
     props:{
         /**
@@ -87,7 +90,8 @@ export default defineComponent({
             /**Determines if waiting for result from data source. */
             isWaitingForResult:false,
             /**DEBUG FOR NOW - returned data from API */
-            apiData: [] as IUserSearchResult[]
+            apiData2: [] as IUserSearchResult[],
+            apiData: [] as ProfileView[]
         }
     },
     computed:{
@@ -114,7 +118,7 @@ export default defineComponent({
     },
     emits:{
         /**Event used to indicate that a user returned via search has been selected/clicked. */
-        userSelected:(payload:IUserSearchResult) => {
+        userSelected:(payload:ProfileView) => {
             return payload && payload.did.startsWith('did:');
         }
     },
@@ -138,7 +142,8 @@ export default defineComponent({
                 await SearchForAccounts(`${this.searchTerm}`)
                 .then(res => {
                     searchResult = res.data.actors
-                    this.payloadToUserSearchResult(searchResult);
+                    // this.payloadToUserSearchResult(searchResult);
+                    this.apiData = searchResult;
                     console.log(searchResult);
                 })
                 .catch(err => toast.add(HandleAPIError(err, 'Error getting User search results')));
@@ -166,10 +171,17 @@ export default defineComponent({
             this.apiData = test;
         },
         /**Emits the DID of the user selected from the search results. */
-        selectUser(user:IUserSearchResult){
+        selectUser(user:ProfileView){
             this.$emit('userSelected',user);
-        }
-
+        },
+        /**
+         * Method used to see if the viewed User is verified.
+         */
+        isUserVerified(profile:ProfileView){
+            if(profile != undefined && profile.verification && profile.verification.verifiedStatus == 'valid')
+                return true;
+            return false;
+        },
     },
     setup () {
         return {}

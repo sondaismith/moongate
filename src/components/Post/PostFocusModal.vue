@@ -80,12 +80,18 @@
             </div>
             {{ void "User Info/Actions" }}
             <div v-if="!postDetails.isAwaitingFocusData" class="p-4">
-                <div class="flex">
+                <div class="flex gap-1">
                     <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
                     :did="postDetails.currentThreadView.post.author.did"
                     :handle="postDetails.currentThreadView.post.author.handle"/>
-                    <div class="self-center ml-2 overflow-hidden text-primary">
-                        <div class="font-bold leading-4 text-ellipsis overflow-hidden">{{ postDetails.currentThreadView.post.author.displayName }}</div>
+                    <div class="self-center overflow-hidden text-primary ml-1">
+                        <div class="flex items-center gap-1">
+                            <div class="font-bold leading-4 text-ellipsis text-nowrap overflow-hidden"
+                            :title="postDetails.currentThreadView.post.author.displayName">
+                                {{ postDetails.currentThreadView.post.author.displayName }}
+                            </div>
+                            <VerifiedBadge v-if="isUserVerified" class="size-4"/>
+                        </div>
                         <div class="text-feedPostName text-ellipsis overflow-hidden">@{{ postDetails.currentThreadView.post.author.handle }}</div>
                     </div>
                     <div class="rounded-full self-center ml-auto
@@ -152,6 +158,7 @@ import VideoContainer from '../Utilities/VideoContainer.vue';
 import { AppState } from '../../state/AppState.vue';
 import { AppBskyEmbedExternal, AppBskyEmbedRecordWithMedia } from '@atproto/api';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
+import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 
 export default defineComponent({
     components:{
@@ -160,6 +167,7 @@ export default defineComponent({
         ReplyBreadcrumb,
         VideoContainer,
         EmbedExternal,
+        VerifiedBadge,
     },
     data(){
         return{
@@ -314,7 +322,16 @@ export default defineComponent({
                     return true;
             }
             return false;
-        }
+        },
+        /**
+         * Method used to see if the User of the focused Post is verified.
+         */
+        isUserVerified(){
+            let profile = postDetails.currentThreadView.post.author;
+            if(profile != undefined && profile.verification && profile.verification.verifiedStatus == 'valid')
+                return true;
+            return false;
+        },
     },
     mounted(){
         (this.$el as HTMLElement).focus();

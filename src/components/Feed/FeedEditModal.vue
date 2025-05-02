@@ -80,6 +80,7 @@ import { AppState, toast } from '../../state/AppState.vue';
 import { AddFeedToList, FeedState, GenerateUniqueId, GetFeed, GetFeedDataForFeedType, UpdateFeedDetails } from '../../state/FeedList.vue';
 import { HandleAPIError } from '../../helpers/errors.ts';
 import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces.ts';
+import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 export default defineComponent({
     components:{
@@ -168,10 +169,10 @@ export default defineComponent({
          * `UserSearchBar` control.
          * @param user Object representing the chosen user.
          */
-        selectUser(user:IUserSearchResult){
+        selectUser(user:ProfileView){
             this.feedFilters.user.did = user.did;
             this.feedFilters.user.handle = user.handle;
-            this.feedFilters.user.name = user.name;
+            this.feedFilters.user.name = user.displayName ? user.displayName : '';
             this.forwardOnePage();
         },
         grabHashtags(){
