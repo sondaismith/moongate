@@ -103,21 +103,29 @@
                         </div>
                         <div id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
                         :style="{'top':userSummaryBottomPos+'px'}">
-                            <div @click="viewPosts" class="w-full hover:bg-hover cursor-pointer">
+                            <div @click="viewFeed" class="w-full hover:bg-hover cursor-pointer"
+                            title="View User's Feed (Posts, Retweets)">
+                                <div class="pt-2 pb-1">Feed</div>
+                                <div v-if="isViewingFeed" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
+                            </div>
+                            <div @click="viewPosts" class="w-full hover:bg-hover cursor-pointer"
+                            title="View Posts only by current User">
                                 <div class="pt-2 pb-1">Posts</div>
                                 <div v-if="isViewingPosts" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div @click="viewReplies" class="w-full hover:bg-hover cursor-pointer">
+                            <div @click="viewReplies" class="w-full hover:bg-hover cursor-pointer"
+                            title="View User's Replies">
                                 <div class="pt-2 pb-1">Replies</div>
                                 <div v-if="isViewingReplies" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div @click="viewMedia" class="w-full hover:bg-hover cursor-pointer">
+                            <div @click="viewMedia" class="w-full hover:bg-hover cursor-pointer"
+                            title="View Posts User has made containing Images/Video">
                                 <div class="pt-2 pb-1">Media</div>
                                 <div v-if="isViewingMedia" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
                         </div>
                         {{ void "General Posts" }}
-                        <div v-if="isViewingPosts || isViewingReplies"
+                        <div v-if="isViewingFeed || isViewingPosts || isViewingReplies"
                         class="flex flex-col flex-wrap items-start py-2 gap-2 max-w-[30rem] w-full">
                             {{ void "Placeholder Post" }}
                             <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
@@ -160,7 +168,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-else-if="!awaitingProfileData && !isNavigatingHistory" v-for="n in UserFocusModalState.GetCurrentHistoryData().FeedData.data.filter(x => !x.reply) as FeedViewPost[]"
+                            <div v-else-if="!awaitingProfileData && !isNavigatingHistory" v-for="n in UserFocusModalState.GetCurrentHistoryData().FeedData.data as FeedViewPost[]"
                             class="w-full shrink-0s">
                                 <FocusFeedPost :post-data="n.post" :post-reason="n.reason" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
@@ -170,7 +178,8 @@
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
-                            <div v-else-if="!awaitingProfileData && UserFocusModalState.GetCurrentHistoryData().FeedData.cursor" @click="loadOlderPosts"
+                            <div v-else-if="!awaitingProfileData && UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
+                            @click="loadOlderPosts"
                             class="flex justify-center rounded p-1 gap-1 w-full items-center cursor-pointer
                             border border-slate-600 bg-slate-700 hover:bg-slate-600">
                                 <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
@@ -259,6 +268,7 @@ import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
 import { MediaType } from '../../enums/PostEnums';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
+import { getAuthorFeed, getAuthorPostsOnly, getAuthorRepliesOnly } from '../../lib/api/Feed.vue';
 
 export default defineComponent({
     data(){
@@ -276,7 +286,8 @@ export default defineComponent({
             AppBskyEmbedRecord,
             AppBskyEmbedRecordWithMedia,
             AppBskyEmbedExternal,
-            isViewingPosts:true,
+            isViewingFeed:true,
+            isViewingPosts:false,
             isViewingReplies:false,
             isViewingMedia:false,
             awaitingProfileData:false,
@@ -309,16 +320,13 @@ export default defineComponent({
     },
     methods:{
         /**Prepares and displays data when the "Posts" tab is clicked. */
-        async viewPosts(){
+        async viewFeed(){
             if(!this.awaitingProfileData){
                 this.repositionScrollOnTabSwitch();
-                this.isViewingPosts = true;
-                this.isViewingReplies = this.isViewingMedia = false;
+                this.isViewingFeed = true;
+                this.isViewingPosts = this.isViewingReplies = this.isViewingMedia = false;
                 this.isAwaitingTabSwitchData = true;
-                await GetBrowsingAgent().getAuthorFeed({
-                    actor:UserFocusModalState.currentUserAccountDID,
-                    includePins:true
-                })
+                await getAuthorFeed(UserFocusModalState.currentUserAccountDID)
                 .then(res => {
                     // this.currentUserAccountTimelineData.data = res.data.feed;
                     // this.currentUserAccountTimelineData.cursor = res.data.cursor;
@@ -329,10 +337,36 @@ export default defineComponent({
                 this.isAwaitingTabSwitchData = false;
             }
         },
-        viewReplies(){
+        /**Prepares and displays data when the "Posts" tab is clicked. */
+        async viewPosts(){
             if(!this.awaitingProfileData){
+                this.repositionScrollOnTabSwitch();
+                this.isViewingPosts = true;
+                this.isViewingFeed = this.isViewingReplies = this.isViewingMedia = false;
+                this.isAwaitingTabSwitchData = true;
+                await getAuthorPostsOnly(UserFocusModalState.currentUserAccountDID)
+                .then(res => {
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                })
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s posts`)));
+                this.isAwaitingTabSwitchData = false;
+            }
+        },
+        /**Prepares and displays data when the "Replies" tab is clicked. */
+        async viewReplies(){
+            if(!this.awaitingProfileData){
+                this.repositionScrollOnTabSwitch();
                 this.isViewingReplies = true;
-                this.isViewingPosts = this.isViewingMedia = false;
+                this.isViewingFeed = this.isViewingPosts = this.isViewingMedia = false;
+                this.isAwaitingTabSwitchData = true;
+                await getAuthorRepliesOnly(UserFocusModalState.currentUserAccountDID)
+                .then(res => {
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                })
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s replies`)));
+                this.isAwaitingTabSwitchData = false;
             }
         },
         /**Prepares and displays data when the "Media" tab is clicked. */
@@ -340,7 +374,7 @@ export default defineComponent({
             if(!this.awaitingProfileData){
                 this.repositionScrollOnTabSwitch();
                 this.isViewingMedia = true;
-                this.isViewingPosts = this.isViewingReplies = false;
+                this.isViewingFeed = this.isViewingPosts = this.isViewingReplies = false;
                 this.isAwaitingTabSwitchData = true;
                 //Get media posts
                 await GetBrowsingAgent().getAuthorFeed({
@@ -358,14 +392,36 @@ export default defineComponent({
         async loadOlderPosts(){
             this.isAwaitingLoadMorePosts = true;
             // await GetFeedDataForFeedType(FeedEnums.Types.User,this.currentUserProfile.did,'',this.currentUserAccountTimelineData.cursor)
-            await GetFeedDataForFeedType(FeedEnums.Types.User,UserFocusModalState.currentUserAccountDID,'', UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
-            .then(res => {
-                res.data.forEach(post => {
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
-                });
-                UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.cursor;
-            })
-            .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
+            if(this.isViewingFeed || this.isViewingMedia){
+                await GetFeedDataForFeedType(FeedEnums.Types.User,UserFocusModalState.currentUserAccountDID,'', UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
+                .then(res => {
+                    res.data.forEach(post => {
+                        UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
+                    });
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.cursor;
+                })
+                .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
+            }
+            else if(this.isViewingPosts){
+                await getAuthorPostsOnly(UserFocusModalState.currentUserAccountDID, UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
+                .then(res => {
+                    res.data.feed.forEach(post => {
+                        UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
+                    });
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                })
+                .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
+            }
+            else if(this.isViewingReplies){
+                await getAuthorRepliesOnly(UserFocusModalState.currentUserAccountDID, UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
+                .then(res => {
+                    res.data.feed.forEach(post => {
+                        UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
+                    });
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                })
+                .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
+            }
             this.isAwaitingLoadMorePosts = false;
         },
         closeModal(){
