@@ -1,25 +1,24 @@
 <template>
-    <a :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
-        @click="highlightFeed" class="group cursor-pointer relative flex justify-center
-        rounded-xl drop-shadow-md bg-blue-200 border border-blue-200 transition-[border]
-        hover:border-gray-800 h-10">
-        <i-mingcute:home-4-line v-if="type === 'home'" class="h-full text-2xl text-slate-800"/>
-        <i-mingcute:settings-2-line v-else-if="type === 'settings'" class="h-full text-2xl text-slate-800"/>
-        <i-mdi:playlist-add v-else-if="type === 'add'" class="h-full text-2xl text-slate-800"/>
-        <i-mdi:paint-outline v-else-if="type === 'art'" class="h-full text-2xl text-slate-800"/>
-        <i-mdi:newspaper-variant-multiple v-else-if="type === 'news'" class="h-full text-2xl text-slate-800"/>
-        <i-mingcute:group-3-fill v-else-if="type === 'friends'" class="h-full text-2xl text-slate-800"/>
-        <!-- <span
-            class="invisible absolute whitespace-nowrap start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-900 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
-        >
-            {{ tooltip }}
-        </span> -->
+    <div class="relative" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
+    @click="highlightFeed" @contextmenu="showFeedOptionsMenu">
+        <a class="group cursor-pointer relative flex justify-center items-center
+            rounded-xl drop-shadow-md bg-feedBtn border border-outline transition-[border]
+            hover:border-secondary button-size !w-full overflow-hidden">
+            <FeedIcon v-if="!userDid" :icon="icon" class="h-full text-2xl text-primary"/>
+            <i-mingcute:loading-fill v-show="awaitingPFPRequest" class="absolute text-black spinner self-center"/>
+            <div v-if="userPfp" class="button-size bg-contain bg-centers scale-[1.15] bg-no-repeat"
+            :style="{'background-image': 'url('+userPfp+')'}"></div>
+        </a>
         <UnreadMsgCount :unreadCount="newPosts"/>
-    </a>
+    </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { FeedState, UpdateSelectedFeed } from '../../state/FeedList.vue';
+import { getUserProfile } from '../../lib/api/User.vue';
+import { toast } from '../../state/AppState.vue';
+import { HandleAPIError } from '../../helpers/errors';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to
@@ -34,13 +33,16 @@ export function calculateValidTargetPos(target:number):number{
 export default defineComponent({
     data(){
         return{
-            isScrolling: false
+            isScrolling: false,
+            userPfp:'',
+            awaitingPFPRequest:false,
         }
     },
     props: {
         feedId: String,
         tooltip: String,
-        type: {type: String, required: true},
+        icon: String,
+        userDid:String,
         newPosts: Number,
     },
     methods:{
@@ -173,17 +175,47 @@ export default defineComponent({
             scrollContainer.scrollBy({top:0, left:target-fdScrollPos, behavior:"smooth"});
 
             this.isScrollByFinished(el, target);
+        },
+        showFeedOptionsMenu(event:MouseEvent){
+            event.preventDefault();
+            if(this.feedId){
+                //Initial showing of menu
+                FeedState.isFeedOptionMenuVisible = true;
+                UpdateSelectedFeed(this.feedId);
+                var menu = document.getElementById('feed-btn-menu');
+                var button = (event.currentTarget as HTMLElement);
+                var containerScrollPos = button.parentElement?.parentElement?.scrollTop;
+                if(menu){
+                    menu.style.top = event.clientY+'px';
+                    menu.style.left = event.clientX+'px';
+                }
+            }
+        },
+        /**
+         * Method used to get the Avatar/PFP of the User associated with a
+         * User Feed `FeedButton`.
+         */
+        async GetUserFeedPFP(){
+            if(this.userDid && this.userDid.trim() != ''){
+                this.awaitingPFPRequest = true
+                await getUserProfile(this.userDid)
+                .then(res => {
+                    this.userPfp = res.data.avatar ? res.data.avatar : '';
+                    this.awaitingPFPRequest = false;
+                })
+                .catch(err => toast.add(HandleAPIError(err, 'Error getting UserButton profile avatar')));
+            }
         }
     },
-    setup (props) {
-        props.feedId,
-        props.type,
-        props.tooltip,
-        props.newPosts
+    created(){
+        this.GetUserFeedPFP();
     }
 })
 </script>
 
 <style scoped>
-
+.button-size{
+    width: 2.5rem;
+    height: 2.5rem;
+}
 </style>

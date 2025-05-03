@@ -1,58 +1,97 @@
 <template>
-    <div data-test="post-focus-modal" :class="postDetails.isFocusVisible ? 'show' : ''"
-    class="absolute z-10 h-full w-full flex justify-between bg-slate-900/90">
+    <div data-test="post-focus-modal" id="post-focus-modal" tabindex="0"
+    class="absolute z-20 h-full w-full flex bg-slate-900/90 outline-none">
         {{ void "Media Section" }}
-        <div class="flex flex-col w-full">
+        <div class="flex flex-col w-3/5 grow">
             {{ void "Close Button" }}
             <div @click="hideModal" class="flex shrink-0 ml-auto bg-blue-300 py-2 w-10
                 justify-center text-2xl cursor-pointer">
                 <i-mingcute:close-fill/>
             </div>
             {{ void "Media Container" }}
-            <div class="flex items-center h-full">
-                <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
+            <div class="flex items-center h-full justify-center overflow-hidden">
+                <div class="flex shrink-0 text-2xl bg-blue-400 w-10">
                     <div @click="decreaseCurrentMediaIndex"
-                    v-if="postDetails.currentThreadView.post.embed?.images &&
-                    postDetails.clickedMediaIndex != 0 &&
-                    postDetails.clickedMediaIndex>=0"
+                    v-if="canDecreaseMediaIndex"
                     class="cursor-pointer">
                         <i-mingcute:left-fill/>
                     </div>
                 </div>
-                <div v-if="postDetails.currentThreadView.post.embed?.images" class="border border-slate-800 rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
-                    :style="{'background-image' : 'url('+postDetails.currentThreadView.post.embed.images[postDetails.clickedMediaIndex].fullsize+')'}">
+                <div v-if="postDetails.isAwaitingFocusData" class="h-full w-full rounded-sm border-0 bg-slate-500 animate-pulse"></div>
+                <div v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
+                class="rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
+                :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[postDetails.clickedMediaIndex] as ViewImage).fullsize+')'}">
                 </div>
-                <div v-else class="w-full">
-                    {{ void "button spacer" }}
-                </div>
+                <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
+                class="relative flex flex-col max-w-full h-full justify-center p-5"
+                :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
+                :video-view="postDetails.currentThreadView.post.embed">
+                </video-container>
+                <EmbedExternal v-else-if="hasEmbedGIFMedia" :embed="getEmbedGIFMedia"/>
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
                     <div @click="increaseCurrentMediaIndex"
-                    v-if="postDetails.currentThreadView.post.embed?.images &&
-                    postDetails.clickedMediaIndex+1 != postDetails.currentThreadView.post.embed?.images.length &&
-                    postDetails.clickedMediaIndex>=0"
+                    v-if="canIncreaseMediaIndex"
                     class="cursor-pointer">
                         <i-mingcute:right-fill/>
                     </div>
                 </div>
             </div>
+            <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 h-16 animate-pulse text-sm bg-slate-500/30"></div>
+            <div v-else-if="hasEmbededImagesWithAltText" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 text-sm bg-slate-500/20">
+                <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ getEmbededImageAltText }}</div>
+            </div>
+            <div v-else-if="hasEmbededVideoWithAltText" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 text-sm bg-slate-500/20">
+                <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed?.alt }}</div>
+            </div>
             {{ void "Post Details" }}
-            <div class="flex space-x-2 mx-8 px-2 py-4 ">
+            <!-- <div class="flex space-x-2 mx-8 px-2 py-4 ">
                 <div>Comments</div>
                 <div>Likes</div>
                 <div>Share</div>
-            </div>
+            </div> -->
         </div>
         {{ void "Comments Section" }}
-        <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-slate-950">
-            {{ void "User Info/Actions" }}
-            <div class="p-4">
-                <div class="flex">
-                    <div class="rounded-full shrink-0 overflow-hidden bg-stone-500 aspect-square size-10 self-center">
-                        <!-- <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/> -->
-                        <div class="h-full w-full bg-contain" :style="{'background-image' : 'url('+postDetails.currentThreadView.post.author.avatar+')'}"></div>
+        <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-postFocusBG overflow-y-scroll">
+            {{ void "Focused Post Loading Placeholder/Skeleton" }}
+            <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s p-4 w-full">
+                <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
+                    <div class="flex gap-2 mb-1">
+                        <div class="drop-shadow-md">
+                            <div class="rounded-full bg-slate-500 aspect-square size-10"></div>
+                        </div>
+                        <div class="flex flex-col gap-1 w-full">
+                            <div class="h-4 w-24 rounded-sm bg-slate-500"></div>
+                            <div class="h-3 w-full rounded-sm bg-slate-500"></div>
+                        </div>
+                        <div class="w-48 h-8 rounded-full bg-slate-500"></div>
                     </div>
-                    <div class="self-center ml-2 overflow-hidden">
-                        <div class="font-bold leading-4 text-ellipsis overflow-hidden">{{ postDetails.currentThreadView.post.author.displayName }}</div>
+                    <div class="h-4 w-full rounded-sm bg-slate-500"></div>
+                    <div class="h-4 w-full rounded-sm bg-slate-500"></div>
+                    <div class="h-4 w-4/5 rounded-sm bg-slate-500"></div>
+                    <div class="h-3 max-w-40 mt-1 rounded-sm bg-slate-500"></div>
+                    <div class="flex justify-between h-8 mt-1 w-full pt-2 border-t border-slate-500">
+                        <div class="w-10 rounded-md bg-slate-500"></div>
+                        <div class="w-10 rounded-md bg-slate-500"></div>
+                        <div class="w-10 rounded-md bg-slate-500"></div>
+                        <div class="w-10 rounded-md bg-slate-500"></div>
+                        <div class="w-10 rounded-md bg-slate-500"></div>
+                    </div>
+                </div>
+            </div>
+            {{ void "User Info/Actions" }}
+            <div v-if="!postDetails.isAwaitingFocusData" class="p-4">
+                <div class="flex gap-1">
+                    <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
+                    :did="postDetails.currentThreadView.post.author.did"
+                    :handle="postDetails.currentThreadView.post.author.handle"/>
+                    <div class="self-center overflow-hidden text-primary ml-1">
+                        <div class="flex items-center gap-1">
+                            <div class="font-bold leading-4 text-ellipsis text-nowrap overflow-hidden"
+                            :title="postDetails.currentThreadView.post.author.displayName">
+                                {{ postDetails.currentThreadView.post.author.displayName }}
+                            </div>
+                            <VerifiedBadge v-if="isUserVerified" class="size-4"/>
+                        </div>
                         <div class="text-feedPostName text-ellipsis overflow-hidden">@{{ postDetails.currentThreadView.post.author.handle }}</div>
                     </div>
                     <div class="rounded-full self-center ml-auto
@@ -62,13 +101,13 @@
                     </div>
                 </div>
                 {{ void "Post Content - Text" }}
-                <div class="text-sm pt-2">
+                <div class="text-sm pt-2 text-primary">
                     {{ postDetails.currentThreadView ? postDetails.currentThreadView.post.record.text : "initial state - undefined" }}
                 </div>
                 {{ void "Post Metadata" }}
                 <div class="border-slate-600 divide-y divide-inherit !mt-0">
                     <div class="py-1">
-                        <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
+                        <div class="text-feedPostName text-secondary cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
                     </div>
                     <PostInteractionIcons :numComments="postDetails.currentThreadView.post.replyCount"
                         :numShares="postDetails.currentThreadView.post.repostCount" :numLikes="postDetails.currentThreadView.post.likeCount"/>
@@ -76,9 +115,32 @@
             </div>
             {{ void "post reply input" }}
             <div class="px-4"><PostReplyInput/></div>
+            {{ void "Replies Loading Placeholder/Skeleton" }}
+            <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s pt-4 px-4 w-full">
+                <div class="animate-pulse flex w-full overflow-hidden gap-2">
+                    <div class="rounded-full bg-slate-500 aspect-square size-10"></div>
+                    <div class="flex flex-col gap-1 w-full">
+                        <div class="flex gap-2 h-5 mb-1">
+                            <div class="w-full rounded-sm bg-slate-500"></div>
+                            <div class="h-4 w-full rounded-sm bg-slate-500"></div>
+                            <div class="h-4 w-28 rounded-sm bg-slate-500"></div>
+                        </div>
+                        <div class="h-4 w-40 rounded-sm bg-slate-500"></div>
+                        <div class="h-4 w-48 rounded-sm bg-slate-500"></div>
+                        <div class="h-4 w-36 rounded-sm bg-slate-500"></div>
+                        <div class="flex justify-between h-6 mt-2 w-full">
+                            <div class="w-10 rounded-md bg-slate-500"></div>
+                            <div class="w-10 rounded-md bg-slate-500"></div>
+                            <div class="w-10 rounded-md bg-slate-500"></div>
+                            <div class="w-10 rounded-md bg-slate-500"></div>
+                            <div class="w-10 rounded-md bg-slate-500"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {{ void "Replies" }}
             <ReplyBreadcrumb class="px-4"/>
-            <PostThreadView/>
+            <PostThreadView v-if="!postDetails.isAwaitingFocusData"/>
         </div>
     </div>
 </template>
@@ -89,10 +151,23 @@ import { postDetails } from '../../state/PostDetails.vue';
 import { convertToLongTimestamp } from '../../helpers/converters';
 import PostThreadView from './PostThreadView.vue';
 import ReplyBreadcrumb from './ReplyBreadcrumb.vue';
+import AvatarRound from '../Utilities/AvatarRound.vue';
+import { isView as isImageView, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isView as isVideoView, View as ViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
+import VideoContainer from '../Utilities/VideoContainer.vue';
+import { AppState } from '../../state/AppState.vue';
+import { AppBskyEmbedExternal, AppBskyEmbedRecordWithMedia } from '@atproto/api';
+import EmbedExternal from '../Utilities/EmbedExternal.vue';
+import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 
 export default defineComponent({
-    setup () {
-        return {}
+    components:{
+        AvatarRound,
+        PostThreadView,
+        ReplyBreadcrumb,
+        VideoContainer,
+        EmbedExternal,
+        VerifiedBadge,
     },
     data(){
         return{
@@ -104,6 +179,9 @@ export default defineComponent({
             ],
             postDetails,
             convertToLongTimestamp,
+            isImageView,
+            isVideoView,
+            AppBskyEmbedRecordWithMedia,
         }
     },
     methods:{
@@ -119,18 +197,151 @@ export default defineComponent({
             postDetails.hideFocusModal();
         }
     },
+    computed:{
+        /**Checks to see if the current post contains any image media. */
+        hasImageMedia(){
+            //Image Post
+            if((postDetails.currentThreadView.post.embed &&
+            isImageView(postDetails.currentThreadView.post.embed)))
+                return true;
+            //Image Post w/ QRT
+            if(AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            isImageView(postDetails.currentThreadView.post.embed.media))
+                return true;
+            return false;
+        },
+        /**Checks to see if the current post contains an embeded GIF. */
+        hasEmbedGIFMedia(){
+            //GIF Post
+            if((postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.media &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed.media)))
+                return true;
+            //GIF Post in QRT
+            if((postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.external &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed)))
+                return true;
+            return false;
+        },
+        /**
+         * Checks to see if the current post contains any images, and if
+         * the first one has any descriptive ALT text.
+         */
+        hasEmbededImagesWithAltText(){
+            //Image Post
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.images &&
+            (postDetails.currentThreadView.post.embed.images as ViewImage[])[postDetails.clickedMediaIndex].alt.trim() != '')
+                return true;
+            //Image Post w/ QRT
+            else if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            postDetails.currentThreadView.post.embed.media.images &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0 &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[0].alt.trim() != '')
+                return true;
+            return false;
+        },
+        /**
+         * Checks to see if the current post contains a video, and if
+         * it has any descriptive ALT text.
+         */
+         hasEmbededVideoWithAltText(){
+            if(postDetails.currentThreadView.post.embed &&
+            isVideoView(postDetails.currentThreadView.post.embed) &&
+            (postDetails.currentThreadView.post.embed as ViewVideo).alt &&
+            (postDetails.currentThreadView.post.embed as ViewVideo).alt.trim() != '') return true;
+            return false;
+        },
+        /**
+         * Method that returns the ALT text attached to an image. This is a helper method that
+         * simplifies the proceess of locating the ALT text data based on the type of the Post
+         * object.
+         */
+        getEmbededImageAltText():string{
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.images)
+                return (postDetails.currentThreadView.post.embed.images as ViewImage[])[postDetails.clickedMediaIndex].alt;
+            else if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
+                return (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[0].alt;
+            return '';
+        },
+        /**
+         * Method used to return the image collection held by the currently
+         * selected Post. Resolves the location of the data based on the type of
+         * the Post object.
+         */
+        getEmbededImageViewImageObjects():ViewImage[]{
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.images)
+                return (postDetails.currentThreadView.post.embed.images as ViewImage[]);
+            else if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            postDetails.currentThreadView.post.embed.media.images &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
+                return (postDetails.currentThreadView.post.embed.media.images as ViewImage[]);
+            return [];
+        },
+        /**
+         * Method that returns the GIF EmbedExternal object. This is a helper method that
+         * simplifies the proceess of locating the embed data based on the type of the Post
+         * object.
+         */
+        getEmbedGIFMedia():AppBskyEmbedExternal.View|undefined{
+            //GIF Post
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.media &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed.media
+            ))
+                return postDetails.currentThreadView.post.embed.media
+            //GIF Post in QRT
+            if((postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.external &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed)))
+                return postDetails.currentThreadView.post.embed;
+        },
+        /**Determines if the current media index can be decreased.*/
+        canDecreaseMediaIndex(){
+            let currentImages = this.getEmbededImageViewImageObjects;
+            if(currentImages.length>0){
+                if(postDetails.clickedMediaIndex != 0 &&
+                postDetails.clickedMediaIndex>=0)
+                    return true;
+            }
+            return false;
+        },
+        /**Determines if the current media index can be increased.*/
+        canIncreaseMediaIndex(){
+            let currentImages = this.getEmbededImageViewImageObjects;
+            if(currentImages.length>0){
+                if(postDetails.clickedMediaIndex+1 != currentImages.length &&
+                postDetails.clickedMediaIndex>=0)
+                    return true;
+            }
+            return false;
+        },
+        /**
+         * Method used to see if the User of the focused Post is verified.
+         */
+        isUserVerified(){
+            let profile = postDetails.currentThreadView.post.author;
+            if(profile != undefined && profile.verification && profile.verification.verifiedStatus == 'valid')
+                return true;
+            return false;
+        },
+    },
     mounted(){
-    }
+        (this.$el as HTMLElement).focus();
+    },
+    beforeUnmount() {
+        console.log('Closing PostFocusModal...');
+        AppState.handleFocusOnComponentClose();
+    },
 })
 </script>
 
 <style scoped>
-[data-test="post-focus-modal"]{
-    z-index: -10;
-    display: none;
-}
-[data-test="post-focus-modal"].show{
-    z-index: 20;
-    display: flex;
-}
 </style>

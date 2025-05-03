@@ -11,11 +11,15 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@atproto/api": "^0.13.31",
+    "@atproto/api": "^0.15.5",
+    "@primevue/themes": "^4.2.5",
     "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2.2.1",
     "@tauri-apps/plugin-fs": "^2.2.0",
     "@tauri-apps/plugin-opener": "^2",
     "@tauri-apps/plugin-sql": "github:tauri-apps/tauri-plugin-sql#v2",
+    "@tauri-apps/plugin-upload": "^2.2.1",
+    "primevue": "^4.2.5",
     "vue": "^3.5.13"
   },
   "devDependencies": {
@@ -34,6 +38,7 @@
     "typescript": "~5.6.2",
     "unplugin-icons": "^0.22.0",
     "unplugin-vue-components": "^0.28.0",
+    "video.js": "^8.22.0",
     "vite": "^6.0.3",
     "vitest": "^2.1.8",
     "vue-tsc": "^2.1.10"
