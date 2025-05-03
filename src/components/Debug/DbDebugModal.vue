@@ -40,7 +40,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import {AppSettings, loadRecords, deleteAppSettingsDBFile,
+import {AppSettings, loadAppSettingsRecords, deleteAppSettingsDBFile,
     createAppSettingTable, initializeAppSettingsTable, updateAppSettings,
     checkIfAppSettingsTableExists, checkIfAppSettingsDatabaseExists,} from "../../lib/db/local_db";
 import { currentMonitor, getCurrentWindow } from '@tauri-apps/api/window';
@@ -64,7 +64,7 @@ export default defineComponent({
         /**DEBUG - Pull latest data from DB so it can be displayed */
         async refreshDBDisplay(){
             console.log('Pulling latest records from db');
-            const result = await loadRecords();
+            const result = await loadAppSettingsRecords();
             if(result) this.DBResponse = result;
             console.log(result);
         },

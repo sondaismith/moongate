@@ -1,6 +1,7 @@
 import { Monitor, PhysicalPosition, PhysicalSize } from "@tauri-apps/api/window";
 import { BaseDirectory, exists, remove } from "@tauri-apps/plugin-fs";
-import Database from "@tauri-apps/plugin-sql";
+import Database, { QueryResult } from "@tauri-apps/plugin-sql";
+import { IFeedDBData, IFeedListing } from "../../interfaces/FeedInterfaces";
 
 const APPLICATION_DB = "sqlite:moongate_app.db";
 
@@ -19,6 +20,17 @@ export enum QueryAction{
 }
 
 /**
+ * Enum used as part of actions relating to moongate_app database.
+ *
+ * Holds details specifying table name (key) and number of columns (value).
+ */
+export enum DBTable{
+    app_settings = 9,
+    user_accounts = 4,
+    saved_feeds = 1,
+}
+
+/**
  * Type that describes the shape of the data that can be
  * saved to the application preferences table.
  */
@@ -31,17 +43,29 @@ export type AppSettings = {
     lastWindowPosY?: number,
     lastMonitor?: string,
     lastUpdatedAt?: string,
+    collection?:string,
 }
 
 /**
- * Type that describes the shape of data that defines the
- * way a user's feed will be displayed.
+ * Type that describes the shape of the data that can be saved to the user_accounts table.
  */
-type FeedDetails = {
-    id?: number,
-    did?: string,
-    feedColumnSize?: FeedSizeSetting,
-    icon?: string,
+export type UserAccounts = {
+    name: string,
+    handle: string,
+    did: string,
+    pfp?: string,
+}
+
+/**
+ * Type that describes the shape of data that defines what
+ * data will be displayed and the way a user's feed will be displayed.
+ */
+export type SavedFeeds = {
+    data:string,
+    // did: string,
+    // type:FeedEnums.Types,
+    // icon:FeedEnums.Icons,
+    // settings?: IFeedColumnSettings,
 }
 
 /**
@@ -50,7 +74,7 @@ type FeedDetails = {
  * @param updateId The id of the record that needs to be updated.
  * @returns String value of the created SQL Query.
  */
-export function createQueryString(queryType:QueryAction, newAppSettings:AppSettings, updateId?:number){
+export function createQueryString(queryType:QueryAction, newAppSettings:AppSettings|UserAccounts|SavedFeeds, tableToTarget:DBTable, updateId?:number){
     var query;
 
     var objectKeys = Object.keys(newAppSettings);
@@ -58,14 +82,16 @@ export function createQueryString(queryType:QueryAction, newAppSettings:AppSetti
     switch (queryType) {
         case QueryAction.CREATE:
             //not implemented
+            query = undefined;
             break;
         case QueryAction.INSERT:
-            if(objectKeys.length < 8){
+            if(objectKeys.length < tableToTarget){
                 //log and inform of error - too few values
                 query = undefined;
             }
             else{
-                query = "INSERT into app_settings ";
+                //get target table name via key from DBTable enum
+                query = `INSERT into ${Object.keys(DBTable)[Object.values(DBTable).indexOf(tableToTarget)]} `;
                 var columns = "(";
                 var values = "VALUES(";
                 for (let i = 0; i < objectKeys.length; i++) {
@@ -84,7 +110,12 @@ export function createQueryString(queryType:QueryAction, newAppSettings:AppSetti
             }
             break;
         case QueryAction.UPDATE:
-            query = "UPDATE app_settings SET ";
+            if(objectKeys.length<1){
+                query = undefined;
+                break;//no values specified - do not continue
+            }
+            //get target table name via key from DBTable enum
+            query = `UPDATE ${Object.keys(DBTable)[Object.values(DBTable).indexOf(tableToTarget)]} SET `;
             for (let i = 0; i < objectKeys.length; i++) {
                 var column = objectKeys[i]+" = "+"$"+(i+1);
                 if(i+1<objectKeys.length) column+=", "; //if not last element, add comma
@@ -112,8 +143,55 @@ export async function createAppSettingTable(){
     try{
         const newTableQuery = 'CREATE TABLE app_settings (id INTEGER PRIMARY KEY,currentUserId INTEGER DEFAULT 1,'
         +'darkModeOn INTEGER DEFAULT 0,lastWindowWidth INTEGER,lastWindowHeight INTEGER,lastWindowPosX INTEGER,'
-        +'lastWindowPosY INTEGER,lastMonitor TEXT DEFAULT "\\\\.\\DISPLAY1",lastUpdatedAt datetime DEFAULT "now")';
+        +'lastWindowPosY INTEGER,lastMonitor TEXT DEFAULT "\\\\.\\DISPLAY1",lastUpdatedAt datetime DEFAULT "now",'
+        +'collection TEXT DEFAULT "")';
         result = await db.execute(newTableQuery);
+    }
+    catch(error){
+        result = error;
+    }
+    await db.close(); //close connection
+    return checkIfError(result);
+}
+
+/**
+ * Method that attempts to create the `user_accounts` table.
+ * @returns Result of trying to create the `user_accounts` table. Will be
+ * a string starting with "ERROR:" if something went wrong.
+ */
+export async function createUserAccountsTable(){
+    const db = await Database.load(APPLICATION_DB);
+    var result;
+    try{
+        const newTableQuery = 'CREATE TABLE user_accounts (id INTEGER PRIMARY KEY,name TEXT NOT NULL,'
+        +'handle TEXT NOT NULL,did TEXT NOT NULL,pfp TEXT)';
+        result = await db.execute(newTableQuery);
+    }
+    catch(error){
+        result = error;
+    }
+    await db.close(); //close connection
+    return checkIfError(result);
+}
+
+/**
+ * Method that attempts to create the `saved_feeds` table.
+ * @returns Result of trying to create the `saved_feeds` table. WIll be
+ * a string starting with "ERROR:" if something went wrong.
+ */
+export async function createSavedFeedsTable() {
+    const db = await Database.load(APPLICATION_DB);
+    var result;
+    try{
+        const newTableQuery = 'CREATE TABLE saved_feeds (id INTEGER PRIMARY KEY,data TEXT NOT NULL)';
+        result = await db.execute(newTableQuery);
+    }
+    catch(error){
+        result = error;
+    }
+    try {
+        const initialRecordQuery = 'INSERT INTO saved_feeds (data) VALUES("")';
+        result = await db.execute(initialRecordQuery);
     }
     catch(error){
         result = error;
@@ -134,9 +212,9 @@ export async function initializeAppSettingsTable(){
     try{
         //create variable with initial values
         var initialValues = {currentUserId: 1,darkModeOn:0,lastWindowWidth:800,lastWindowHeight:600,lastWindowPosX:560,
-            lastWindowPosY:240,lastMonitor:"\\\\.\\DISPLAY1",lastUpdatedAt:new Date().toISOString()} as AppSettings;
+            lastWindowPosY:240,lastMonitor:"\\\\.\\DISPLAY1",lastUpdatedAt:new Date().toISOString(),collection:''} as AppSettings;
         //generate query
-        var query = createQueryString(QueryAction.INSERT,initialValues);
+        var query = createQueryString(QueryAction.INSERT,initialValues,DBTable.app_settings);
         if(query == undefined) addInitialResult = "ERROR: Creation of initialize 'app_settings' table query failed";
         else
             addInitialResult = await db.execute(query,Object.values(initialValues));
@@ -155,23 +233,16 @@ export async function initializeAppSettingsTable(){
  * @param newValues The values to update the `app_settings` table with.
  * @returns
  */
-export async function updateAppSettings(newValues:AppSettings|Object) {
+export async function updateAppSettings(newValues:AppSettings|Object):Promise<QueryResult> {
     const db = await Database.load(APPLICATION_DB);
-    var result;
-    var updateQueryResult;
+    let result:QueryResult = {rowsAffected:0};
 
-    try{
-        var query = createQueryString(QueryAction.UPDATE, newValues);
-        if(query == undefined) updateQueryResult = "ERROR: Creation of 'update' query failed";
-        else
-            updateQueryResult = await db.execute(query,Object.values(newValues));
-        result = updateQueryResult;
-    }
-    catch (error){
-        result = error;
-    }
-    await db.close(); //close connection
-    return checkIfError(result);
+    var query = createQueryString(QueryAction.UPDATE, newValues, DBTable.app_settings);
+    if(query == undefined) throw new Error("ERROR: Creation of 'update' query failed");
+    await db.execute(query,Object.values(newValues))
+    .then(res => result = res)
+    .finally(() => db.close());
+    return result;
 }
 
 /**
@@ -203,7 +274,7 @@ export async function checkIfAppSettingsDatabaseExists() {
         const dbExists = await exists('moongate_app.db', {
             baseDir: BaseDirectory.AppData,
         });
-        console.log("does app settings db exist: "+dbExists);
+        console.log("does `moongate_app` db exist: "+dbExists);
         result = dbExists;
     }
     catch(error){
@@ -261,10 +332,95 @@ export async function checkIfAppSettingsTableExists(){
 }
 
 /**
+ * Method that checks if the `user_accounts` table exists, and if there's
+ * at least one record row in it.
+ * @returns True (1) if table exists, False (0) if not.
+ */
+export async function checkIfUserAccountsTableExists(){
+    var result;
+    try{
+        const db = await Database.load(APPLICATION_DB);
+        var tableExists = await db.select("SELECT EXISTS (SELECT * FROM sqlite_master WHERE type='table' AND name='user_accounts')");
+        //returned object key is query text and result is value, the array indexes below extract the values
+        var tableResult = Boolean(Object.values(tableExists[0])[0]);
+        result = tableResult;
+        await db.close();
+        console.log("does `user_accounts` table exist: "+result);
+    }
+    catch(error){
+        result = error; //Make sure to handle returned error object wherever
+    }
+    return checkIfError(result);
+}
+
+/**
+ * Method that checks if the `user_accounts` table exists, and if there's
+ * at least one record row in it.
+ * @returns True (1) if table exists, False (0) if not.
+ */
+export async function checkIfSavedFeedsTableExists(){
+    var result;
+    try{
+        const db = await Database.load(APPLICATION_DB);
+        var tableExists = await db.select("SELECT EXISTS (SELECT * FROM sqlite_master WHERE type='table' AND name='saved_feeds')");
+        //returned object key is query text and result is value, the array indexes below extract the values
+        var tableResult = Boolean(Object.values(tableExists[0])[0]);
+        result = tableResult;
+        await db.close();
+        console.log("does `saved_feeds` table exist: "+result);
+    }
+    catch(error){
+        result = error; //Make sure to handle returned error object wherever
+    }
+    return checkIfError(result);
+}
+
+/**
+ * Method that allows the updating of the values held in the `saved_feeds` table.
+ * @param newValues The values to update the `saved_feeds` table with.
+ * @returns Promise<> if success, false if action has failed.
+ */
+export async function updateSavedFeedsTable(newValues:SavedFeeds){
+    const db = await Database.load(APPLICATION_DB);
+    var result;
+    var updateQueryResult;
+
+    try{
+        var query = createQueryString(QueryAction.UPDATE, newValues, DBTable.saved_feeds);
+        if(query == undefined) updateQueryResult = "ERROR: Creation of 'update' query failed";
+        else
+            updateQueryResult = await db.execute(query,Object.values(newValues));
+        result = updateQueryResult;
+    }
+    catch (error){
+        result = error;
+    }
+    await db.close(); //close connection
+    return checkIfError(result);
+}
+
+/**
+ * Method the returns all the records currently held in the `saved_feeds` table.
+ * @returns Result of trying to grab all the records held in the `saved_feeds` table.
+ */
+export async function loadSavedFeedsRecords():Promise<SavedFeeds|Boolean|undefined|unknown>{
+    var result;
+    try{
+        const db = await Database.load(APPLICATION_DB);
+        result = await db.select('SELECT * FROM saved_feeds') as SavedFeeds;
+        await db.close();
+    }
+    catch(error){
+        result = error;
+    }
+    return checkIfError(result);
+}
+
+/**
  * Method the returns all the records currently held in the `app_settings` table.
  * @returns Result of trying to grab all the records held in the `app_settings` table.
  */
-export async function loadRecords(){
+export async function loadAppSettingsRecords(){
     var result;
     try{
         const db = await Database.load(APPLICATION_DB);
@@ -278,12 +434,49 @@ export async function loadRecords(){
 }
 
 /**
+ * Method that stringifies current list of Feeds so that their configurations can be
+ * saved to the `saved_feeds` table.
+ * @param data List of Feeds to stringify.
+ */
+export function stringifyFeedListData(data:IFeedListing[]):string{
+    var t:IFeedDBData[]= [];
+    // FeedState.FeedList.forEach(e => {
+    data.forEach(e => {
+        t.push({id:e.description.feedId,userId:e.description.userId,did:e.description.feedSourceDID,tags:e.description.feedTags,type:e.description.feedType,icon:e.description.feedIcon,settings:e.description.feedColumnSettings});
+    });
+    console.log(JSON.stringify(t));
+    return JSON.stringify(t);
+}
+
+/**
+ * Method that turns a JSON string saved in the `saved_feeds` table into a IFeedDBData
+ * object that can be used to restore the list of Feeds that were last open in app.
+ * @param feedListString The saved Feed configs string saved to the `saved_feeds` table.
+ * @returns IFeedDBData[] array containing configuration data for each saved Feed.
+ */
+export function stringToJSON(feedListString:string):IFeedDBData[]{
+    var result = null;
+    //Check that empty text hasn't been passed in
+    if(feedListString.trim().length>0){
+        try{
+            var jsonFromString = JSON.parse(feedListString);
+            result = jsonFromString;
+        }
+        catch(error){
+            result = error;
+        }
+    }
+    else{console.log('string passed to turn into JSON is empty');} //DEBUG
+    return result;
+}
+
+/**
  * Method used to determine if the result of a database action was a success or an
  * Error. To be used for logging and feedback to the user (maybe).
  * @param result Results of the performed database action to check. Successful
  * actions should return a Promise<>.
  */
-function checkIfError(result:Object|undefined|unknown){
+function checkIfError(result:Object|Boolean|undefined|unknown){
     //Checks if result value has been receievd/set - if so no Error
     //code from Erisan Olasheni: https://stackoverflow.com/a/51458052
     if(result != null && result.constructor.name != "Object" && result.constructor.name != "Array"

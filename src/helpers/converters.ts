@@ -88,3 +88,16 @@ function getMonthName(dateObj:Date, locale:string){
 function getMonthNameShort(dateObj:Date, locale:string){
     return dateObj.toLocaleDateString(locale, { month: 'short' });
 }
+
+/**
+ * Method that takes a number value and returns a compact number
+ * with a suffix - i.e 12650 is returned as 12.6K.
+ * @param num Number to return a compact representation of.
+ * @returns Compact representation of passed-in number.
+ */
+export function getCompactNumberValue(num:number){
+    return num.toLocaleString('en-US', {
+        notation:"compact",
+        compactDisplay:"short",
+    });
+}

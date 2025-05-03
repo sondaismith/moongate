@@ -1,7 +1,7 @@
 <template>
-    <div class="flex flex-col rounded bg-slate-900">
-        <span class="block w-full py-2 pl-2 rounded bg-slate-900 overflow-hidden
-        max-h-36 postPlaceholder" role="text" placeholder="Post reply..."
+    <div class="flex flex-col rounded bg-focusBG border border-outline">
+        <span class="block w-full py-2 pl-2 rounded bg-focusBG overflow-hidden
+        max-h-36 postPlaceholder text-secondary" role="text" placeholder="Post reply..."
         contenteditable @focusin="postInputFocusGained" @focusout="postInputFocusLost"/>
         <div class="post-buttons hide flex justify-between px-1 py-2 h-11">
             <div class="flex space-x-1 overflow-hidden">

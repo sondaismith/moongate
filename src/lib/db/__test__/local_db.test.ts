@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { addTestRecord, createQueryString, AppSettings, QueryAction, validateWindowPosition } from "../local_db";
+import { addTestRecord, createQueryString, AppSettings, QueryAction, validateWindowPosition, DBTable, UserAccounts, SavedFeeds, stringifyFeedListData } from "../local_db";
 import { PhysicalPosition, PhysicalSize } from "@tauri-apps/api/dpi";
 import { Monitor } from "@tauri-apps/api/window";
+import { IFeedDBData, IFeedListing } from "../../../interfaces/FeedInterfaces";
+import { FeedEnums } from "../../../enums/FeedEnums";
 
 ///Cannot test local database interactions - vitest cannot interface with the Rust
 ///side of the application.
@@ -12,21 +14,36 @@ import { Monitor } from "@tauri-apps/api/window";
 // })
 
 describe('generation of sql query strings', () => {
-    it('should return correctly formatted UPDATE result when only one variable is provided, with id', () =>{
-        expect(createQueryString(QueryAction.UPDATE, {darkModeOn: 1}, 2))
+    it('app_settings - should return correctly formatted UPDATE result when only one variable is provided, with id', () =>{
+        expect(createQueryString(QueryAction.UPDATE, {darkModeOn: 1}, DBTable.app_settings, 2))
         .toBe('UPDATE app_settings SET darkModeOn = $1 WHERE id = 2');
     })
-    it('should return correctly formatted UPDATE result when 3 variables are provided, without id', () =>{
-        expect(createQueryString(QueryAction.UPDATE, {darkModeOn:1, lastMonitor:"\\\\.\\DISPLAY1", currentUserId:2,lastWindowPosX:250,lastWindowPosY:500}))
+    it('app_settings - should return correctly formatted UPDATE result when 3 variables are provided, without id', () =>{
+        expect(createQueryString(QueryAction.UPDATE, {darkModeOn:1, lastMonitor:"\\\\.\\DISPLAY1", currentUserId:2,lastWindowPosX:250,lastWindowPosY:500},DBTable.app_settings))
         .toBe('UPDATE app_settings SET darkModeOn = $1, lastMonitor = $2, currentUserId = $3, lastWindowPosX = $4, lastWindowPosY = $5');
     })
-    it('should return correctly formatted INSERT result when all required values are provided', () => {
+    it('user_accounts - should returned correctly formatted UPDATE when values are provided', () => {
+        var values = {name:"bobby",handle:"bob-the-app-builder",did:"hdh3ijd33jddjd93j9",pfp:"temp_assets/bobpfp.png"} as UserAccounts;
+        expect(createQueryString(QueryAction.UPDATE, values, DBTable.user_accounts))
+        .toBe('UPDATE user_accounts SET name = $1, handle = $2, did = $3, pfp = $4');
+    })
+    it('app_settings - should return correctly formatted INSERT result when all required values are provided', () => {
         var currentTime = new Date().toISOString();
         var values = {currentUserId:1,darkModeOn:1,lastWindowWidth:800,lastWindowHeight:600,lastWindowPosX:460,lastWindowPosY:352,lastMonitor:"\\\\.\\DISPLAY1",lastUpdatedAt:currentTime} as AppSettings
-        expect(createQueryString(QueryAction.INSERT, values))
+        expect(createQueryString(QueryAction.INSERT, values, DBTable.app_settings))
         //old test below, before using parametrized query
         // .toBe('INSERT into app_settings (currentUserId, darkModeOn, lastWindowWidth, lastWindowHeight, lastWindowPosX, lastWindowPosY, lastMonitor, lastUpdatedAt) VALUES(1,1,800,600,460,352,0,'+currentTime+')')
         .toBe('INSERT into app_settings (currentUserId, darkModeOn, lastWindowWidth, lastWindowHeight, lastWindowPosX, lastWindowPosY, lastMonitor, lastUpdatedAt) VALUES($1,$2,$3,$4,$5,$6,$7,$8)')
+    })
+    it('user_accounts - should return correctly formatted INSERT result when all required values are provided', () => {
+        var values = {name:"bobby",handle:"bob-the-app-builder",did:"hdh3ijd33jddjd93j9",pfp:"temp_assets/bobpfp.png"} as UserAccounts;
+        expect(createQueryString(QueryAction.INSERT, values, DBTable.user_accounts))
+        .toBe('INSERT into user_accounts (name, handle, did, pfp) VALUES($1,$2,$3,$4)')
+    })
+    it('saved_feeds - should return correctly formatted UPDATE when values are provided', () => {
+        var values = {data:"sas"} as SavedFeeds;
+        expect(createQueryString(QueryAction.UPDATE, values, DBTable.saved_feeds))
+        .toBe('UPDATE saved_feeds SET data = $1')
     })
 })
 
@@ -87,6 +104,37 @@ describe('confirming that valid app window positions are returned', () =>{
             expect(validateWindowPosition(monitor3,
                 new PhysicalPosition(-410,1900), new PhysicalSize(800,600)))
                 .toEqual(new PhysicalPosition(0,1900));
+        })
+    })
+})
+
+describe('stringify passed in Feed list objects', () => {
+    var testFeedList:IFeedListing[]= [{
+        data:[
+            {
+                post:
+                {
+                    author:{did:'',handle:'test'},
+                    cid:'cid_test',
+                    indexedAt:'00000',
+                    record:{},
+                    uri:'uri-fake'
+                },
+            }
+        ],
+        description:{
+            feedId:'exceed13_37lam',
+            feedSourceDID:'DID_1',
+            feedName:'Tester1',feedHandle:'tester1',feedIcon:FeedEnums.Icons.Art,feedType:FeedEnums.Types.User,
+            newPosts:2,totalPosts:10,
+            feedColumnSettings:{width:444}
+        }
+    }];
+    var expectedResult:string = JSON.stringify([{id:'exceed13_37lam',did:'DID_1',type:FeedEnums.Types.User,icon:FeedEnums.Icons.Art,settings:{width:444}}]);
+
+    describe('it should succeed stringifying a single feed', () => {
+        it('should created the expected object shape', () =>{
+            expect(stringifyFeedListData(testFeedList)).toEqual(expectedResult);
         })
     })
 })

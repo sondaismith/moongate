@@ -186,8 +186,21 @@ button {
 }
 
 .feed-highlight{
-  border-color: #eab308 !important;
+  border-color: var(--color-feed-highlight) !important;
+  /* border-color: #eab308 !important; */
   /* border-color: #0ea5e9 !important; */
 }
 
+.spinner{
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+ 0%{
+    transform: rotate(0deg);
+   }
+100%{
+    transform: rotate(360deg);
+   }
+}
 </style>

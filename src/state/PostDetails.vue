@@ -10,12 +10,20 @@ import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteHeartFill from '~icons/mingcute/heart-fill';
 import SolarShareBold from '~icons/solar/share-bold';
 import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
-import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { FeedViewPost, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { getPostThread } from '../lib/api/Post.vue';
+import { toast } from './AppState.vue';
+import { HandleAPIError } from '../helpers/errors';
 
 // export const postDetails : IPostDetailsList = reactive({
-export const postDetails :IPostDetailsList = reactive({
+export const postDetails = reactive({
     isVisible: false,
     isFocusVisible: false,
+    /**
+     * Value indicating if app is waiting for a response from the API in regards to Post data.
+     * Mainly used by `PostFocusModal`.
+     */
+    isAwaitingFocusData:false,
     clickedMediaIndex: 0,
     getClickedMediaIndex() {
         return this.clickedMediaIndex;
@@ -85,23 +93,24 @@ export const postDetails :IPostDetailsList = reactive({
     showModal(){
         this.isVisible = true;
     },
-    showModalPost(postToShow:IPostDetails){
+    showModalPost(postToShow:FeedViewPost){
         this.isVisible = true;
-        this.postData = updatePostDetails(postToShow);
+        // this.postData = updatePostDetails(postToShow);
+        this.postData = postToShow;
     },
     hideModal(){
         this.isVisible = false;
     },
-    /**
-     * Method that shows "Focus" modal - media on left with comments
-     * in right sidebar. This is the initial version created that used
-     * dummy data.
-     */
-    showFocusModal(postToShow:IPostDetails, mediaIndex:number){
-        postDetails.isFocusVisible = true;
-        this.clickedMediaIndex = mediaIndex;
-        this.postData = updatePostDetails(postToShow)
-    },
+    // /**
+    //  * Method that shows "Focus" modal - media on left with comments
+    //  * in right sidebar. This is the initial version created that used
+    //  * dummy data.
+    //  */
+    // showFocusModal(postToShow:IPostDetails, mediaIndex:number){
+    //     postDetails.isFocusVisible = true;
+    //     this.clickedMediaIndex = mediaIndex;
+    //     this.postData = updatePostDetails(postToShow)
+    // },
     /**
      * Method that shows "Focus" modal - media on left with comments
      * in right sidebar. This is the live version that accesses the
@@ -177,7 +186,7 @@ export const postDetails :IPostDetailsList = reactive({
         if(comments) this.postDetailIconValues[0].label = comments;
         if(reposts) this.postDetailIconValues[1].label = reposts;
         if(likes) this.postDetailIconValues[2].label = likes;
-    }
+    },
 })
 
 function updatePostDetails(postToOpen:IPostDetails):IPostDetails{
@@ -228,5 +237,39 @@ function discoverBreadcrumbs(parentCID:string, currentPostThread:ThreadViewPost)
         postDetails.currentBreadcrumb.unshift({userName:parentThread.post.author.displayName, postCID:parentThread?.post.cid});
         discoverBreadcrumbs(parentThread?.post.record.reply.parent.cid,parentThread);
     }
+}
+
+/**
+ * Method that opens a "Post Detail Modal" (central display, text
+ * focus) with data associated with the Post that was selected
+ * in a Feed View (`FeedColumn`).
+ * @param postToShow The Post you want to see the Thread View for.
+ */
+export async function showDetailModal(postToShow:FeedViewPost){
+    postDetails.isVisible = true;
+    await getPostThread(postToShow)
+    .then(res => {
+        postDetails.postThread = res.data.thread as ThreadViewPost
+        postDetails.currentThreadView = res.data.thread as ThreadViewPost;
+    })
+    .catch(err => toast.add(HandleAPIError(err, 'Error getting Post details for modal')));
+}
+
+/**
+ * Method that shows "Focus" modal - media on left with comments
+ * in right sidebar. This is the live version that pulls data through
+ * the Bluesky API.
+ */
+export async function showFocusModal(postToShow:FeedViewPost, mediaIndex:number){
+    postDetails.isAwaitingFocusData = true;
+    postDetails.isFocusVisible = true;
+    postDetails.clickedMediaIndex = mediaIndex;
+    await getPostThread(postToShow)
+    .then(res => {
+        postDetails.postThread = res.data.thread as ThreadViewPost;
+        postDetails.currentThreadView = res.data.thread as ThreadViewPost;
+        postDetails.isAwaitingFocusData = false;
+    })
+    .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')));
 }
 </script>
