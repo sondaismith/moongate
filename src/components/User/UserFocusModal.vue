@@ -170,7 +170,7 @@
                             </div>
                             <div v-else-if="!awaitingProfileData && !isNavigatingHistory" v-for="n in UserFocusModalState.GetCurrentHistoryData().FeedData.data as FeedViewPost[]"
                             class="w-full shrink-0s">
-                                <FocusFeedPost :post-data="n.post" :post-reason="n.reason" @focus-post-avatar-clicked="updateDisplayedData"/>
+                                <FocusFeedPost :post-data="n.post" :post-reason="n.reason" :reply="n.reply" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
                             <div v-if="!awaitingProfileData && !UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
                             class="flex justify-center rounded p-1 gap-1 w-full items-center
