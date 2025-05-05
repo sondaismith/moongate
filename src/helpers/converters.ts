@@ -101,3 +101,49 @@ export function getCompactNumberValue(num:number){
         compactDisplay:"short",
     });
 }
+
+/**
+ * Method that takes a URI and converts it into a HTTP URL link that
+ * can be used to view the URI content in a browser.
+ * Code is from: notjuliet at
+ * https://github.com/notjuliet/pdsls/blob/74d45a3a56149d706fe950e2a7123a526d4ac5cf/src/views/record.tsx#L146-L197
+ * @param postUri The URI to create a HTTP/web link for.
+ * @param handle Optional: The handle of the User associated with the link. Used to make the link more readable.
+ * @returns URL string to URI content.
+ */
+export function CreateBskyWeblink(postUri:string, handle:string=""):string|undefined{
+    //Should be moved somewhere else
+    type AtUri = { repo: string; collection: string; rkey: string };
+    type TemplateFn = (uri: AtUri) => { label: string; link: string };
+    type TemplateMap = Record<string, TemplateFn>;
+
+    const uriTemplates: TemplateMap = {
+        "app.bsky.actor.profile": (uri) => ({
+        label: "Bluesky",
+        link: `https://bsky.app/profile/${uri.repo}`,
+        }),
+        "app.bsky.feed.post": (uri) => ({
+        label: "Bluesky",
+        link: `https://bsky.app/profile/${handle.trim()!='' ? handle : uri.repo}/post/${uri.rkey}`,
+        }),
+        "app.bsky.graph.list": (uri) => ({
+        label: "Bluesky",
+        link: `https://bsky.app/profile/${uri.repo}/lists/${uri.rkey}`,
+        }),
+        "app.bsky.feed.generator": (uri) => ({
+        label: "Bluesky",
+        link: `https://bsky.app/profile/${uri.repo}/feed/${uri.rkey}`,
+        }),
+    };
+    const uriParts = postUri.split('\/'); //expecting: ["at:", "", "repo", "collection", "rkey"]
+    if (uriParts.length != 5) return undefined;
+    if (uriParts[0] !== "at:" || uriParts[1] !== "") return undefined;
+    const parsedUri: AtUri = {
+        repo: uriParts[2],
+        collection: uriParts[3],
+        rkey: uriParts[4],
+    };
+    const template = uriTemplates[parsedUri.collection];
+    if (!template) return undefined;
+    return template(parsedUri).link;
+}

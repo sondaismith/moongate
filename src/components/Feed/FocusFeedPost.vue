@@ -101,8 +101,7 @@
             <FocusFeedPost v-else-if="postData.embed && AppBskyEmbedRecord.isView(postData.embed)"
             :post-data="postData.embed.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
             {{ void "Post Interaction Buttons/Icons" }}
-            <PostInteractionIcons class="pb-0" :num-comments="postData.replyCount"
-            :num-shares="postData.repostCount" :num-likes="postData.likeCount"/>
+            <PostInteractionIcons class="pb-0" :post-data="postData"/>
         </div>
     </div>
 </template>

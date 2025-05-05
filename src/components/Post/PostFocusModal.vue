@@ -109,8 +109,7 @@
                     <div class="py-1">
                         <div class="text-feedPostName text-secondary cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
                     </div>
-                    <PostInteractionIcons :numComments="postDetails.currentThreadView.post.replyCount"
-                        :numShares="postDetails.currentThreadView.post.repostCount" :numLikes="postDetails.currentThreadView.post.likeCount"/>
+                    <PostInteractionIcons :post-data="postDetails.currentThreadView.post"/>
                 </div>
             </div>
             {{ void "post reply input" }}
@@ -159,10 +158,12 @@ import { AppState } from '../../state/AppState.vue';
 import { AppBskyEmbedExternal, AppBskyEmbedRecordWithMedia } from '@atproto/api';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
+import PostInteractionIcons from './PostInteractionIcons.vue';
 
 export default defineComponent({
     components:{
         AvatarRound,
+        PostInteractionIcons,
         PostThreadView,
         ReplyBreadcrumb,
         VideoContainer,

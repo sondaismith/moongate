@@ -445,10 +445,7 @@ export default defineComponent({
                     this.currentUserProfile = res.data
                 });
                 var userTL;
-                await GetBrowsingAgent().getAuthorFeed({
-                    actor:UserFocusModalState.currentUserAccountDID,
-                    includePins:true
-                })
+                await getAuthorFeed(UserFocusModalState.currentUserAccountDID)
                 .then(res => {
                     //If the current history index is not at the end of the array, drop
                     //all of the items in front of the current index
