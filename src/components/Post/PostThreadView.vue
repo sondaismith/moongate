@@ -12,13 +12,13 @@
                     <div v-for="(reply, index) in replies.replies">
                         <PostReply :replyThreadIndex="index+1" :totalThreadReplies="replies.replies.length+replies.replies[0].replies.length"
                             :profileData="reply.post.author" :postData="reply.post as PostView"/>
-                        // <!-- <PostReply v-if="reply.replies.length == 1" :cid="reply.post.cid"
-                        //     :parentCID="reply.post.record.reply.parent.cid" :userName="reply.replies[0].post.author.displayName"
-                        //     :userHandle="reply.replies[0].post.author.handle" :avatar="reply.replies[0].post.author.avatar"
-                        //     :postText="reply.replies[0].post.record.text" :timestamp="reply.replies[0].post.indexedAt"
-                        //     :totalComments="reply.replies[0].post.replyCount" :totalReposts="reply.replies[0].post.repostCount"
-                        //     :totalLikes="reply.replies[0].post.likeCount"
-                        //     :replyThreadIndex="index+1" :totalThreadReplies="1"/> -->
+                        <!-- <PostReply v-if="reply.replies.length == 1" :cid="reply.post.cid"
+                            :parentCID="reply.post.record.reply.parent.cid" :userName="reply.replies[0].post.author.displayName"
+                            :userHandle="reply.replies[0].post.author.handle" :avatar="reply.replies[0].post.author.avatar"
+                            :postText="reply.replies[0].post.record.text" :timestamp="reply.replies[0].post.indexedAt"
+                            :totalComments="reply.replies[0].post.replyCount" :totalReposts="reply.replies[0].post.repostCount"
+                            :totalLikes="reply.replies[0].post.likeCount"
+                            :replyThreadIndex="index+1" :totalThreadReplies="1"/> -->
                     </div>
                 </div>
             </div>
