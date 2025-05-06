@@ -53,7 +53,7 @@
         {{ void "Comments Section" }}
         <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-postFocusBG overflow-y-scroll">
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
-            <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s p-4 w-full">
+            <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
                 <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
                     <div class="flex gap-2 mb-1">
                         <div class="drop-shadow-md">
@@ -79,7 +79,7 @@
                 </div>
             </div>
             {{ void "User Info/Actions" }}
-            <div v-if="!postDetails.isAwaitingFocusData" class="p-4">
+            <div v-if="!postDetails.isAwaitingFocusData" class="p-4 pb-2">
                 <div class="flex gap-1">
                     <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
                     :did="postDetails.currentThreadView.post.author.did"
@@ -109,7 +109,7 @@
                     <div class="py-1">
                         <div class="text-feedPostName text-secondary cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
                     </div>
-                    <PostInteractionIcons :post-data="postDetails.currentThreadView.post"/>
+                    <PostInteractionIcons class="pt-2" :post-data="postDetails.currentThreadView.post"/>
                 </div>
             </div>
             {{ void "post reply input" }}

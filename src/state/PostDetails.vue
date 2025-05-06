@@ -269,6 +269,7 @@ export async function showFocusModal(postToShow:FeedViewPost, mediaIndex:number)
         postDetails.postThread = res.data.thread as ThreadViewPost;
         postDetails.currentThreadView = res.data.thread as ThreadViewPost;
         postDetails.isAwaitingFocusData = false;
+        console.log(postDetails.currentThreadView)
     })
     .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')));
 }

@@ -41,8 +41,8 @@
             <div class="flex text-sm leading-4">{{ postData.record.description }}</div>
         </div>
     </div>
-    <div v-else-if="postData" class="flex flex-col rounded-lg p-3 border border-slate-600 gap-2 text-primary"
-    :class="[$attrs.class, isReasonPin(postReason) ? 'pt-2' : '']">
+    <div v-else-if="postData" class="flex flex-col rounded-lg border border-slate-600 text-primary w-full"
+    :class="[$attrs.class, isReasonPin(postReason) ? 'pt-2' : '', isReplyStyle ? 'border-0' : 'gap-2 p-3 pb-1.5']">
         <div v-if="isReasonPin(postReason)" class="flex items-center text-secondary border-b
         border-outline pb-1 select-none">
             <i-mdi:pin class="text-sm"/>
@@ -65,43 +65,52 @@
         bg-btn hover:bg-btnHover cursor-pointer select-none">
             Reply
         </div>
-        {{ void "Post Profile Header" }}
-        <div class="flex items-center gap-2">
-            <AvatarRound :avatar="postData.author.avatar" :did="postData.author.did" :handle="postData.author.handle"
-            @avatar-clicked="callFocusPostAvatarClicked(postData.author.did)"/>
-            <div class="flex flex-col overflow-hidden">
-                <div class="flex items-center gap-1">
-                    <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.displayName">
-                        {{ postData.author.displayName }}
+        <div class="flex w-full">
+            <div>
+                <AvatarRound v-if="isReplyStyle" :avatar="postData.author.avatar" :did="postData.author.did" :handle="postData.author.handle"/>
+                <div v-if="replyIndex !=undefined && totalReplies!=undefined && replyIndex<totalReplies" class="h-full bg-slate-700 w-0.5 m-auto"></div>
+            </div>
+            <div class="flex flex-col w-full overflow-hidden"
+            :class="[isReplyStyle ? 'pl-2' : '']">
+                {{ void "Post Profile Header" }}
+                <div class="flex items-center gap-2">
+                    <AvatarRound v-if="!isReplyStyle" :avatar="postData.author.avatar" :did="postData.author.did" :handle="postData.author.handle"
+                    @avatar-clicked="callFocusPostAvatarClicked(postData.author.did)"/>
+                    <div class="flex overflow-hidden" :class="[isReplyStyle ? 'gap-1 items-center' : 'flex-col']">
+                        <div class="flex items-center gap-1">
+                            <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.displayName">
+                                {{ postData.author.displayName }}
+                            </div>
+                            <VerifiedBadge v-if="isUserVerified" class="size-4"/>
+                        </div>
+                        <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.handle">@{{ postData.author.handle }}</div>
                     </div>
-                    <VerifiedBadge v-if="isUserVerified" class="size-4"/>
+                    <div v-if="!isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.record.createdAt)">{{ convertToShortTimestamp(postData.record.createdAt) }}</div>
+                    <div v-else-if="isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.value.createdAt)">{{ convertToShortTimestamp(postData.value.createdAt) }}</div>
                 </div>
-                <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.handle">@{{ postData.author.handle }}</div>
+                <div class="flex flex-col"
+                :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
+                    {{ void "Post Text Content" }}
+                    <RichPostTextBsky v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
+                    <RichPostTextBsky v-else :post-text="postData.value.text"/>
+                    {{ void "Post Media" }}
+                    <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
+                    :labels="postData.labels" :author="postData.author.handle" :post-text="getPostText"
+                    @media-click="(i:number) => openFocusDetails(i)"/>
+                    <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
+                    :labels="postData.labels" :author="postData.author.handle"/>
+                    <div v-if="postContainsExternalEmbed">
+                        <EmbedExternal :embed="getPostEmbed"/>
+                    </div>
+                    {{ void "Reposts - ViewRecord and View" }}
+                    <FocusFeedPost v-if="postData.embed?.record && postData.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postData.embed.record.record)"
+                    :post-data="postData.embed.record.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
+                    <FocusFeedPost v-else-if="postData.embed && AppBskyEmbedRecord.isView(postData.embed)"
+                    :post-data="postData.embed.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
+                    {{ void "Post Interaction Buttons/Icons" }}
+                    <PostInteractionIcons class="pb-0 !bg-lime-300s" :post-data="postData"/>
+                </div>
             </div>
-            <div v-if="!isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.record.createdAt)">{{ convertToShortTimestamp(postData.record.createdAt) }}</div>
-            <div v-else-if="isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.value.createdAt)">{{ convertToShortTimestamp(postData.value.createdAt) }}</div>
-        </div>
-        <div class="flex flex-col gap-2"
-        :class="[isFeedPostStyle ? 'pl-12 pr-3' : '']">
-            {{ void "Post Text Content" }}
-            <RichPostTextBsky v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
-            <RichPostTextBsky v-else :post-text="postData.value.text"/>
-            {{ void "Post Media" }}
-            <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
-            :labels="postData.labels" :author="postData.author.handle" :post-text="getPostText"
-            @media-click="(i:number) => openFocusDetails(i)"/>
-            <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
-            :labels="postData.labels" :author="postData.author.handle"/>
-            <div v-if="postContainsExternalEmbed">
-                <EmbedExternal :embed="getPostEmbed"/>
-            </div>
-            {{ void "Reposts - ViewRecord and View" }}
-            <FocusFeedPost v-if="postData.embed?.record && postData.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postData.embed.record.record)"
-            :post-data="postData.embed.record.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
-            <FocusFeedPost v-else-if="postData.embed && AppBskyEmbedRecord.isView(postData.embed)"
-            :post-data="postData.embed.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
-            {{ void "Post Interaction Buttons/Icons" }}
-            <PostInteractionIcons class="pb-0" :post-data="postData"/>
         </div>
     </div>
 </template>
@@ -142,6 +151,12 @@ export default defineComponent({
             type:Boolean,
             default:false
         },
+        isReplyStyle:{
+            type:Boolean,
+            default:false
+        },
+        replyIndex:Number,
+        totalReplies:Number,
         reply: Object as PropType<ReplyRef>
     },
     data(){
