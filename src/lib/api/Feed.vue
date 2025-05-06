@@ -2,6 +2,7 @@
 import { AppBskyActorSearchActors, AppBskyFeedGetAuthorFeed, AppBskyFeedGetTimeline, AppBskyFeedSearchPosts } from "@atproto/api/dist/client";
 import { GetBrowsingAgent } from "../api.vue";
 import { AppSettingsState } from "../../state/AppSettingsState.vue";
+import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
 export async function getUserHomeFeed():Promise<AppBskyFeedGetTimeline.Response>{
     let result = await GetBrowsingAgent().getTimeline();
@@ -37,6 +38,123 @@ export async function getAuthorFeed(did:string, cursor:string=''):Promise<AppBsk
             cursor:cursor
         }
     )
+    return result;
+}
+
+/**
+ * Method used to get a collection of Posts from a User's feed that is made
+ * up of only Posts by them.
+ * @param did The DID of the User to get Posts for.
+ * @param cursor Used when requesting posts from a certain point (pagination).
+ */
+export async function getAuthorPostsOnly(did:string,cursor:string=''):Promise<AppBskyFeedGetAuthorFeed.Response>{
+    /**Have enough Posts (30) been retrieved through the API. */
+    let retrievedEnough = false;
+    /**Total number of API calls for Posts made. */
+    let calls = 0;
+    /**Holds the filtered Posts from the API call. */
+    let filteredResults:FeedViewPost[] = []
+    let result = await GetBrowsingAgent().getAuthorFeed(
+        {
+            actor:did,
+            filter:"posts_no_replies",
+            limit:30,
+            includePins:true,
+            cursor:cursor
+        }
+    )
+    filteredResults = result.data.feed.filter(x=>x.post.author.did == did);
+    result.data.feed = filteredResults;
+    calls++;
+    console.log(`Made ${calls} attempt(s) in order to retrieve 30 Posts made by this User`);
+
+    //The code below is a little unsafe and a bit messy - the returned number of Posts
+    //is not consistent.
+
+    //If there are no more Posts to retrieve or we have 30 or more posts to display,
+    //prevent additional API calls.
+    // if(result.data.cursor == '' || result.data.feed.length>=30) retrievedEnough = true;
+    // //Retrieve more Posts until we have enough, with a max of 3 attempts
+    // while(!retrievedEnough && calls<3){
+    //     await GetBrowsingAgent().getAuthorFeed(
+    //     {
+    //         actor:did,
+    //         filter:"posts_no_replies",
+    //         limit:30,
+    //         includePins:true,
+    //         cursor:result.data.cursor
+    //     })
+    //     .then(res => {
+    //         filteredResults = res.data.feed.filter(x=>x.post.author.did == did);
+    //         filteredResults.forEach(post=>{
+    //             result.data.feed.push(post);
+    //         })
+    //         result.data.cursor = res.data.cursor; //Update cursor
+    //         // result.data.feed = filteredResults;
+    //         calls++;
+    //     })
+    //     console.log(`Made ${calls} attempt(s) in order to retrieve 30 Posts made by this User`);
+    //     if(result.data.cursor == '' || result.data.feed.length>30) retrievedEnough = true;
+    // }
+    console.log(`Returning ${result.data.feed.length} post(s) made by this User`);
+    return result;
+}
+
+/**
+ * Method used to get a collection of Posts from a User's feed that is made
+ * up of only Replies by them.
+ * @param did The DID of the User to get Posts for.
+ * @param cursor Used when requesting posts from a certain point (pagination).
+ */
+ export async function getAuthorRepliesOnly(did:string,cursor:string=''):Promise<AppBskyFeedGetAuthorFeed.Response>{
+    /**Have enough Posts (30) been retrieved through the API. */
+    let retrievedEnough = false;
+    /**Total number of API calls for Posts made. */
+    let calls = 0;
+    /**Holds the filtered Posts from the API call. */
+    let filteredResults:FeedViewPost[] = []
+    let result = await GetBrowsingAgent().getAuthorFeed(
+        {
+            actor:did,
+            limit:30,
+            includePins:true,
+            cursor:cursor
+        }
+    )
+    filteredResults = result.data.feed.filter(x=>x.reply && x.post.author.did == did);
+    result.data.feed = filteredResults;
+    calls++;
+    console.log(`Made ${calls} attempt(s) in order to retrieve 30 replies made by this User`);
+
+    //The code below is a little unsafe and a bit messy - the returned number of Posts
+    //is not consistent.
+
+    //If there are no more Posts to retrieve or we have 30 or more posts to display,
+    //prevent additional API calls.
+    // if(result.data.cursor == '' || result.data.feed.length>=30) retrievedEnough = true;
+    // //Retrieve more Posts until we have enough, with a max of 3 attempts
+    // while(!retrievedEnough && calls<3){
+    //     await GetBrowsingAgent().getAuthorFeed(
+    //     {
+    //         actor:did,
+    //         filter:"posts_no_replies",
+    //         limit:30,
+    //         includePins:true,
+    //         cursor:result.data.cursor
+    //     })
+    //     .then(res => {
+    //         filteredResults = res.data.feed.filter(x=>x.reply);
+    //         filteredResults.forEach(post=>{
+    //             result.data.feed.push(post);
+    //         })
+    //         result.data.cursor = res.data.cursor; //Update cursor
+    //         // result.data.feed = filteredResults;
+    //         calls++;
+    //     })
+    //     console.log(`Made ${calls} attempt(s) in order to retrieve 30 Posts made by this User`);
+    //     if(result.data.cursor == '' || result.data.feed.length>30) retrievedEnough = true;
+    // }
+    console.log(`Returning ${result.data.feed.length} repl(y/ies) made by this User`);
     return result;
 }
 

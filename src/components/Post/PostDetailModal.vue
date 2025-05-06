@@ -29,8 +29,7 @@
                     <div class="py-1">
                         <div class="text-feedPostName text-slate-300 cursor-pointer hover:underline">January 4th, 2025 at 12:42am</div>
                     </div>
-                    <PostInteractionIcons :numComments="postDetails.postThread.post.replyCount"
-                        :numShares="postDetails.postThread.post.repostCount" :numLikes="postDetails.postThread.post.likeCount"/>
+                    <PostInteractionIcons :post-data="postDetails.postThread.post"/>
                 </div>
                 {{ void "post reply input" }}
                 <PostReplyInput/>
@@ -64,8 +63,12 @@ import * as PostEnums from "../../enums/PostEnums";
 import { IDetailIcon } from '../../interfaces/PostInterfaces';
 import { DetailIconList, OptionIconList } from '../../fake-data/dumPostData';
 import PostThreadView from './PostThreadView.vue';
+import PostInteractionIcons from './PostInteractionIcons.vue';
 
 export default defineComponent({
+    components:{
+        PostInteractionIcons
+    },
     data(){
         return{
             isPostMenuVisible: false,

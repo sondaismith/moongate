@@ -1,7 +1,7 @@
 <template>
     <div class="flex">
         <div class="flex-col">
-            <AvatarRound :avatar="avatar" :did="userDid" :handle="userHandle"/>
+            <AvatarRound :avatar="postData.author.avatar" :did="postData.author.did" :handle="postData.author.handle"/>
             {{ void "below is connector for replies" }}
             <div v-if="(replyThreadIndex!=undefined && totalThreadReplies && replyThreadIndex<totalThreadReplies)" class="h-full bg-slate-700 w-0.5 m-auto"></div>
         </div>
@@ -9,23 +9,23 @@
             <div class="flex leading-5 text-sm text-primary items-center">
                 <div class="flex items-center gap-1 overflow-hidden">
                     <div class="font-bold text-nowrap overflow-hidden text-ellipsis"
-                    :title="userName">{{ userName }}</div>
+                    :title="postData.author.displayName">{{ postData.author.displayName }}</div>
                     <VerifiedBadge v-if="isUserVerified" class="size-4"/>
                 </div>
-                <div class="flex-1 text-feedPostName text-secondary pl-1 min-w-[60px] text-nowrap overflow-hidden text-ellipsis">@{{ userHandle }}</div>
+                <div class="flex-1 text-feedPostName text-secondary pl-1 min-w-[60px] text-nowrap overflow-hidden text-ellipsis">@{{ postData.author.handle }}</div>
                 <div class="text-feedPostName text-secondary px-1 ml-auto text-nowrap cursor-pointer hover:text-secondaryHover"
-                :title="convertToLongTimestamp(timestamp)"
-                @click="postDetails.setCurrentThreadView(cid)"
+                :title="convertToLongTimestamp(postData.indexedAt)"
+                @click="postDetails.setCurrentThreadView(postData.cid)"
                 >
-                {{ convertToShortTimestamp(timestamp) }}
+                {{ convertToShortTimestamp(postData.indexedAt) }}
             </div>
             </div>
             <div class="text-sm break-words">
-                {{ postText }}
+                {{ postData.record.text }}
             </div>
             <div>
                 <!-- <div class="flex flex-col text-slate-400 py-2 space-x-2 justify-between"> -->
-                    <PostInteractionIcons :numComments="totalComments" :numShares="totalReposts" :numLikes="totalLikes"/>
+                    <PostInteractionIcons :postData="postData"/>
                 <!-- </div> -->
             </div>
         </div>
@@ -43,6 +43,7 @@ import { postDetails } from '../../state/PostDetails.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 var postReplyData : IDetailIcon[];
 
@@ -53,20 +54,16 @@ export default defineComponent({
         VerifiedBadge,
     },
     props:{
-        cid: String,
-        parentCID: String,
-        userName: String,
-        userHandle: String,
-        userDid:String,
-        avatar: String,
-        totalComments: Number, //not going to actually be in final version, just use .length
-        totalReposts: Number,
-        totalLikes: Number,
-        postText: String,
-        timestamp: String,
+        postData:{
+            type: Object as PropType<PostView>,
+            required: true
+        },
         replyThreadIndex: Number,
         totalThreadReplies: Number,
-        profileData:{} as PropType<ProfileView>,
+        profileData:{
+            type: {} as PropType<ProfileView>,
+            required: true
+        },
         // postMedia?: String,
         // timestamp?: Date
     },

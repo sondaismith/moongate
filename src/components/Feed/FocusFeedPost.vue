@@ -59,6 +59,12 @@
                 Reposted by {{ postReason.by.displayName }}
             </div>
         </div>
+        <div v-else-if="postData && isPostReply" @click="openFocusDetailsPost(reply?.parent as PostView)"
+        title="Open Reply Parent"
+        class="flex self-start py-0.5 px-2 rounded-md text-[10px] leading-3 text-primary
+        bg-btn hover:bg-btnHover cursor-pointer select-none">
+            Reply
+        </div>
         {{ void "Post Profile Header" }}
         <div class="flex items-center gap-2">
             <AvatarRound :avatar="postData.author.avatar" :did="postData.author.did" :handle="postData.author.handle"
@@ -95,18 +101,17 @@
             <FocusFeedPost v-else-if="postData.embed && AppBskyEmbedRecord.isView(postData.embed)"
             :post-data="postData.embed.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
             {{ void "Post Interaction Buttons/Icons" }}
-            <PostInteractionIcons class="pb-0" :num-comments="postData.replyCount"
-            :num-shares="postData.repostCount" :num-likes="postData.likeCount"/>
+            <PostInteractionIcons class="pb-0" :post-data="postData"/>
         </div>
     </div>
 </template>
 
 <script lang="ts">
-import { isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid, RepostRecord } from '@atproto/api';
+import { isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
-import { isViewBlocked, isViewNotFound, isViewRecord, ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { isViewBlocked, isViewNotFound, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
@@ -115,7 +120,6 @@ import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import PostInteractionIcons from '../Post/PostInteractionIcons.vue';
 import { isImage, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { showFocusModal } from '../../state/PostDetails.vue';
-import { View } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
@@ -137,7 +141,8 @@ export default defineComponent({
         isFeedPostStyle:{
             type:Boolean,
             default:false
-        }
+        },
+        reply: Object as PropType<ReplyRef>
     },
     data(){
         return{
@@ -186,6 +191,11 @@ export default defineComponent({
                 // postDetails.updatePostDetailIconValues(this.postData.post.replyCount.toString(),this.postData.post.repostCount.toString(),this.postData.post.likeCount.toString());
             }
         },
+        openFocusDetailsPost(post:PostView, mediaIndex:number=0){
+            if(this.postData){
+                showFocusModal({post: post}, mediaIndex);
+            }
+        }
     },
     computed:{
         /**
@@ -367,6 +377,14 @@ export default defineComponent({
                 return true;
             return false;
         },
+        /**
+         * Method used to check if this Post is a reply. Ensures it the `parent`
+         * is a `PostView` as well.
+         */
+        isPostReply(){
+            if(this.reply && isPostView(this.reply.parent)) return true;
+            return false;
+        }
     },
     created(){
         // console.log(this.postData); //DEBUG - missing object/variable catching

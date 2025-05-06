@@ -6,24 +6,12 @@
             <div class="flex flex-col bg-orange-400s preload-gutter divide-y border-slate-600 divide-inherit">
                 {{ void "replies" }}
                 <div v-for="replies in postDetails.currentThreadView?.replies" class="pt-2 pr-3">
-                    <PostReply :cid="replies.post.cid" :parentCID="replies.post.record.reply.parent.cid"
-                        :userName="replies.post.author.displayName"
-                        :userHandle="replies.post.author.handle" :avatar="replies.post.author.avatar"
-                        :postText="replies.post.record.text" :timestamp="replies.post.indexedAt"
-                        :totalComments="replies.post.replyCount" :totalReposts="replies.post.repostCount"
-                        :totalLikes="replies.post.likeCount" :replyThreadIndex="0"
-                        :totalThreadReplies="replies.replies.length" :userDid="replies.post.author.did"
-                        :profileData="replies.post.author"/>
+                    <PostReply :replyThreadIndex="0" :totalThreadReplies="replies.replies.length"
+                    :profileData="replies.post.author" :postData="replies.post as PostView"/>
                     {{ void "displays replies to comment" }}
                     <div v-for="(reply, index) in replies.replies">
-                        <PostReply :cid="reply.post.cid" :parentCID="reply.post.record.reply.parent.cid"
-                            :userName="reply.post.author.displayName"
-                            :userHandle="reply.post.author.handle" :avatar="reply.post.author.avatar"
-                            :postText="reply.post.record.text" :timestamp="reply.post.indexedAt"
-                            :totalComments="reply.post.replyCount" :totalReposts="reply.post.repostCount"
-                            :totalLikes="reply.post.likeCount" :replyThreadIndex="index+1"
-                            :totalThreadReplies="replies.replies.length+replies.replies[0].replies.length"
-                            :userDid="reply.post.author.did" :is="reply.post.author"/>
+                        <PostReply :replyThreadIndex="index+1" :totalThreadReplies="replies.replies.length+replies.replies[0].replies.length"
+                            :profileData="reply.post.author" :postData="reply.post as PostView"/>
                         <!-- <PostReply v-if="reply.replies.length == 1" :cid="reply.post.cid"
                             :parentCID="reply.post.record.reply.parent.cid" :userName="reply.replies[0].post.author.displayName"
                             :userHandle="reply.replies[0].post.author.handle" :avatar="reply.replies[0].post.author.avatar"
@@ -42,6 +30,7 @@
 import { defineComponent } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import PostReply from './PostReply.vue';
+import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 export default defineComponent({
     components:{
