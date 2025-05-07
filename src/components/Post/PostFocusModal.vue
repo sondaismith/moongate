@@ -139,6 +139,13 @@
             </div>
             {{ void "Replies" }}
             <ReplyBreadcrumb class="px-4"/>
+            <div v-if="postDetails.threadNavIndex>0" class="flex px-4 text-primary items-center"
+            @click="postDetails.decreaseThreadNavIndex">
+                <div class="bg-btn px-1 rounded hover:bg-btnHover cursor-pointer">Back</div>
+                <!-- <div class="flex text-xs flex-wrap">
+                    <div v-for="navItem in postDetails.threadNavHistory">{{ navItem.post.author.displayName }} ></div>
+                </div> -->
+            </div>
             <PostThreadView v-if="!postDetails.isAwaitingFocusData"/>
         </div>
     </div>
@@ -196,6 +203,29 @@ export default defineComponent({
         },
         hideModal(){
             postDetails.hideFocusModal();
+        },
+        /**
+         * Method used to navigate through the modal navigation history
+         * if the shortcut Alt + Left Arrow or Alt + Right Arrow is pressed.
+         * @param e Key down event.
+         */
+        onKeyboardShorcutEntered(e:KeyboardEvent){
+            if(e.key == 'ArrowLeft' && e.altKey && !e.repeat){
+                postDetails.decreaseThreadNavIndex();
+            }
+            else if(e.key == 'ArrowRight' && e.altKey && !e.repeat){
+                postDetails.increaseThreadNavIndex();
+            }
+            // else if(!e.repeat) console.log('Other key pressed: '+e.key);
+        },
+        /**
+         * Method that adds support for navigating through the modal navigation history
+         * using the Mouse "Browser Back" and "Browser Forward" buttons.
+         * @param e The MouseEvent fired.
+         */
+        onMouseShortcutEntered(e:MouseEvent){
+            if(e.button == 3) postDetails.decreaseThreadNavIndex();
+            else if (e.button == 4) postDetails.increaseThreadNavIndex();
         }
     },
     computed:{
@@ -335,10 +365,16 @@ export default defineComponent({
         },
     },
     mounted(){
+        //Add keyboard+mouse shortcut listener
+        this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
+        this.$el.addEventListener('mouseup', this.onMouseShortcutEntered);
         (this.$el as HTMLElement).focus();
     },
     beforeUnmount() {
         console.log('Closing PostFocusModal...');
+        //Remove keyboard+mouse shortcut listener
+        this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
+        this.$el.removeEventListener('mouseup', this.onMouseShortcutEntered);
         AppState.handleFocusOnComponentClose();
     },
 })

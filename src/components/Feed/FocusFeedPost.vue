@@ -1,47 +1,47 @@
 <template>
-    <div v-if="postData && isViewBlocked(postData)">
+    <div v-if="postToShow && isViewBlocked(postToShow)">
         <div class="flex rounded-lg p-2 gap-1 border border-outline items-center">
             <i-mingcute:information-line class="size-4"/>
             <div>Blocked</div>
         </div>
     </div>
-    <div v-else-if="postData && isViewNotFound(postData)">
+    <div v-else-if="postToShow && isViewNotFound(postToShow)">
         <div class="flex rounded-lg p-2 gap-1 border border-outline items-center">
             <i-mingcute:information-line class="size-4"/>
             <div>Deleted</div>
         </div>
     </div>
-    <div v-else-if="postData && isListView(postData)">
+    <div v-else-if="postToShow && isListView(postToShow)">
         <div class="flex flex-col rounded-lg p-2 gap-1 border border-outline overflow-hidden select-none"
         title="Lists are not yet supported">
             <div class="flex gap-2">
                 <!-- <AvatarRound :avatar="postData.avatar"/> -->
-                <div class="bg-primary size-10 rounded-sm bg-contain border border-outline" :style="'background-image:url('+postData.avatar+')'"></div>
+                <div class="bg-primary size-10 rounded-sm bg-contain border border-outline" :style="'background-image:url('+postToShow.avatar+')'"></div>
                 <div class="flex flex-col gap-1s">
-                    <div class="leading-5">{{ postData.record }}</div>
-                    <div class="text-sm text-secondary">Starter Pack by @{{ postData.creator.handle }}</div>
+                    <div class="leading-5">{{ postToShow.record }}</div>
+                    <div class="text-sm text-secondary">Starter Pack by @{{ postToShow.creator.handle }}</div>
                 </div>
             </div>
-            <div class="flex text-sm leading-4">{{ postData.description }}</div>
+            <div class="flex text-sm leading-4">{{ postToShow.description }}</div>
         </div>
     </div>
-    <div v-else-if="postData && isStarterPackViewBasic(postData)">
+    <div v-else-if="postToShow && isStarterPackViewBasic(postToShow)">
         <div class="flex flex-col rounded-lg p-2 gap-1 border border-outline overflow-hidden select-none"
         title="Starter Packs are not yet supported">
             <div class="flex gap-2">
-                <div class="relative shrink-0 size-10 rounded-sm text-postFocusBG bg-contain border border-outline" :style="'background-image:url('+postData.creator.avatar+')'">
+                <div class="relative shrink-0 size-10 rounded-sm text-postFocusBG bg-contain border border-outline" :style="'background-image:url('+postToShow.creator.avatar+')'">
                     <i-solar:box-minimalistic-bold-duotone class="absolute z-[1] w-full h-full"/>
                     <div class="absolute w-full h-full bg-primary/10s"></div>
                 </div>
                 <div class="flex flex-col overflow-hidden">
-                    <div class="leading-5 text-nowrap overflow-hidden text-ellipsis">{{ postData.record.name }}</div>
-                    <div class="text-sm text-secondary text-nowrap w-full overflow-hidden text-ellipsis">By @{{ postData.creator.handle }}</div>
+                    <div class="leading-5 text-nowrap overflow-hidden text-ellipsis">{{ postToShow.record.name }}</div>
+                    <div class="text-sm text-secondary text-nowrap w-full overflow-hidden text-ellipsis">By @{{ postToShow.creator.handle }}</div>
                 </div>
             </div>
-            <div class="flex text-sm leading-4">{{ postData.record.description }}</div>
+            <div class="flex text-sm leading-4">{{ postToShow.record.description }}</div>
         </div>
     </div>
-    <div v-else-if="postData" class="flex flex-col rounded-lg border border-slate-600 text-primary w-full"
+    <div v-else-if="postToShow" class="flex flex-col rounded-lg border border-slate-600 text-primary w-full"
     :class="[$attrs.class, isReasonPin(postReason) ? 'pt-2' : '', isReplyStyle ? 'border-0' : 'gap-2 p-3 pb-1.5']">
         <div v-if="isReasonPin(postReason)" class="flex items-center text-secondary border-b
         border-outline pb-1 select-none">
@@ -49,7 +49,7 @@
             <div class="font-bold text-xs">Pinned</div>
         </div>
         {{ void "Retweet Label" }}
-        <div v-if="postReason && isReasonRepost(postReason) && !isViewRecord(postData)"
+        <div v-if="postReason && isReasonRepost(postReason) && !isViewRecord(postToShow)"
         class="flex rounded p-1 bg-postMsg items-center text-sm">
             <div class="flex grow-0 shrink-0 justify-end px-1">
                 <i-mdi:twitter-retweet/>
@@ -59,7 +59,7 @@
                 Reposted by {{ postReason.by.displayName }}
             </div>
         </div>
-        <div v-else-if="postData && isPostReply" @click="openFocusDetailsPost(reply?.parent as PostView)"
+        <div v-else-if="postToShow && isPostReply" @click="openFocusDetailsPost(reply?.parent as PostView)"
         title="Open Reply Parent"
         class="flex self-start py-0.5 px-2 rounded-md text-[10px] leading-3 text-primary
         bg-btn hover:bg-btnHover cursor-pointer select-none">
@@ -67,48 +67,48 @@
         </div>
         <div class="flex w-full">
             <div>
-                <AvatarRound v-if="isReplyStyle" :avatar="postData.author.avatar" :did="postData.author.did" :handle="postData.author.handle"/>
+                <AvatarRound v-if="isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"/>
                 <div v-if="replyIndex !=undefined && totalReplies!=undefined && replyIndex<totalReplies" class="h-full bg-slate-700 w-0.5 m-auto"></div>
             </div>
             <div class="flex flex-col w-full overflow-hidden"
             :class="[isReplyStyle ? 'pl-2' : '']">
                 {{ void "Post Profile Header" }}
                 <div class="flex items-center gap-2">
-                    <AvatarRound v-if="!isReplyStyle" :avatar="postData.author.avatar" :did="postData.author.did" :handle="postData.author.handle"
-                    @avatar-clicked="callFocusPostAvatarClicked(postData.author.did)"/>
+                    <AvatarRound v-if="!isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"
+                    @avatar-clicked="callFocusPostAvatarClicked(postToShow.author.did)"/>
                     <div class="flex overflow-hidden" :class="[isReplyStyle ? 'gap-1 items-center' : 'flex-col']">
                         <div class="flex items-center gap-1">
-                            <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.displayName">
-                                {{ postData.author.displayName }}
+                            <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postToShow.author.displayName">
+                                {{ postToShow.author.displayName }}
                             </div>
                             <VerifiedBadge v-if="isUserVerified" class="size-4"/>
                         </div>
-                        <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postData.author.handle">@{{ postData.author.handle }}</div>
+                        <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postToShow.author.handle">@{{ postToShow.author.handle }}</div>
                     </div>
-                    <div v-if="!isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.record.createdAt)">{{ convertToShortTimestamp(postData.record.createdAt) }}</div>
-                    <div v-else-if="isViewRecord(postData)" @click="openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postData.value.createdAt)">{{ convertToShortTimestamp(postData.value.createdAt) }}</div>
+                    <div v-if="!isViewRecord(postToShow)" @click="isReplyStyle ? postDetails.setThreadContext(threadData) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
+                    <div v-else-if="isViewRecord(postToShow)" @click="isReplyStyle ? postDetails.setThreadContext(threadData) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
                     {{ void "Post Text Content" }}
-                    <RichPostTextBsky v-if="!isViewRecord(postData)" :post-text="postData.record.text"/>
-                    <RichPostTextBsky v-else :post-text="postData.value.text"/>
+                    <RichPostTextBsky v-if="!isViewRecord(postToShow)" :post-text="postToShow.record.text"/>
+                    <RichPostTextBsky v-else :post-text="postToShow.value.text"/>
                     {{ void "Post Media" }}
                     <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
-                    :labels="postData.labels" :author="postData.author.handle" :post-text="getPostText"
-                    @media-click="(i:number) => openFocusDetails(i)"/>
+                    :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
+                    @media-click="(i:number) => isReplyStyle ? postDetails.setThreadContext(threadData,i) : openFocusDetails(i)"/>
                     <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
-                    :labels="postData.labels" :author="postData.author.handle"/>
+                    :labels="postToShow.labels" :author="postToShow.author.handle"/>
                     <div v-if="postContainsExternalEmbed">
                         <EmbedExternal :embed="getPostEmbed"/>
                     </div>
                     {{ void "Reposts - ViewRecord and View" }}
-                    <FocusFeedPost v-if="postData.embed?.record && postData.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postData.embed.record.record)"
-                    :post-data="postData.embed.record.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
-                    <FocusFeedPost v-else-if="postData.embed && AppBskyEmbedRecord.isView(postData.embed)"
-                    :post-data="postData.embed.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
+                    <FocusFeedPost v-if="postToShow.embed?.record && postToShow.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postToShow.embed.record.record)"
+                    :post-data="postToShow.embed.record.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
+                    <FocusFeedPost v-else-if="postToShow.embed && AppBskyEmbedRecord.isView(postToShow.embed)"
+                    :post-data="postToShow.embed.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
                     {{ void "Post Interaction Buttons/Icons" }}
-                    <PostInteractionIcons class="pb-0 !bg-lime-300s" :post-data="postData"/>
+                    <PostInteractionIcons class="pb-0 !bg-lime-300s" :post-data="postToShow"/>
                 </div>
             </div>
         </div>
@@ -116,7 +116,7 @@
 </template>
 
 <script lang="ts">
-import { isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
@@ -128,7 +128,7 @@ import RichPostText from '../Utilities/RichPostText.vue';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import PostInteractionIcons from '../Post/PostInteractionIcons.vue';
 import { isImage, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
-import { showFocusModal } from '../../state/PostDetails.vue';
+import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
@@ -145,7 +145,10 @@ export default defineComponent({
         PostInteractionIcons,
     },
     props:{
+        /**Prop used to pass in Post details - used by "Feed-type" display components (`FeedColumn`). */
         postData: Object as PropType<PostView>,
+        /**Prop used to pass in Post details - used by "Reply-type" display components (`PostThreadView`). */
+        threadData: Object as PropType<ThreadViewPost>,
         postReason: Object as PropType<ReasonRepost|ReasonPin>,
         isFeedPostStyle:{
             type:Boolean,
@@ -176,6 +179,12 @@ export default defineComponent({
             AppBskyEmbedRecord,
             AppBskyEmbedRecordWithMedia,
             AppBskyEmbedExternal,
+            postDetails,
+            /**
+             * The current Post details to show. "Post" is derived from `threadData`
+             * first if it exists and `postData` second.
+             */
+            postToShow: {author:{did:'',handle:''},cid:'',indexedAt:'',record:{},uri:''} as PostView,
         }
     },
     emits:{
@@ -199,15 +208,15 @@ export default defineComponent({
          * @param mediaIndex The index of the media content to initially show.
          */
         openFocusDetails(mediaIndex:number){
-            if(this.postData){
+            if(this.postToShow){
                 // postDetails.showFocusModal(this.postData, mediaIndex);
-                showFocusModal({post: this.postData}, mediaIndex);
+                showFocusModal({post: this.postToShow}, mediaIndex);
                 //update `PostDetailIcons` in `Post` State
                 // postDetails.updatePostDetailIconValues(this.postData.post.replyCount.toString(),this.postData.post.repostCount.toString(),this.postData.post.likeCount.toString());
             }
         },
         openFocusDetailsPost(post:PostView, mediaIndex:number=0){
-            if(this.postData){
+            if(this.postToShow){
                 showFocusModal({post: post}, mediaIndex);
             }
         }
@@ -218,24 +227,24 @@ export default defineComponent({
          */
         postContainsImage(){
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postData)){
-                if(this.postData?.embed && this.postData.embed.images){
+            if(!isViewRecord(this.postToShow)){
+                if(this.postToShow?.embed && this.postToShow.embed.images){
                     //Is a parent Post with image(s)
                     return true;
                 }
-                else if(this.postData?.embed && AppBskyEmbedRecordWithMedia.isView(this.postData.embed) && this.postData.embed.media.images){
+                else if(this.postToShow?.embed && AppBskyEmbedRecordWithMedia.isView(this.postToShow.embed) && this.postToShow.embed.media.images){
                     //Is a parent Post with image(s) and a QRT
                     return true;
                 }
             }
             else{
                 //This is a QRT
-                if(this.postData?.embeds && this.postData.embeds.length>0 && this.postData.embeds[0].images){
+                if(this.postToShow?.embeds && this.postToShow.embeds.length>0 && this.postToShow.embeds[0].images){
                     //Is a QRT with image(s)
                     return true;
                 }
-                else if(this.postData?.embeds && this.postData.embeds.length>0 && this.postData.embeds[0].media &&
-                    this.postData.embeds[0].media.images && this.postData.embeds[0].media.images.length>0){
+                else if(this.postToShow?.embeds && this.postToShow.embeds.length>0 && this.postToShow.embeds[0].media &&
+                    this.postToShow.embeds[0].media.images && this.postToShow.embeds[0].media.images.length>0){
                     //Is a QRT with image(s)
                     return true;
                 }
@@ -246,19 +255,19 @@ export default defineComponent({
          */
         postContainsVideo(){
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postData)){
-                if(this.postData?.embed && AppBskyEmbedVideo.isView(this.postData.embed)){
+            if(!isViewRecord(this.postToShow)){
+                if(this.postToShow?.embed && AppBskyEmbedVideo.isView(this.postToShow.embed)){
                     //Is a parent Post with video
                     return true;
                 }
-                else if(this.postData?.embed && AppBskyEmbedVideo.isView(this.postData.embed.media)){
+                else if(this.postToShow?.embed && AppBskyEmbedVideo.isView(this.postToShow.embed.media)){
                     //Is a parent Post with video and a QRT
                     return true;
                 }
             }
             else{
                 //This is a QRT
-                if(this.postData?.embeds && AppBskyEmbedVideo.isView(this.postData.embeds[0])){
+                if(this.postToShow?.embeds && AppBskyEmbedVideo.isView(this.postToShow.embeds[0])){
                     //Is a QRT with video
                     return true;
                 }
@@ -270,23 +279,23 @@ export default defineComponent({
          */
         postContainsExternalEmbed(){
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postData)){
-                if(this.postData?.embed && AppBskyEmbedExternal.isView(this.postData.embed)){
+            if(!isViewRecord(this.postToShow)){
+                if(this.postToShow?.embed && AppBskyEmbedExternal.isView(this.postToShow.embed)){
                     //Is a parent Post with external embed
                     return true;
                 }
-                else if(this.postData?.embed && this.postData.embed.media && AppBskyEmbedExternal.isView(this.postData.embed.media)){
+                else if(this.postToShow?.embed && this.postToShow.embed.media && AppBskyEmbedExternal.isView(this.postToShow.embed.media)){
                     //Is a parent Post with external embed and a QRT
                     return true;
                 }
             }
             else{
                 //This is a QRT
-                if(this.postData?.embeds && AppBskyEmbedExternal.isView(this.postData.embeds[0])){
+                if(this.postToShow?.embeds && AppBskyEmbedExternal.isView(this.postToShow.embeds[0])){
                     //Is a QRT with external embed
                     return true;
                 }
-                else if(this.postData?.embeds && this.postData.embeds.length>0 && AppBskyEmbedExternal.isView(this.postData.embeds[0].media)){
+                else if(this.postToShow?.embeds && this.postToShow.embeds.length>0 && AppBskyEmbedExternal.isView(this.postToShow.embeds[0].media)){
                     //Is a QRT with external embed (GIF) with Text ?? not sure
                     return true;
                 }
@@ -300,26 +309,26 @@ export default defineComponent({
          */
         getPostImages():ViewImage[]{
             //This is a standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postData)){
-                if(this.postData?.embed && this.postData.embed.images){
+            if(!isViewRecord(this.postToShow)){
+                if(this.postToShow?.embed && this.postToShow.embed.images){
                     //Is a parent Post with image(s)
-                    return this.postData.embed.images as ViewImage[];
+                    return this.postToShow.embed.images as ViewImage[];
                 }
-                else if(this.postData?.embed && AppBskyEmbedRecordWithMedia.isView(this.postData.embed) && this.postData.embed.media.images){
+                else if(this.postToShow?.embed && AppBskyEmbedRecordWithMedia.isView(this.postToShow.embed) && this.postToShow.embed.media.images){
                     //Is a parent Post with image(s) and a QRT
-                    return this.postData.embed.media.images as ViewImage[];
+                    return this.postToShow.embed.media.images as ViewImage[];
                 }
             }
             else{
                 //This is a QRT
-                if(this.postData?.embeds && this.postData.embeds.length>0 && this.postData.embeds[0].images){
+                if(this.postToShow?.embeds && this.postToShow.embeds.length>0 && this.postToShow.embeds[0].images){
                     //Is a QRT with image(s)
-                    return this.postData.embeds[0].images as ViewImage[];
+                    return this.postToShow.embeds[0].images as ViewImage[];
                 }
-                else if(this.postData?.embeds && this.postData.embeds.length>0 && this.postData.embeds[0].media &&
-                    this.postData.embeds[0].media.images){
+                else if(this.postToShow?.embeds && this.postToShow.embeds.length>0 && this.postToShow.embeds[0].media &&
+                    this.postToShow.embeds[0].media.images){
                     //Is a QRT with image(s)
-                    return this.postData.embeds[0].media.images as ViewImage[];
+                    return this.postToShow.embeds[0].media.images as ViewImage[];
                 }
             }
             return [];
@@ -330,21 +339,21 @@ export default defineComponent({
          * @returns `AppBskyEmbedVideo.View` containing Video details.
          */
         getPostVideo():AppBskyEmbedVideo.View|undefined{
-            if(!isViewRecord(this.postData)){
-                if(this.postData?.embed && AppBskyEmbedVideo.isView(this.postData.embed)){
+            if(!isViewRecord(this.postToShow)){
+                if(this.postToShow?.embed && AppBskyEmbedVideo.isView(this.postToShow.embed)){
                     //Is a parent Post with video
-                    return this.postData.embed;
+                    return this.postToShow.embed;
                 }
-                else if(this.postData?.embed && AppBskyEmbedVideo.isView(this.postData.embed.media)){
+                else if(this.postToShow?.embed && AppBskyEmbedVideo.isView(this.postToShow.embed.media)){
                     //Is a parent Post with video and a QRT
-                    return this.postData.embed.media;
+                    return this.postToShow.embed.media;
                 }
             }
             else{
                 //This is a QRT
-                if(this.postData?.embeds && AppBskyEmbedVideo.isView(this.postData.embeds[0])){
+                if(this.postToShow?.embeds && AppBskyEmbedVideo.isView(this.postToShow.embeds[0])){
                     //Is a QRT with video
-                    return this.postData.embeds[0];
+                    return this.postToShow.embeds[0];
                 }
             }
             // return {cid:'',playlist:''};//Empty AppBskyEmbedVideo.View object, shouldn't ever be returned
@@ -357,37 +366,37 @@ export default defineComponent({
          */
         getPostEmbed():AppBskyEmbedExternal.View|undefined{
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postData)){
-                if(this.postData?.embed && AppBskyEmbedExternal.isView(this.postData.embed)){
+            if(!isViewRecord(this.postToShow)){
+                if(this.postToShow?.embed && AppBskyEmbedExternal.isView(this.postToShow.embed)){
                     //Is a parent Post with external embed
-                    return this.postData.embed;
+                    return this.postToShow.embed;
                 }
-                else if(this.postData?.embed && this.postData.embed.media && AppBskyEmbedExternal.isView(this.postData.embed.media)){
+                else if(this.postToShow?.embed && this.postToShow.embed.media && AppBskyEmbedExternal.isView(this.postToShow.embed.media)){
                     //Is a parent Post with external embed and a QRT
-                    return this.postData.embed.media;
+                    return this.postToShow.embed.media;
                 }
             }
             else{
                 //This is a QRT
-                if(this.postData?.embeds && AppBskyEmbedExternal.isView(this.postData.embeds[0])){
+                if(this.postToShow?.embeds && AppBskyEmbedExternal.isView(this.postToShow.embeds[0])){
                     //Is a QRT with external embed
-                    return this.postData.embeds[0];
+                    return this.postToShow.embeds[0];
                 }
-                else if(this.postData?.embeds && this.postData.embeds.length>0 && AppBskyEmbedExternal.isView(this.postData.embeds[0].media)){
+                else if(this.postToShow?.embeds && this.postToShow.embeds.length>0 && AppBskyEmbedExternal.isView(this.postToShow.embeds[0].media)){
                     //Is a QRT with external embed (GIF) with Text ?? not sure
-                    return this.postData?.embeds[0].media;
+                    return this.postToShow?.embeds[0].media;
                 }
             }
         },
         getPostText():string{
-            if(!isViewRecord(this.postData)) return this.postData?.record.text;
-            else return this.postData.value.text;
+            if(!isViewRecord(this.postToShow)) return this.postToShow?.record.text;
+            else return this.postToShow.value.text;
         },
         /**
          * Method used to see if the User of the focused Post is verified.
          */
         isUserVerified(){
-            let profile = this.postData?.author;
+            let profile = this.postToShow?.author;
             if(profile != undefined && profile.verification && profile.verification.verifiedStatus == 'valid')
                 return true;
             return false;
@@ -405,6 +414,8 @@ export default defineComponent({
         // console.log(this.postData); //DEBUG - missing object/variable catching
         // console.log('Has this post been deleted?');
         // console.log(isViewNotFound(this.postData));
+        if(this.threadData) this.postToShow = this.threadData.post;
+        else if(this.postData) this.postToShow = this.postData;
     }
 })
 </script>
