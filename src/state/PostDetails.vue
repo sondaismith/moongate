@@ -2,7 +2,7 @@
 import { reactive } from 'vue'
 import { IPostDetails, IPostDetailsList } from '../interfaces/PostInterfaces';
 import { IconTypes } from '../enums/PostEnums';
-import { emptyPostModalData, emptyPostThread } from '../fake-data/dumPostData';
+import { emptyPostThread, emptyPostView } from '../fake-data/dumPostData';
 
 //DetailIcon Icons
 import SolarChatDotsOutline from '~icons/solar/chat-dots-outline';
@@ -10,7 +10,7 @@ import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteHeartFill from '~icons/mingcute/heart-fill';
 import SolarShareBold from '~icons/solar/share-bold';
 import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
-import { FeedViewPost, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { FeedViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { getPostThread } from '../lib/api/Post.vue';
 import { toast } from './AppState.vue';
 import { HandleAPIError } from '../helpers/errors';
@@ -32,7 +32,36 @@ export const postDetails = reactive({
         this.clickedMediaIndex = newVal;
     },
     menuClickPos: [0, -500],
-    postData: emptyPostModalData,
+    /**
+     * Holds data relating to the most recently interacted-with Post.
+     */
+    currentPostData: emptyPostView,
+    /**
+     * Updates the reference to the Post that will have actions
+     * performed to it (likes, reply, quote post, delete). Also
+     * sets variable indicating what action is going to be performed.
+     * @param post The Post that you wish to perform actions on.
+     */
+    prepareForPostAction(post:PostView|undefined, action:"post"|"reply"|"quote"="post"){
+        if(post) this.currentPostData = post;
+        else this.currentPostData = emptyPostView;
+        switch (action) {
+            case "reply":
+                this.isReplyingToPost = true;
+                this.isQuotingPost = false;
+                break;
+            case "quote":
+                this.isQuotingPost = true;
+                this.isReplyingToPost = false;
+                break;
+            default:
+                break;
+        }
+    },
+    /**Boolean indicating that we are replying to a Post. */
+    isReplyingToPost:false,
+    /**Boolean indicating that we are quote posting a Post. */
+    isQuotingPost:false,
     postThread : emptyPostThread,
     currentThreadView : emptyPostThread,
     setCurrentThreadView(cid: string) {
@@ -153,7 +182,7 @@ export const postDetails = reactive({
     showModalPost(postToShow:FeedViewPost){
         this.isVisible = true;
         // this.postData = updatePostDetails(postToShow);
-        this.postData = postToShow;
+        this.currentPostData = postToShow;
     },
     hideModal(){
         this.isVisible = false;

@@ -1,7 +1,8 @@
 <template>
     <div :class="textColorClass" class="flex flex-wrap text-secondary gap-1 *:h-5 justify-around">
         <div class="group flex items-center cursor-pointer hover:text-slate-300"
-        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}">
+        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}"
+        @click="replyToPost">
             <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-500"/>
             <div class="pl-1" :title="postData.replyCount?.toString()">{{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}</div>
         </div>
@@ -76,6 +77,10 @@ export default defineComponent({
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },
+        replyToPost(){
+            postDetails.prepareForPostAction(this.postData,'reply')
+            AppState.showCreatePost();
+        }
     }
 })
 </script>

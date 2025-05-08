@@ -105,7 +105,7 @@
             <AccountPeek v-show="AccountPeekState.isUserPeeking"/>
         </Transition>
         <Transition name="modal">
-            <CreatePost v-if="AppState.isCreatingNewPost"/>
+            <CreatePost v-if="AppState.isCreatingNewPost" :post-ref="postDetails.currentPostData"/>
         </Transition>
         <Transition name="modal">
             <SettingsPanel v-if="AppState.isSettingsPanelVisible"/>
