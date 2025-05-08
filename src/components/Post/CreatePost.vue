@@ -24,14 +24,14 @@
                             <div class="text-sm overflow-hidden text-ellipsis text-secondary"
                             :title="post.author.handle">@{{ post.author.handle }}</div>
                         </div>
-                        <div class="text-sm">{{ post.record.text }}</div>
+                        <div class="text-sm">{{ getPostText }}</div>
                         <!-- <RichPostTextBsky v-if="post.record.text" :post-text="post.record.text as string"
                         class="text-sm"/> -->
                     </div>
                     <div v-if="postContainsImage" class="ml-auto shrink-0 h-16 w-fulls rounded overflow-hidden box-content border border-outlineLighter"
-                    :style="`aspect-ratio:${post.embed.images[0].aspectRatio?.width}/${post.embed.images[0].aspectRatio?.height}`">
+                    :style="`aspect-ratio:${getPostImages[0].aspectRatio?.width}/${getPostImages[0].aspectRatio?.height}`">
                         <div class="h-full bg-contain bg-no-repeat"
-                        :style="{'background-image': `url(${post.embed.images[0].fullsize})`}"></div>
+                        :style="{'background-image': `url(${getPostImages[0].fullsize})`}"></div>
                     </div>
                     <div v-if="postContainsVideo"
                     class="ml-auto rounded-md text-sm w-16 p-1 bg-focusBG
@@ -102,7 +102,7 @@ import { postDetails } from '../../state/PostDetails.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import { isView, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
-import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal } from '@atproto/api';
+import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal, AppBskyEmbedRecord } from '@atproto/api';
 import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 
 export default defineComponent({
@@ -126,6 +126,7 @@ export default defineComponent({
             confirmClose,
             postDetails,
             isView,
+            AppBskyEmbedRecord,
         }
     },
     methods:{
@@ -346,6 +347,14 @@ export default defineComponent({
                     return this.postRef?.embeds[0].media;
                 }
             }
+        },
+        /**
+         * Method that figures out where the text associated with a Post is held based
+         * on what type of data configuration the current Post has.
+         */
+        getPostText():string{
+            if(!isViewRecord(this.postRef)) return this.postRef?.record.text;
+            else return this.postRef.value.text;
         },
     }
 })
