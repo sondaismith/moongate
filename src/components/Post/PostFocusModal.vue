@@ -53,7 +53,7 @@
         {{ void "Comments Section" }}
         <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-postFocusBG overflow-y-scroll">
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
-            <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s p-4 w-full">
+            <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
                 <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
                     <div class="flex gap-2 mb-1">
                         <div class="drop-shadow-md">
@@ -79,7 +79,7 @@
                 </div>
             </div>
             {{ void "User Info/Actions" }}
-            <div v-if="!postDetails.isAwaitingFocusData" class="p-4">
+            <div v-if="!postDetails.isAwaitingFocusData" class="p-4 pb-2">
                 <div class="flex gap-1">
                     <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
                     :did="postDetails.currentThreadView.post.author.did"
@@ -109,7 +109,7 @@
                     <div class="py-1">
                         <div class="text-feedPostName text-secondary cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
                     </div>
-                    <PostInteractionIcons :post-data="postDetails.currentThreadView.post"/>
+                    <PostInteractionIcons class="pt-2" :post-data="postDetails.currentThreadView.post"/>
                 </div>
             </div>
             {{ void "post reply input" }}
@@ -139,6 +139,13 @@
             </div>
             {{ void "Replies" }}
             <ReplyBreadcrumb class="px-4"/>
+            <div v-if="postDetails.threadNavIndex>0" class="flex px-4 text-primary items-center"
+            @click="postDetails.decreaseThreadNavIndex">
+                <div class="bg-btn px-1 rounded hover:bg-btnHover cursor-pointer">Back</div>
+                <!-- <div class="flex text-xs flex-wrap">
+                    <div v-for="navItem in postDetails.threadNavHistory">{{ navItem.post.author.displayName }} ></div>
+                </div> -->
+            </div>
             <PostThreadView v-if="!postDetails.isAwaitingFocusData"/>
         </div>
     </div>
@@ -196,6 +203,29 @@ export default defineComponent({
         },
         hideModal(){
             postDetails.hideFocusModal();
+        },
+        /**
+         * Method used to navigate through the modal navigation history
+         * if the shortcut Alt + Left Arrow or Alt + Right Arrow is pressed.
+         * @param e Key down event.
+         */
+        onKeyboardShorcutEntered(e:KeyboardEvent){
+            if(e.key == 'ArrowLeft' && e.altKey && !e.repeat){
+                postDetails.decreaseThreadNavIndex();
+            }
+            else if(e.key == 'ArrowRight' && e.altKey && !e.repeat){
+                postDetails.increaseThreadNavIndex();
+            }
+            // else if(!e.repeat) console.log('Other key pressed: '+e.key);
+        },
+        /**
+         * Method that adds support for navigating through the modal navigation history
+         * using the Mouse "Browser Back" and "Browser Forward" buttons.
+         * @param e The MouseEvent fired.
+         */
+        onMouseShortcutEntered(e:MouseEvent){
+            if(e.button == 3) postDetails.decreaseThreadNavIndex();
+            else if (e.button == 4) postDetails.increaseThreadNavIndex();
         }
     },
     computed:{
@@ -335,10 +365,16 @@ export default defineComponent({
         },
     },
     mounted(){
+        //Add keyboard+mouse shortcut listener
+        this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
+        this.$el.addEventListener('mouseup', this.onMouseShortcutEntered);
         (this.$el as HTMLElement).focus();
     },
     beforeUnmount() {
         console.log('Closing PostFocusModal...');
+        //Remove keyboard+mouse shortcut listener
+        this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
+        this.$el.removeEventListener('mouseup', this.onMouseShortcutEntered);
         AppState.handleFocusOnComponentClose();
     },
 })

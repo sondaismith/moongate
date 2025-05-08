@@ -49,6 +49,63 @@ export const postDetails = reactive({
         this.updateCurrentBreadcrumbs();
     },
     /**
+     * Holds record of how/where the User has navigated down
+     * the Post reply tree. The 1st element will always be a
+     * reference to the root Post.
+     */
+    threadNavHistory: [emptyPostThread] as ThreadViewPost[],
+    /**
+     * Determines the currently displayed post from the thread in `PostFocusModal` when
+     * used with `postDetails.threadNavHistory[]`. If the value is 0 it will show the
+     * root Post.
+     */
+    threadNavIndex: 0,
+    /**Increases the `threadNavIndex` by 1. Navigates to new Post/Reply context.*/
+    increaseThreadNavIndex(mediaIndex:number=0){
+        if(this.threadNavIndex+1 < this.threadNavHistory.length){
+            this.isChangingThreadContext = true;
+            this.threadNavIndex++;
+            this.clickedMediaIndex = mediaIndex;
+            this.currentThreadView = this.threadNavHistory[this.threadNavIndex];
+            setTimeout(() => {
+                this.isChangingThreadContext = false;
+            }, 1);
+        }
+    },
+    /**Decreases the `threadNavIndex` by 1. Navigates to previously viewed Post/Reply context.*/
+    decreaseThreadNavIndex(){
+        if(this.threadNavIndex-1 >= 0){
+            this.isChangingThreadContext = true;
+            this.threadNavIndex--;
+            this.clickedMediaIndex = 0; //prevents accessing element that does not exist
+            this.currentThreadView = this.threadNavHistory[this.threadNavIndex];
+            setTimeout(() => {
+                this.isChangingThreadContext = false;
+            }, 1);
+        }
+    },
+    /**Used to cause the Replies displayed in `PostThreadView` to update when the context changes. */
+    isChangingThreadContext:false,
+    /**
+     * Method that changes the thread "context" - updates the main post displayed in
+     * the `PostFocusModal` component.
+     * Updates the navigation history list (`threadNavHistory`).
+     * @param threadPost Post/reply to display in `PostFocusModal`.
+     */
+    setThreadContext(threadPost:ThreadViewPost|undefined, mediaIndex:number=0){
+        if(threadPost){
+            //If at latest/end of threadNavHistory
+            if(this.threadNavIndex+1 == this.threadNavHistory.length){
+                this.threadNavHistory.push(threadPost);
+            }
+            else{
+                this.threadNavHistory = this.threadNavHistory.slice(0,this.threadNavIndex+1);
+                this.threadNavHistory.push(threadPost);
+            }
+            this.increaseThreadNavIndex(mediaIndex);
+        }
+    },
+    /**
      * Method that resets the current ThreadView back to the Post
      * origin.
      */
@@ -126,6 +183,8 @@ export const postDetails = reactive({
      */
     hideFocusModal(){
         postDetails.isFocusVisible = false;
+        this.threadNavIndex = 0; //Clear thread navigation history
+        this.threadNavHistory = [emptyPostThread];
     },
     isPostOptionsMenuVisible: false,
     /**
@@ -267,8 +326,9 @@ export async function showFocusModal(postToShow:FeedViewPost, mediaIndex:number)
     await getPostThread(postToShow)
     .then(res => {
         postDetails.postThread = res.data.thread as ThreadViewPost;
-        postDetails.currentThreadView = res.data.thread as ThreadViewPost;
+        postDetails.currentThreadView = postDetails.threadNavHistory[0] = postDetails.postThread;
         postDetails.isAwaitingFocusData = false;
+        console.log(postDetails.currentThreadView)
     })
     .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')));
 }

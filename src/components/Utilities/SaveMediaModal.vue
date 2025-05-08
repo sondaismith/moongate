@@ -42,7 +42,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { AppState } from '../../state/AppState.vue';
+import { AppState, toast } from '../../state/AppState.vue';
 import { download } from '@tauri-apps/plugin-upload';
 import InLaInput from './InLaInput.vue';
 import SquareButton from './SquareButton.vue';
@@ -109,6 +109,9 @@ export default defineComponent({
                         description:AppState.fileSaveDetails.postText
                     }));
                 }
+            }).catch(err=>{
+                toast.add({summary:'Error',detail:err,severity:'error', group:'tr', life:3000});
+                this.isDownloading = false;
             })
         },
         /**

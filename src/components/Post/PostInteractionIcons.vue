@@ -1,5 +1,5 @@
 <template>
-    <div :class="textColorClass" class="flex flex-wrap text-secondary py-2 gap-1 *:h-5 justify-around">
+    <div :class="textColorClass" class="flex flex-wrap text-secondary gap-1 *:h-5 justify-around">
         <div class="group flex items-center cursor-pointer hover:text-slate-300"
         :class="{'pointer-events-none' : !AppState.isAuthBrowsing}">
             <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-500"/>
