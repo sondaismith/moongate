@@ -7,7 +7,8 @@
             <div class="pl-1" :title="postData.replyCount?.toString()">{{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}</div>
         </div>
         <div class="group flex items-center cursor-pointer hover:text-slate-300"
-        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}">
+        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}"
+        @click="showRepostOptionsMenu($event, postData)">
             <i-mingcute:repeat-line class="pointer-events-none group-hover:text-blue-500"/>
             <div class="pl-1" :title="postData.repostCount?.toString()">{{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}</div>
         </div>
@@ -36,16 +37,27 @@ import { postDetails } from '../../state/PostDetails.vue';
 import { CreateBskyWeblink, getCompactNumberValue } from '../../helpers/converters';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppState } from '../../state/AppState.vue';
 
 //Option Menu icons
 import MingcuteLinkLine from '~icons/mingcute/link-line';
-import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AppState } from '../../state/AppState.vue';
+import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
+import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
 
 function CopyPostLink(postUri:string, handle:string=""){
     let link = CreateBskyWeblink(postUri, handle);
     if(link) navigator.clipboard.writeText(link);
     //Need to add toast or something to alert the User that link has been copied
+}
+
+/**
+ * Opens the `CreatePost` component to allow the use to make a "quote post".
+ * @param post Post to quote post.
+ */
+function QuotePost(post:PostView){
+    postDetails.prepareForPostAction(post,'quote')
+    AppState.showCreatePost();
 }
 
 export default defineComponent({
@@ -77,10 +89,22 @@ export default defineComponent({
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },
+        /**
+         * Shows Options Menu allowing user to perform different actions
+         * relating to the selected User.
+         */
+        showRepostOptionsMenu(e:MouseEvent, post:PostView){
+            e.preventDefault();
+            OptionsMenuState.currentMenuItems = [
+                {Icon:MingcuteRepeatLine,Label:'Repost',Action:function(){}},
+                {Icon:MingcuteQuoteRightFill,Label:'Quote post',Action:function(){QuotePost(post)}},
+            ] as IOptionMenuItem[]
+            OptionsMenuState.showOptionMenu(e);
+        },
         replyToPost(){
             postDetails.prepareForPostAction(this.postData,'reply')
             AppState.showCreatePost();
-        }
+        },
     }
 })
 </script>

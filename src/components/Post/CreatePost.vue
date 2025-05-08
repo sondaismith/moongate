@@ -24,9 +24,7 @@
                             <div class="text-sm overflow-hidden text-ellipsis text-secondary"
                             :title="post.author.handle">@{{ post.author.handle }}</div>
                         </div>
-                        <div class="text-sm">{{ getPostText }}</div>
-                        <!-- <RichPostTextBsky v-if="post.record.text" :post-text="post.record.text as string"
-                        class="text-sm"/> -->
+                        <RichPostTextBsky :post-text="getPostText" class="text-sm"/>
                     </div>
                     <div v-if="postContainsImage" class="ml-auto shrink-0 h-16 w-fulls rounded overflow-hidden box-content border border-outlineLighter"
                     :style="`aspect-ratio:${getPostImages[0].aspectRatio?.width}/${getPostImages[0].aspectRatio?.height}`">
@@ -47,11 +45,6 @@
                 <div class="h-[1px] bg-outlineLighter"></div>
             </div>
             <div class="flex gap-2">
-                <!-- <div class="rounded-full bg-slate-300 aspect-square
-                border box-content size-12 bg-contain"
-                :style="{'background-image' : 'url('+avatar+')'}">
-                    <i-mingcute:butterfly-2-fill v-if="!avatar" class="text-2xl h-full w-full p-1 text-blue-600"/>
-                </div> -->
                 <div class="p-1">
                     <AvatarRound class=""/>
                 </div>
@@ -62,6 +55,42 @@
                 @focusin="postInputFocusGained" @focusout="postInputFocusLost"
                 @input="limitChars"
                 class="block rounded p-2 bg-slate-900 w-full postPlaceholder"/> -->
+            </div>
+            <div v-if="postDetails.isQuotingPost" class="flex flex-col gap-1">
+                <!-- <div class="flex flex-col self-start text-sm underlines select-none">
+                    <div>Quoting...</div>
+                    <div class="h-[1px] bg-outlineLighter"></div>
+                </div> -->
+                <div v-for="post in [postDetails.currentPostData]"
+                class="flex flex-col rounded-md p-2 border border-outline">
+                    <div class="flex gap-1 items-center">
+                        <AvatarRound :avatar="post.author.avatar" class="size-6"/>
+                        <div class="flex gap-1 text-nowrap overflow-hidden">
+                            <div class="text-sm overflow-hidden text-ellipsis font-bold"
+                            :title="post.author.displayName">{{ post.author.displayName }}</div>
+                            <div class="text-sm overflow-hidden text-ellipsis text-secondary"
+                            :title="post.author.handle">@{{ post.author.handle }}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start flex-col self-start gap-1 overflow-hidden shrink">
+                        <RichPostTextBsky :post-text="getPostText" class="text-sm"/>
+                        <div v-if="postContainsImage" class="flex min-h-48 rounded overflow-hidden box-content border border-outlineLighter"
+                        :style="`aspect-ratio:${getPostImages[0].aspectRatio?.width}/${getPostImages[0].aspectRatio?.height}`">
+                            <div class="w-full h-full bg-contain bg-no-repeat"
+                            :style="{'background-image': `url(${getPostImages[0].fullsize})`}"></div>
+                        </div>
+                        <div v-if="postContainsVideo"
+                        class="rounded-md text-sm w-16 p-1 bg-focusBG
+                        border border-secondary text-center">
+                            Video
+                        </div>
+                        <div v-if="postContainsExternalEmbed"
+                        class="rounded-md text-sm w-16 p-1 bg-focusBG
+                        border border-secondary text-center">
+                            External Embed
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="flex rounded bg-btn p-2 items-center self-start gap-1 text-sm">
                 <i-mingcute:world-2-line/>
