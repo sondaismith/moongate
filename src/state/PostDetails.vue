@@ -1,8 +1,12 @@
 <script lang="ts">
 import { reactive } from 'vue'
-import { IPostDetails, IPostDetailsList } from '../interfaces/PostInterfaces';
-import { IconTypes } from '../enums/PostEnums';
+import { IPostDetails } from '../interfaces/PostInterfaces';
+import { IconTypes, PostActions } from '../enums/PostEnums';
 import { emptyPostThread, emptyPostView } from '../fake-data/dumPostData';
+import { FeedViewPost, isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { getPostThread } from '../lib/api/Post.vue';
+import { toast } from './AppState.vue';
+import { HandleAPIError } from '../helpers/errors';
 
 //DetailIcon Icons
 import SolarChatDotsOutline from '~icons/solar/chat-dots-outline';
@@ -10,10 +14,6 @@ import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteHeartFill from '~icons/mingcute/heart-fill';
 import SolarShareBold from '~icons/solar/share-bold';
 import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
-import { FeedViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { getPostThread } from '../lib/api/Post.vue';
-import { toast } from './AppState.vue';
-import { HandleAPIError } from '../helpers/errors';
 
 // export const postDetails : IPostDetailsList = reactive({
 export const postDetails = reactive({
@@ -37,32 +37,66 @@ export const postDetails = reactive({
      */
     currentPostData: emptyPostView,
     /**
+     * Holds record of the Thread associated with the Post the User last
+     * interacted with. Currently just used to find the "root" Post of last
+     * interacted Post.
+     */
+    currentPostThreadData: {} as ThreadViewPost|undefined,
+    /**
+     * Indicates that we are waiting for a reference to the thread associated
+     * with the Post being intereacted with. Mainly used with `CreatePost`
+     * component.
+     */
+    isAwaitingPostThreadData:false,
+    /**
      * Updates the reference to the Post that will have actions
      * performed to it (likes, reply, quote post, delete). Also
      * sets variable indicating what action is going to be performed.
      * @param post The Post that you wish to perform actions on.
+     * @param action The type of Post that is being created.
      */
-    prepareForPostAction(post:PostView|undefined, action:"post"|"reply"|"quote"="post"){
-        if(post) this.currentPostData = post;
-        else this.currentPostData = emptyPostView;
-        switch (action) {
-            case "reply":
-                this.isReplyingToPost = true;
-                this.isQuotingPost = false;
-                break;
-            case "quote":
-                this.isQuotingPost = true;
-                this.isReplyingToPost = false;
-                break;
-            default:
-                break;
+    async prepareForPostAction(post:PostView, action:PostActions=PostActions.Post){
+        this.isAwaitingPostThreadData = true;
+        this.currentPostAction = action;
+        if(post && post.uri && post.uri.trim() != ''){
+            this.currentPostData = post;
+            await getPostThread(post.uri)
+            //only will work with ThreadViewPost - no NotFoundPost or BlockedPost
+            .then(res => this.currentPostThreadData = isThreadViewPost(res.data.thread) ? res.data.thread : undefined)
+            .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread details')));
         }
+        else{
+            this.currentPostData = emptyPostView;
+            this.currentPostThreadData = undefined;
+        }
+        this.isAwaitingPostThreadData = false;
     },
+    currentPostAction:PostActions.Post,
     /**Boolean indicating that we are replying to a Post. */
     isReplyingToPost:false,
     /**Boolean indicating that we are quote posting a Post. */
     isQuotingPost:false,
+    /**
+     * Recursive method that attempts to find the "root" Post of a specified
+     * Post/comment. Checks to see if the Post has a `parent` value. Returns itself
+     * if it cannot be found.
+     * @param post The Post you wish to find the "root" Post of.
+     */
+    getPostThreadRoot(post:ThreadViewPost):ThreadViewPost{
+        if(post.parent && isThreadViewPost(post.parent)){
+            return this.getPostThreadRoot(post.parent)
+        }
+        else{ return post; }
+    },
+    /**
+     * Holds details of the "Thread" of the initial Post that was opened up in the Focus modal.
+     * Should not be modified once set except to be cleared.
+     */
     postThread : emptyPostThread,
+    /**
+     * Holds reference to the currently displayed Post thread context. Updated with values
+     * held in the thread navigation history array - `threadNavHistory`.
+     */
     currentThreadView : emptyPostThread,
     setCurrentThreadView(cid: string) {
         var result = findThreadView(cid,this.postThread);
@@ -335,7 +369,7 @@ function discoverBreadcrumbs(parentCID:string, currentPostThread:ThreadViewPost)
  */
 export async function showDetailModal(postToShow:FeedViewPost){
     postDetails.isVisible = true;
-    await getPostThread(postToShow)
+    await getPostThread(postToShow.post.uri)
     .then(res => {
         postDetails.postThread = res.data.thread as ThreadViewPost
         postDetails.currentThreadView = res.data.thread as ThreadViewPost;
@@ -352,7 +386,7 @@ export async function showFocusModal(postToShow:FeedViewPost, mediaIndex:number)
     postDetails.isAwaitingFocusData = true;
     postDetails.isFocusVisible = true;
     postDetails.clickedMediaIndex = mediaIndex;
-    await getPostThread(postToShow)
+    await getPostThread(postToShow.post.uri)
     .then(res => {
         postDetails.postThread = res.data.thread as ThreadViewPost;
         postDetails.currentThreadView = postDetails.threadNavHistory[0] = postDetails.postThread;

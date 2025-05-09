@@ -77,7 +77,7 @@
                     <AvatarRound v-if="!isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"
                     @avatar-clicked="callFocusPostAvatarClicked(postToShow.author.did)"/>
                     <div class="flex overflow-hidden" :class="[isReplyStyle ? 'gap-1 items-center' : 'flex-col']">
-                        <div class="flex items-center gap-1">
+                        <div class="flex items-center gap-1 overflow-hidden">
                             <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postToShow.author.displayName">
                                 {{ postToShow.author.displayName }}
                             </div>

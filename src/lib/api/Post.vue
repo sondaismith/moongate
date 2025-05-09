@@ -55,10 +55,10 @@ export async function getBlueskyPostThread(postDID: string){
 /**
  * Method that retrieves a Post ThreadView object from the Bluesky API based on
  * a Post selected in a Feed view.
- * @param postToShow The Post Thread to show based on the Post clicked in a Feed.
+ * @param postURI The URI of the Post to get ThreadView for.
  */
-export async function getPostThread(postToShow:FeedViewPost):Promise<AppBskyFeedGetPostThread.Response>{
-    var result = await GetBrowsingAgent().getPostThread({uri:postToShow.post.uri});
+export async function getPostThread(postURI:string):Promise<AppBskyFeedGetPostThread.Response>{
+    var result = await GetBrowsingAgent().getPostThread({uri:postURI});
     return result;
 }
 
@@ -69,11 +69,7 @@ export async function getPostThread(postToShow:FeedViewPost):Promise<AppBskyFeed
 export async function CreateNewPost(postData:Record){
     console.log(postData);
     if(AppState.checkIfLoggedIn('post')){
-        await GetBrowsingAgent().post({
-            text: postData.text,
-            langs: ["en-US"],
-            createdAt: postData.createdAt
-        })
+        await GetBrowsingAgent().post(postData)
         .then(async res => {
             toast.add({summary:'Success',detail:'Post Created!',severity:'success',group:'tr',life:3000});
             //show newly created post

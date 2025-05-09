@@ -5,9 +5,12 @@
         border-outlineLighter p-3 m-auto gap-3">
             <div class="flex items-center justify-between">
                 <div @click="confirmClose(canSubmitPost)" class="font-bold text-sky-500 hover:text-sky-300 cursor-pointer">Cancel</div>
-                <PillButton @click="createNewPost" class="transition-colors px-4 py-1 bg-sky-500" :class="!canSubmitPost ? '!bg-gray-400 text-gray-500 !cursor-default' : ''">Post</PillButton>
+                <PillButton @click="createNewPost" class="transition-colors px-4 py-1 bg-sky-500" :class="(!canSubmitPost || postDetails.isAwaitingPostThreadData) ? '!bg-gray-400 text-gray-500 !cursor-default' : ''">Post</PillButton>
             </div>
-            <div v-if="postDetails.isReplyingToPost" class="flex flex-col gap-1">
+            <div v-if="postDetails.currentPostAction == PostActions.Reply && postDetails.isAwaitingPostThreadData">
+                <i-mingcute:loading-fill class="text-black spinner self-center size-10"/>
+            </div>
+            <div v-else-if="postDetails.currentPostAction == PostActions.Reply" class="flex flex-col gap-1">
                 <div class="flex flex-col self-start text-sm underlines select-none">
                     <div>Replying to...</div>
                     <div class="h-[1px] bg-outlineLighter"></div>
@@ -56,7 +59,10 @@
                 @input="limitChars"
                 class="block rounded p-2 bg-slate-900 w-full postPlaceholder"/> -->
             </div>
-            <div v-if="postDetails.isQuotingPost" class="flex flex-col gap-1">
+            <div v-if="postDetails.currentPostAction == PostActions.Quote && postDetails.isAwaitingPostThreadData">
+                <i-mingcute:loading-fill class="text-black spinner self-center size-10"/>
+            </div>
+            <div v-else-if="postDetails.currentPostAction == PostActions.Quote" class="flex flex-col gap-1">
                 <!-- <div class="flex flex-col self-start text-sm underlines select-none">
                     <div>Quoting...</div>
                     <div class="h-[1px] bg-outlineLighter"></div>
@@ -124,15 +130,16 @@ import PillButton from '../Utilities/PillButton.vue';
 import MdiInsertPhoto from '~icons/mdi/insert-photo';
 import MdiFilmstripBoxMultiple from '~icons/mdi/filmstrip-box-multiple';
 import MdiFileGifBox from '~icons/mdi/file-gif-box';
-import { AppState } from '../../state/AppState.vue';
+import { AppState, toast } from '../../state/AppState.vue';
 import { CreateNewPost } from '../../lib/api/Post.vue';
-import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { postDetails } from '../../state/PostDetails.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import { isView, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal, AppBskyEmbedRecord } from '@atproto/api';
 import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { PostActions } from '../../enums/PostEnums';
 
 export default defineComponent({
     components:{
@@ -156,6 +163,7 @@ export default defineComponent({
             postDetails,
             isView,
             AppBskyEmbedRecord,
+            PostActions,
         }
     },
     methods:{
@@ -192,11 +200,69 @@ export default defineComponent({
             if(this.postText.length>maxChars) this.postText = this.postText.slice(0,maxChars);
         },
         createNewPost(){
-            CreateNewPost({
-                $type:'app.bsky.feed.post',
-                text: this.postText,
-                createdAt: new Date().toISOString()
-            });
+            switch (postDetails.currentPostAction) {
+                case PostActions.Post:
+                    CreateNewPost({
+                        $type:'app.bsky.feed.post',
+                        text: this.postText,
+                        langs:['en-US'],
+                        createdAt: new Date().toISOString()
+                    });
+                    break;
+                case PostActions.Reply:
+                    if(isThreadViewPost(postDetails.currentPostThreadData)){
+                        let root:ThreadViewPost = postDetails.getPostThreadRoot(postDetails.currentPostThreadData);
+                        console.log(root);
+                        if(isThreadViewPost(root)){
+                            CreateNewPost({
+                                $type:'app.bsky.feed.post',
+                                text: this.postText,
+                                reply:{
+                                    root:{
+                                        uri:root.post.uri,
+                                        cid:root.post.cid
+                                    },
+                                    parent:{
+                                        uri:postDetails.currentPostData.uri,
+                                        cid:postDetails.currentPostData.cid
+                                    }
+                                },
+                                langs:['en-US'],
+                                createdAt: new Date().toISOString(),
+                            });
+                        }
+                    }
+                    else{
+                        toast.add({summary:'Error', detail:'Referenced post thread is not set/valid', severity:'error', group:'tr', life:3000})
+                    }
+                    break;
+                case PostActions.Quote:
+                    if(isThreadViewPost(postDetails.currentPostThreadData)){
+                        let root:ThreadViewPost = postDetails.getPostThreadRoot(postDetails.currentPostThreadData);
+                        console.log(root);
+                        if(isThreadViewPost(root)){
+                            CreateNewPost({
+                                $type:'app.bsky.feed.post',
+                                text: this.postText,
+                                langs:['en-US'],
+                                createdAt: new Date().toISOString(),
+                                embed:{
+                                    $type:'app.bsky.embed.record',
+                                    record:{
+                                        uri:postDetails.currentPostData.uri,
+                                        cid:postDetails.currentPostData.cid
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    else{
+                        toast.add({summary:'Error', detail:'Referenced post thread is not set/valid', severity:'error', group:'tr', life:3000})
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
     },
@@ -385,7 +451,11 @@ export default defineComponent({
             if(!isViewRecord(this.postRef)) return this.postRef?.record.text;
             else return this.postRef.value.text;
         },
-    }
+    },
+    beforeUnmount() {
+        postDetails.currentPostThreadData = {} as ThreadViewPost;
+        postDetails.currentPostAction = PostActions.Post;
+    },
 })
 
 function confirmClose(postContentExists:boolean){

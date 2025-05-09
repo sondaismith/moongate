@@ -37,8 +37,9 @@ import { postDetails } from '../../state/PostDetails.vue';
 import { CreateBskyWeblink, getCompactNumberValue } from '../../helpers/converters';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
-import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppState } from '../../state/AppState.vue';
+import { PostActions } from '../../enums/PostEnums';
 
 //Option Menu icons
 import MingcuteLinkLine from '~icons/mingcute/link-line';
@@ -56,7 +57,7 @@ function CopyPostLink(postUri:string, handle:string=""){
  * @param post Post to quote post.
  */
 function QuotePost(post:PostView){
-    postDetails.prepareForPostAction(post,'quote')
+    postDetails.prepareForPostAction(post,PostActions.Quote)
     AppState.showCreatePost();
 }
 
@@ -75,6 +76,7 @@ export default defineComponent({
             isPostMenuVisible: false,
             postDetails,
             getCompactNumberValue,
+            postThread: {} as ThreadViewPost
         }
     },
     methods:{
@@ -102,10 +104,10 @@ export default defineComponent({
             OptionsMenuState.showOptionMenu(e);
         },
         replyToPost(){
-            postDetails.prepareForPostAction(this.postData,'reply')
+            postDetails.prepareForPostAction(this.postData,PostActions.Reply)
             AppState.showCreatePost();
         },
-    }
+    },
 })
 </script>
 
