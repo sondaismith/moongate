@@ -8,7 +8,7 @@
                 <PillButton @click="createNewPost" class="transition-colors px-4 py-1 bg-sky-500" :class="(!canSubmitPost || postDetails.isAwaitingPostThreadData) ? '!bg-gray-400 text-gray-500 !cursor-default' : ''">Post</PillButton>
             </div>
             <div v-if="postDetails.currentPostAction == PostActions.Reply && postDetails.isAwaitingPostThreadData">
-                <i-mingcute:loading-fill class="text-black spinner self-center size-10"/>
+                <i-mingcute:loading-fill class="text-primary spinner self-center size-10"/>
             </div>
             <div v-else-if="postDetails.currentPostAction == PostActions.Reply" class="flex flex-col gap-1">
                 <div class="flex flex-col self-start text-sm underlines select-none">
@@ -60,7 +60,7 @@
                 class="block rounded p-2 bg-slate-900 w-full postPlaceholder"/> -->
             </div>
             <div v-if="postDetails.currentPostAction == PostActions.Quote && postDetails.isAwaitingPostThreadData">
-                <i-mingcute:loading-fill class="text-black spinner self-center size-10"/>
+                <i-mingcute:loading-fill class="text-primary spinner self-center size-10"/>
             </div>
             <div v-else-if="postDetails.currentPostAction == PostActions.Quote" class="flex flex-col gap-1">
                 <!-- <div class="flex flex-col self-start text-sm underlines select-none">

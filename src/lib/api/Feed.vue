@@ -26,14 +26,16 @@ export async function SearchForAccounts(searchTerm : string):Promise<AppBskyActo
 /**
  * Method that gets posts created by a specifc User.
  * @param did The unique DID identifier of the User you want to return Posts from.
+ * @param cursor Used when requesting posts from a certain point (pagination).
+ * @param postsToGet The number of Posts to return from the Author's Feed.
  * @returns Collection of posts from the User's feed if successful, an error if not.
  */
-export async function getAuthorFeed(did:string, cursor:string=''):Promise<AppBskyFeedGetAuthorFeed.Response>{
+export async function getAuthorFeed(did:string, cursor:string='', postsToGet:number=30):Promise<AppBskyFeedGetAuthorFeed.Response>{
     let result = await GetBrowsingAgent().getAuthorFeed(
         {
             actor:did,
             filter:"posts_no_replies",
-            limit:30,
+            limit:postsToGet,
             includePins:true,
             cursor:cursor
         }
@@ -161,9 +163,11 @@ export async function getAuthorPostsOnly(did:string,cursor:string=''):Promise<Ap
 /**
  * Method that gets Posts containing specific hashtags.
  * @param tags String of hashtags, space-separated.
+ * @param cursor Used when requesting posts from a certain point (pagination).
+ * @param postsToGet The number of Posts to return containing the submitted tags.
  * @returns Search results returned from the Bluesky API.
  */
-export async function getTagPosts(tags:string,cursor:string=''):Promise<AppBskyFeedSearchPosts.Response>{
+export async function getTagPosts(tags:string,cursor:string='',postsToGet:number=30):Promise<AppBskyFeedSearchPosts.Response>{
     if(!AppSettingsState.Settings.isAcceptingAllLanguages && AppSettingsState.Settings.selectedLanguages.length>0){
         console.log(`Here's a list of the currently selected languages:`);
         console.log(AppSettingsState.prepareSelectedLanguages());
@@ -178,6 +182,7 @@ export async function getTagPosts(tags:string,cursor:string=''):Promise<AppBskyF
     let result = await GetBrowsingAgent().app.bsky.feed.searchPosts(
         {
             q:`${tags}`,
+            limit:postsToGet,
             lang:langs,
             // cursor:cursor //as of April 3rd 2025 there's some sort of issue with `searchPosts` - disabling for now
         }
