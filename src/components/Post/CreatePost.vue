@@ -68,7 +68,7 @@
                     <div class="h-[1px] bg-outlineLighter"></div>
                 </div> -->
                 <div v-for="post in [postDetails.currentPostData]"
-                class="flex flex-col rounded-md p-2 border border-outline">
+                class="flex flex-col rounded-md p-2 gap-1 border border-outline">
                     <div class="flex gap-1 items-center">
                         <AvatarRound :avatar="post.author.avatar" class="size-6"/>
                         <div class="flex gap-1 text-nowrap overflow-hidden">
@@ -126,7 +126,6 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import PillButton from '../Utilities/PillButton.vue';
 import MdiInsertPhoto from '~icons/mdi/insert-photo';
 import MdiFilmstripBoxMultiple from '~icons/mdi/filmstrip-box-multiple';
 import MdiFileGifBox from '~icons/mdi/file-gif-box';

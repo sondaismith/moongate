@@ -422,14 +422,14 @@ export function RemoveFeed(feedId:String){
  * Method used to refresh the data held in a currently displayed Feed.
  * @param feedId The ID of the loaded Feed that you want to refresh.
  */
-export async function RefreshFeed(feedId:String, lastUpdate:Date){
+export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:number=30){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     if(feed){//Ensure matching Feed was found
         //Code below was to cause the update to happen in a more smooth looking way
         feed.isAwaitingFeedData = true;
         feed.data = [];
         await new Promise(res => setTimeout(res,500));
-        await GetFeedDataForFeedType(feed.description.feedType,feed.description.feedSourceDID,feed.description.feedTags)
+        await GetFeedDataForFeedType(feed.description.feedType,feed.description.feedSourceDID,feed.description.feedTags,'',postsToGet)
         .then(res => {
             if(feed){
                 // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
@@ -468,6 +468,13 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date){
             }
         })
         .catch(err => toast.add(HandleAPIError(err, 'Error loading older feed posts')));
+    }
+}
+
+export function ClearFeed(feedId:String){
+    var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
+    if(feed){//Ensure matching Feed was found
+        feed.data = [];
     }
 }
 

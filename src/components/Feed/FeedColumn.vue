@@ -117,7 +117,6 @@
                 </div>
             </div>
             <TransitionGroup name="feedpost">
-                <!-- <FeedPost v-for="n in feedData?.data" :key="n" :postData="n" /> -->
                 <div v-for="n in feedData?.data" :key="n.post.cid" class="flex flex-col rounded bg-feedColumnBG border border-outline w-full
                 drop-shadow-md justify-between text-sm">
                     <FocusFeedPost class="border-0 !p-1.5" :post-data="n.post" :post-reason="n.reason" :reply="n.reply" :is-feed-post-style="true"/>
@@ -126,7 +125,7 @@
                 class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
                     End of Posts
                 </div>
-                <div v-else-if="feedData.description.feedType != FeedEnums.Types.Tag" @click="loadMorePosts(feedData.description.feedId)"
+                <div v-else-if="feedData.description.feedType != FeedEnums.Types.Tag && !feedData.isAwaitingFeedData" @click="loadMorePosts(feedData.description.feedId)"
                 class="flex rounded border border-outline justify-center items-center p-1 gap-1 bg-postMsg text-btnText
                 cursor-pointer hover:bg-hover hover:text-slate-200 transition-colors select-none"
                 :class="{'!bg-outline hover:bg-hover text-hover hover:text-hover pointer-events-none' : isAwaitingLoadMore}">
@@ -156,7 +155,7 @@ import { DebugFlags } from '../../state/Debug.vue';
 import { IFeedListing } from '../../interfaces/FeedInterfaces';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
 import { createPost } from '../../fake-data/PostFactory'
-import { addDummyPostToFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
+import { addDummyPostToFeed, ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { debounce } from '../../helpers/debouncer';
@@ -247,7 +246,9 @@ export default defineComponent({
         },
         addNewPost(){
             // this.PostCollection.push(createPost(1));
-            addDummyPostToFeed(this.feedData.description.feedId);
+            // addDummyPostToFeed(this.feedData.description.feedId);
+            //Testing "ClearFeed()" method
+            if(this.feedData) ClearFeed(this.feedData?.description.feedId);
         },
         removePost(){
             // this.PostCollection.pop();
