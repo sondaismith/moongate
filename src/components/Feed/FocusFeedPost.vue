@@ -42,7 +42,9 @@
         </div>
     </div>
     <div v-else-if="postToShow" class="flex flex-col rounded-lg border border-slate-600 text-primary w-full"
-    :class="[$attrs.class, isReasonPin(postReason) ? 'pt-2' : '', isReplyStyle ? 'border-0' : 'gap-2 p-3 pb-1.5']">
+    :class="[$attrs.class, isReasonPin(postReason) ? 'pt-2' : '', isReplyStyle ? 'border-0' : 'gap-2 p-3 pb-1.5',
+        isFeedPostStyle ? 'p-1.5' : ''
+    ]">
         <div v-if="isReasonPin(postReason)" class="flex items-center text-secondary border-b
         border-outline pb-1 select-none">
             <i-mdi:pin class="text-sm"/>

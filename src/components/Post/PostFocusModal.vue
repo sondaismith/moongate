@@ -79,7 +79,7 @@
                 </div>
             </div>
             {{ void "User Info/Actions" }}
-            <div v-if="!postDetails.isAwaitingFocusData" class="p-4 pb-2">
+            <div v-if="!postDetails.isAwaitingFocusData" class="p-4 pb-1">
                 <div class="flex gap-1">
                     <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
                     :did="postDetails.currentThreadView.post.author.did"
@@ -105,11 +105,11 @@
                     {{ postDetails.currentThreadView ? postDetails.currentThreadView.post.record.text : "initial state - undefined" }}
                 </div>
                 {{ void "Post Metadata" }}
-                <div class="border-slate-600 divide-y divide-inherit !mt-0">
-                    <div class="py-1">
+                <div class="flex flex-col gap-2">
+                    <div class="py-0.5 border-b-[1px]  border-slate-600">
                         <div class="text-feedPostName text-secondary cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
                     </div>
-                    <PostInteractionIcons class="pt-2" :post-data="postDetails.currentThreadView.post"/>
+                    <PostInteractionIcons :post-data="postDetails.currentThreadView.post"/>
                 </div>
             </div>
             {{ void "post reply input" }}

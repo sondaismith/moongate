@@ -1,31 +1,32 @@
 <template>
-    <div :class="textColorClass" class="flex flex-wrap text-secondary gap-1 *:h-5 justify-around">
-        <div class="group flex items-center cursor-pointer hover:text-slate-300"
-        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}"
-        @click="replyToPost">
-            <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-500"/>
+    <div :class="textColorClass" class="flex flex-wrap -mt-1 bg-red-300s text-secondary gap-1 justify-around
+     *:p-1">
+        <div class="group flex rounded-full items-center cursor-pointer hover:bg-btnSubtle"
+        @click="replyToPost" title="Reply">
+            <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-600"/>
             <div class="pl-1" :title="postData.replyCount?.toString()">{{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}</div>
         </div>
-        <div class="group flex items-center cursor-pointer hover:text-slate-300"
-        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}"
+        <div class="group flex rounded-full items-center cursor-pointer hover:bg-btnSubtle"
+        title="Repost"
         @click="showRepostOptionsMenu($event, postData)">
             <i-mingcute:repeat-line class="pointer-events-none group-hover:text-blue-500"/>
             <div class="pl-1" :title="postData.repostCount?.toString()">{{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}</div>
         </div>
-        <div class="group flex items-center cursor-pointer hover:text-slate-300"
-        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}"
-        @click="toggleLike">
-            <i-mingcute:heart-fill class="pointer-events-none"
+        <div @click="toggleLike" class="group flex rounded-full items-center cursor-pointer
+        gap-1 hover:bg-btnSubtle"
+        title="Like Post">
+            <i-mingcute:heart-fill
             :class="[isPostLikedByUser ? 'text-red-500' : 'group-hover:text-red-500']"/>
-            <div v-if="!isAwaitingLikeUpdate" class="pl-1" :title="postData.likeCount?.toString()">{{ getCompactNumberValue(postData.likeCount ? postData.likeCount : 0) }}</div>
+            <div v-if="!isAwaitingLikeUpdate":title="postData.likeCount?.toString()">{{ getCompactNumberValue(postData.likeCount ? postData.likeCount : 0) }}</div>
             <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
         </div>
-        <div v-if="!noShareButton" class="group flex items-center cursor-pointer hover:text-slate-300"
+        <!-- <div v-if="!noShareButton" class="group flex items-center cursor-pointer hover:text-slate-300"
         :class="{'pointer-events-none' : !AppState.isAuthBrowsing}">
             <i-solar:share-bold class="pointer-events-none group-hover:text-blue-500"/>
-        </div>
+        </div> -->
         <div @click="showOptionsMenu($event, postData.uri, postData.author.handle)"
-        class="group flex items-center cursor-pointer hover:text-slate-300">
+        title="More Actions"
+        class="group flex rounded-full items-center cursor-pointer hover:bg-btnSubtle">
             <i-mdi:dots-horizontal class="pointer-events-none group-hover:text-primary"/>
         </div>
         <!-- <div @click="postDetails.showPostOptionsMenu" class="group flex items-center cursor-pointer hover:text-slate-300">
@@ -130,6 +131,7 @@ export default defineComponent({
          */
         showRepostOptionsMenu(e:MouseEvent, post:PostView){
             e.preventDefault();
+            if(!AppState.checkIfLoggedIn('repost/quote post')) return;
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteRepeatLine,Label:'Repost',Action:function(){}},
                 {Icon:MingcuteQuoteRightFill,Label:'Quote post',Action:function(){QuotePost(post)}},
@@ -137,6 +139,7 @@ export default defineComponent({
             OptionsMenuState.showOptionMenu(e);
         },
         replyToPost(){
+            if(!AppState.checkIfLoggedIn('reply')) return;
             postDetails.prepareForPostAction(this.postData,PostActions.Reply)
             AppState.showCreatePost();
         },
@@ -145,6 +148,7 @@ export default defineComponent({
          * logged in.
          */
         toggleLike(){
+            if(!AppState.checkIfLoggedIn('like a Post')) return;
             if(!this.isPostLikedByUser){
                 this.isAwaitingLikeUpdate = true;
                 GetBrowsingAgent().like(this.postData.uri, this.postData.cid)

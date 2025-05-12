@@ -10,6 +10,7 @@ export default {
         secondaryHover: "oklch(from var(--color-secondary-text-hover) l c h / <alpha-value>)",
         hover: "oklch(from var(--color-hover) l c h / <alpha-value>)",
         btn: "oklch(from var(--color-btn) l c h / <alpha-value>)",
+        btnSubtle: "oklch(from var(--color-btn-subtle) l c h / <alpha-value>)",
         btnText: "oklch(from var(--color-btn-text) l c h / <alpha-value>)",
         btnHover: "oklch(from var(--color-btn-hover) l c h / <alpha-value>)",
         sidebar: "oklch(from var(--color-sidebar) l c h / <alpha-value>)",
