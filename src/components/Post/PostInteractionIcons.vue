@@ -6,11 +6,13 @@
             <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-600"/>
             <div class="pl-1" :title="postData.replyCount?.toString()">{{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}</div>
         </div>
-        <div class="group flex rounded-full items-center cursor-pointer hover:bg-btnSubtle"
+        <div class="group flex rounded-full items-center cursor-pointer gap-1 hover:bg-btnSubtle"
         title="Repost"
         @click="showRepostOptionsMenu($event, postData)">
-            <i-mingcute:repeat-line class="pointer-events-none group-hover:text-blue-500"/>
-            <div class="pl-1" :title="postData.repostCount?.toString()">{{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}</div>
+            <i-mingcute:repeat-line
+            :class="[isPostRepostedByUser ? 'text-blue-500' : 'group-hover:text-blue-500']"/>
+            <div v-if="!isAwaitingRepostUpdate" :title="postData.repostCount?.toString()">{{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}</div>
+            <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
         </div>
         <div @click="toggleLike" class="group flex rounded-full items-center cursor-pointer
         gap-1 hover:bg-btnSubtle"
@@ -80,9 +82,35 @@ async function Unlike(postData:PostView,likeUri:string):Promise<boolean>{
         return true;
     })
     .catch(err => {
-        toast.add({summary:"Error", detail:`${err} Issue liking post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
+        toast.add({summary:"Error", detail:`${err} Issue unliking post by ${postData.author.handle}`, severity:'error', group:'tr', life:3000});
     })
     return true;
+}
+
+/**
+ * Asks the User if they're sure they would like to undo the repost of the selected
+ * post.
+ * @param repostUri The URI of the Repost to undo (delete).
+ */
+async function ConfirmUndoRepost(postData:PostView, repostUri:string){
+    await AppState.showConfirmModal('Are you sure you want to undo this repost?', function(){UndoRepost(postData, repostUri)});
+}
+
+/**
+ * Undoes the repost of a specific Post.
+ * @param repostUri The URI of the Repost to undo (delete).
+ */
+async function UndoRepost(postData:PostView,repostUri:string){
+    await GetBrowsingAgent().deleteRepost(repostUri)
+    .then(res => {
+        if(postData.viewer) postData.viewer.repost = undefined; //Update current Post to not be reposted
+        //Decrease repost count by 1
+        if(postData.repostCount) postData.repostCount = postData.repostCount - 1;
+        else postData.repostCount = 0;
+    })
+    .catch(err => {
+        toast.add({summary:"Error", detail:`${err} Issue undoing repost of post by ${postData.author.handle}`, severity:'error', group:'tr', life:3000});
+    })
 }
 
 /**
@@ -111,6 +139,7 @@ export default defineComponent({
             getCompactNumberValue,
             postThread: {} as ThreadViewPost,
             isAwaitingLikeUpdate:false,
+            isAwaitingRepostUpdate:false,
         }
     },
     methods:{
@@ -131,9 +160,10 @@ export default defineComponent({
          */
         showRepostOptionsMenu(e:MouseEvent, post:PostView){
             e.preventDefault();
+            let isReposted = this.isPostRepostedByUser
             if(!AppState.checkIfLoggedIn('repost/quote post')) return;
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteRepeatLine,Label:'Repost',Action:function(){}},
+                {Icon:MingcuteRepeatLine,Label:(isReposted ? 'Undo Repost' : 'Repost'),Action:this.toggleRepost},
                 {Icon:MingcuteQuoteRightFill,Label:'Quote post',Action:function(){QuotePost(post)}},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
@@ -163,18 +193,48 @@ export default defineComponent({
                     toast.add({summary:"Error", detail:`${err} Issue liking post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
                 })
             }
-            else
+            else{
                 if(this.postData.viewer && this.postData.viewer.like){
                     this.isAwaitingLikeUpdate = true;
-                    // await ConfirmUnlike(this.postData, this.postData.viewer?.like);
                     ConfirmUnlike(this.postData, this.postData.viewer?.like);
                     this.isAwaitingLikeUpdate = false;
                 }
+            }
+        },
+        async toggleRepost(){
+            if(!AppState.checkIfLoggedIn('repost a Post')) return;
+            if(!this.isPostRepostedByUser){
+                this.isAwaitingRepostUpdate = true;
+                GetBrowsingAgent().repost(this.postData.uri, this.postData.cid)
+                .then(res => {
+                    if(this.postData.viewer) this.postData.viewer.repost = res.uri; //Update current Post to be "reposted"
+                    //Increase repost count by 1
+                    if(this.postData.repostCount) this.postData.repostCount = this.postData.repostCount + 1;
+                    else this.postData.repostCount = 1;
+                    this.isAwaitingRepostUpdate = false;
+                })
+                .catch(err => {
+                    toast.add({summary:"Error", detail:`${err} Issue reposting post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
+                })
+            }
+            else{
+                if(this.postData.viewer && this.postData.viewer.repost){
+                    // this.isAwaitingRepostUpdate = true;
+                    await ConfirmUndoRepost(this.postData, this.postData.viewer.repost);
+                    // this.isAwaitingRepostUpdate = false;
+                }
+            }
         },
     },
     computed:{
+        /**Checks if the Post this control is associated with is Liked by the current User. */
         isPostLikedByUser(){
             if(this.postData.viewer && this.postData.viewer.like) return true;
+            return false;
+        },
+        /**Checks if the Post this control is associated with has been Reposted by the current User. */
+        isPostRepostedByUser(){
+            if(this.postData.viewer && this.postData.viewer.repost) return true;
             return false;
         }
     }
