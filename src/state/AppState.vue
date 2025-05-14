@@ -7,6 +7,7 @@ import { Agent } from '@atproto/api';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { UserFocusModalState } from './UserFocusModalState.vue';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import { postDetails } from './PostDetails.vue';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -150,6 +151,7 @@ export const AppState = reactive({
     /**Sets `CreatePost` to be hidden. */
     hideCreatePost(){
         this.isCreatingNewPost = false;
+        postDetails.isReplyingToPost = postDetails.isQuotingPost = false;
     },
     /**
      * Value used to determine if modal for saving Post media

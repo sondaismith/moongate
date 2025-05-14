@@ -1,26 +1,34 @@
 <template>
-    <div :class="textColorClass" class="flex flex-wrap text-secondary gap-1 *:h-5 justify-around">
-        <div class="group flex items-center cursor-pointer hover:text-slate-300"
-        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}">
-            <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-500"/>
+    <div :class="textColorClass" class="flex flex-wrap -mt-1 bg-red-300s text-secondary gap-1 justify-around
+     *:p-1">
+        <div class="group flex rounded-full items-center cursor-pointer hover:bg-btnSubtle"
+        @click="replyToPost" title="Reply">
+            <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-600"/>
             <div class="pl-1" :title="postData.replyCount?.toString()">{{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}</div>
         </div>
-        <div class="group flex items-center cursor-pointer hover:text-slate-300"
-        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}">
-            <i-mingcute:repeat-line class="pointer-events-none group-hover:text-blue-500"/>
-            <div class="pl-1" :title="postData.repostCount?.toString()">{{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}</div>
+        <div class="group flex rounded-full items-center cursor-pointer gap-1 hover:bg-btnSubtle"
+        title="Repost"
+        @click="showRepostOptionsMenu($event, postData)">
+            <i-mingcute:repeat-line
+            :class="[isPostRepostedByUser ? 'text-blue-500' : 'group-hover:text-blue-500']"/>
+            <div v-if="!isAwaitingRepostUpdate" :title="postData.repostCount?.toString()">{{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}</div>
+            <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
         </div>
-        <div class="group flex items-center cursor-pointer hover:text-slate-300"
-        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}">
-            <i-mingcute:heart-fill class="pointer-events-none group-hover:text-red-500"/>
-            <div class="pl-1" :title="postData.likeCount?.toString()">{{ getCompactNumberValue(postData.likeCount ? postData.likeCount : 0) }}</div>
+        <div @click="toggleLike" class="group flex rounded-full items-center cursor-pointer
+        gap-1 hover:bg-btnSubtle"
+        title="Like Post">
+            <i-mingcute:heart-fill
+            :class="[isPostLikedByUser ? 'text-red-500' : 'group-hover:text-red-500']"/>
+            <div v-if="!isAwaitingLikeUpdate":title="postData.likeCount?.toString()">{{ getCompactNumberValue(postData.likeCount ? postData.likeCount : 0) }}</div>
+            <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
         </div>
-        <div v-if="!noShareButton" class="group flex items-center cursor-pointer hover:text-slate-300"
+        <!-- <div v-if="!noShareButton" class="group flex items-center cursor-pointer hover:text-slate-300"
         :class="{'pointer-events-none' : !AppState.isAuthBrowsing}">
             <i-solar:share-bold class="pointer-events-none group-hover:text-blue-500"/>
-        </div>
+        </div> -->
         <div @click="showOptionsMenu($event, postData.uri, postData.author.handle)"
-        class="group flex items-center cursor-pointer hover:text-slate-300">
+        title="More Actions"
+        class="group flex rounded-full items-center cursor-pointer hover:bg-btnSubtle">
             <i-mdi:dots-horizontal class="pointer-events-none group-hover:text-primary"/>
         </div>
         <!-- <div @click="postDetails.showPostOptionsMenu" class="group flex items-center cursor-pointer hover:text-slate-300">
@@ -35,16 +43,83 @@ import { postDetails } from '../../state/PostDetails.vue';
 import { CreateBskyWeblink, getCompactNumberValue } from '../../helpers/converters';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppState, toast } from '../../state/AppState.vue';
+import { PostActions } from '../../enums/PostEnums';
 
 //Option Menu icons
 import MingcuteLinkLine from '~icons/mingcute/link-line';
-import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AppState } from '../../state/AppState.vue';
+import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
+import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
+import { GetBrowsingAgent } from '../../lib/api.vue';
 
 function CopyPostLink(postUri:string, handle:string=""){
     let link = CreateBskyWeblink(postUri, handle);
     if(link) navigator.clipboard.writeText(link);
     //Need to add toast or something to alert the User that link has been copied
+}
+
+/**
+ * Asks the User if they're sure they would like to un-like the selected
+ * post.
+ * @param likeUri The URI of the Like to un-like (delete).
+ */
+async function ConfirmUnlike(postData:PostView, likeUri:string){
+    AppState.showConfirmModal('Are you sure you want to un-like this post?',async function(){Unlike(postData, likeUri)});
+}
+
+/**
+ * Un-likes a specific Post.
+ * @param likeUri The URI of the Like to un-like (delete).
+ */
+async function Unlike(postData:PostView,likeUri:string):Promise<boolean>{
+    await GetBrowsingAgent().deleteLike(likeUri)
+    .then(res => {
+        if(postData.viewer) postData.viewer.like = undefined; //Update current Post to not be liked
+        //Decrease like count by 1
+        if(postData.likeCount) postData.likeCount = postData.likeCount - 1;
+        else postData.likeCount = 0;
+        return true;
+    })
+    .catch(err => {
+        toast.add({summary:"Error", detail:`${err} Issue unliking post by ${postData.author.handle}`, severity:'error', group:'tr', life:3000});
+    })
+    return true;
+}
+
+/**
+ * Asks the User if they're sure they would like to undo the repost of the selected
+ * post.
+ * @param repostUri The URI of the Repost to undo (delete).
+ */
+async function ConfirmUndoRepost(postData:PostView, repostUri:string){
+    await AppState.showConfirmModal('Are you sure you want to undo this repost?', function(){UndoRepost(postData, repostUri)});
+}
+
+/**
+ * Undoes the repost of a specific Post.
+ * @param repostUri The URI of the Repost to undo (delete).
+ */
+async function UndoRepost(postData:PostView,repostUri:string){
+    await GetBrowsingAgent().deleteRepost(repostUri)
+    .then(res => {
+        if(postData.viewer) postData.viewer.repost = undefined; //Update current Post to not be reposted
+        //Decrease repost count by 1
+        if(postData.repostCount) postData.repostCount = postData.repostCount - 1;
+        else postData.repostCount = 0;
+    })
+    .catch(err => {
+        toast.add({summary:"Error", detail:`${err} Issue undoing repost of post by ${postData.author.handle}`, severity:'error', group:'tr', life:3000});
+    })
+}
+
+/**
+ * Opens the `CreatePost` component to allow the use to make a "quote post".
+ * @param post Post to quote post.
+ */
+function QuotePost(post:PostView){
+    postDetails.prepareForPostAction(post,PostActions.Quote)
+    AppState.showCreatePost();
 }
 
 export default defineComponent({
@@ -62,6 +137,9 @@ export default defineComponent({
             isPostMenuVisible: false,
             postDetails,
             getCompactNumberValue,
+            postThread: {} as ThreadViewPost,
+            isAwaitingLikeUpdate:false,
+            isAwaitingRepostUpdate:false,
         }
     },
     methods:{
@@ -76,6 +154,89 @@ export default defineComponent({
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },
+        /**
+         * Shows Options Menu allowing user to perform different actions
+         * relating to the selected User.
+         */
+        showRepostOptionsMenu(e:MouseEvent, post:PostView){
+            e.preventDefault();
+            let isReposted = this.isPostRepostedByUser
+            if(!AppState.checkIfLoggedIn('repost/quote post')) return;
+            OptionsMenuState.currentMenuItems = [
+                {Icon:MingcuteRepeatLine,Label:(isReposted ? 'Undo Repost' : 'Repost'),Action:this.toggleRepost},
+                {Icon:MingcuteQuoteRightFill,Label:'Quote post',Action:function(){QuotePost(post)}},
+            ] as IOptionMenuItem[]
+            OptionsMenuState.showOptionMenu(e);
+        },
+        replyToPost(){
+            if(!AppState.checkIfLoggedIn('reply')) return;
+            postDetails.prepareForPostAction(this.postData,PostActions.Reply)
+            AppState.showCreatePost();
+        },
+        /**
+         * Method that allows the User to Like and Un-like Posts while they're
+         * logged in.
+         */
+        toggleLike(){
+            if(!AppState.checkIfLoggedIn('like a Post')) return;
+            if(!this.isPostLikedByUser){
+                this.isAwaitingLikeUpdate = true;
+                GetBrowsingAgent().like(this.postData.uri, this.postData.cid)
+                .then(res => {
+                    if(this.postData.viewer) this.postData.viewer.like = res.uri; //Update current Post to be "liked"
+                    //Increase like count by 1
+                    if(this.postData.likeCount) this.postData.likeCount = this.postData.likeCount + 1;
+                    else this.postData.likeCount = 1;
+                    this.isAwaitingLikeUpdate = false;
+                })
+                .catch(err => {
+                    toast.add({summary:"Error", detail:`${err} Issue liking post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
+                })
+            }
+            else{
+                if(this.postData.viewer && this.postData.viewer.like){
+                    this.isAwaitingLikeUpdate = true;
+                    ConfirmUnlike(this.postData, this.postData.viewer?.like);
+                    this.isAwaitingLikeUpdate = false;
+                }
+            }
+        },
+        async toggleRepost(){
+            if(!AppState.checkIfLoggedIn('repost a Post')) return;
+            if(!this.isPostRepostedByUser){
+                this.isAwaitingRepostUpdate = true;
+                GetBrowsingAgent().repost(this.postData.uri, this.postData.cid)
+                .then(res => {
+                    if(this.postData.viewer) this.postData.viewer.repost = res.uri; //Update current Post to be "reposted"
+                    //Increase repost count by 1
+                    if(this.postData.repostCount) this.postData.repostCount = this.postData.repostCount + 1;
+                    else this.postData.repostCount = 1;
+                    this.isAwaitingRepostUpdate = false;
+                })
+                .catch(err => {
+                    toast.add({summary:"Error", detail:`${err} Issue reposting post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
+                })
+            }
+            else{
+                if(this.postData.viewer && this.postData.viewer.repost){
+                    // this.isAwaitingRepostUpdate = true;
+                    await ConfirmUndoRepost(this.postData, this.postData.viewer.repost);
+                    // this.isAwaitingRepostUpdate = false;
+                }
+            }
+        },
+    },
+    computed:{
+        /**Checks if the Post this control is associated with is Liked by the current User. */
+        isPostLikedByUser(){
+            if(this.postData.viewer && this.postData.viewer.like) return true;
+            return false;
+        },
+        /**Checks if the Post this control is associated with has been Reposted by the current User. */
+        isPostRepostedByUser(){
+            if(this.postData.viewer && this.postData.viewer.repost) return true;
+            return false;
+        }
     }
 })
 </script>

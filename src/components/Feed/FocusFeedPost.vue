@@ -41,8 +41,26 @@
             <div class="flex text-sm leading-4">{{ postToShow.record.description }}</div>
         </div>
     </div>
+    <div v-else-if="postToShow && isGeneratorView(postToShow)">
+        <div class="flex flex-col rounded-lg p-2 gap-1 border border-outline overflow-hidden
+        select-none hover:bg-btnSubtle cursor-not-allowed"
+        title="Generator views are not yet supported">
+            <div class="flex gap-2">
+                <div class="relative shrink-0 size-10 rounded-sm text-postFocusBG bg-contain border border-outline" :style="'background-image:url('+postToShow.avatar+')'">
+                </div>
+                <div class="flex flex-col overflow-hidden">
+                    <div class="leading-5 text-nowrap overflow-hidden text-ellipsis">{{ postToShow.displayName }}</div>
+                    <div class="text-sm text-secondary text-nowrap w-full overflow-hidden text-ellipsis">By @{{ postToShow.creator.handle }}</div>
+                </div>
+            </div>
+            <div class="text-sm leading-4 break-words">{{ postToShow.description }}</div>
+            <div class="text-sm font-semibold leading-4s">Liked by {{ postToShow.likeCount }} users</div>
+        </div>
+    </div>
     <div v-else-if="postToShow" class="flex flex-col rounded-lg border border-slate-600 text-primary w-full"
-    :class="[$attrs.class, isReasonPin(postReason) ? 'pt-2' : '', isReplyStyle ? 'border-0' : 'gap-2 p-3 pb-1.5']">
+    :class="[$attrs.class, isReasonPin(postReason) ? 'pt-2' : '', isReplyStyle ? 'border-0' : 'gap-2 p-3 pb-1.5',
+        isFeedPostStyle ? 'p-1.5' : ''
+    ]">
         <div v-if="isReasonPin(postReason)" class="flex items-center text-secondary border-b
         border-outline pb-1 select-none">
             <i-mdi:pin class="text-sm"/>
@@ -77,7 +95,7 @@
                     <AvatarRound v-if="!isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"
                     @avatar-clicked="callFocusPostAvatarClicked(postToShow.author.did)"/>
                     <div class="flex overflow-hidden" :class="[isReplyStyle ? 'gap-1 items-center' : 'flex-col']">
-                        <div class="flex items-center gap-1">
+                        <div class="flex items-center gap-1 overflow-hidden">
                             <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postToShow.author.displayName">
                                 {{ postToShow.author.displayName }}
                             </div>
@@ -116,7 +134,7 @@
 </template>
 
 <script lang="ts">
-import { isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { isGeneratorView, isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
@@ -172,6 +190,7 @@ export default defineComponent({
             isViewNotFound,
             isListView,
             isStarterPackViewBasic,
+            isGeneratorView,
             convertToLongTimestamp,
             convertToShortTimestamp,
             AppBskyEmbedImages,
@@ -411,7 +430,7 @@ export default defineComponent({
         }
     },
     created(){
-        // console.log(this.postData); //DEBUG - missing object/variable catching
+        console.log(this.postData); //DEBUG - missing object/variable catching
         // console.log('Has this post been deleted?');
         // console.log(isViewNotFound(this.postData));
         if(this.threadData) this.postToShow = this.threadData.post;

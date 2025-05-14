@@ -81,6 +81,7 @@ import { AppState, toast } from '../../state/AppState.vue';
 import { LoginBskyAccount } from '../../lib/api/Login.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
+import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
 
 export default defineComponent({
     data(){
@@ -108,6 +109,7 @@ export default defineComponent({
                 AppState.ToggleLoginModal();
                 AccountPeekState.lastMouseEvent = new MouseEvent('login');
                 AccountPeekState.profileData = {did:'',handle:''};
+                this.refreshFeeds();//Refresh feeds so we can get likes, blocks etc.
                 toast.add({summary:"Login Success", detail:``,severity:'success',group:'tr',life:3000});
             })
             .catch(err => toast.add(HandleAPIError(err, 'Error logging in')));
@@ -123,6 +125,17 @@ export default defineComponent({
         },
         closeModal(){
             AppState.ToggleLoginModal();
+        },
+        /**
+         * Method that refreshes all the displayed Feeds after the User logs in.
+         * Used to get the displayed elements to reflect the User Account's
+         * preferences/state (liked posts, blocked users, etc.).
+         */
+        refreshFeeds(){
+            FeedState.FeedList.forEach(feed => {
+                RefreshFeed(feed.description.feedId,new Date(),10);
+            });
+            console.log("Refreshed Feeds.");
         }
     },
     components:{

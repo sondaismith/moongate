@@ -289,7 +289,7 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
     /**The object that will be added to the FeedList. */
     // var feedResult:FeedViewPost[] = [];
     var feedResult:IFeedReturnedPostResults = {data:[],cursor:''};
-    await GetFeedDataForFeedType(savedFeed.type,savedFeed.did,savedFeed.tags)
+    await GetFeedDataForFeedType(savedFeed.type,savedFeed.did,savedFeed.tags,'',10)
     .then(res => feedResult = res)
     .catch(err => toast.add(HandleAPIError(err, 'Error getting posts for Saved Feed')));
     console.log(feedResult);//DEBUG
@@ -350,22 +350,24 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
  * @param feedType The type of Feed this data is for. Of type `FeedEnums.Types`.
  * @param did The DID associated with the User Feed to retrieve.
  * @param tags The hashtags associated with the Tag Feed to retrieve.
+ * @param cursor Used when requesting posts from a certain point (pagination).
+ * @param postsToGet The number of Posts to return from the Author's Feed.
  */
-export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string='',tags:string='',cursor:string=''):Promise<IFeedReturnedPostResults>{
+export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string='',tags:string='',cursor:string='',postsToGet:number=30):Promise<IFeedReturnedPostResults>{
     /**Object that will hold the returned Feed data. */
     var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
     switch (feedType) {
         case FeedEnums.Types.User:
-            await getAuthorFeed(did,cursor)
+            await getAuthorFeed(did,cursor,postsToGet)
             .then(res => {
                 feedResult.data = res.data.feed;
-                if(res.data.cursor) feedResult.cursor = res.data.cursor;
+                if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
             });
             break;
         case FeedEnums.Types.Tag:
-            await getTagPosts(tags,cursor)
+            await getTagPosts(tags,cursor,postsToGet)
             .then(res => {
-                if(res.data.cursor) feedResult.cursor = res.data.cursor;
+                if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
                 //Place Posts in a "Feed" shaped Object
                 res.data.posts.forEach(p => {
                     feedResult.data.push({post:p});
@@ -420,14 +422,14 @@ export function RemoveFeed(feedId:String){
  * Method used to refresh the data held in a currently displayed Feed.
  * @param feedId The ID of the loaded Feed that you want to refresh.
  */
-export async function RefreshFeed(feedId:String, lastUpdate:Date){
+export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:number=30){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     if(feed){//Ensure matching Feed was found
         //Code below was to cause the update to happen in a more smooth looking way
         feed.isAwaitingFeedData = true;
         feed.data = [];
         await new Promise(res => setTimeout(res,500));
-        await GetFeedDataForFeedType(feed.description.feedType,feed.description.feedSourceDID,feed.description.feedTags)
+        await GetFeedDataForFeedType(feed.description.feedType,feed.description.feedSourceDID,feed.description.feedTags,'',postsToGet)
         .then(res => {
             if(feed){
                 // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
@@ -466,6 +468,13 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date){
             }
         })
         .catch(err => toast.add(HandleAPIError(err, 'Error loading older feed posts')));
+    }
+}
+
+export function ClearFeed(feedId:String){
+    var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
+    if(feed){//Ensure matching Feed was found
+        feed.data = [];
     }
 }
 
