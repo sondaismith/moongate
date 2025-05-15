@@ -46,12 +46,14 @@ import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppState, toast } from '../../state/AppState.vue';
 import { PostActions } from '../../enums/PostEnums';
+import { GetBrowsingAgent } from '../../lib/api.vue';
+import { DeletePost } from '../../lib/api/Post.vue';
 
 //Option Menu icons
 import MingcuteLinkLine from '~icons/mingcute/link-line';
 import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
-import { GetBrowsingAgent } from '../../lib/api.vue';
+import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
 
 function CopyPostLink(postUri:string, handle:string=""){
     let link = CreateBskyWeblink(postUri, handle);
@@ -114,6 +116,16 @@ async function UndoRepost(postData:PostView,repostUri:string){
 }
 
 /**
+ * Asks the User if they're sure they would like to delete the selected
+ * post. If deletion is confirmed it will perform the passed Function.
+ * @param postData The PostView of the Post to be deleted.
+ * @param deleteFunc The function to use to delete the Post.
+ */
+async function ConfirmPostDelete(postData:PostView, deleteFunc:Function){
+    AppState.showConfirmModal('Are you sure you want to delete this post?',deleteFunc);
+}
+
+/**
  * Opens the `CreatePost` component to allow the use to make a "quote post".
  * @param post Post to quote post.
  */
@@ -126,6 +138,7 @@ export default defineComponent({
     props:{
         textColorClass: String,
         noShareButton: Boolean,
+        /**Data representing the Post that the interactions will be acted upon. */
         postData:{
             type: Object as PropType<PostView>,
             required: true
@@ -152,6 +165,16 @@ export default defineComponent({
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteLinkLine,Label:'Copy link to Post',Action:function(){CopyPostLink(postURI, handle)}},
             ] as IOptionMenuItem[]
+            //Only show "delete post" option if the User is logged in and this is one of their Posts
+            if(AppState.isAuthBrowsing && GetBrowsingAgent().did == this.postData.author.did){
+                OptionsMenuState.currentMenuItems.push({
+                    Icon:MingcuteDelete2Line,
+                    Label:'Delete Post',
+                    Action:this.askAboutDelete,
+                    IconStyle:'text-red-400',
+                    LabelStyle:'text-red-400'
+                });
+            }
             OptionsMenuState.showOptionMenu(e);
         },
         /**
@@ -225,6 +248,33 @@ export default defineComponent({
                 }
             }
         },
+        /**
+         * Method prompts the User to confirm if they would like to delete the selected
+         * Post. Passes the component `deletePost()` method to `ConfirmPostDelete()` which will
+         * only be performed if the User selects the "confirm" option.
+         */
+        askAboutDelete(){
+            ConfirmPostDelete(this.postData,this.deletePost);
+        },
+        /**
+         * Method that deletes the Post that this component is attached to. Should not be
+         * called directly - use `askAboutDelete()`.
+         */
+        deletePost(){
+            if(!AppState.checkIfLoggedIn('delete a Post')) return;
+            console.log(this.postData);
+            DeletePost(this.postData)
+            .then(res => {
+                //remove post from view, or update to reflect that post has been deleted
+                ///check each state store that can hold a list of displayed posts and remove
+                //any Post with a cid that matches the deleted Post's cid
+                AppState.removeDeletedPostFromLists(this.postData.cid);
+                toast.add({summary:"Post Deleted", detail:`Deleted post "${this.postData.record.text}""`, severity:'success', group:'tr', life:3000});
+            })
+            .catch(err => {
+                toast.add({summary:"Error", detail:`${err} Issue deleting post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
+            })
+        }
     },
     computed:{
         /**Checks if the Post this control is associated with is Liked by the current User. */

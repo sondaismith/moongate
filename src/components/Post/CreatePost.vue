@@ -1,7 +1,7 @@
 <template>
-    <div class="absolute z-10 flex w-full h-full">
+    <div class="absolute z-30 flex w-full h-full">
         <div @click="confirmClose(canSubmitPost)" class="absolute w-full h-full bg-slate-800/60"/>
-        <div class="relative z-20 rounded-lg flex flex-col w-3/5 text-primary bg-focusBG border
+        <div class="relative rounded-lg flex flex-col w-3/5 text-primary bg-focusBG border
         border-outlineLighter p-3 m-auto gap-3">
             <div class="flex items-center justify-between">
                 <div @click="confirmClose(canSubmitPost)" class="font-bold text-sky-500 hover:text-sky-300 cursor-pointer">Cancel</div>

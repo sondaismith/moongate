@@ -5,26 +5,17 @@
             <!-- <div class="w-auto">No Replies</div> -->
             <div v-if="!postDetails.isChangingThreadContext" class="flex flex-col bg-orange-400s preload-gutter divide-y border-slate-600 divide-inherit text-sm">
                 {{ void "replies" }}
-                <!-- <div v-for="replies in postDetails.currentThreadView?.replies" class="py-2 pr-3 flex flex-col gap-2"> -->
-                <div v-for="replies in postDetails.currentThreadView.replies" class="py-2 pr-3 flex flex-col gap-2">
-                    <!-- <PostReply :replyThreadIndex="0" :totalThreadReplies="replies.replies.length"
-                    :profileData="replies.post.author" :postData="replies.post as PostView"/> -->
-                    <FocusFeedPost v-if="isThreadViewPost(replies)" :thread-data="replies" :is-reply-style="true" :reply-index="0" :total-replies="replies.post.replyCount"/>
-                    {{ void "displays replies to comment" }}
-                    <div v-for="(reply, index) in replies.replies">
-                        <!-- <PostReply :replyThreadIndex="index+1" :totalThreadReplies="replies.replies.length+replies.replies[0].replies.length"
-                            :profileData="reply.post.author" :postData="reply.post as PostView"/> -->
-                        <!-- <FocusFeedPost :post-data="reply.post as PostView" :is-reply-style="true" :reply-index="index+1" :total-replies="replies.replies.length"/> -->
-                        <FocusFeedPost :thread-data="reply" :is-reply-style="true" :reply-index="index+1" :total-replies="replies.replies.length"/>
-                        <!-- <PostReply v-if="reply.replies.length == 1" :cid="reply.post.cid"
-                            :parentCID="reply.post.record.reply.parent.cid" :userName="reply.replies[0].post.author.displayName"
-                            :userHandle="reply.replies[0].post.author.handle" :avatar="reply.replies[0].post.author.avatar"
-                            :postText="reply.replies[0].post.record.text" :timestamp="reply.replies[0].post.indexedAt"
-                            :totalComments="reply.replies[0].post.replyCount" :totalReposts="reply.replies[0].post.repostCount"
-                            :totalLikes="reply.replies[0].post.likeCount"
-                            :replyThreadIndex="index+1" :totalThreadReplies="1"/> -->
+                <TransitionGroup>
+                    <div v-for="replies in postDetails.currentThreadView.replies" :key="(replies as ThreadViewPost).post.cid" class="py-2 pr-3 flex flex-col gap-2">
+                        <FocusFeedPost v-if="isThreadViewPost(replies)" :thread-data="replies" :is-reply-style="true" :reply-index="0" :total-replies="replies.post.replyCount"/>
+                        {{ void "displays replies to comment" }}
+                        <TransitionGroup>
+                            <div v-for="(reply, index) in (replies as ThreadViewPost).replies" :key="(reply as ThreadViewPost).post.cid">
+                                <FocusFeedPost :thread-data="reply" :is-reply-style="true" :reply-index="index+1" :total-replies="replies.replies.length"/>
+                            </div>
+                        </TransitionGroup>
                     </div>
-                </div>
+                </TransitionGroup>
             </div>
         </div>
     </div>
@@ -34,7 +25,7 @@
 import { defineComponent } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import PostReply from './PostReply.vue';
-import { isThreadViewPost, PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
 
 export default defineComponent({
@@ -53,4 +44,14 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+  transform: translateX(10px);
+}
 </style>
