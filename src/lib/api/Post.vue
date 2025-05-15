@@ -63,7 +63,8 @@ export async function getPostThread(postURI:string):Promise<AppBskyFeedGetPostTh
 }
 
 /**
- * Method that creates a new standalone post to the currently selected User's account.
+ * Method that creates a new post using the currently selected User's account.
+ * Can be used to make standalone Posts as well as replies and quote posts.
  * @param postData A `Record`-type object describing the content of the new Post.
  */
 export async function CreateNewPost(postData:Record){
@@ -76,7 +77,10 @@ export async function CreateNewPost(postData:Record){
             await GetBrowsingAgent().getPostThread({uri: res.uri})
             .then(res => {
                 AppState.hideCreatePost();
-                showFocusModal({post: res.data.thread.post as PostView},0);
+                let postToShow:PostView = (res.data.thread as ThreadViewPost).post;
+                //If the created Post has a parent (it's a reply) show the parent Post
+                if((res.data.thread as ThreadViewPost).parent) postToShow = ((res.data.thread as ThreadViewPost).parent as ThreadViewPost).post
+                showFocusModal({post: postToShow},0);
             })
             .catch((err) =>
                 toast.add({summary:'Error',detail:`Error navigating to new post: ${err}`,severity:'error',group:'tr',life:3000})
@@ -86,5 +90,16 @@ export async function CreateNewPost(postData:Record){
             toast.add({summary:'Error',detail:`Error creating new post: ${err}`,severity:'error',group:'tr',life:3000})
         );
     }
+}
+
+/**
+ * Simple method that deletes a specific Post. Wraps up the process of
+ * getting the browsing agent and then using it to delete. Returns a
+ * Promise.
+ * @param postData PostView of the Post to delete.
+ * @returns The result of trying to delete the Post.
+ */
+export async function DeletePost(postData:PostView):Promise<void>{
+    GetBrowsingAgent().deletePost(postData.uri);
 }
 </script>

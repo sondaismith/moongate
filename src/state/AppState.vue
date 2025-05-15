@@ -8,6 +8,8 @@ import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images'
 import { UserFocusModalState } from './UserFocusModalState.vue';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { postDetails } from './PostDetails.vue';
+import { FeedState } from './FeedList.vue';
+import { isThreadViewPost, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -153,6 +155,63 @@ export const AppState = reactive({
         this.isCreatingNewPost = false;
         postDetails.isReplyingToPost = postDetails.isQuotingPost = false;
     },
+    //#region Post Deletion
+    /**
+     * Method that removes all references of a specific Post from every component that
+     * might hold a reference to it. Currently checks `FeedState.FeedList` and
+     * `postDetails.currentThreadView`.
+     * @param deleteCid The CID of the Post to be removed from visible components.
+     */
+    removeDeletedPostFromLists(deleteCid:string){
+        let feedDeletions = 0;
+        //Update Feeds that may hold the post that was deleted
+        FeedState.FeedList.forEach(feed => {
+            if(feed.data.length != feed.data.filter(x=>x.post.cid != deleteCid).length){
+                feedDeletions++;
+            }
+            feed.data = feed.data.filter(x=>x.post.cid != deleteCid);
+        });
+        console.log(`Removed deleted Post from ${feedDeletions} Feed(s).`);
+        //Update Post thread view that may hold deleted Post
+        //Check root post
+        if(postDetails.currentThreadView.post.cid == deleteCid){
+            postDetails.hideFocusModal();//close component if the deleted post is the one shown
+            console.log(`Deleted post was being shown as focused Post in PostFocusModal - closed modal.`);
+            return;
+        }
+        //Check replies
+        else if(postDetails.currentThreadView.replies){
+            let updatedThreadView = [];
+            let isDeletedPostFound = false;
+            for (let i = 0; i < postDetails.currentThreadView.replies.length; i++) {
+                //Will remove deleted post if it is a direct reply
+                if((postDetails.currentThreadView.replies[i] as ThreadViewPost).post.cid != deleteCid){
+                    //add "parent" reply
+                    updatedThreadView.push((postDetails.currentThreadView.replies[i] as ThreadViewPost));
+                    if(!isDeletedPostFound){
+                        //add replies to the reply if there are any (and haven't been deleted)
+                        let numReplies = (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies ? (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies.length : 0;
+                        for (let j = 0; j < numReplies; j++) {
+                            if(((postDetails.currentThreadView.replies[i] as ThreadViewPost).replies[j] as ThreadViewPost).post.cid == deleteCid){
+                                updatedThreadView[i].replies?.splice(j,1) //= (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies?.splice(j,1);
+                                //remove 1 reply count from parent
+                                if(updatedThreadView[i].post.replyCount) updatedThreadView[i].post.replyCount--;
+                                j = numReplies; //end search early
+                                isDeletedPostFound = true;
+                            }
+                        }
+                    }
+                }
+                else{
+                    //we deleted a Post that was a reply to the "focused" Post - decrease its reply count
+                    if(postDetails.currentThreadView.post.replyCount) postDetails.currentThreadView.post.replyCount--;
+                }
+            }
+            //update display with deleted Post removed
+            postDetails.currentThreadView.replies = updatedThreadView;
+        }
+    },
+    //#endregion
     /**
      * Value used to determine if modal for saving Post media
      * is currently visible.
