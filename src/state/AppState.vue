@@ -155,6 +155,31 @@ export const AppState = reactive({
         this.isCreatingNewPost = false;
         postDetails.isReplyingToPost = postDetails.isQuotingPost = false;
     },
+    //#region Reply creation
+    /**
+     * Method that adds 1 to the displayed `replyCount` of a reply's parent post.
+     * Checks every Post in each currently displayed Feed.
+     * @param replyParentCid The CID of the parent post of the reply.
+     * @param currentReplyCount The current value of the parent post's `replyCount` variable.
+     */
+    updateReplyParentsInLists(replyParentCid:string, currentReplyCount:number){
+        let feedUpdates = 0;
+        //Update Feeds that may hold the post that was replied to
+        FeedState.FeedList.forEach(feed => {
+            //find all Posts in feed that match the parent of the reply
+            let postsThatWereRepliedTo = feed.data.filter(x=>x.post.cid == replyParentCid);
+            if(postsThatWereRepliedTo.length>0){
+                feedUpdates++;
+                postsThatWereRepliedTo.forEach(feedPost => {
+                    feedPost.post.replyCount = currentReplyCount;//increase the reply count for each matching Post
+                });
+            }
+            // postDetails.currentThreadView.post.replyCount = currentReplyCount+1;
+        });
+        // postDetails.currentThreadView.post.replyCount = currentReplyCount+1;
+        console.log(`Updated reply count in ${feedUpdates} Feed(s).`);
+    },
+    //#endregion
     //#region Post Deletion
     /**
      * Method that removes all references of a specific Post from every component that
@@ -205,6 +230,13 @@ export const AppState = reactive({
                 else{
                     //we deleted a Post that was a reply to the "focused" Post - decrease its reply count
                     if(postDetails.currentThreadView.post.replyCount) postDetails.currentThreadView.post.replyCount--;
+                    //Update reply count for parent posts of deleted post in each Feed
+                    FeedState.FeedList.forEach(feed => {
+                        //Find every instance of parent post in Feed
+                        feed.data.filter(x=>x.post.cid == postDetails.currentThreadView.post.cid).forEach(parent => {
+                            parent.post.replyCount--;
+                        });
+                    });
                 }
             }
             //update display with deleted Post removed
