@@ -112,6 +112,57 @@ export const postDetails = reactive({
         this.updateCurrentBreadcrumbs();
     },
     /**
+     * Method that searches a `ThreadViewPost` object for a Post that
+     * matches a passed in CID value. Initially made to be used when you need
+     * to update the state of Posts held in `PostFocusModal`.
+     * @param postCid The CID of the Post to find.
+     */
+    searchThreadViewForMatchingPost(postCid:string, threadToSearch:ThreadViewPost){
+        /**Holds list of immediate replies to the focused Post. */
+        let rootReplies = [] as ThreadViewPost[];
+        if(threadToSearch.replies) rootReplies = threadToSearch.replies as ThreadViewPost[];
+        // if(postDetails.currentThreadView.replies) rootReplies = postDetails.currentThreadView.replies as ThreadViewPost[];//old version tied to `currentThreadView`
+        /**Has the Post been found. */
+        let isPostFound = false;
+        /**Indicates if the matching Post is the Root Post of the thread.*/
+        let isPostRoot = false;
+        /**Index position in currentThreadView where the matching Post is located.*/
+        let postPosition = [0,0];
+        /**The found ThreadViewPost Post data. */
+        let foundPostThread = emptyPostThread;
+
+        //first check if parent Post is what we're looking for
+        if(threadToSearch.post.cid == postCid){
+            isPostRoot = isPostFound = true;
+            foundPostThread = threadToSearch;
+        }
+        //if not parent post, check immediate replies and their replies
+        for (let i = 0; i < rootReplies.length; i++){
+            //If post is a direct reply to a reply, we add it to the list and increase the parent post's replyCount
+            if((rootReplies[i] as ThreadViewPost).post.cid == postCid){
+                i = rootReplies.length;//end search
+                foundPostThread = rootReplies[i];
+                postPosition = [i,0];
+                isPostFound = true;
+            }
+            //check each reply's list of replies
+            /**Holds list of replies to the focused Post's immediate replies. */
+            let replyReplies = [] as ThreadViewPost[];
+            if(rootReplies[i].replies) replyReplies = rootReplies[i].replies as ThreadViewPost[];
+            if(!isPostFound){
+                for (let j = 0; j < replyReplies.length; j++){
+                    if(replyReplies[j].post.cid == postCid){
+                        j = replyReplies.length; //end search
+                        foundPostThread = replyReplies[j];
+                        postPosition = [i,j];
+                        isPostFound = true;
+                    }
+                }
+            }
+        }
+        return {postFound:isPostFound,foundPostThreadView:foundPostThread,isRoot:isPostRoot,postPosIndex:postPosition};
+    },
+    /**
      * Holds record of how/where the User has navigated down
      * the Post reply tree. The 1st element will always be a
      * reference to the root Post.

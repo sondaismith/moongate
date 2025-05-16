@@ -6,6 +6,7 @@ import { AppState, toast } from "../../state/AppState.vue";
 import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/post";
 import { postDetails, showFocusModal } from "../../state/PostDetails.vue";
 import { FeedState } from "../../state/FeedList.vue";
+import { PostActions } from "../../enums/PostEnums";
 
 export class InvalidPostDIDError extends Error{
     constructor(did = ""){
@@ -77,18 +78,19 @@ export async function CreateNewPost(postData:Record, openPostAfterCreation:boole
             toast.add({summary:'Success',detail:'Post Created!',severity:'success',group:'tr',life:3000});
             //show newly created post
             await GetBrowsingAgent().getPostThread({uri: res.uri})
-            .then(res => {
+            .then(newPostRes => {
                 AppState.hideCreatePost();
                 if(openPostAfterCreation){
-                    let postToShow:PostView = (res.data.thread as ThreadViewPost).post;
+                    let postToShow:PostView = (newPostRes.data.thread as ThreadViewPost).post;
                     //If the created Post has a parent (it's a reply) show the parent Post
-                    if((res.data.thread as ThreadViewPost).parent) postToShow = ((res.data.thread as ThreadViewPost).parent as ThreadViewPost).post
+                    if((newPostRes.data.thread as ThreadViewPost).parent) postToShow = ((newPostRes.data.thread as ThreadViewPost).parent as ThreadViewPost).post
                     showFocusModal({post: postToShow},0);
+                    postDetails.currentPostData.replyCount++;
                 }
-                else if(postDetails.isFocusVisible){//if we can see the PostFocusModal
+                else if(postDetails.isFocusVisible && postDetails.currentPostAction != PostActions.Quote){//if we can see the PostFocusModal
                     //we need to update the `PostThreadView` to include the new Post
-                    let newPost = (res.data.thread as ThreadViewPost);
-                    let parentToFindCID = ((res.data.thread as ThreadViewPost).parent as ThreadViewPost).post.cid;
+                    let newPost = (newPostRes.data.thread as ThreadViewPost);
+                    let parentToFindCID = ((newPostRes.data.thread as ThreadViewPost).parent as ThreadViewPost).post.cid;
                     let isParentFound = false;
                     if(postDetails.currentThreadView.post.cid == parentToFindCID){//if the focused Post is the parent, add to replies
                         if(postDetails.currentThreadView.replies) postDetails.currentThreadView.replies.unshift(newPost)
@@ -119,26 +121,34 @@ export async function CreateNewPost(postData:Record, openPostAfterCreation:boole
                         }
                     }
                 }
-                else if(!postDetails.isFocusVisible){//focus not visible, so direct reply was made - only update `currentPostData`
+                //focus not visible, so direct reply was made - only update `currentPostData`
+                else if(!postDetails.isFocusVisible && postDetails.currentPostAction != PostActions.Quote){
                     postDetails.currentPostData.replyCount++;
                 }
+                // //Increase repost count
+                // if(postDetails.isFocusVisible && postDetails.currentPostAction == PostActions.Quote){
+                //     let searchResults = postDetails.searchThreadViewForMatchingPost((newPostRes.data.thread as ThreadViewPost).post.cid,postDetails.currentThreadView);
+                //     if(searchResults.postFound) searchResults.foundPostThreadView.post.quoteCount++;
+                // }
                 //If any the currently visible Feeds are for the currently logged in User, update Feed to show new standalone Post
-                if(!(res.data.thread as ThreadViewPost).parent){//no parent, is root post/not reply
+                if(!(newPostRes.data.thread as ThreadViewPost).parent){//no parent, is root post/not reply
                     let userFeeds = FeedState.FeedList.filter(feed => feed.description.feedSourceDID == GetBrowsingAgent().assertDid);
                     userFeeds.forEach(feed => {
                         if(isReasonPin(feed.data[0].reason)){
-                            feed.data.splice(1,0,{post:(res.data.thread as ThreadViewPost).post})
+                            feed.data.splice(1,0,{post:(newPostRes.data.thread as ThreadViewPost).post})
                         }
                         else{
-                            feed.data.unshift({post:(res.data.thread as ThreadViewPost).post})
+                            feed.data.unshift({post:(newPostRes.data.thread as ThreadViewPost).post})
                         }
                     });
                     console.log(`There are/is ${userFeeds.length} Feed(s) displaying Posts by the logged in User`);
                 }
             })
-            .catch((err) =>
+            .catch((err) =>{
                 toast.add({summary:'Error',detail:`Error navigating to new post: ${err}`,severity:'error',group:'tr',life:3000})
-            )
+                console.log(`Error navigating to new post: ${err}`);
+                console.log(err);
+            })
         })
         .catch((err) =>
             toast.add({summary:'Error',detail:`Error creating new post: ${err}`,severity:'error',group:'tr',life:3000})
