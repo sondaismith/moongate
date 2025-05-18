@@ -166,6 +166,7 @@ export default defineComponent({
             isView,
             AppBskyEmbedRecord,
             PostActions,
+            isAwaitingPostConfirm:false,
             showsPostAfterCreation:false,
         }
     },
@@ -203,14 +204,17 @@ export default defineComponent({
             if(this.postText.length>maxChars) this.postText = this.postText.slice(0,maxChars);
         },
         async createNewPost(){
+            if(this.isAwaitingPostConfirm) return;
+            this.isAwaitingPostConfirm = true;
             switch (postDetails.currentPostAction) {
                 case PostActions.Post:
-                    CreateNewPost({
+                    await CreateNewPost({
                         $type:'app.bsky.feed.post',
                         text: this.postText,
                         langs:['en-US'],
                         createdAt: new Date().toISOString()
-                    },this.showsPostAfterCreation);
+                    },this.showsPostAfterCreation)
+                    .then(()=>{this.isAwaitingPostConfirm = false});
                     break;
                 case PostActions.Reply:
                     if(isThreadViewPost(postDetails.currentPostThreadData)){
@@ -235,6 +239,7 @@ export default defineComponent({
                             },this.showsPostAfterCreation)
                             .then(() =>{
                                 AppState.updateReplyParentsInLists(postDetails.currentPostData.cid, postDetails.currentPostData.replyCount ? postDetails.currentPostData.replyCount : 0);
+                                this.isAwaitingPostConfirm = false;
                             })
                         }
                     }
@@ -247,7 +252,7 @@ export default defineComponent({
                         let root:ThreadViewPost = postDetails.getPostThreadRoot(postDetails.currentPostThreadData);
                         console.log(root);
                         if(isThreadViewPost(root)){
-                            CreateNewPost({
+                            await CreateNewPost({
                                 $type:'app.bsky.feed.post',
                                 text: this.postText,
                                 langs:['en-US'],
@@ -259,7 +264,8 @@ export default defineComponent({
                                         cid:postDetails.currentPostData.cid
                                     }
                                 }
-                            },this.showsPostAfterCreation);
+                            },this.showsPostAfterCreation)
+                            .then(()=>{this.isAwaitingPostConfirm = false});
                         }
                     }
                     else{
@@ -280,7 +286,7 @@ export default defineComponent({
             return ((this.postText.length/300)*100).toFixed(2);
         },
         canSubmitPost(){
-            if(this.postText.length>0) return true;
+            if(this.postText.length>0 && !this.isAwaitingPostConfirm) return true;
             return false;
         },
         /**
