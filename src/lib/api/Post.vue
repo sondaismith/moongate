@@ -86,6 +86,7 @@ export async function CreateNewPost(postData:Record, openPostAfterCreation:boole
                     if((newPostRes.data.thread as ThreadViewPost).parent) postToShow = ((newPostRes.data.thread as ThreadViewPost).parent as ThreadViewPost).post
                     showFocusModal({post: postToShow},0);
                     postDetails.currentPostData.replyCount++;
+                    AppState.UpdatePostsInFeedList(postDetails.currentPostData);
                 }
                 else if(postDetails.isFocusVisible && postDetails.currentPostAction != PostActions.Quote){//if we can see the PostFocusModal
                     //we need to update the `PostThreadView` to include the new Post
