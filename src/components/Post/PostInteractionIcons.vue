@@ -62,33 +62,14 @@ function CopyPostLink(postUri:string, handle:string=""){
 }
 
 /**
- * Asks the User if they're sure they would like to un-like the selected
- * post.
- * @param likeUri The URI of the Like to un-like (delete).
+ * Asks the User if they're sure they would like to unlike the selected
+ * post. If the unlike is confirmed it will perform the passed Function.
+ * @param postData The PostView of the Post to be deleted.
+ * @param unlikeFunc The function to use to unlike the Post.
  */
-async function ConfirmUnlike(postData:PostView, likeUri:string){
-    AppState.showConfirmModal('Are you sure you want to un-like this post?',async function(){Unlike(postData, likeUri)});
+async function ConfirmPostUnlike(postData:PostView, unlikeFunc:Function){
+    AppState.showConfirmModal('Are you sure you want to unlike this post?',unlikeFunc);
 }
-
-/**
- * Un-likes a specific Post.
- * @param likeUri The URI of the Like to un-like (delete).
- */
-async function Unlike(postData:PostView,likeUri:string):Promise<boolean>{
-    await GetBrowsingAgent().deleteLike(likeUri)
-    .then(res => {
-        if(postData.viewer) postData.viewer.like = undefined; //Update current Post to not be liked
-        //Decrease like count by 1
-        if(postData.likeCount) postData.likeCount = postData.likeCount - 1;
-        else postData.likeCount = 0;
-        return true;
-    })
-    .catch(err => {
-        toast.add({summary:"Error", detail:`${err} Issue unliking post by ${postData.author.handle}`, severity:'error', group:'tr', life:3000});
-    })
-    return true;
-}
-
 /**
  * Asks the User if they're sure they would like to undo the repost of the selected
  * post.
@@ -197,31 +178,53 @@ export default defineComponent({
             AppState.showCreatePost();
         },
         /**
+         * Method prompts the User to confirm if they would like to unlike the selected
+         * Post. Passes the component method `unlikePost()` to `ConfirmPostUnlike()` which will
+         * only be performed if the User selects the "confirm" option.
+         */
+        askAboutUnlike(){
+            ConfirmPostUnlike(this.postData,this.unlikePost)
+        },
+        /**
+         * Method that unlikes the Post that this component is attached to. Should not be
+         * called directly - use `askAboutUnlike()`.
+         */
+        unlikePost(){
+            if(this.postData.viewer && this.postData.viewer.like){
+                this.isAwaitingLikeUpdate = true;
+                GetBrowsingAgent().deleteLike(this.postData.viewer.like)
+                .then(() => {//Update like count
+                    let newLikeCount = this.postData.likeCount - 1;
+                    this.postData.likeCount = newLikeCount>-1 ? newLikeCount : 0;
+                    this.postData.viewer.like = undefined;//set Post as unliked
+                    AppState.UpdatePostsInFeedList(this.postData);
+                    this.isAwaitingLikeUpdate = false;
+                })
+            }
+        },
+        /**
          * Method that allows the User to Like and Un-like Posts while they're
          * logged in.
          */
         toggleLike(){
             if(!AppState.checkIfLoggedIn('like a Post')) return;
-            if(!this.isPostLikedByUser){
+            postDetails.prepareForPostAction(this.postData,PostActions.Like);
+            if(!this.isPostLikedByUser){//Like
                 this.isAwaitingLikeUpdate = true;
                 GetBrowsingAgent().like(this.postData.uri, this.postData.cid)
                 .then(res => {
                     if(this.postData.viewer) this.postData.viewer.like = res.uri; //Update current Post to be "liked"
                     //Increase like count by 1
-                    if(this.postData.likeCount) this.postData.likeCount = this.postData.likeCount + 1;
-                    else this.postData.likeCount = 1;
+                    this.postData.likeCount = this.postData.likeCount + 1;
+                    AppState.UpdatePostsInFeedList(this.postData);
                     this.isAwaitingLikeUpdate = false;
                 })
                 .catch(err => {
                     toast.add({summary:"Error", detail:`${err} Issue liking post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
                 })
             }
-            else{
-                if(this.postData.viewer && this.postData.viewer.like){
-                    this.isAwaitingLikeUpdate = true;
-                    ConfirmUnlike(this.postData, this.postData.viewer?.like);
-                    this.isAwaitingLikeUpdate = false;
-                }
+            else{//Unlike
+                this.askAboutUnlike();
             }
         },
         async toggleRepost(){

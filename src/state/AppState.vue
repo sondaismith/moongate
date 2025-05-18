@@ -9,7 +9,7 @@ import { UserFocusModalState } from './UserFocusModalState.vue';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { postDetails } from './PostDetails.vue';
 import { FeedState } from './FeedList.vue';
-import { isThreadViewPost, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -180,6 +180,29 @@ export const AppState = reactive({
         console.log(`Updated reply count in ${feedUpdates} Feed(s).`);
     },
     //#endregion
+    /**
+     * Method that updates any other instances of the Post that was interacted with (replied to, reposted
+     * or liked) in all visible Feeds. Used to keep the state of the Post consistent throughout the app.
+     * @param updatedPostData The PostView object holding the data of the Post that was just interacted with.
+     */
+    UpdatePostsInFeedList(updatedPostData:PostView){
+        let feedUpdates = 0;
+            //Update Feeds that may hold the post that was replied to/reposted/liked
+            FeedState.FeedList.forEach(feed => {
+                //find all Posts in feeds that match
+                let matchingPosts = feed.data.filter(x=>x.post.cid == updatedPostData.cid);
+                if(matchingPosts.length>0){
+                    feedUpdates++;
+                    matchingPosts.forEach(feedPost => {
+                        feedPost.post.replyCount = updatedPostData.replyCount;//increase the reply count
+                        feedPost.post.repostCount = updatedPostData.repostCount;//increase the repost count
+                        feedPost.post.likeCount = updatedPostData.likeCount;//increase the like count
+                        feedPost.post.viewer = updatedPostData.viewer//add updated Reply/Repost/Like URI data to `post.viewer`
+                    });
+                }
+            });
+            console.log(`Updated Posts in ${feedUpdates} Feed(s).`);
+    },
     //#region Post Deletion
     /**
      * Method that removes all references of a specific Post from every component that

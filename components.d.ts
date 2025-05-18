@@ -68,7 +68,6 @@ declare module 'vue' {
     'ISolar:chatDotsOutline': typeof import('~icons/solar/chat-dots-outline')['default']
     'ISolar:earthOutline': typeof import('~icons/solar/earth-outline')['default']
     'ISolar:playBold': typeof import('~icons/solar/play-bold')['default']
-    'ISolar:shareBold': typeof import('~icons/solar/share-bold')['default']
     'ISolar:trashBinTrashBold': typeof import('~icons/solar/trash-bin-trash-bold')['default']
     LoginModal: typeof import('./src/components/Login/LoginModal.vue')['default']
     OptionsMenu: typeof import('./src/components/Utilities/OptionsMenu.vue')['default']
