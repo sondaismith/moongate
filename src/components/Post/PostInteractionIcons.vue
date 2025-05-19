@@ -1,8 +1,9 @@
 <template>
     <div :class="textColorClass" class="flex flex-wrap -mt-1 bg-red-300s text-secondary gap-1 justify-around
      *:p-1">
-        <div class="group flex rounded-full items-center cursor-pointer hover:bg-btnSubtle"
-        @click="replyToPost" title="Reply">
+        <div class="flex rounded-full items-center"
+        :class="canUserReply ? 'group cursor-pointer hover:bg-btnSubtle' : 'text-disabled select-none'"
+        @click="canUserReply && replyToPost()" :title="postDetails.whoCanReply(postData)">
             <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-600"/>
             <div class="pl-1" :title="postData.replyCount?.toString()">{{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}</div>
         </div>
@@ -54,6 +55,7 @@ import MingcuteLinkLine from '~icons/mingcute/link-line';
 import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
 import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
+import { AppBskyFeedThreadgate } from '@atproto/api';
 
 function CopyPostLink(postUri:string, handle:string=""){
     let link = CreateBskyWeblink(postUri, handle);
@@ -308,7 +310,18 @@ export default defineComponent({
         isPostRepostedByUser(){
             if(this.postData.viewer && this.postData.viewer.repost) return true;
             return false;
-        }
+        },
+        /**
+         * Checks if the current User can reply to the current post. Not fully implemented
+         * yet - will prevent replying if any Threadgate.Allow rule is found.
+         */
+        canUserReply(){
+            if(this.postData.threadgate){
+                let tgRecord = this.postData.threadgate.record as AppBskyFeedThreadgate.Record
+                if(!tgRecord.allow) return false;
+            }
+            else{return true;}
+        },
     }
 })
 </script>

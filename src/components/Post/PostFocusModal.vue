@@ -106,8 +106,12 @@
                 </div>
                 {{ void "Post Metadata" }}
                 <div class="flex flex-col gap-2">
-                    <div class="py-0.5 border-b-[1px]  border-slate-600">
-                        <div class="text-feedPostName text-secondary cursor-pointer hover:underline">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
+                    <div class="flex flex-wrap gap-1s leading-5 py-0.5 border-b-[1px] border-slate-600">
+                        <div class="text-feedPostName bgs-lime-300 text-secondary cursor-pointer hover:underline mr-1">{{ convertToLongTimestamp(postDetails.postThread.post.indexedAt) }}</div>
+                        <div class="flex bg-spink-300 items-center text-feedPostName text-secondary cursor-pointer hover:underline">
+                            <i-mdi:accounts/>
+                            <div>{{ postDetails.whoCanReply(postDetails.currentThreadView.post) }}</div>
+                        </div>
                     </div>
                     <PostInteractionIcons :post-data="postDetails.currentThreadView.post"/>
                 </div>
