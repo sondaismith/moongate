@@ -62,66 +62,28 @@ function CopyPostLink(postUri:string, handle:string=""){
 }
 
 /**
- * Asks the User if they're sure they would like to un-like the selected
- * post.
- * @param likeUri The URI of the Like to un-like (delete).
+ * Asks the User if they're sure they would like to unlike the selected
+ * post. If the unlike is confirmed it will perform the passed Function.
+ * @param unlikeFunc The function to use to unlike the Post.
  */
-async function ConfirmUnlike(postData:PostView, likeUri:string){
-    AppState.showConfirmModal('Are you sure you want to un-like this post?',async function(){Unlike(postData, likeUri)});
+async function ConfirmPostUnlike(unlikeFunc:Function){
+    AppState.showConfirmModal('Are you sure you want to unlike this post?',unlikeFunc);
 }
-
-/**
- * Un-likes a specific Post.
- * @param likeUri The URI of the Like to un-like (delete).
- */
-async function Unlike(postData:PostView,likeUri:string):Promise<boolean>{
-    await GetBrowsingAgent().deleteLike(likeUri)
-    .then(res => {
-        if(postData.viewer) postData.viewer.like = undefined; //Update current Post to not be liked
-        //Decrease like count by 1
-        if(postData.likeCount) postData.likeCount = postData.likeCount - 1;
-        else postData.likeCount = 0;
-        return true;
-    })
-    .catch(err => {
-        toast.add({summary:"Error", detail:`${err} Issue unliking post by ${postData.author.handle}`, severity:'error', group:'tr', life:3000});
-    })
-    return true;
-}
-
 /**
  * Asks the User if they're sure they would like to undo the repost of the selected
  * post.
- * @param repostUri The URI of the Repost to undo (delete).
+ * @param undoRepostFunc The function to use to undo the Repost.
  */
-async function ConfirmUndoRepost(postData:PostView, repostUri:string){
-    await AppState.showConfirmModal('Are you sure you want to undo this repost?', function(){UndoRepost(postData, repostUri)});
-}
-
-/**
- * Undoes the repost of a specific Post.
- * @param repostUri The URI of the Repost to undo (delete).
- */
-async function UndoRepost(postData:PostView,repostUri:string){
-    await GetBrowsingAgent().deleteRepost(repostUri)
-    .then(res => {
-        if(postData.viewer) postData.viewer.repost = undefined; //Update current Post to not be reposted
-        //Decrease repost count by 1
-        if(postData.repostCount) postData.repostCount = postData.repostCount - 1;
-        else postData.repostCount = 0;
-    })
-    .catch(err => {
-        toast.add({summary:"Error", detail:`${err} Issue undoing repost of post by ${postData.author.handle}`, severity:'error', group:'tr', life:3000});
-    })
+async function ConfirmUndoRepost(undoRepostFunc:Function){
+    await AppState.showConfirmModal('Are you sure you want to undo this repost?', undoRepostFunc);
 }
 
 /**
  * Asks the User if they're sure they would like to delete the selected
  * post. If deletion is confirmed it will perform the passed Function.
- * @param postData The PostView of the Post to be deleted.
  * @param deleteFunc The function to use to delete the Post.
  */
-async function ConfirmPostDelete(postData:PostView, deleteFunc:Function){
+async function ConfirmPostDelete(deleteFunc:Function){
     AppState.showConfirmModal('Are you sure you want to delete this post?',deleteFunc);
 }
 
@@ -153,6 +115,7 @@ export default defineComponent({
             postThread: {} as ThreadViewPost,
             isAwaitingLikeUpdate:false,
             isAwaitingRepostUpdate:false,
+            isAwaitingPostDelete:false,
         }
     },
     methods:{
@@ -197,35 +160,93 @@ export default defineComponent({
             AppState.showCreatePost();
         },
         /**
+         * Method prompts the User to confirm if they would like to unlike the selected
+         * Post. Passes the component method `unlikePost()` to `ConfirmPostUnlike()` which will
+         * only be performed if the User selects the "confirm" option.
+         */
+        askAboutUnlike(){
+            ConfirmPostUnlike(this.unlikePost);
+        },
+        /**
+         * Method that unlikes the Post that this component is attached to. Should not be
+         * called directly - use `askAboutUnlike()`.
+         */
+        unlikePost(){
+            if(this.postData.viewer && this.postData.viewer.like){
+                this.isAwaitingLikeUpdate = true;
+                GetBrowsingAgent().deleteLike(this.postData.viewer.like)
+                .then(() => {//Update like count
+                    let newLikeCount = this.postData.likeCount - 1;
+                    this.postData.likeCount = newLikeCount>-1 ? newLikeCount : 0;
+                    this.postData.viewer.like = undefined;//set Post as unliked
+                    AppState.UpdatePostsInFeedList(this.postData);
+                    this.isAwaitingLikeUpdate = false;
+                })
+            }
+        },
+        /**
          * Method that allows the User to Like and Un-like Posts while they're
          * logged in.
          */
-        toggleLike(){
+        async toggleLike(){
             if(!AppState.checkIfLoggedIn('like a Post')) return;
-            if(!this.isPostLikedByUser){
+            if(this.isAwaitingLikeUpdate) return;
+            postDetails.prepareForPostAction(this.postData,PostActions.Like);
+            if(!this.isPostLikedByUser){//Like
                 this.isAwaitingLikeUpdate = true;
                 GetBrowsingAgent().like(this.postData.uri, this.postData.cid)
                 .then(res => {
                     if(this.postData.viewer) this.postData.viewer.like = res.uri; //Update current Post to be "liked"
                     //Increase like count by 1
-                    if(this.postData.likeCount) this.postData.likeCount = this.postData.likeCount + 1;
-                    else this.postData.likeCount = 1;
+                    this.postData.likeCount = this.postData.likeCount + 1;
+                    AppState.UpdatePostsInFeedList(this.postData);
                     this.isAwaitingLikeUpdate = false;
                 })
                 .catch(err => {
                     toast.add({summary:"Error", detail:`${err} Issue liking post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
                 })
             }
-            else{
-                if(this.postData.viewer && this.postData.viewer.like){
-                    this.isAwaitingLikeUpdate = true;
-                    ConfirmUnlike(this.postData, this.postData.viewer?.like);
-                    this.isAwaitingLikeUpdate = false;
-                }
+            else{//Unlike
+                this.askAboutUnlike();
             }
         },
+        /**
+         * Method prompts the User to confirm if they would like to undo the repost of the
+         * selected Post. Passes the component method `undoRepost()` to `ConfirmUndoRepost()`
+         * which will only be performed if the User selects the "confirm" option.
+         */
+        askAboutRepostUndo(){
+            ConfirmUndoRepost(this.UndoRepost);
+        },
+        /**
+         * Undoes the repost of a specific Post.
+         * @param repostUri The URI of the Repost to undo (delete).
+         */
+        async UndoRepost(){
+            if(this.postData.viewer && this.postData.viewer.repost){
+                this.isAwaitingRepostUpdate = true;
+                await GetBrowsingAgent().deleteRepost(this.postData.viewer.repost)
+                .then(() => {
+                    if(this.postData.viewer) this.postData.viewer.repost = undefined; //Update current Post to not be reposted
+                    //Decrease repost count by 1
+                    if(this.postData.repostCount) this.postData.repostCount = this.postData.repostCount - 1;
+                    else this.postData.repostCount = 0;
+                    AppState.UpdatePostsInFeedList(this.postData);
+                    this.isAwaitingRepostUpdate = false;
+                })
+                .catch(err => {
+                    toast.add({summary:"Error", detail:`${err} Issue undoing repost of post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
+                    this.isAwaitingRepostUpdate = false;
+                })
+            }
+        },
+        /**
+         * Method that allows the User to Repost and undo a Repost while they're
+         * logged in.
+         */
         async toggleRepost(){
             if(!AppState.checkIfLoggedIn('repost a Post')) return;
+            if(this.isAwaitingRepostUpdate) return;
             if(!this.isPostRepostedByUser){
                 this.isAwaitingRepostUpdate = true;
                 GetBrowsingAgent().repost(this.postData.uri, this.postData.cid)
@@ -234,6 +255,7 @@ export default defineComponent({
                     //Increase repost count by 1
                     if(this.postData.repostCount) this.postData.repostCount = this.postData.repostCount + 1;
                     else this.postData.repostCount = 1;
+                    AppState.UpdatePostsInFeedList(this.postData);
                     this.isAwaitingRepostUpdate = false;
                 })
                 .catch(err => {
@@ -242,9 +264,7 @@ export default defineComponent({
             }
             else{
                 if(this.postData.viewer && this.postData.viewer.repost){
-                    // this.isAwaitingRepostUpdate = true;
-                    await ConfirmUndoRepost(this.postData, this.postData.viewer.repost);
-                    // this.isAwaitingRepostUpdate = false;
+                    this.askAboutRepostUndo();
                 }
             }
         },
@@ -254,25 +274,27 @@ export default defineComponent({
          * only be performed if the User selects the "confirm" option.
          */
         askAboutDelete(){
-            ConfirmPostDelete(this.postData,this.deletePost);
+            ConfirmPostDelete(this.deletePost);
         },
         /**
          * Method that deletes the Post that this component is attached to. Should not be
          * called directly - use `askAboutDelete()`.
          */
-        deletePost(){
+        async deletePost(){
             if(!AppState.checkIfLoggedIn('delete a Post')) return;
+            if(this.isAwaitingPostDelete) return;
+            this.isAwaitingPostDelete = true;
             console.log(this.postData);
-            DeletePost(this.postData)
-            .then(res => {
-                //remove post from view, or update to reflect that post has been deleted
-                ///check each state store that can hold a list of displayed posts and remove
-                //any Post with a cid that matches the deleted Post's cid
+            await DeletePost(this.postData)
+            .then(() => {
+                //update feeds to reflect that post has been deleted
                 AppState.removeDeletedPostFromLists(this.postData.cid);
                 toast.add({summary:"Post Deleted", detail:`Deleted post "${this.postData.record.text}""`, severity:'success', group:'tr', life:3000});
+                this.isAwaitingPostDelete = false;
             })
             .catch(err => {
                 toast.add({summary:"Error", detail:`${err} Issue deleting post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
+                this.isAwaitingPostDelete = false;
             })
         }
     },

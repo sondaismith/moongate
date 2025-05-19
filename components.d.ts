@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AccountPeek: typeof import('./src/components/Utilities/AccountPeek.vue')['default']
     AvatarRound: typeof import('./src/components/Utilities/AvatarRound.vue')['default']
+    CheckBox: typeof import('./src/components/Utilities/CheckBox.vue')['default']
     ConfirmModal: typeof import('./src/components/Utilities/ConfirmModal.vue')['default']
     CreatePost: typeof import('./src/components/Post/CreatePost.vue')['default']
     DbDebugModal: typeof import('./src/components/Debug/DbDebugModal.vue')['default']
@@ -27,6 +28,7 @@ declare module 'vue' {
     ImageContainer: typeof import('./src/components/Utilities/ImageContainer.vue')['default']
     'IMdi:accountOff': typeof import('~icons/mdi/account-off')['default']
     'IMdi:block': typeof import('~icons/mdi/block')['default']
+    'IMdi:check': typeof import('~icons/mdi/check')['default']
     'IMdi:dotsHorizontal': typeof import('~icons/mdi/dots-horizontal')['default']
     'IMdi:expandMore': typeof import('~icons/mdi/expand-more')['default']
     'IMdi:formatVerticalAlignTop': typeof import('~icons/mdi/format-vertical-align-top')['default']
@@ -66,7 +68,6 @@ declare module 'vue' {
     'ISolar:chatDotsOutline': typeof import('~icons/solar/chat-dots-outline')['default']
     'ISolar:earthOutline': typeof import('~icons/solar/earth-outline')['default']
     'ISolar:playBold': typeof import('~icons/solar/play-bold')['default']
-    'ISolar:shareBold': typeof import('~icons/solar/share-bold')['default']
     'ISolar:trashBinTrashBold': typeof import('~icons/solar/trash-bin-trash-bold')['default']
     LoginModal: typeof import('./src/components/Login/LoginModal.vue')['default']
     OptionsMenu: typeof import('./src/components/Utilities/OptionsMenu.vue')['default']

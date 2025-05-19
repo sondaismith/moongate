@@ -23,5 +23,6 @@ export enum MediaType{
 export enum PostActions{
     Post = 'post',
     Reply = 'reply',
-    Quote = 'quote'
+    Quote = 'quote',
+    Like = 'like'
 }

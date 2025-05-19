@@ -102,6 +102,7 @@
                 <i-mingcute:world-2-line/>
                 <div>Anybody can interact</div>
             </div>
+            <CheckBox :model-value="showsPostAfterCreation" @value-toggled="n => showsPostAfterCreation = n"/>
             <div class="flex items-center">
                 <div class="flex gap-1">
                     <div v-for="option in mediaTypes" class="flex rounded p-2 hover:bg-btnHover
@@ -139,11 +140,13 @@ import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal, AppBskyEmbedRecord } from '@atproto/api';
 import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import { PostActions } from '../../enums/PostEnums';
+import CheckBox from '../Utilities/CheckBox.vue';
 
 export default defineComponent({
     components:{
         AvatarRound,
         RichPostTextBsky,
+        CheckBox,
     },
     props:{
         avatar: String,
@@ -163,6 +166,8 @@ export default defineComponent({
             isView,
             AppBskyEmbedRecord,
             PostActions,
+            isAwaitingPostConfirm:false,
+            showsPostAfterCreation:false,
         }
     },
     methods:{
@@ -198,22 +203,25 @@ export default defineComponent({
             let maxChars = 300;
             if(this.postText.length>maxChars) this.postText = this.postText.slice(0,maxChars);
         },
-        createNewPost(){
+        async createNewPost(){
+            if(this.isAwaitingPostConfirm) return;
+            this.isAwaitingPostConfirm = true;
             switch (postDetails.currentPostAction) {
                 case PostActions.Post:
-                    CreateNewPost({
+                    await CreateNewPost({
                         $type:'app.bsky.feed.post',
                         text: this.postText,
                         langs:['en-US'],
                         createdAt: new Date().toISOString()
-                    });
+                    },this.showsPostAfterCreation)
+                    .then(()=>{this.isAwaitingPostConfirm = false});
                     break;
                 case PostActions.Reply:
                     if(isThreadViewPost(postDetails.currentPostThreadData)){
                         let root:ThreadViewPost = postDetails.getPostThreadRoot(postDetails.currentPostThreadData);
                         console.log(root);
                         if(isThreadViewPost(root)){
-                            CreateNewPost({
+                            await CreateNewPost({
                                 $type:'app.bsky.feed.post',
                                 text: this.postText,
                                 reply:{
@@ -228,7 +236,11 @@ export default defineComponent({
                                 },
                                 langs:['en-US'],
                                 createdAt: new Date().toISOString(),
-                            });
+                            },this.showsPostAfterCreation)
+                            .then(() =>{
+                                AppState.updateReplyParentsInLists(postDetails.currentPostData.cid, postDetails.currentPostData.replyCount ? postDetails.currentPostData.replyCount : 0);
+                                this.isAwaitingPostConfirm = false;
+                            })
                         }
                     }
                     else{
@@ -240,7 +252,7 @@ export default defineComponent({
                         let root:ThreadViewPost = postDetails.getPostThreadRoot(postDetails.currentPostThreadData);
                         console.log(root);
                         if(isThreadViewPost(root)){
-                            CreateNewPost({
+                            await CreateNewPost({
                                 $type:'app.bsky.feed.post',
                                 text: this.postText,
                                 langs:['en-US'],
@@ -252,7 +264,8 @@ export default defineComponent({
                                         cid:postDetails.currentPostData.cid
                                     }
                                 }
-                            });
+                            },this.showsPostAfterCreation)
+                            .then(()=>{this.isAwaitingPostConfirm = false});
                         }
                     }
                     else{
@@ -273,7 +286,7 @@ export default defineComponent({
             return ((this.postText.length/300)*100).toFixed(2);
         },
         canSubmitPost(){
-            if(this.postText.length>0) return true;
+            if(this.postText.length>0 && !this.isAwaitingPostConfirm) return true;
             return false;
         },
         /**
