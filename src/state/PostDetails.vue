@@ -14,6 +14,7 @@ import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteHeartFill from '~icons/mingcute/heart-fill';
 import SolarShareBold from '~icons/solar/share-bold';
 import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
+import { AppBskyFeedThreadgate } from '@atproto/api';
 
 // export const postDetails : IPostDetailsList = reactive({
 export const postDetails = reactive({
@@ -346,6 +347,30 @@ export const postDetails = reactive({
             el.style.top = '-500px';
             this.isPostOptionsMenuVisible = false;
         }
+    },
+    /**
+     * Method that returns a string describing what type of Users can reply to the current post.
+     * To be used wherever that info needs to be communicated to the User (`PostFocusModal`, `PostInteractionIcons`).
+     */
+    whoCanReply(postToCheck:PostView){
+        if(postToCheck.threadgate){
+            let tgRecord = postToCheck.threadgate.record as AppBskyFeedThreadgate.Record
+            if(tgRecord.allow && tgRecord.allow.length>0){
+                let replyString = '';
+                for (let i = 0; i < tgRecord.allow.length; i++) {
+                    if(i>0 && i<tgRecord.allow.length-1) replyString += ', ';
+                    else if(i != 0 && i == tgRecord.allow.length-1) replyString += ' and ';
+                    if(AppBskyFeedThreadgate.isMentionRule(tgRecord.allow[i])) replyString += "Mentioned"
+                    else if(AppBskyFeedThreadgate.isFollowingRule(tgRecord.allow[i])) replyString += "Followed By"
+                    else if(AppBskyFeedThreadgate.isFollowerRule(tgRecord.allow[i])) replyString += "Following"
+                    else if(AppBskyFeedThreadgate.isListRule(tgRecord.allow[i])) replyString += "Listed"
+                }
+                replyString += ' Users may Reply'
+                return replyString;
+            }
+            else return 'Replies Disabled';
+        }
+        else{return 'Everybody can Reply'}
     },
     clickedElement: document.children[0].children[1].children[1] as HTMLElement,
     postDetailIconValues: [
