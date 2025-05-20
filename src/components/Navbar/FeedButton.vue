@@ -5,7 +5,7 @@
             rounded-xl drop-shadow-md bg-feedBtn border border-outline transition-[border]
             hover:border-secondary button-size !w-full overflow-hidden">
             <FeedIcon v-if="!userDid" :icon="icon" class="h-full text-2xl text-primary"/>
-            <i-mingcute:loading-fill v-show="awaitingPFPRequest" class="absolute text-black spinner self-center"/>
+            <i-mingcute:loading-fill v-show="awaitingPFPRequest" class="absolute text-primary spinner self-center"/>
             <div v-if="userPfp" class="button-size bg-contain bg-centers scale-[1.15] bg-no-repeat"
             :style="{'background-image': 'url('+userPfp+')'}"></div>
         </a>

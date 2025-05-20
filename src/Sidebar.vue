@@ -115,7 +115,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { userFeedList, FeedState, AddFeedToList, createFeedDescription, AddSavedFeed } from "./state/FeedList.vue";
+import { userFeedList, FeedState, AddFeedToList, createFeedDescription, AddSavedFeed, LoadFeedPostsAsync } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState, toast } from "./state/AppState.vue";
@@ -400,6 +400,10 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                     //all data has been loaded
                     for (let i = 0; i < loadedFeeds.length; i++) {
                         await AddSavedFeed(loadedFeeds[i]);
+                    }
+                    for (let i = 0; i < FeedState.FeedList.length; i++) {
+                        LoadFeedPostsAsync(FeedState.FeedList[i].description); //add await if you want these done sequentially
+                        await new Promise((resolve) => setTimeout(resolve,200)) //use if you want to add a small delay between each API call
                     }
                     //Set AppState "loading feeds" to false
                 }

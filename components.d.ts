@@ -61,7 +61,6 @@ declare module 'vue' {
     'IMingcute:rightFill': typeof import('~icons/mingcute/right-fill')['default']
     'IMingcute:settings2Line': typeof import('~icons/mingcute/settings2-line')['default']
     'IMingcute:settings6Fill': typeof import('~icons/mingcute/settings6-fill')['default']
-    'IMingcute:user1Line': typeof import('~icons/mingcute/user1-line')['default']
     'IMingcute:userAddFill': typeof import('~icons/mingcute/user-add-fill')['default']
     'IMingcute:videoLine': typeof import('~icons/mingcute/video-line')['default']
     'IMingcute:world2Line': typeof import('~icons/mingcute/world2-line')['default']
