@@ -26,7 +26,7 @@ export default defineComponent({
                 name:''
             },
             undefined)
-            .then(res => AddFeedToList(res.description,res.data));
+            .then(res => AddFeedToList(res.description,res.data,res.cursor,false));
         }
     }
 })

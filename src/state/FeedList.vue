@@ -46,14 +46,17 @@ export const FeedState = reactive({
 /**
  * Method used to create a Feed object in the FeedList State
  * based on data returned by the Bluesky API.
+ * @param description Details about the Feed (type, DID source, etc.).
  * @param feed The Feed data returned by the Bluesky API.
+ * @param cursor Cursor to use when attempting to paginate displayed Posts.
+ * @param awaitingData Indicates if the Feed is waiting for data to display.
  */
-export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[], cursor:string=''){
+export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[], cursor:string='', awaitingData:boolean=true){
     FeedState.FeedList.push({
         description:description,
         data:feed,
         cursor:cursor,
-        isAwaitingFeedData:true,
+        isAwaitingFeedData:awaitingData,
     })
 }
 
