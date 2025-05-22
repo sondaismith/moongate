@@ -254,7 +254,7 @@ export default defineComponent({
             }
             //Create the Feed
             if(AppState.isCreatingFeed){
-                AddFeedToList(desc,feedResult.data, feedResult.cursor);
+                AddFeedToList(desc,feedResult.data, feedResult.cursor, false);
             }
             else if(AppState.isUpdatingFeed){
                 UpdateFeedDetails(FeedState.selectedFeed,desc,feedResult.data,feedResult.cursor);

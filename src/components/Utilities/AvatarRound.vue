@@ -38,7 +38,7 @@ function CreateUserFeed(userDid:string,userHandle:string){
         name:''
     })
     .then(res => {
-        AddFeedToList(res.description,res.data,res.cursor);
+        AddFeedToList(res.description,res.data,res.cursor,false);
     });
 }
 

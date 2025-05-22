@@ -9,9 +9,16 @@
                     <FeedIcon :icon="feedData?.description.feedIcon"/>
                 </div>
                 <div class="flex overflow-hidden flex-col">
-                    <div class="flex flex-col text-nowrap">
-                        <div class="font-semibold leading-none pr-1 truncate">{{ feedData?.description.feedName }}</div>
-                        <div class="text-xs truncate">@{{ feedData?.description.feedHandle }}</div>
+                    <div class="flex flex-col text-nowrap"
+                    :class="{'animate-pulse' : feedData?.isAwaitingFeedData}">
+                        <div class="font-semibold leading-none pr-1 truncate"
+                        :title="feedData?.description.feedName">
+                            {{ feedData?.description.feedName }}
+                        </div>
+                        <div class="text-xs truncate"
+                        :title="'@'+feedData?.description.feedHandle">
+                            @{{ feedData?.description.feedHandle }}
+                        </div>
                     </div>
                     <div class="text-feedTimestamp leading-4 text-nowrap content-end text-secondary">Updated: {{ getTimeStampFormat() }}</div>
                 </div>
@@ -117,7 +124,7 @@
                 </div>
             </div>
             <TransitionGroup name="feedpost">
-                <div v-for="n in feedData?.data" :key="n.post.cid" class="flex flex-col rounded bg-feedColumnBG border border-outline w-full
+                <div v-for="n in feedData?.data" :key="generateUniqueIdForPost(n)" class="flex flex-col rounded bg-feedColumnBG border border-outline w-full
                 drop-shadow-md justify-between text-sm">
                     <FocusFeedPost class="border-0" :post-data="n.post" :post-reason="n.reason" :reply="n.reply" :is-feed-post-style="true"/>
                 </div>
@@ -159,7 +166,7 @@ import { addDummyPostToFeed, ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFee
 import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { debounce } from '../../helpers/debouncer';
-import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import FocusFeedPost from './FocusFeedPost.vue';
 import FeedPost from './FeedPost.vue';
 
@@ -367,6 +374,21 @@ export default defineComponent({
          * "created()" section.
          */
         toggleScrollToTop(e:Event){},
+        /**
+         * Method used to generate a unique key/id for each Post being added
+         * to the FeedColumn display. Handles situations where the CID will duplicated
+         * in the case of reposts or pins. Helps with displaying content in a
+         * TransitionGroup layout.
+         * @param feedPost The Post that needs a key generated.
+         */
+        generateUniqueIdForPost(feedPost:FeedViewPost):string{
+            let id = feedPost.post.cid;
+            if(feedPost.reason){
+                if(isReasonPin(feedPost.reason)) id+='_pinned'
+                if(isReasonRepost(feedPost.reason)) id+='_reposted'
+            }
+            return id;
+        }
     },
     mounted(){
         for (let i = 0; i < this.feedData.totalPosts; i++) {

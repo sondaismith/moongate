@@ -46,14 +46,17 @@ export const FeedState = reactive({
 /**
  * Method used to create a Feed object in the FeedList State
  * based on data returned by the Bluesky API.
+ * @param description Details about the Feed (type, DID source, etc.).
  * @param feed The Feed data returned by the Bluesky API.
+ * @param cursor Cursor to use when attempting to paginate displayed Posts.
+ * @param awaitingData Indicates if the Feed is waiting for data to display.
  */
-export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[], cursor:string=''){
+export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[], cursor:string='', awaitingData:boolean=true){
     FeedState.FeedList.push({
         description:description,
         data:feed,
         cursor:cursor,
-        isAwaitingFeedData:false,
+        isAwaitingFeedData:awaitingData,
     })
 }
 
@@ -282,17 +285,18 @@ export function addDummyPostToFeed(feedId:String){
 
 /**
  * Adds Feed to current feed list. Used to restore saved feeds on
- * app startup.
+ * app startup. Does not populate Feed with Posts - use
+ * `InitialLoadFeedPosts()`.
  * @param savedFeed Summary Feed info used to restore Feed in app.
  */
 export async function AddSavedFeed(savedFeed:IFeedDBData){
     /**The object that will be added to the FeedList. */
     // var feedResult:FeedViewPost[] = [];
-    var feedResult:IFeedReturnedPostResults = {data:[],cursor:''};
-    await GetFeedDataForFeedType(savedFeed.type,savedFeed.did,savedFeed.tags,'',10)
-    .then(res => feedResult = res)
-    .catch(err => toast.add(HandleAPIError(err, 'Error getting posts for Saved Feed')));
-    console.log(feedResult);//DEBUG
+    // var feedResult:IFeedReturnedPostResults = {data:[],cursor:''};
+    // await GetFeedDataForFeedType(savedFeed.type,savedFeed.did,savedFeed.tags,'',10)
+    // .then(res => feedResult = res)
+    // .catch(err => toast.add(HandleAPIError(err, 'Error getting posts for Saved Feed')));
+    // console.log(feedResult);//DEBUG
 
     /**Default FeedColumn settings */
     var defaultAppearance:IFeedColumnSettings = {
@@ -302,7 +306,7 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
     var desc:IFeedDescription = {
         feedId:savedFeed.id,
         userId:savedFeed.userId,
-        feedHandle:'hashtag',
+        feedHandle:'loading_handle',
         feedName:savedFeed.tags,
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
@@ -314,20 +318,27 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
 
     //Select correct returned Object value based on Feed Type
     switch(savedFeed.type) {
+        // case FeedEnums.Types.User:
+        //     //Get user profile
+        //     let profile:ProfileView = {did:'',handle:''};
+        //     await getUserProfile(savedFeed.did)
+        //     .then(res => profile = res.data)
+        //     .catch((err) => {
+        //         //error occured try to get User Profile
+        //         toast.add(HandleAPIError(err, 'Error getting User profile while adding saved feeds'));
+        //     });
+        //     //Update required values of starting `IFeedDescription` template
+        //     desc = {...desc,
+        //         feedHandle:profile.handle,
+        //         feedName:profile.displayName ? profile.displayName : '[Empty Displayname]',
+        //         feedSourceDID:profile.did
+        //     }
+        //     break;
         case FeedEnums.Types.User:
-            //Get user profile
-            let profile:ProfileView = {did:'',handle:''};
-            await getUserProfile(savedFeed.did)
-            .then(res => profile = res.data)
-            .catch((err) => {
-                //error occured try to get User Profile
-                toast.add(HandleAPIError(err, 'Error getting User profile while adding saved feeds'));
-            });
             //Update required values of starting `IFeedDescription` template
             desc = {...desc,
-                feedHandle:profile.handle,
-                feedName:profile.displayName ? profile.displayName : '[Empty Displayname]',
-                feedSourceDID:profile.did
+                feedName:'[Fetching Displayname...]',
+                feedSourceDID:savedFeed.did
             }
             break;
         case FeedEnums.Types.Tag:
@@ -335,13 +346,46 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
             desc = {...desc,
                 feedType:FeedEnums.Types.Tag,
                 feedIcon:FeedEnums.Icons.Hashtag,
+                feedHandle:'hashtags',
                 feedTags:savedFeed.tags
             }
             break;
         default:
             break;
     }
-    AddFeedToList(desc,feedResult.data,feedResult.cursor);
+    // AddFeedToList(desc,feedResult.data,feedResult.cursor);
+    AddFeedToList(desc,[],'');
+}
+
+export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
+    var feed = FeedState.FeedList.find(x => x.description.feedId == feedDesc.feedId);
+    if(feed){
+        if(feedDesc.feedType == FeedEnums.Types.User){
+            let profile:ProfileView = {did:'',handle:''};
+            await getUserProfile(feedDesc.feedSourceDID)
+            .then(res => profile = res.data)
+            .catch((err) => {
+                //error occured try to get User Profile
+                toast.add(HandleAPIError(err, 'Error getting User profile while adding saved feeds'));
+            });
+            //Update required values of starting `IFeedDescription` template
+            feed.description = {...feed.description,
+                feedHandle:profile.handle,
+                feedName:profile.displayName ? profile.displayName : '[Empty Displayname]',
+                feedSourceDID:profile.did
+            }
+        }
+        await GetFeedDataForFeedType(feedDesc.feedType,feedDesc.feedSourceDID,feedDesc.feedTags,'',10)
+        .then(res => {
+            if(feed){
+                console.log(res);//DEBUG
+                feed.data = res.data.slice()
+                feed.cursor = res.cursor
+                feed.isAwaitingFeedData = false;
+            }
+        })
+        .catch(err => toast.add(HandleAPIError(err, 'Error getting posts for Saved Feed')));
+    }
 }
 
 /**
