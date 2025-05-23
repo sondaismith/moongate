@@ -305,21 +305,13 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
 
                 //Listen to any attempt to close the app window.
                 const unlisten = await window.onCloseRequested(async (event) => {
-                    var windowSize = (await getCurrentWindow().innerSize()).toJSON();
-                    var windowPos = (await getCurrentWindow().innerPosition()).toJSON();
-                    var monitor = (await currentMonitor())?.name;
                     const confirmed = await confirm('Are you sure?');
                     if (!confirmed) {
                         // user did not confirm closing the window; let's prevent it
                         event.preventDefault();
                     }
                     else{
-                        await updateAppSettings({lastWindowWidth:windowSize.width,
-                            lastWindowHeight:windowSize.height,
-                            lastWindowPosX:windowPos.x,
-                            lastWindowPosY:windowPos.y,
-                            lastMonitor:monitor} as AppSettings);
-
+                        //Save currently open Feeds
                         await updateSavedFeedsTable({data:stringifyFeedListData(FeedState.FeedList)});
                     }
                 });
@@ -370,21 +362,7 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
              * `app_settings` database and applies them.
              */
             async loadAppConfig(){
-                var loadedWindowPosition = new PhysicalPosition(0,0);
-                var loadedWindowSize = new PhysicalSize(800,600);
                 var appSettings = await loadAppSettingsRecords() as AppSettings[];
-                //move window to correct monitor first
-                await invoke('position_on_monitor',{monitorName:appSettings[0].lastMonitor});
-                //then get monitor for positioning
-                var curMonitor = await currentMonitor();
-                loadedWindowPosition = new PhysicalPosition(appSettings[0].lastWindowPosX ? appSettings[0].lastWindowPosX:0,
-                    appSettings[0].lastWindowPosY ? appSettings[0].lastWindowPosY:0);
-                loadedWindowSize = new PhysicalSize(appSettings[0].lastWindowWidth ? appSettings[0].lastWindowWidth:0,
-                    appSettings[0].lastWindowHeight ? appSettings[0].lastWindowHeight:0);
-                loadedWindowPosition = validateWindowPosition(curMonitor,loadedWindowPosition,loadedWindowSize);
-                var curWindow = await getCurrentWindow();
-                curWindow.setPosition(loadedWindowPosition);
-                curWindow.setSize(loadedWindowSize);
 
                 //Load application settings
                 AppSettingsState.loadSettingsFromDB(appSettings[0].collection);

@@ -19,11 +19,16 @@
                         <div class="relative h-full overflow-hidden">
                             <TransitionGroup>
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[0]">
-                                    <div class="flex gap-1">
+                                    <div class="flex flex-col gap-1">
                                         <div class="flex gap-1">
                                             <input type="checkbox" :checked="AppSettingsState.Settings.isDarkMode" @change="toggleTheme"/>
                                             <div>Dark Mode?</div>
                                         </div>
+                                        <SquareButton @click="confirmAppWindowSizeReset"
+                                        class="self-start text-xs !p-1 bg-btn hover:bg-btnHover"
+                                        title="Return Window Size to 800x600">
+                                            Reset App Window Size
+                                        </SquareButton>
                                     </div>
                                 </div>
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[1]"
@@ -110,6 +115,8 @@ import FilterSelect from '../Utilities/FilterSelect.vue';
 import { AppSettingsState, LangCode } from '../../state/AppSettingsState.vue';
 import ToggleButton from '../Utilities/ToggleButton.vue';
 import { AppSettings, updateAppSettings } from '../../lib/db/local_db';
+import SquareButton from '../Utilities/SquareButton.vue';
+import { getCurrentWindow, PhysicalSize } from '@tauri-apps/api/window';
 
 
 export default defineComponent({
@@ -151,6 +158,7 @@ export default defineComponent({
         InLaInput,
         FilterSelect,
         ToggleButton,
+        SquareButton
     },
     methods:{
         closeModal(){
@@ -176,6 +184,22 @@ export default defineComponent({
         toggleLanguageOption(option:LangCode){
             this.$refs.languageSelector.parentRemoveSelectedOption(option);
             // AppSettingsState.selectedLanguages.splice(AppSettingsState.selectedLanguages.indexOf(option),1);
+        },
+        /**
+         * Method the asks User if they're sure that they want to reset the
+         * app window size. Calls `resetAppWindowSizeReset()`.
+         */
+        confirmAppWindowSizeReset(){
+            AppState.showConfirmModal('Are you sure you want to reset the Application Window?', this.resetAppWindowSize);
+        },
+        /**
+         * Method that resets the application window size to it's default.
+         * Default size is 800px by 600px.
+         */
+        resetAppWindowSize(){
+            var loadedWindowSize = new PhysicalSize(800,600);
+            var curWindow = getCurrentWindow();
+            curWindow.setSize(loadedWindowSize);
         }
     },
     computed:{
