@@ -1,5 +1,5 @@
 <script lang="ts">
-import { AppBskyActorSearchActors, AppBskyFeedGetAuthorFeed, AppBskyFeedGetTimeline, AppBskyFeedSearchPosts } from "@atproto/api/dist/client";
+import { AppBskyActorSearchActors, AppBskyFeedGetActorLikes, AppBskyFeedGetAuthorFeed, AppBskyFeedGetTimeline, AppBskyFeedSearchPosts } from "@atproto/api/dist/client";
 import { GetBrowsingAgent } from "../api.vue";
 import { AppSettingsState } from "../../state/AppSettingsState.vue";
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
@@ -157,6 +157,24 @@ export async function getAuthorPostsOnly(did:string,cursor:string=''):Promise<Ap
     //     if(result.data.cursor == '' || result.data.feed.length>30) retrievedEnough = true;
     // }
     console.log(`Returning ${result.data.feed.length} repl(y/ies) made by this User`);
+    return result;
+}
+
+/**
+ * Method used to get a collection of liked Posts by a specific User. NOTE:
+ * The DID passed in must be the DID of the currently logged in User, otherwise
+ * no data will be returned.
+ * @param did The DID of the User that will have their liked Posts returned.
+ * @param cursor Used when requesting posts from a certain point (pagination).
+ * @param postsToGet The number of Posts to return.
+ */
+export async function getAuthorLikes(did:string,cursor:string='',postsToGet:number=20):Promise<AppBskyFeedGetActorLikes.Response>{
+    let result = await GetBrowsingAgent().getActorLikes({
+        actor:did,
+        limit:postsToGet,
+        cursor:cursor
+    })
+    console.log(`Returning ${result.data.feed.length} posts liked by this User`);
     return result;
 }
 

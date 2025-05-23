@@ -123,9 +123,14 @@
                                 <div class="pt-2 pb-1">Media</div>
                                 <div v-if="isViewingMedia" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
+                            <div v-if="isThisCurrentUserAccount" @click="viewLikes" class="w-full hover:bg-hover cursor-pointer"
+                            title="View Your Liked Posts">
+                                <div class="pt-2 pb-1">Likes</div>
+                                <div v-if="isViewingLikes" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
+                            </div>
                         </div>
                         {{ void "General Posts" }}
-                        <div v-if="isViewingFeed || isViewingPosts || isViewingReplies"
+                        <div v-if="isViewingFeed || isViewingPosts || isViewingReplies || isViewingLikes"
                         class="flex flex-col flex-wrap items-start py-2 gap-2 max-w-[30rem] w-full">
                             {{ void "Placeholder Post" }}
                             <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
@@ -174,14 +179,15 @@
                             </div>
                             <div v-if="!awaitingProfileData && !UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
                             class="flex justify-center rounded p-1 gap-1 w-full items-center
-                            border border-slate-600 bg-slate-700 select-none">
+                            border border-outline bg-disabled select-none">
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
                             <div v-else-if="!awaitingProfileData && UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
                             @click="loadOlderPosts"
                             class="flex justify-center rounded p-1 gap-1 w-full items-center cursor-pointer
-                            border border-slate-600 bg-slate-700 hover:bg-slate-600">
+                            border border-outline bg-btn hover:bg-btnHover"
+                            :title="isViewingLikes ? 'NOTE: Currently loading likes is broken - cannot currently identify end of stream' : 'Click to load older posts'">
                                 <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
                                 <i-mingcute:plus-fill v-else/>
                                 <div>Load more</div>
@@ -218,13 +224,13 @@
                             </div>
                             <div v-if="!UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
                             class="flex justify-center rounded p-1 gap-1 mt-4 w-full items-center
-                            border border-outlineLighter bg-outline select-none">
+                            border border-outlineLighter bg-disabled select-none">
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
                             <div v-else-if="UserFocusModalState.GetCurrentHistoryData().FeedData.cursor && !isAwaitingTabSwitchData" @click="loadOlderPosts"
                             class="flex justify-center rounded p-1 gap-1 mt-4 mx-4 w-fulls items-center cursor-pointer
-                            border border-outline bg-outlineLighter hover:bg-outline">
+                            border border-outline bg-btn hover:bg-btnHover">
                                 <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
                                 <i-mingcute:plus-fill v-else/>
                                 <div>Load more</div>
@@ -268,7 +274,7 @@ import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
 import { MediaType } from '../../enums/PostEnums';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
-import { getAuthorFeed, getAuthorPostsOnly, getAuthorRepliesOnly } from '../../lib/api/Feed.vue';
+import { getAuthorFeed, getAuthorLikes, getAuthorPostsOnly, getAuthorRepliesOnly } from '../../lib/api/Feed.vue';
 
 export default defineComponent({
     data(){
@@ -290,6 +296,7 @@ export default defineComponent({
             isViewingPosts:false,
             isViewingReplies:false,
             isViewingMedia:false,
+            isViewingLikes:false,
             awaitingProfileData:false,
             isAwaitingTabSwitchData:false,
             isAwaitingLoadMorePosts:false,
@@ -324,7 +331,7 @@ export default defineComponent({
             if(!this.awaitingProfileData){
                 this.repositionScrollOnTabSwitch();
                 this.isViewingFeed = true;
-                this.isViewingPosts = this.isViewingReplies = this.isViewingMedia = false;
+                this.isViewingPosts = this.isViewingReplies = this.isViewingMedia = this.isViewingLikes = false;
                 this.isAwaitingTabSwitchData = true;
                 await getAuthorFeed(UserFocusModalState.currentUserAccountDID)
                 .then(res => {
@@ -342,7 +349,7 @@ export default defineComponent({
             if(!this.awaitingProfileData){
                 this.repositionScrollOnTabSwitch();
                 this.isViewingPosts = true;
-                this.isViewingFeed = this.isViewingReplies = this.isViewingMedia = false;
+                this.isViewingFeed = this.isViewingReplies = this.isViewingMedia = this.isViewingLikes = false;
                 this.isAwaitingTabSwitchData = true;
                 await getAuthorPostsOnly(UserFocusModalState.currentUserAccountDID)
                 .then(res => {
@@ -358,7 +365,7 @@ export default defineComponent({
             if(!this.awaitingProfileData){
                 this.repositionScrollOnTabSwitch();
                 this.isViewingReplies = true;
-                this.isViewingFeed = this.isViewingPosts = this.isViewingMedia = false;
+                this.isViewingFeed = this.isViewingPosts = this.isViewingMedia = this.isViewingLikes = false;
                 this.isAwaitingTabSwitchData = true;
                 await getAuthorRepliesOnly(UserFocusModalState.currentUserAccountDID)
                 .then(res => {
@@ -374,7 +381,7 @@ export default defineComponent({
             if(!this.awaitingProfileData){
                 this.repositionScrollOnTabSwitch();
                 this.isViewingMedia = true;
-                this.isViewingFeed = this.isViewingPosts = this.isViewingReplies = false;
+                this.isViewingFeed = this.isViewingPosts = this.isViewingReplies = this.isViewingLikes = false;
                 this.isAwaitingTabSwitchData = true;
                 //Get media posts
                 await GetBrowsingAgent().getAuthorFeed({
@@ -389,6 +396,23 @@ export default defineComponent({
                 this.isAwaitingTabSwitchData = false;
             }
         },
+        /**Prepares and displays data when the "Likes" tab is clicked. */
+        async viewLikes(){
+            if(!this.awaitingProfileData){
+                this.repositionScrollOnTabSwitch();
+                this.isViewingLikes = true;
+                this.isViewingFeed = this.isViewingPosts = this.isViewingReplies = this.isViewingMedia = false;
+                this.isAwaitingTabSwitchData = true;
+                //Get liked posts
+                await getAuthorLikes(this.currentUserProfile.did)
+                .then(res => {
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                })
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s likes`)));
+                this.isAwaitingTabSwitchData = false;
+            }
+        },
         async loadOlderPosts(){
             this.isAwaitingLoadMorePosts = true;
             // await GetFeedDataForFeedType(FeedEnums.Types.User,this.currentUserProfile.did,'',this.currentUserAccountTimelineData.cursor)
@@ -399,6 +423,17 @@ export default defineComponent({
                         UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
                     });
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.cursor;
+                })
+                .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
+            }
+            else if(this.isViewingLikes){
+                let agent = GetBrowsingAgent();
+                await getAuthorLikes(agent.assertDid,UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
+                .then(res => {
+                    res.data.feed.forEach(post => {
+                        UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
+                    });
+                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
                 .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
             }
@@ -619,6 +654,12 @@ export default defineComponent({
             let profile = UserFocusModalState.GetCurrentHistoryData().ProfileData;
             if(profile.verification && profile.verification.verifiedStatus == 'valid')
                 return true;
+            return false;
+        },
+        isThisCurrentUserAccount(){
+            if(AppState.isAuthBrowsing){
+                if(GetBrowsingAgent().assertDid == UserFocusModalState.currentUserAccountDID) return true;
+            }
             return false;
         },
         hasPrevNavRecords(){
