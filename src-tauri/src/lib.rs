@@ -1,6 +1,6 @@
-use tauri::{utils::config::Position, window, Emitter, Manager, PhysicalPosition};
-use little_exif::metadata::Metadata;
 use little_exif::exif_tag::ExifTag;
+use little_exif::metadata::Metadata;
+use tauri::{utils::config::Position, window, Emitter, Manager, PhysicalPosition};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -11,6 +11,7 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_dialog::init())
         //Create window programatically
@@ -100,8 +101,11 @@ fn position_on_monitor(app_handle: tauri::AppHandle, monitor_name: String) {
 }
 
 #[tauri::command]
-fn write_metadata_to_file(image_file:String, user_handle:String, description:String){
-    println!("This is where the metadata would be written to file: {}",image_file);
+fn write_metadata_to_file(image_file: String, user_handle: String, description: String) {
+    println!(
+        "This is where the metadata would be written to file: {}",
+        image_file
+    );
     let image_path = std::path::Path::new(&image_file);
     let metadata = Metadata::new_from_path(&image_path);
     // let mut metadata = Metadata::new_from_path(&image_path);
@@ -111,18 +115,16 @@ fn write_metadata_to_file(image_file:String, user_handle:String, description:Str
     //     ExifTag::ImageDescription(image_file)
     // );
     match metadata {
-        Ok(mut m) =>{
+        Ok(mut m) => {
             m.set_tag(
                 //Using "Title" field because the "Description" field is an IPTC field, which is not supported
-                ExifTag::ImageDescription(description.to_string()) //"Title" field
+                ExifTag::ImageDescription(description.to_string()), //"Title" field
             );
-            m.set_tag(
-                ExifTag::Artist(user_handle.to_string())
-            );
+            m.set_tag(ExifTag::Artist(user_handle.to_string()));
             let _ = m.write_to_file(&image_path);
-        },
-        Err(e) =>{
-            println!("Error: {}",e);
+        }
+        Err(e) => {
+            println!("Error: {}", e);
         }
     }
     // match metadata {
