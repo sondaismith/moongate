@@ -354,7 +354,7 @@ export async function checkIfUserAccountsTableExists(){
 }
 
 /**
- * Method that checks if the `user_accounts` table exists, and if there's
+ * Method that checks if the `saved_feeds` table exists, and if there's
  * at least one record row in it.
  * @returns True (1) if table exists, False (0) if not.
  */

@@ -210,7 +210,7 @@ export default defineComponent({
     },
     async beforeUnmount(){
         //Save application settings when
-        await updateAppSettings({collection:AppSettingsState.prepareSettingsToSaveToDB()} as AppSettings)
+        await AppSettingsState.saveSettingsToStore()
         .then(res => toast.add({summary:'Settings Saved', severity:'success', group:'tr', life:3000}))
         .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'tr', life:3000}))
     }
