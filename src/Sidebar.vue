@@ -134,7 +134,7 @@ loadSavedFeedsRecords,
 stringifyFeedListData,
 stringToJSON} from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
-import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
+import { Window } from "@tauri-apps/api/window";
 import { getUserHomeFeed } from "./lib/api/Feed.vue";
 import { FeedEnums } from "./enums/FeedEnums";
 import FeedEditModal from "./components/Feed/FeedEditModal.vue";
@@ -318,24 +318,6 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
             },
             /**
-             * Method that ensures that the `app_settings` database and tables
-             * are set up. Called during creation of component.
-             */
-            async appSettingsDatabaseSetup(){
-                var dbExist = await checkIfAppSettingsDatabaseExists();
-                var tableExist = await checkIfAppSettingsTableExists();
-
-                if(!dbExist){
-                    console.log("db file missing - creating db file");
-                    await createAppSettingTable();
-                }
-                if(!tableExist){
-                    console.log("`app_settings` table missing - creating table");
-                    await createAppSettingTable();
-                    await initializeAppSettingsTable();
-                }
-            },
-            /**
              * Method that ensures that the `user_accounts` table exists.
              * Called during creation of component.
              */
@@ -347,7 +329,7 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 }
             },
             /**
-             * Method that ensures that the `user_accounts` table exists.
+             * Method that ensures that the `saved_feeds` table exists.
              * Called during creation of component.
              */
              async savedFeedsDatabaseSetup(){
@@ -359,13 +341,11 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
             },
             /**
              * Method that loads the application settings saved in the
-             * `app_settings` database and applies them.
+             * `moongate_settings` store and applies them.
              */
             async loadAppConfig(){
-                var appSettings = await loadAppSettingsRecords() as AppSettings[];
-
                 //Load application settings
-                AppSettingsState.loadSettingsFromDB(appSettings[0].collection);
+                await AppSettingsState.loadSettingsFromStore();
 
                 //Load saved Feeds
                 var lastOpenFeeds = await loadSavedFeedsRecords() as SavedFeeds[];
@@ -388,11 +368,10 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 else{console.log('No saved Feeds to restore.')}
             },
             async appStartupProcedure(){
-                await this.appSettingsDatabaseSetup();
                 await this.userAccountsDatabaseSetup();
                 await this.savedFeedsDatabaseSetup();
                 await this.setUpListeners();
-                this.loadAppConfig();
+                await this.loadAppConfig();
                 invoke('show_main_window');//unhide main window and focus it via Rust
             },
         },

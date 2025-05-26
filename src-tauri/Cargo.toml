@@ -26,6 +26,7 @@ tauri-plugin-fs = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-upload = "2"
 little_exif = "0.6.4"
+tauri-plugin-store = "2"
 
 [dependencies.tauri-plugin-sql]
 features = ["sqlite"] # or "postgres", or "mysql"
