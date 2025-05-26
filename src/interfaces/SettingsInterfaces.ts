@@ -1,5 +1,7 @@
-import { LangCode } from "../state/AppSettingsState.vue";
-
+export interface LangCode{
+    name:string,
+    code:string
+}
 
 /**
  * Class used to hold all the available Application Settings. This is then used
@@ -13,7 +15,7 @@ export class AppSettingsClass {
     isAcceptingAllLanguages = true;
     isWhitelist = true;
     isBlacklist = false;
-    selectedLanguages =[] as LangCode[];
+    selectedLanguages = [] as LangCode[];
 }
 export interface IAppSettings extends AppSettingsClass{}
 type AppSettingsPropsArray = Array<keyof IAppSettings>;
@@ -24,11 +26,3 @@ type AppSettingsPropsArray = Array<keyof IAppSettings>;
  */
 export const AppSettingsArray:AppSettingsPropsArray =
     Object.keys(new AppSettingsClass()) as AppSettingsPropsArray;
-
-// export interface IAppSettings{
-//     isDarkMode:boolean,
-//     isAcceptingAllLanguages: boolean,
-//     isWhitelist: boolean,
-//     isBlacklist: boolean,
-//     selectedLanguages: LangCode[],
-// }

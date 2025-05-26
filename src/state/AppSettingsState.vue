@@ -1,16 +1,11 @@
 <script lang="ts">
 import { reactive } from 'vue'
-import { AppSettingsArray, AppSettingsClass, IAppSettings } from '../interfaces/SettingsInterfaces';
+import { AppSettingsArray, AppSettingsClass, IAppSettings, LangCode } from '../interfaces/SettingsInterfaces';
 import { load, Store } from '@tauri-apps/plugin-store';
 
 export interface OptionHolder<T>{
     option: T,
     selected:boolean
-}
-
-export interface LangCode{
-    name:string,
-    code:string
 }
 
 export const AppSettingsState = reactive({
@@ -43,6 +38,7 @@ export const AppSettingsState = reactive({
      * Method used to load saved application settings data from the Database
      * and load it into the `AppSettingsState`.
      * @param appSettingsJSON The JSON string saved to the Database that contains the saved application settings.
+     * @deprecated now using plugin `store` - use [loadSettingsFromStore()]({@link AppSettingsState.loadSettingsFromStore})
      */
     loadSettingsFromDB(appSettingsJSON:string|undefined){
         if(appSettingsJSON){
@@ -81,15 +77,8 @@ export const AppSettingsState = reactive({
             // console.log(Object.entries(defaultValues).find(x=>x[0]==AppSettingsArray[i])?.[1])
             await settingsStore.set(AppSettingsArray[i],{value: Object.entries(defaultValues).find(x=>x[0]==AppSettingsArray[i])?.[1]})
         }
-        //Old initialization code
-        // settingsStore.set('isDarkMode', {value:defaultValues.isDarkMode})
-        // settingsStore.set('isAcceptingAllLanguages', {value:defaultValues.isAcceptingAllLanguages})
-        // settingsStore.set('isWhitelist', {value:defaultValues.isWhitelist})
-        // settingsStore.set('isBlacklist', {value:defaultValues.isBlacklist});
-        // settingsStore.set('selectedLanguages', {value:defaultValues.selectedLanguages});
         console.log(`Initialized default application settings.`);
-        // await appSettings.close();
-        await settingsStore.save();
+        await settingsStore.save();//save initialization to file
     },
     /**
      * Method used to load the application settings from the Store.
@@ -113,8 +102,10 @@ export const AppSettingsState = reactive({
         }
         //Load settings from file into app
         await appSettings.reload();//ensure that we have changes from any initialization
-        let settings = await appSettings.entries();
-        console.log(settings);
+        //Debug - show loaded values
+        // let settings = await appSettings.entries();
+        // console.log(settings);
+        //Used to get list of keys ↓
         let defaultValues = new AppSettingsClass;
         //For each app setting key, load that key's value into `AppSettingState`
         for (let i = 0; i < AppSettingsArray.length; i++) {
@@ -142,8 +133,9 @@ export const AppSettingsState = reactive({
         for (let i = 0; i < AppSettingsArray.length; i++) {
             appSettings.set(AppSettingsArray[i],{value:this.Settings[AppSettingsArray[i]]});
         }
-        let settings = await appSettings.entries();
-        console.log(settings);
+        //DEBUG
+        // let settings = await appSettings.entries();
+        // console.log(settings);
         //Save
         appSettings.save();
     }

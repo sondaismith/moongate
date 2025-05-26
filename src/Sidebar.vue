@@ -134,6 +134,7 @@ loadSavedFeedsRecords,
 stringifyFeedListData,
 stringToJSON} from "./lib/db/local_db";
 import { invoke } from "@tauri-apps/api/core";
+import { Window } from "@tauri-apps/api/window";
 import { getUserHomeFeed } from "./lib/api/Feed.vue";
 import { FeedEnums } from "./enums/FeedEnums";
 import FeedEditModal from "./components/Feed/FeedEditModal.vue";
@@ -340,11 +341,9 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
             },
             /**
              * Method that loads the application settings saved in the
-             * `app_settings` database and applies them.
+             * `moongate_settings` store and applies them.
              */
             async loadAppConfig(){
-                var appSettings = await loadAppSettingsRecords() as AppSettings[];
-
                 //Load application settings
                 await AppSettingsState.loadSettingsFromStore();
 
@@ -372,7 +371,7 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 await this.userAccountsDatabaseSetup();
                 await this.savedFeedsDatabaseSetup();
                 await this.setUpListeners();
-                this.loadAppConfig();
+                await this.loadAppConfig();
                 invoke('show_main_window');//unhide main window and focus it via Rust
             },
         },
