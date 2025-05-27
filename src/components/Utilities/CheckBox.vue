@@ -6,7 +6,8 @@
             <!-- <div class="relative h-full w-full leading-4 text-center align-middle bg-red-400">x</div> -->
                 <i-mdi:check v-if="checkState" class="bg-green-400s h-full"/>
         </div>
-        <div>Show Post after creation?</div>
+        <!-- <div>Show Post after creation?</div> -->
+        <slot></slot>
     </div>
 </template>
 

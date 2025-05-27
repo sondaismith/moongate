@@ -1,6 +1,7 @@
 <template>
     <div class="flex gap-2 transition-colors" :class="{'text-disabled pointer-events-none' : disabled}">
-        <div title="List of languages you allow - those not selected will not be shown.">
+        <div title="List of languages you allow - those not selected will not be shown."
+        :class="{'select-none' : preventOptionSelect}">
             {{ leftOption ? leftOption : '[Left Option Missing]' }}
         </div>
         <div class="relative flex items-center">
@@ -10,7 +11,8 @@
             :class="{'translate-x-full' : !toggleValue, '!bg-disabled' : disabled}"
             @click="disabled ? ()=>{} : $emit('toggleAction')"></div>
         </div>
-        <div title="List of languages you do not want to see - those not selected will be shown.">
+        <div title="List of languages you do not want to see - those not selected will be shown."
+        :class="{'select-none' : preventOptionSelect}">
             {{ rightOption ? rightOption : '[Right Option Missing]' }}
         </div>
     </div>
@@ -35,6 +37,12 @@ export default defineComponent({
         toggleValue:{
             type:Boolean,
             required:true,
+        },
+        /**Should the user be prevented from selecting the option text (default is true).*/
+        preventOptionSelect:{
+            type:Boolean,
+            default:function(){return true},
+            required:false,
         },
         /**Is the button disabled? */
         disabled:Boolean,

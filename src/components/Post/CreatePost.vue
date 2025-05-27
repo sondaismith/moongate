@@ -102,7 +102,7 @@
                 <i-mingcute:world-2-line/>
                 <div>Anybody can interact</div>
             </div>
-            <CheckBox :model-value="showsPostAfterCreation" @value-toggled="n => showsPostAfterCreation = n"/>
+            <CheckBox :model-value="showsPostAfterCreation" @value-toggled="n => showsPostAfterCreation = n">Show Post after creation?</CheckBox>
             <div class="flex items-center">
                 <div class="flex gap-1">
                     <div v-for="option in mediaTypes" class="flex rounded p-2 hover:bg-btnHover

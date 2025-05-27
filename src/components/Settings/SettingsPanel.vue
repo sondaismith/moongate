@@ -20,10 +20,9 @@
                             <TransitionGroup>
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[0]">
                                     <div class="flex flex-col gap-1">
-                                        <div class="flex gap-1">
-                                            <input type="checkbox" :checked="AppSettingsState.Settings.isDarkMode" @change="toggleTheme"/>
-                                            <div>Dark Mode?</div>
-                                        </div>
+                                        <CheckBox :model-value="AppSettingsState.Settings.isDarkMode" @value-toggled="toggleTheme">
+                                            Dark Mode?
+                                        </CheckBox>
                                         <SquareButton @click="confirmAppWindowSizeReset"
                                         class="self-start text-xs !p-1 bg-btn hover:bg-btnHover"
                                         title="Return Window Size to 800x600">
@@ -34,30 +33,18 @@
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[1]"
                                 class="relative flex flex-col gap-2 w-full h-full overflow-hidden">
                                     <div class="font-thin text-2xl">Language Selection</div>
-                                    <div class="flex gap-1">
-                                            <input type="checkbox" :checked="AppSettingsState.Settings.isDarkMode" @change="toggleTheme"/>
-                                            <div>Dark Mode?</div>
-                                        </div>
-                                    <div class="flex gap-1">
-                                        <input type="checkbox" v-model="AppSettingsState.Settings.isAcceptingAllLanguages"/>
-                                        <div>Accept Posts in All Languages</div>
-                                    </div>
+                                    <CheckBox :model-value="AppSettingsState.Settings.isDarkMode" @value-toggled="toggleTheme">
+                                        Dark Mode?
+                                    </CheckBox>
+                                    <CheckBox :model-value="AppSettingsState.Settings.isAcceptingAllLanguages" @value-toggled="toggleAcceptAllLanguages">
+                                        Accept Posts in All Languages
+                                    </CheckBox>
                                     <div class="text-sm">
                                         Please note: Currently only
                                         <span class="font-bold italic">one</span>
                                         language will be used to filter returned Posts. The first item shown under
                                         "Selected Languages" will be the one used.
                                     </div>
-                                    <!-- <div class="flex gap-1" :class="{'text-disabled' : AppSettingsState.isAcceptingAllLanguages}">
-                                        <input type="checkbox" :checked="AppSettingsState.isWhitelist"
-                                        @change="toggleAllowListType" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
-                                        <div>Whitelist</div>
-                                    </div>
-                                    <div class="flex gap-1" :class="{'text-disabled' : AppSettingsState.isAcceptingAllLanguages}">
-                                        <input type="checkbox" :checked="!AppSettingsState.isWhitelist"
-                                        @change="toggleAllowListType" :disabled="AppSettingsState.isAcceptingAllLanguages"/>
-                                        <div>Blacklist</div>
-                                    </div> -->
                                     <ToggleButton left-option="Whitelist" right-option="Blacklist"
                                     :toggle-value="AppSettingsState.Settings.isWhitelist"
                                     @toggle-action="toggleAllowListType" :disabled="AppSettingsState.Settings.isAcceptingAllLanguages"/>
@@ -112,11 +99,12 @@ import SettingsCategory from './SettingsCategory.vue';
 import InLaInput from '../Utilities/InLaInput.vue';
 import { LocalesObject } from '../../enums/Locales';
 import FilterSelect from '../Utilities/FilterSelect.vue';
-import { AppSettingsState, LangCode } from '../../state/AppSettingsState.vue';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import ToggleButton from '../Utilities/ToggleButton.vue';
-import { AppSettings, updateAppSettings } from '../../lib/db/local_db';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { getCurrentWindow, PhysicalSize } from '@tauri-apps/api/window';
+import { LangCode } from '../../interfaces/SettingsInterfaces';
+import CheckBox from '../Utilities/CheckBox.vue';
 
 
 export default defineComponent({
@@ -157,6 +145,7 @@ export default defineComponent({
         SettingsCategory,
         InLaInput,
         FilterSelect,
+        CheckBox,
         ToggleButton,
         SquareButton
     },
@@ -173,6 +162,9 @@ export default defineComponent({
         },
         toggleAllowListType(){
             AppSettingsState.Settings.isWhitelist = !AppSettingsState.Settings.isWhitelist;
+        },
+        toggleAcceptAllLanguages(){
+            AppSettingsState.Settings.isAcceptingAllLanguages = !AppSettingsState.Settings.isAcceptingAllLanguages;
         },
         updateSelectedLanguages(newSelection:LangCode[]){
             AppSettingsState.Settings.selectedLanguages = newSelection;
@@ -211,8 +203,8 @@ export default defineComponent({
     async beforeUnmount(){
         //Save application settings when
         await AppSettingsState.saveSettingsToStore()
-        .then(res => toast.add({summary:'Settings Saved', severity:'success', group:'tr', life:3000}))
-        .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'tr', life:3000}))
+        .then(res => toast.add({summary:'Settings Saved', severity:'success', group:'bc', life:3000}))
+        .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
     }
 })
 </script>
