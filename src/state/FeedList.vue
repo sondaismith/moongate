@@ -11,6 +11,7 @@ import { ToastEventBus } from 'primevue';
 import { AppState } from './AppState.vue';
 import { IUserSearchResult } from '../interfaces/UserInterfaces';
 import { GetBrowsingAgent } from '../lib/api.vue';
+import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
 function dec2hex (dec: number) {
@@ -51,11 +52,12 @@ export const FeedState = reactive({
  * @param cursor Cursor to use when attempting to paginate displayed Posts.
  * @param awaitingData Indicates if the Feed is waiting for data to display.
  */
-export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[], cursor:string='', awaitingData:boolean=true){
+export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[], cursor:string='', seenAt:string='', awaitingData:boolean=true){
     FeedState.FeedList.push({
         description:description,
         data:feed,
         cursor:cursor,
+        seenAt:seenAt,
         isAwaitingFeedData:awaitingData,
     })
 }
@@ -414,9 +416,23 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
                 if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
                 //Place Posts in a "Feed" shaped Object
                 res.data.posts.forEach(p => {
-                    feedResult.data.push({post:p});
+                    (feedResult.data as FeedViewPost[]).push({post:p});
                 })
             });
+            break;
+        case FeedEnums.Types.Notifications:
+            if(AppState.isAuthBrowsing){
+                await GetBrowsingAgent().listNotifications()
+                .then(res => {
+                    console.log('From GetFeedDataForFeedType:');
+                    console.log(res.data);
+                    res.data.notifications.forEach(n => {
+                        (feedResult.data as Notification[]).push(n);
+                    })
+                    feedResult.seenAt = res.data.seenAt;
+                })
+                .catch(err => console.log(err));
+            }
             break;
         default:
             break;
@@ -439,7 +455,7 @@ export function GetFeed(feedId:string){
  * @param description The updated IFeedDescription for the Feed.
  * @param feedData The new Feed content retrieved using the updated specifications.
  */
-export function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[], cursor:string=''){
+export function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]|Notification[], cursor:string=''){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     //If feed found
     if(feed){

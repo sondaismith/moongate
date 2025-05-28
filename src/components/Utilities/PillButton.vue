@@ -1,7 +1,7 @@
 <template>
-    <div class="flex rounded-full cursor-pointer items-center justify-center"
-        :class="[$attrs.class ? $attrs.class : 'px-4 py-2 border-2 border-sky-500 bg-sky-500 hover:bg-sky-700 hover:border-sky-700',
-            disabled ? 'bg-gray-500 !border-gray-500 text-gray-400 pointer-events-none' : '']">
+    <div class="flex rounded-full items-center justify-center"
+        :class="[$attrs.class ? $attrs.class : 'px-4 py-2 border-2',
+            disabled ? 'bg-gray-500 !border-gray-500 text-gray-400 select-none' : 'cursor-pointer border-sky-500 bg-sky-500 hover:bg-sky-700 hover:border-sky-700']">
         <slot>[Set Slot Value Please!]</slot>
     </div>
 </template>

@@ -25,6 +25,11 @@
                             <div class="flex items-start flex-wrap gap-1">
                                 <PillButton @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
                                 <PillButton @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
+                                <PillButton :disabled="!AppState.isAuthBrowsing"
+                                @click="selectFeedType(FeedEnums.Types.Notifications)"
+                                :title="!AppState.isAuthBrowsing ? 'Login Required' : ''">
+                                    Notifications
+                                </PillButton>
                                 <PillButton :disabled="true">Mentions</PillButton>
                                 <PillButton :disabled="true">DMs</PillButton>
                             </div>
@@ -42,14 +47,21 @@
                             </div>
                         </div>
                         <UserSearchBar v-if="selectedFeedType == FeedEnums.Types.User" @user-selected="selectUser" :data-list="searchResults"/>
+                        <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
+                            <CheckBox :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
+                            <SquareButton @click="testGetNotifs">Load Notifs</SquareButton>
+                        </div>
                     </div>
                     <div v-else-if="currentPage == 2">
                         <div>Feed Type: {{ selectedFeedType }}</div>
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ validTags.join(', ') }}</div>
-                        <div v-if="selectedFeedType == FeedEnums.Types.User">
+                        <div v-else-if="selectedFeedType == FeedEnums.Types.User">
                             <div>User DID: {{ feedFilters.user.did }}</div>
                             <div>User: {{ feedFilters.user.name }}</div>
                             <div>Handle: {{ feedFilters.user.handle }}</div>
+                        </div>
+                        <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
+                            <div>Mentions Only? {{ feedFilters.notifications.justNotifs }}</div>
                         </div>
                     </div>
                 </Transition>
@@ -60,7 +72,7 @@
                     {{currentPage == 0 ? 'Cancel':'Back'}}
                 </SquareButton>
                 <div class="flex">
-                    <SquareButton v-if="isTagSpecsEntryComplete" @click="forwardOnePage">Next</SquareButton>
+                    <SquareButton v-if="isTagSpecsEntryComplete || isSelectedTypeNotifications" @click="forwardOnePage">Next</SquareButton>
                     <SquareButton @click="createFeed()" v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
@@ -81,6 +93,8 @@ import { AddFeedToList, FeedState, GenerateUniqueId, GetFeed, GetFeedDataForFeed
 import { HandleAPIError } from '../../helpers/errors.ts';
 import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces.ts';
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import CheckBox from '../Utilities/CheckBox.vue';
+import { GetBrowsingAgent } from '../../lib/api.vue';
 
 export default defineComponent({
     components:{
@@ -88,6 +102,7 @@ export default defineComponent({
         SquareButton,
         InLaInput,
         UserSearchBar,
+        CheckBox
     },
     data(){
         return{
@@ -105,6 +120,9 @@ export default defineComponent({
                     handle:'',
                     name:'',
                 },
+                notifications:{
+                    justNotifs:false,
+                }
             },
             currentPage:0,
             totalPages:3,
@@ -193,6 +211,15 @@ export default defineComponent({
                 this.forwardOnePage();
             }
         },
+        async testGetNotifs(){
+            if(AppState.isAuthBrowsing){
+                await GetBrowsingAgent().listNotifications()
+                .then(res => {
+                    console.log(res.data);
+                })
+                .catch(err => console.log(err));
+            }
+        },
         /**
          * Method that adds a new feed with specified options
          * to the App's `FeedList`.
@@ -249,12 +276,20 @@ export default defineComponent({
                         feedTags:this.validTags.join(' ')
                     }
                     break;
+                case FeedEnums.Types.Notifications:
+                    desc = {...desc,
+                        feedType:FeedEnums.Types.Notifications,
+                        feedHandle:'notifs',
+                        feedName:'Notifications',
+                        feedIcon:FeedEnums.Icons.Friends
+                    }
+                    break;
                 default:
                     break;
             }
             //Create the Feed
             if(AppState.isCreatingFeed){
-                AddFeedToList(desc,feedResult.data, feedResult.cursor, false);
+                AddFeedToList(desc,feedResult.data, feedResult.cursor, feedResult.seenAt, false);
             }
             else if(AppState.isUpdatingFeed){
                 UpdateFeedDetails(FeedState.selectedFeed,desc,feedResult.data,feedResult.cursor);
@@ -292,6 +327,10 @@ export default defineComponent({
         isTagSpecsEntryComplete(){
             return (this.validTags.length>0) &&
             this.selectedFeedType == FeedEnums.Types.Tag &&
+            this.currentPage != this.totalPages-1 && this.currentPage != 0;
+        },
+        isSelectedTypeNotifications(){
+            return this.selectedFeedType == FeedEnums.Types.Notifications &&
             this.currentPage != this.totalPages-1 && this.currentPage != 0;
         }
     },

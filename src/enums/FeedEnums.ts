@@ -15,6 +15,7 @@ export namespace FeedEnums{
         Home = "home",
         User = "user",
         Tag = "tag",
+        Notifications = "notifications",
         Mentions = "mentions",
         Replies = "replies",
         Messages = "messages",

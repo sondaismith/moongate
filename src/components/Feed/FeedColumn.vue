@@ -124,9 +124,19 @@
                 </div>
             </div>
             <TransitionGroup name="feedpost">
-                <div v-for="n in feedData?.data" :key="generateUniqueIdForPost(n)" class="flex flex-col rounded bg-feedColumnBG border border-outline w-full
-                drop-shadow-md justify-between text-sm">
-                    <FocusFeedPost class="border-0" :post-data="n.post" :post-reason="n.reason" :reply="n.reply" :is-feed-post-style="true"/>
+                <div v-if="feedData?.description.feedType == FeedEnums.Types.User || feedData?.description.feedType == FeedEnums.Types.Tag">
+                    <div v-for="n in feedData?.data" :key="generateUniqueIdForPost(n)" class="flex flex-col rounded bg-feedColumnBG border border-outline w-full
+                    drop-shadow-md justify-between text-sm">
+                        <FocusFeedPost class="border-0" :post-data="(n as FeedViewPost).post"
+                        :post-reason="(n as FeedViewPost).reason" :reply="(n as FeedViewPost).reply"
+                        :is-feed-post-style="true"/>
+                    </div>
+                </div>
+                <div v-else-if="feedData?.description.feedType == FeedEnums.Types.Notifications">
+                    <div>Notifications here</div>
+                    <div v-for="n in feedData.data" :key="generateUniqueIdForPost(n)">
+                        {{ (n as Notification).author.handle }} - {{ (n as Notification).reason }}
+                    </div>
                 </div>
                 <div v-if="!feedData?.cursor"
                 class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
@@ -169,6 +179,7 @@ import { debounce } from '../../helpers/debouncer';
 import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import FocusFeedPost from './FocusFeedPost.vue';
 import FeedPost from './FeedPost.vue';
+import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
 
 var colElement;
 
@@ -205,6 +216,11 @@ export default defineComponent({
             feedOptionAuthorSettingsShown: false,
             feedOptionPreferencesShown: false,
             isScrollToTopVisible:false,
+            /**
+             * Used to determine what type of object needs to be processed and
+             * and displayed - e.g. FeedViewPost[] or Notification[]
+             */
+            FeedDataType:FeedEnums.Types.User,
             FeedEnums,
             FeedState,
         }
@@ -381,11 +397,17 @@ export default defineComponent({
          * TransitionGroup layout.
          * @param feedPost The Post that needs a key generated.
          */
-        generateUniqueIdForPost(feedPost:FeedViewPost):string{
-            let id = feedPost.post.cid;
-            if(feedPost.reason){
-                if(isReasonPin(feedPost.reason)) id+='_pinned'
-                if(isReasonRepost(feedPost.reason)) id+='_reposted'
+        generateUniqueIdForPost(feedPost:FeedViewPost|Notification):string{
+            let id = 'if_you_see_me_something_broke';
+            if(this.feedData?.description.feedType != FeedEnums.Types.Notifications){
+                id = (feedPost as FeedViewPost).post.cid;
+                if(feedPost.reason){
+                    if(isReasonPin(feedPost.reason)) id+='_pinned'
+                    if(isReasonRepost(feedPost.reason)) id+='_reposted'
+                }
+            }
+            else if(this.feedData?.description.feedType == FeedEnums.Types.Notifications){
+                id = (feedPost as Notification).cid;
             }
             return id;
         }
@@ -406,6 +428,7 @@ export default defineComponent({
                 this.isScrollToTopVisible = true;
             }
         },100);
+        this.FeedDataType = this.feedData ? this.feedData.description.feedType : FeedEnums.Types.User;
     },
 })
 </script>
