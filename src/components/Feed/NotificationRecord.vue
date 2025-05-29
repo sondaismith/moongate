@@ -3,18 +3,24 @@
     :class="errorGettingPost ? 'cursor-not-allowed' : 'cursor-pointer'"
     :title="errorGettingPost ? 'Unable to view content' : 'View related content'"
     @click="!errorGettingPost && openRelatedContent()">
-        <component :is="getNotifIcon?.icon" class="size-7 shrink-0" :class="getNotifIcon?.color"/>
-        <AvatarRound :avatar="notifData?.author.avatar" :did="notifData?.author.did"/>
-        <div class="flex flex-col overflow-hidden">
-            <div class="text-primary font-semibold whitespace-nowrap overflow-hidden text-ellipsis"
-            :title="notifData?.author.displayName ? notifData?.author.displayName : notifData?.author.handle">
-                {{ notifData?.author.displayName ? notifData?.author.displayName : notifData?.author.handle }}
+        <div class="flex flex-col overflow-hidden w-full gap-1">
+            <div class="flex items-center gap-2">
+                <component :is="getNotifIcon?.icon" class="size-7 shrink-0" :class="getNotifIcon?.color"/>
+                <AvatarRound :avatar="notifData?.author.avatar" :did="notifData?.author.did"/>
+                <div class="flex flex-col overflow-hidden">
+                    <div class="text-primary font-semibold whitespace-nowrap overflow-hidden text-ellipsis"
+                    :title="notifData?.author.displayName ? notifData?.author.displayName : notifData?.author.handle">
+                        {{ notifData?.author.displayName ? notifData?.author.displayName : notifData?.author.handle }}
+                    </div>
+                    <div class="text-primary text-xs">{{ generateNotifMessage }}</div>
+                </div>
+                <div class="ml-auto text-secondary text-xs text-nowrap self-start">{{ convertToShortTimestamp(notifData?.indexedAt) }}</div>
             </div>
-            <div class="text-primary">{{ generateNotifMessage }}</div>
-            <i-mingcute:warning-fill v-if="errorGettingPost" class="text-yellow-500 size-6"/>
-            <div class="text-secondary">{{ contentText }}</div>
+            <div class="flex gap-1 items-center">
+                <i-mingcute:warning-fill v-if="errorGettingPost" class="text-yellow-500 size-6"/>
+                <div class="text-secondary">{{ contentText }}</div>
+            </div>
         </div>
-        <div class="ml-auto text-secondary text-xs text-nowrap">{{ convertToShortTimestamp(notifData?.indexedAt) }}</div>
     </div>
 </template>
 
@@ -23,7 +29,6 @@ import { defineComponent, PropType } from 'vue'
 import { convertToShortTimestamp } from '../../helpers/converters';
 import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
 import AvatarRound from '../Utilities/AvatarRound.vue';
-import { FeedEnums } from '../../enums/FeedEnums';
 
 //Icons
 import MingcuteHeartFill from '~icons/mingcute/heart-fill';
@@ -95,7 +100,7 @@ export default defineComponent({
                 })
                 .catch(err => {
                     // toast.add(HandleAPIError(err, 'Error loading Post text'));
-                    this.contentText = '[Post does not exist/cannot be found]'
+                    this.contentText = '[Post cannot be found]'
                     this.errorGettingPost = true;
                 })
             }
