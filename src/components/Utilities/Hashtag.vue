@@ -20,7 +20,7 @@ export default defineComponent({
             //matching the clicked tag
             // alert('ooh!');
             this.$toast.add({summary:'Creating Feed...', detail:`Creating feed for ${this.tagValue}`, group:'tr', life:3000});
-            PrepareFeedData(FeedEnums.Types.Tag,undefined,this.tagValue).then(res => AddFeedToList(res.description,res.data,res.cursor,false));
+            PrepareFeedData(FeedEnums.Types.Tag,undefined,this.tagValue).then(res => AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false));
         }
     }
 })

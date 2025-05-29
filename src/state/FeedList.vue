@@ -491,9 +491,21 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
         await new Promise(res => setTimeout(res,500));
         await GetFeedDataForFeedType(feed.description.feedType,feed.description.feedSourceDID,feed.description.feedTags,'',postsToGet)
         .then(res => {
-            if(feed){
+            if(feed && feed.description.feedType == FeedEnums.Types.User ||
+                feed?.description.feedType == FeedEnums.Types.Tag){
+                //User and Tag Feed data should be in the shape of a FeedViewPost
                 // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
-                let newPosts = res.data.filter(post => new Date(post.post.indexedAt) >= lastUpdate)
+                let newPosts = res.data.filter(post => new Date((post as FeedViewPost).post.indexedAt) >= lastUpdate)
+                //Update only if there are new posts
+                // if(newPosts.length > 0) feed.data = [...pinned, ...newPosts, ...feed.data.slice(pinned.length)];
+                feed.data = res.data.slice();
+                feed.description.newPosts = newPosts.length;
+                feed.isAwaitingFeedData = false;
+            }
+            else if(feed && feed.description.feedType == FeedEnums.Types.Notifications){
+                //Notification Feed data should be in the shape of a Notification
+                // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
+                let newPosts = res.data.filter(post => new Date((post as Notification).indexedAt) >= lastUpdate)
                 //Update only if there are new posts
                 // if(newPosts.length > 0) feed.data = [...pinned, ...newPosts, ...feed.data.slice(pinned.length)];
                 feed.data = res.data.slice();

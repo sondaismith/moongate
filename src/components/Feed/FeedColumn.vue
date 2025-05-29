@@ -124,18 +124,20 @@
                 </div>
             </div>
             <TransitionGroup name="feedpost">
-                <div v-if="feedData?.description.feedType == FeedEnums.Types.User || feedData?.description.feedType == FeedEnums.Types.Tag">
-                    <div v-for="n in feedData?.data" :key="generateUniqueIdForPost(n)" class="flex flex-col rounded bg-feedColumnBG border border-outline w-full
+                <div v-if="feedData?.description.feedType == FeedEnums.Types.User || feedData?.description.feedType == FeedEnums.Types.Tag"
+                class="flex flex-col gap-2">
+                    <div v-for="n in feedData?.data" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">
                         <FocusFeedPost class="border-0" :post-data="(n as FeedViewPost).post"
                         :post-reason="(n as FeedViewPost).reason" :reply="(n as FeedViewPost).reply"
                         :is-feed-post-style="true"/>
                     </div>
                 </div>
-                <div v-else-if="feedData?.description.feedType == FeedEnums.Types.Notifications">
-                    <div>Notifications here</div>
-                    <div v-for="n in feedData.data" :key="generateUniqueIdForPost(n)">
-                        {{ (n as Notification).author.handle }} - {{ (n as Notification).reason }}
+                <div v-else-if="feedData?.description.feedType == FeedEnums.Types.Notifications"
+                class="flex flex-col gap-2">
+                    <div v-for="n in feedData.data" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
+                    drop-shadow-md justify-between text-sm">
+                        <NotificationRecord :notif-data="n as Notification"/>
                     </div>
                 </div>
                 <div v-if="!feedData?.cursor"
@@ -180,6 +182,8 @@ import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/cli
 import FocusFeedPost from './FocusFeedPost.vue';
 import FeedPost from './FeedPost.vue';
 import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
+import { convertToShortTimestamp } from '../../helpers/converters';
+import NotificationRecord from './NotificationRecord.vue';
 
 var colElement;
 
@@ -192,6 +196,7 @@ export default defineComponent({
         ToContainerTop,
         FeedPost,
         FocusFeedPost,
+        NotificationRecord,
     },
     data(){
         return{
@@ -223,6 +228,7 @@ export default defineComponent({
             FeedDataType:FeedEnums.Types.User,
             FeedEnums,
             FeedState,
+            convertToShortTimestamp,
         }
     },
     props: {
