@@ -124,7 +124,8 @@
                 </div>
             </div>
             <TransitionGroup name="feedpost">
-                <div v-if="feedData?.description.feedType == FeedEnums.Types.User || feedData?.description.feedType == FeedEnums.Types.Tag"
+                <div v-if="feedData?.description.feedType == FeedEnums.Types.User ||
+                feedData?.description.feedType == FeedEnums.Types.Tag"
                 class="flex flex-col gap-2">
                     <div v-for="n in feedData?.data" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">
@@ -140,11 +141,17 @@
                         <NotificationRecord :notif-data="n as Notification"/>
                     </div>
                 </div>
-                <div v-if="!feedData?.cursor"
+                <div v-if="feedData?.description.feedType == FeedEnums.Types.User && !feedData?.cursor"
                 class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
                     End of Posts
                 </div>
-                <div v-else-if="feedData.description.feedType != FeedEnums.Types.Tag && !feedData.isAwaitingFeedData" @click="loadMorePosts(feedData.description.feedId)"
+                <div v-else-if="feedData?.description.feedType == FeedEnums.Types.Notifications && !AppState.isAuthBrowsing"
+                class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
+                    Login to view Notifications
+                </div>
+                <div v-else-if="feedData.description.feedType != FeedEnums.Types.Tag &&
+                feedData.description.feedType != FeedEnums.Types.Notifications &&
+                !feedData.isAwaitingFeedData" @click="loadMorePosts(feedData.description.feedId)"
                 class="flex rounded border border-outline justify-center items-center p-1 gap-1 bg-postMsg text-btnText
                 cursor-pointer hover:bg-hover hover:text-slate-200 transition-colors select-none"
                 :class="{'!bg-outline hover:bg-hover text-hover hover:text-hover pointer-events-none' : isAwaitingLoadMore}">
@@ -184,6 +191,7 @@ import FeedPost from './FeedPost.vue';
 import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
 import { convertToShortTimestamp } from '../../helpers/converters';
 import NotificationRecord from './NotificationRecord.vue';
+import { AppState } from '../../state/AppState.vue';
 
 var colElement;
 
@@ -200,6 +208,7 @@ export default defineComponent({
     },
     data(){
         return{
+            AppState,
             lastUpdate: new Date(),
             /**Determines if the refresh command is currently "on cooldown". */
             isAwaitingRefreshTimeout:false,

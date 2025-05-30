@@ -17,6 +17,7 @@ import MdiNewspaperVariantMultiple from '~icons/mdi/newspaper-variant-multiple';
 import MingcuteQuestionLine from '~icons/mingcute/question-line';
 import MingcuteMusicLine from '~icons/mingcute/music-line';
 import SolarHashtagChatBold from '~icons/solar/hashtag-chat-bold';
+import MingcuteBellRingingFill from '~icons/mingcute/bell-ringing-fill';
 
 import { defineComponent, FunctionalComponent } from 'vue'
 import { FeedEnums } from '../../enums/FeedEnums';
@@ -33,6 +34,7 @@ var FeedIconTypes : IFeedIconTypes[] = [
     { name: FeedEnums.Icons.Art, icon: MdiPaintOutline },
     { name: FeedEnums.Icons.Music, icon: MingcuteMusicLine },
     { name: FeedEnums.Icons.Hashtag, icon: SolarHashtagChatBold },
+    { name: FeedEnums.Icons.Notifications, icon: MingcuteBellRingingFill },
 ]
 
 export default defineComponent({

@@ -320,22 +320,6 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
 
     //Select correct returned Object value based on Feed Type
     switch(savedFeed.type) {
-        // case FeedEnums.Types.User:
-        //     //Get user profile
-        //     let profile:ProfileView = {did:'',handle:''};
-        //     await getUserProfile(savedFeed.did)
-        //     .then(res => profile = res.data)
-        //     .catch((err) => {
-        //         //error occured try to get User Profile
-        //         toast.add(HandleAPIError(err, 'Error getting User profile while adding saved feeds'));
-        //     });
-        //     //Update required values of starting `IFeedDescription` template
-        //     desc = {...desc,
-        //         feedHandle:profile.handle,
-        //         feedName:profile.displayName ? profile.displayName : '[Empty Displayname]',
-        //         feedSourceDID:profile.did
-        //     }
-        //     break;
         case FeedEnums.Types.User:
             //Update required values of starting `IFeedDescription` template
             desc = {...desc,
@@ -348,20 +332,29 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
             desc = {...desc,
                 feedType:FeedEnums.Types.Tag,
                 feedIcon:FeedEnums.Icons.Hashtag,
-                feedHandle:'hashtags',
+                feedHandle:'hashtag',
                 feedTags:savedFeed.tags
+            }
+            break;
+        case FeedEnums.Types.Notifications:
+            desc = {...desc,
+                feedType:FeedEnums.Types.Notifications,
+                feedIcon:FeedEnums.Icons.Notifications,
+                feedHandle:'notifs',
+                feedName:'Notifications'
             }
             break;
         default:
             break;
     }
     // AddFeedToList(desc,feedResult.data,feedResult.cursor);
-    AddFeedToList(desc,[],'');
+    AddFeedToList(desc,[]);
 }
 
 export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedDesc.feedId);
     if(feed){
+        //If User Feed we need to get User Profile data
         if(feedDesc.feedType == FeedEnums.Types.User){
             let profile:ProfileView = {did:'',handle:''};
             await getUserProfile(feedDesc.feedSourceDID)
@@ -377,6 +370,7 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
                 feedSourceDID:profile.did
             }
         }
+        //Get data for Feed
         await GetFeedDataForFeedType(feedDesc.feedType,feedDesc.feedSourceDID,feedDesc.feedTags,'',10)
         .then(res => {
             if(feed){
@@ -432,6 +426,9 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
                     feedResult.seenAt = res.data.seenAt;
                 })
                 .catch(err => console.log(err));
+            }
+            else{
+                toast.add({summary:"Info", detail:`Please log in to view Notifications.`, severity:'info', group:'tr', life:3000});
             }
             break;
         default:

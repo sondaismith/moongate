@@ -223,6 +223,7 @@ export default defineComponent({
         /**
          * Method that adds a new feed with specified options
          * to the App's `FeedList`.
+         * This should probably be in `FeedList`.
          */
         async createFeed(){
             this.attemptingToCreateFeed = true;
@@ -249,8 +250,7 @@ export default defineComponent({
             var desc:IFeedDescription = {
                 feedId: usedFeedId,
                 userId:1,
-                feedHandle:'hashtag',
-                feedName:this.validTags.join(','),
+                feedHandle:'loading_tag',
                 feedType:FeedEnums.Types.User,
                 feedIcon:FeedEnums.Icons.Art,
                 newPosts:10,totalPosts:30,
@@ -258,6 +258,7 @@ export default defineComponent({
                 feedSourceDID:'',
                 feedTags:''
             }
+            let concatTags = this.validTags.join(',');
             //Select correct returned Object value based on Feed Type
             switch (this.selectedFeedType) {
                 case FeedEnums.Types.User:
@@ -273,15 +274,17 @@ export default defineComponent({
                     desc = {...desc,
                         feedType:FeedEnums.Types.Tag,
                         feedIcon:FeedEnums.Icons.Hashtag,
-                        feedTags:this.validTags.join(' ')
+                        feedHandle:'hashtag',
+                        feedName:concatTags,
+                        feedTags:concatTags
                     }
                     break;
                 case FeedEnums.Types.Notifications:
                     desc = {...desc,
                         feedType:FeedEnums.Types.Notifications,
+                        feedIcon:FeedEnums.Icons.Notifications,
                         feedHandle:'notifs',
-                        feedName:'Notifications',
-                        feedIcon:FeedEnums.Icons.Friends
+                        feedName:'Notifications'
                     }
                     break;
                 default:
