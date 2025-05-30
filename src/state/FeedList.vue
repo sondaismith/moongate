@@ -12,6 +12,7 @@ import { AppState } from './AppState.vue';
 import { IUserSearchResult } from '../interfaces/UserInterfaces';
 import { GetBrowsingAgent } from '../lib/api.vue';
 import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
+import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
 function dec2hex (dec: number) {
@@ -52,7 +53,7 @@ export const FeedState = reactive({
  * @param cursor Cursor to use when attempting to paginate displayed Posts.
  * @param awaitingData Indicates if the Feed is waiting for data to display.
  */
-export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[], cursor:string='', seenAt:string='', awaitingData:boolean=true){
+export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true){
     FeedState.FeedList.push({
         description:description,
         data:feed,
@@ -344,6 +345,14 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
                 feedName:'Notifications'
             }
             break;
+        case FeedEnums.Types.Trending:
+            desc = {...desc,
+                feedType:FeedEnums.Types.Trending,
+                feedIcon:FeedEnums.Icons.Trending,
+                feedHandle:'trending',
+                feedName:'Trending'
+            }
+            break;
         default:
             break;
     }
@@ -431,6 +440,16 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
                 toast.add({summary:"Info", detail:`Please log in to view Notifications.`, severity:'info', group:'tr', life:3000});
             }
             break;
+        case FeedEnums.Types.Trending:
+            await GetBrowsingAgent().app.bsky.unspecced.getTrends()
+            .then(res => {
+                console.log('Result from getTrends():');
+                console.log(res.data);
+                res.data.trends.forEach(tt => {
+                    (feedResult.data as TrendView[]).push(tt);
+                })
+            });
+            break;
         default:
             break;
     }
@@ -452,7 +471,7 @@ export function GetFeed(feedId:string){
  * @param description The updated IFeedDescription for the Feed.
  * @param feedData The new Feed content retrieved using the updated specifications.
  */
-export function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]|Notification[], cursor:string=''){
+export function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]|Notification[]|TrendView[], cursor:string=''){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     //If feed found
     if(feed){
@@ -507,6 +526,13 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
                 // if(newPosts.length > 0) feed.data = [...pinned, ...newPosts, ...feed.data.slice(pinned.length)];
                 feed.data = res.data.slice();
                 feed.description.newPosts = newPosts.length;
+                feed.isAwaitingFeedData = false;
+            }
+            else if(feed && feed.description.feedType == FeedEnums.Types.Trending){
+                //Notification Feed data should be in the shape of a Notification
+                //Update only if there are new posts
+                feed.data = res.data.slice();
+                feed.description.newPosts = res.data.length;
                 feed.isAwaitingFeedData = false;
             }
         })

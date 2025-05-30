@@ -25,13 +25,14 @@
                             <div class="flex items-start flex-wrap gap-1">
                                 <PillButton @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
                                 <PillButton @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
+                                <PillButton @click="selectFeedType(FeedEnums.Types.Trending)">Trending</PillButton>
                                 <PillButton :disabled="!AppState.isAuthBrowsing"
                                 @click="selectFeedType(FeedEnums.Types.Notifications)"
                                 :title="!AppState.isAuthBrowsing ? 'Login Required' : ''">
                                     Notifications
                                 </PillButton>
-                                <PillButton :disabled="true">Mentions</PillButton>
-                                <PillButton :disabled="true">DMs</PillButton>
+                                <!-- <PillButton :disabled="true">Mentions</PillButton>
+                                <PillButton :disabled="true">DMs</PillButton> -->
                             </div>
                         </div>
                     </div>
@@ -51,6 +52,10 @@
                             <CheckBox :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
                             <SquareButton @click="testGetNotifs">Load Notifs</SquareButton>
                         </div>
+                        <div v-if="selectedFeedType == FeedEnums.Types.Trending">
+                            <div>No Options Currently</div>
+                            <SquareButton @click="getTrending">Get Trending</SquareButton>
+                        </div>
                     </div>
                     <div v-else-if="currentPage == 2">
                         <div>Feed Type: {{ selectedFeedType }}</div>
@@ -63,6 +68,9 @@
                         <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
                             <div>Mentions Only? {{ feedFilters.notifications.justNotifs }}</div>
                         </div>
+                        <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">
+                            <div>No Options Currently</div>
+                        </div>
                     </div>
                 </Transition>
                 <!-- <div v-for="page in modalPages">{{ page.title }}</div> -->
@@ -72,7 +80,9 @@
                     {{currentPage == 0 ? 'Cancel':'Back'}}
                 </SquareButton>
                 <div class="flex">
-                    <SquareButton v-if="isTagSpecsEntryComplete || isSelectedTypeNotifications" @click="forwardOnePage">Next</SquareButton>
+                    <SquareButton v-if="isTagSpecsEntryComplete || isSelectedTypeNotifications ||
+                    isSelectedTypeTrending"
+                    @click="forwardOnePage">Next</SquareButton>
                     <SquareButton @click="createFeed()" v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
@@ -95,6 +105,7 @@ import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from 
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import CheckBox from '../Utilities/CheckBox.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
+import { BskyAgent } from '@atproto/api';
 
 export default defineComponent({
     components:{
@@ -220,6 +231,18 @@ export default defineComponent({
                 .catch(err => console.log(err));
             }
         },
+        async getTrending(){
+            await GetBrowsingAgent().app.bsky.unspecced.getTrendingTopics()
+            .then(res => {
+                console.log('Result from getTrendingTopics():');
+                console.log(res.data);
+            });
+            await GetBrowsingAgent().app.bsky.unspecced.getTrends()
+            .then(res => {
+                console.log('Result from getTrends():');
+                console.log(res.data);
+            });
+        },
         /**
          * Method that adds a new feed with specified options
          * to the App's `FeedList`.
@@ -287,6 +310,14 @@ export default defineComponent({
                         feedName:'Notifications'
                     }
                     break;
+                case FeedEnums.Types.Trending:
+                    desc = {...desc,
+                        feedType:FeedEnums.Types.Trending,
+                        feedIcon:FeedEnums.Icons.Trending,
+                        feedHandle:'trending',
+                        feedName:'Trending'
+                    }
+                    break;
                 default:
                     break;
             }
@@ -334,6 +365,10 @@ export default defineComponent({
         },
         isSelectedTypeNotifications(){
             return this.selectedFeedType == FeedEnums.Types.Notifications &&
+            this.currentPage != this.totalPages-1 && this.currentPage != 0;
+        },
+        isSelectedTypeTrending(){
+            return this.selectedFeedType == FeedEnums.Types.Trending &&
             this.currentPage != this.totalPages-1 && this.currentPage != 0;
         }
     },

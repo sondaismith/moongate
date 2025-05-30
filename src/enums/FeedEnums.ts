@@ -10,7 +10,8 @@ export namespace FeedEnums{
         Friends = "friends",
         Music = "music",
         Hashtag = "hashtag",
-        Notifications = "notifications"
+        Notifications = "notifications",
+        Trending = "trending"
     }
     export enum Types{
         Home = "home",
