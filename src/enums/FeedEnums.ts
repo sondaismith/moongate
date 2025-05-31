@@ -9,16 +9,20 @@ export namespace FeedEnums{
         News = "news",
         Friends = "friends",
         Music = "music",
-        Hashtag = "hashtag"
+        Hashtag = "hashtag",
+        Notifications = "notifications",
+        Trending = "trending"
     }
     export enum Types{
         Home = "home",
         User = "user",
         Tag = "tag",
+        Notifications = "notifications",
         Mentions = "mentions",
         Replies = "replies",
         Messages = "messages",
         Trending = "trending",
+        FeedGenerator = "feed_generator",
         None = 'none'
     }
     export enum Widths{

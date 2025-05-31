@@ -11,6 +11,8 @@ import { ToastEventBus } from 'primevue';
 import { AppState } from './AppState.vue';
 import { IUserSearchResult } from '../interfaces/UserInterfaces';
 import { GetBrowsingAgent } from '../lib/api.vue';
+import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
+import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
 function dec2hex (dec: number) {
@@ -51,11 +53,12 @@ export const FeedState = reactive({
  * @param cursor Cursor to use when attempting to paginate displayed Posts.
  * @param awaitingData Indicates if the Feed is waiting for data to display.
  */
-export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[], cursor:string='', awaitingData:boolean=true){
+export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true){
     FeedState.FeedList.push({
         description:description,
         data:feed,
         cursor:cursor,
+        seenAt:seenAt,
         isAwaitingFeedData:awaitingData,
     })
 }
@@ -318,22 +321,6 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
 
     //Select correct returned Object value based on Feed Type
     switch(savedFeed.type) {
-        // case FeedEnums.Types.User:
-        //     //Get user profile
-        //     let profile:ProfileView = {did:'',handle:''};
-        //     await getUserProfile(savedFeed.did)
-        //     .then(res => profile = res.data)
-        //     .catch((err) => {
-        //         //error occured try to get User Profile
-        //         toast.add(HandleAPIError(err, 'Error getting User profile while adding saved feeds'));
-        //     });
-        //     //Update required values of starting `IFeedDescription` template
-        //     desc = {...desc,
-        //         feedHandle:profile.handle,
-        //         feedName:profile.displayName ? profile.displayName : '[Empty Displayname]',
-        //         feedSourceDID:profile.did
-        //     }
-        //     break;
         case FeedEnums.Types.User:
             //Update required values of starting `IFeedDescription` template
             desc = {...desc,
@@ -346,20 +333,46 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
             desc = {...desc,
                 feedType:FeedEnums.Types.Tag,
                 feedIcon:FeedEnums.Icons.Hashtag,
-                feedHandle:'hashtags',
+                feedHandle:'hashtag',
                 feedTags:savedFeed.tags
+            }
+            break;
+        case FeedEnums.Types.Notifications:
+            desc = {...desc,
+                feedType:FeedEnums.Types.Notifications,
+                feedIcon:FeedEnums.Icons.Notifications,
+                feedHandle:'notifs',
+                feedName:'Notifications'
+            }
+            break;
+        case FeedEnums.Types.Trending:
+            desc = {...desc,
+                feedType:FeedEnums.Types.Trending,
+                feedIcon:FeedEnums.Icons.Trending,
+                feedHandle:'trending',
+                feedName:'Trending'
+            }
+            break;
+        case FeedEnums.Types.FeedGenerator:
+            desc = {...desc,
+                feedType:FeedEnums.Types.FeedGenerator,
+                feedIcon:FeedEnums.Icons.Trending,
+                feedHandle:'trending.bsky.app',
+                feedName:savedFeed.tags,
+                feedSourceDID:savedFeed.did
             }
             break;
         default:
             break;
     }
     // AddFeedToList(desc,feedResult.data,feedResult.cursor);
-    AddFeedToList(desc,[],'');
+    AddFeedToList(desc,[]);
 }
 
 export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedDesc.feedId);
     if(feed){
+        //If User Feed we need to get User Profile data
         if(feedDesc.feedType == FeedEnums.Types.User){
             let profile:ProfileView = {did:'',handle:''};
             await getUserProfile(feedDesc.feedSourceDID)
@@ -375,6 +388,7 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
                 feedSourceDID:profile.did
             }
         }
+        //Get data for Feed
         await GetFeedDataForFeedType(feedDesc.feedType,feedDesc.feedSourceDID,feedDesc.feedTags,'',10)
         .then(res => {
             if(feed){
@@ -414,9 +428,43 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
                 if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
                 //Place Posts in a "Feed" shaped Object
                 res.data.posts.forEach(p => {
-                    feedResult.data.push({post:p});
+                    (feedResult.data as FeedViewPost[]).push({post:p});
                 })
             });
+            break;
+        case FeedEnums.Types.Notifications:
+            if(AppState.isAuthBrowsing){
+                await GetBrowsingAgent().listNotifications()
+                .then(res => {
+                    console.log('From GetFeedDataForFeedType:');
+                    console.log(res.data);
+                    res.data.notifications.forEach(n => {
+                        (feedResult.data as Notification[]).push(n);
+                    })
+                    feedResult.seenAt = res.data.seenAt;
+                })
+                .catch(err => console.log(err));
+            }
+            else{
+                toast.add({summary:"Info", detail:`Please log in to view Notifications.`, severity:'info', group:'tr', life:3000});
+            }
+            break;
+        case FeedEnums.Types.Trending:
+            await GetBrowsingAgent().app.bsky.unspecced.getTrends()
+            .then(res => {
+                console.log('Result from getTrends():');
+                console.log(res.data);
+                res.data.trends.forEach(tt => {
+                    (feedResult.data as TrendView[]).push(tt);
+                })
+            });
+            break;
+        case FeedEnums.Types.FeedGenerator:
+            await GetBrowsingAgent().app.bsky.feed.getFeed({feed:did,cursor:cursor})
+            .then(res => {
+                feedResult.data = res.data.feed;
+                console.log(res.data);
+            })
             break;
         default:
             break;
@@ -439,7 +487,7 @@ export function GetFeed(feedId:string){
  * @param description The updated IFeedDescription for the Feed.
  * @param feedData The new Feed content retrieved using the updated specifications.
  */
-export function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[], cursor:string=''){
+export function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]|Notification[]|TrendView[], cursor:string=''){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     //If feed found
     if(feed){
@@ -475,13 +523,33 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
         await new Promise(res => setTimeout(res,500));
         await GetFeedDataForFeedType(feed.description.feedType,feed.description.feedSourceDID,feed.description.feedTags,'',postsToGet)
         .then(res => {
-            if(feed){
+            if(feed && feed.description.feedType == FeedEnums.Types.User ||
+                feed?.description.feedType == FeedEnums.Types.Tag ||
+                feed?.description.feedType == FeedEnums.Types.FeedGenerator){
+                //User and Tag Feed data should be in the shape of a FeedViewPost
                 // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
-                let newPosts = res.data.filter(post => new Date(post.post.indexedAt) >= lastUpdate)
+                let newPosts = res.data.filter(post => new Date((post as FeedViewPost).post.indexedAt) >= lastUpdate)
                 //Update only if there are new posts
                 // if(newPosts.length > 0) feed.data = [...pinned, ...newPosts, ...feed.data.slice(pinned.length)];
                 feed.data = res.data.slice();
                 feed.description.newPosts = newPosts.length;
+                feed.isAwaitingFeedData = false;
+            }
+            else if(feed && feed.description.feedType == FeedEnums.Types.Notifications){
+                //Notification Feed data should be in the shape of a Notification
+                // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
+                let newPosts = res.data.filter(post => new Date((post as Notification).indexedAt) >= lastUpdate)
+                //Update only if there are new posts
+                // if(newPosts.length > 0) feed.data = [...pinned, ...newPosts, ...feed.data.slice(pinned.length)];
+                feed.data = res.data.slice();
+                feed.description.newPosts = newPosts.length;
+                feed.isAwaitingFeedData = false;
+            }
+            else if(feed && feed.description.feedType == FeedEnums.Types.Trending){
+                //Notification Feed data should be in the shape of a Notification
+                //Update only if there are new posts
+                feed.data = res.data.slice();
+                feed.description.newPosts = res.data.length;
                 feed.isAwaitingFeedData = false;
             }
         })

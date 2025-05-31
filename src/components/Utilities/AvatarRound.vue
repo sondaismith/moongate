@@ -38,7 +38,7 @@ function CreateUserFeed(userDid:string,userHandle:string){
         name:''
     })
     .then(res => {
-        AddFeedToList(res.description,res.data,res.cursor,false);
+        AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false);
     });
 }
 
@@ -66,11 +66,12 @@ export default defineComponent({
          * Opens the `UserFocusModal` component to the currently selected
          * user's profile.
          */
-        displaySelectedUserAccount(){
+        displaySelectedUserAccount(e:Event){
             //Cancel displaying `AccountPeek`
             AccountPeekState.cancelUserPeek(true);
             AppState.ShowUserFocusModal(this.did);
             this.$emit('avatarClicked',this.did);
+            e.stopPropagation();//Prevent click "bubbling"
         },
         /**
          * Shows Options Menu allowing user to perform different actions

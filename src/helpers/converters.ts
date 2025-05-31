@@ -95,7 +95,8 @@ function getMonthNameShort(dateObj:Date, locale:string){
  * @param num Number to return a compact representation of.
  * @returns Compact representation of passed-in number.
  */
-export function getCompactNumberValue(num:number){
+export function getCompactNumberValue(num:number|undefined){
+    if(num == undefined) return 0;
     return num.toLocaleString('en-US', {
         notation:"compact",
         compactDisplay:"short",

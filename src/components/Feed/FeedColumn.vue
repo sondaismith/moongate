@@ -124,15 +124,43 @@
                 </div>
             </div>
             <TransitionGroup name="feedpost">
-                <div v-for="n in feedData?.data" :key="generateUniqueIdForPost(n)" class="flex flex-col rounded bg-feedColumnBG border border-outline w-full
-                drop-shadow-md justify-between text-sm">
-                    <FocusFeedPost class="border-0" :post-data="n.post" :post-reason="n.reason" :reply="n.reply" :is-feed-post-style="true"/>
+                <div v-if="feedData?.description.feedType == FeedEnums.Types.User ||
+                feedData?.description.feedType == FeedEnums.Types.Tag ||
+                feedData?.description.feedType == FeedEnums.Types.FeedGenerator"
+                class="flex flex-col gap-2">
+                    <div v-for="n in feedData?.data" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
+                    drop-shadow-md justify-between text-sm">
+                        <FocusFeedPost class="border-0" :post-data="(n as FeedViewPost).post"
+                        :post-reason="(n as FeedViewPost).reason" :reply="(n as FeedViewPost).reply"
+                        :is-feed-post-style="true"/>
+                    </div>
                 </div>
-                <div v-if="!feedData?.cursor"
+                <div v-else-if="feedData?.description.feedType == FeedEnums.Types.Notifications"
+                class="flex flex-col gap-2">
+                    <div v-for="n in feedData.data" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
+                    drop-shadow-md justify-between text-sm">
+                        <NotificationRecord :notif-data="n as Notification"/>
+                    </div>
+                </div>
+                <div v-if="feedData?.description.feedType == FeedEnums.Types.Trending"
+                class="flex flex-col gap-2">
+                    <div v-for="(tt, index) in feedData.data" :key="generateUniqueIdForPost(tt)" class="rounded bg-feedColumnBG border border-outline w-full
+                    drop-shadow-md justify-between text-sm">
+                        <TrendingTopic :trend="tt as TrendView" :position="index+1"/>
+                    </div>
+                </div>
+                <div v-if="feedData?.description.feedType == FeedEnums.Types.User && !feedData?.cursor"
                 class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
                     End of Posts
                 </div>
-                <div v-else-if="feedData.description.feedType != FeedEnums.Types.Tag && !feedData.isAwaitingFeedData" @click="loadMorePosts(feedData.description.feedId)"
+                <div v-else-if="feedData?.description.feedType == FeedEnums.Types.Notifications && !AppState.isAuthBrowsing"
+                class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
+                    Login to view Notifications
+                </div>
+                <div v-else-if="feedData.description.feedType != FeedEnums.Types.Tag &&
+                feedData.description.feedType != FeedEnums.Types.Notifications &&
+                feedData?.description.feedType != FeedEnums.Types.Trending &&
+                !feedData.isAwaitingFeedData" @click="loadMorePosts(feedData.description.feedId)"
                 class="flex rounded border border-outline justify-center items-center p-1 gap-1 bg-postMsg text-btnText
                 cursor-pointer hover:bg-hover hover:text-slate-200 transition-colors select-none"
                 :class="{'!bg-outline hover:bg-hover text-hover hover:text-hover pointer-events-none' : isAwaitingLoadMore}">
@@ -169,6 +197,12 @@ import { debounce } from '../../helpers/debouncer';
 import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import FocusFeedPost from './FocusFeedPost.vue';
 import FeedPost from './FeedPost.vue';
+import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
+import { convertToShortTimestamp } from '../../helpers/converters';
+import NotificationRecord from './NotificationRecord.vue';
+import { AppState } from '../../state/AppState.vue';
+import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
+import TrendingTopic from './TrendingTopic.vue';
 
 var colElement;
 
@@ -181,9 +215,12 @@ export default defineComponent({
         ToContainerTop,
         FeedPost,
         FocusFeedPost,
+        NotificationRecord,
+        TrendingTopic,
     },
     data(){
         return{
+            AppState,
             lastUpdate: new Date(),
             /**Determines if the refresh command is currently "on cooldown". */
             isAwaitingRefreshTimeout:false,
@@ -205,8 +242,14 @@ export default defineComponent({
             feedOptionAuthorSettingsShown: false,
             feedOptionPreferencesShown: false,
             isScrollToTopVisible:false,
+            /**
+             * Used to determine what type of object needs to be processed and
+             * and displayed - e.g. FeedViewPost[] or Notification[]
+             */
+            FeedDataType:FeedEnums.Types.User,
             FeedEnums,
             FeedState,
+            convertToShortTimestamp,
         }
     },
     props: {
@@ -381,11 +424,23 @@ export default defineComponent({
          * TransitionGroup layout.
          * @param feedPost The Post that needs a key generated.
          */
-        generateUniqueIdForPost(feedPost:FeedViewPost):string{
-            let id = feedPost.post.cid;
-            if(feedPost.reason){
-                if(isReasonPin(feedPost.reason)) id+='_pinned'
-                if(isReasonRepost(feedPost.reason)) id+='_reposted'
+        generateUniqueIdForPost(feedPost:FeedViewPost|Notification|TrendView):string{
+            let id = 'if_you_see_me_something_broke';
+            if(this.feedData?.description.feedType != FeedEnums.Types.Notifications &&
+                this.feedData?.description.feedType != FeedEnums.Types.Trending
+            ){
+                let feedPostFV = (feedPost as FeedViewPost);
+                id = feedPostFV.post.cid;
+                if(feedPostFV.reason){
+                    if(isReasonPin(feedPostFV.reason)) id+='_pinned'
+                    if(isReasonRepost(feedPostFV.reason)) id+='_reposted'
+                }
+            }
+            else if(this.feedData?.description.feedType == FeedEnums.Types.Notifications){
+                id = (feedPost as Notification).cid;
+            }
+            else if(this.feedData?.description.feedType == FeedEnums.Types.Trending){
+                id = (feedPost as TrendView).topic.replace(' ','_');
             }
             return id;
         }
@@ -406,6 +461,7 @@ export default defineComponent({
                 this.isScrollToTopVisible = true;
             }
         },100);
+        this.FeedDataType = this.feedData ? this.feedData.description.feedType : FeedEnums.Types.User;
     },
 })
 </script>

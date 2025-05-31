@@ -25,8 +25,14 @@
                             <div class="flex items-start flex-wrap gap-1">
                                 <PillButton @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
                                 <PillButton @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
-                                <PillButton :disabled="true">Mentions</PillButton>
-                                <PillButton :disabled="true">DMs</PillButton>
+                                <PillButton @click="selectFeedType(FeedEnums.Types.Trending)">Trending</PillButton>
+                                <PillButton :disabled="!AppState.isAuthBrowsing"
+                                @click="selectFeedType(FeedEnums.Types.Notifications)"
+                                :title="!AppState.isAuthBrowsing ? 'Login Required' : ''">
+                                    Notifications
+                                </PillButton>
+                                <!-- <PillButton :disabled="true">Mentions</PillButton>
+                                <PillButton :disabled="true">DMs</PillButton> -->
                             </div>
                         </div>
                     </div>
@@ -42,14 +48,28 @@
                             </div>
                         </div>
                         <UserSearchBar v-if="selectedFeedType == FeedEnums.Types.User" @user-selected="selectUser" :data-list="searchResults"/>
+                        <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
+                            <CheckBox :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
+                            <!-- <SquareButton @click="testGetNotifs">Load Notifs</SquareButton> -->
+                        </div>
+                        <div v-if="selectedFeedType == FeedEnums.Types.Trending">
+                            <div>No Options Currently</div>
+                            <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
+                        </div>
                     </div>
                     <div v-else-if="currentPage == 2">
                         <div>Feed Type: {{ selectedFeedType }}</div>
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ validTags.join(', ') }}</div>
-                        <div v-if="selectedFeedType == FeedEnums.Types.User">
+                        <div v-else-if="selectedFeedType == FeedEnums.Types.User">
                             <div>User DID: {{ feedFilters.user.did }}</div>
                             <div>User: {{ feedFilters.user.name }}</div>
                             <div>Handle: {{ feedFilters.user.handle }}</div>
+                        </div>
+                        <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
+                            <div>Mentions Only? {{ feedFilters.notifications.justNotifs }}</div>
+                        </div>
+                        <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">
+                            <div>No Options Currently</div>
                         </div>
                     </div>
                 </Transition>
@@ -60,7 +80,9 @@
                     {{currentPage == 0 ? 'Cancel':'Back'}}
                 </SquareButton>
                 <div class="flex">
-                    <SquareButton v-if="isTagSpecsEntryComplete" @click="forwardOnePage">Next</SquareButton>
+                    <SquareButton v-if="isTagSpecsEntryComplete || isSelectedTypeNotifications ||
+                    isSelectedTypeTrending"
+                    @click="forwardOnePage">Next</SquareButton>
                     <SquareButton @click="createFeed()" v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
@@ -81,6 +103,9 @@ import { AddFeedToList, FeedState, GenerateUniqueId, GetFeed, GetFeedDataForFeed
 import { HandleAPIError } from '../../helpers/errors.ts';
 import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces.ts';
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import CheckBox from '../Utilities/CheckBox.vue';
+import { GetBrowsingAgent } from '../../lib/api.vue';
+import { BskyAgent } from '@atproto/api';
 
 export default defineComponent({
     components:{
@@ -88,6 +113,7 @@ export default defineComponent({
         SquareButton,
         InLaInput,
         UserSearchBar,
+        CheckBox
     },
     data(){
         return{
@@ -105,6 +131,9 @@ export default defineComponent({
                     handle:'',
                     name:'',
                 },
+                notifications:{
+                    justNotifs:false,
+                }
             },
             currentPage:0,
             totalPages:3,
@@ -193,9 +222,31 @@ export default defineComponent({
                 this.forwardOnePage();
             }
         },
+        async testGetNotifs(){
+            if(AppState.isAuthBrowsing){
+                await GetBrowsingAgent().listNotifications()
+                .then(res => {
+                    console.log(res.data);
+                })
+                .catch(err => console.log(err));
+            }
+        },
+        async getTrending(){
+            await GetBrowsingAgent().app.bsky.unspecced.getTrendingTopics()
+            .then(res => {
+                console.log('Result from getTrendingTopics():');
+                console.log(res.data);
+            });
+            await GetBrowsingAgent().app.bsky.unspecced.getTrends()
+            .then(res => {
+                console.log('Result from getTrends():');
+                console.log(res.data);
+            });
+        },
         /**
          * Method that adds a new feed with specified options
          * to the App's `FeedList`.
+         * This should probably be in `FeedList`.
          */
         async createFeed(){
             this.attemptingToCreateFeed = true;
@@ -222,8 +273,7 @@ export default defineComponent({
             var desc:IFeedDescription = {
                 feedId: usedFeedId,
                 userId:1,
-                feedHandle:'hashtag',
-                feedName:this.validTags.join(','),
+                feedHandle:'loading_tag',
                 feedType:FeedEnums.Types.User,
                 feedIcon:FeedEnums.Icons.Art,
                 newPosts:10,totalPosts:30,
@@ -231,6 +281,7 @@ export default defineComponent({
                 feedSourceDID:'',
                 feedTags:''
             }
+            let concatTags = this.validTags.join(',');
             //Select correct returned Object value based on Feed Type
             switch (this.selectedFeedType) {
                 case FeedEnums.Types.User:
@@ -246,7 +297,25 @@ export default defineComponent({
                     desc = {...desc,
                         feedType:FeedEnums.Types.Tag,
                         feedIcon:FeedEnums.Icons.Hashtag,
-                        feedTags:this.validTags.join(' ')
+                        feedHandle:'hashtag',
+                        feedName:concatTags,
+                        feedTags:concatTags
+                    }
+                    break;
+                case FeedEnums.Types.Notifications:
+                    desc = {...desc,
+                        feedType:FeedEnums.Types.Notifications,
+                        feedIcon:FeedEnums.Icons.Notifications,
+                        feedHandle:'notifs',
+                        feedName:'Notifications'
+                    }
+                    break;
+                case FeedEnums.Types.Trending:
+                    desc = {...desc,
+                        feedType:FeedEnums.Types.Trending,
+                        feedIcon:FeedEnums.Icons.Trending,
+                        feedHandle:'trending',
+                        feedName:'Trending'
                     }
                     break;
                 default:
@@ -254,7 +323,7 @@ export default defineComponent({
             }
             //Create the Feed
             if(AppState.isCreatingFeed){
-                AddFeedToList(desc,feedResult.data, feedResult.cursor, false);
+                AddFeedToList(desc,feedResult.data, feedResult.cursor, feedResult.seenAt, false);
             }
             else if(AppState.isUpdatingFeed){
                 UpdateFeedDetails(FeedState.selectedFeed,desc,feedResult.data,feedResult.cursor);
@@ -292,6 +361,14 @@ export default defineComponent({
         isTagSpecsEntryComplete(){
             return (this.validTags.length>0) &&
             this.selectedFeedType == FeedEnums.Types.Tag &&
+            this.currentPage != this.totalPages-1 && this.currentPage != 0;
+        },
+        isSelectedTypeNotifications(){
+            return this.selectedFeedType == FeedEnums.Types.Notifications &&
+            this.currentPage != this.totalPages-1 && this.currentPage != 0;
+        },
+        isSelectedTypeTrending(){
+            return this.selectedFeedType == FeedEnums.Types.Trending &&
             this.currentPage != this.totalPages-1 && this.currentPage != 0;
         }
     },

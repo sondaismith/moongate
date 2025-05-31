@@ -1,6 +1,8 @@
 import { FunctionalComponent } from "vue"
 import { FeedEnums } from "../enums/FeedEnums"
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs"
+import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications"
+import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs"
 
 // interface IFeedCollection{
 //     feedName: string
@@ -65,14 +67,19 @@ interface IFeedDescription{
 interface IFeedListing{
     /**Object that hold values that help summarize a Feed's contents, as well as the `FeedColumn` settings. */
     description : IFeedDescription,
-    /**Collection of Posts that are part of the Feed. */
-    data : FeedViewPost[],
+    /**Collection of "records" that will be displayed in the Feed. */
+    data : FeedViewPost[] | Notification[] | TrendView[],
     /**
      * Value used to indicate the point at which the current data collection ends, in
      * relation to data held on Bluesky.
      * Used when requesting additional Posts, or "paginating" through Posts.
      */
     cursor?: string,
+    /**
+     * Value used to indicate when the displayed Notifications were seen.
+     * Only used when the {@link data} element holds {@link Notification} objects.
+     */
+    seenAt?: string,
     /**Value indicating if application is waiting for an API response related to Feed data.*/
     isAwaitingFeedData: boolean,
 }
@@ -82,13 +89,18 @@ interface IFeedListing{
  */
 interface IFeedReturnedPostResults{
     /**Collection of Posts that are part of the Feed. */
-    data : FeedViewPost[],
+    data : FeedViewPost[] | Notification[] | TrendView[],
     /**
      * Value used to indicate the point at which the current data collection ends, in
      * relation to data held on Bluesky.
      * Used when requesting additional Posts, or "paginating" through Posts.
      */
     cursor?: string,
+    /**
+     * Value used to indicate when the displayed Notifications were seen.
+     * Only used when the {@link data} element holds {@link Notification} objects.
+     */
+    seenAt?: string,
 }
 
 interface IFeedColumnSettings{
