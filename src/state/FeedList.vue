@@ -353,6 +353,15 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
                 feedName:'Trending'
             }
             break;
+        case FeedEnums.Types.FeedGenerator:
+            desc = {...desc,
+                feedType:FeedEnums.Types.FeedGenerator,
+                feedIcon:FeedEnums.Icons.Trending,
+                feedHandle:'trending.bsky.app',
+                feedName:savedFeed.tags,
+                feedSourceDID:savedFeed.did
+            }
+            break;
         default:
             break;
     }
@@ -450,6 +459,13 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
                 })
             });
             break;
+        case FeedEnums.Types.FeedGenerator:
+            await GetBrowsingAgent().app.bsky.feed.getFeed({feed:did,cursor:cursor})
+            .then(res => {
+                feedResult.data = res.data.feed;
+                console.log(res.data);
+            })
+            break;
         default:
             break;
     }
@@ -508,7 +524,8 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
         await GetFeedDataForFeedType(feed.description.feedType,feed.description.feedSourceDID,feed.description.feedTags,'',postsToGet)
         .then(res => {
             if(feed && feed.description.feedType == FeedEnums.Types.User ||
-                feed?.description.feedType == FeedEnums.Types.Tag){
+                feed?.description.feedType == FeedEnums.Types.Tag ||
+                feed?.description.feedType == FeedEnums.Types.FeedGenerator){
                 //User and Tag Feed data should be in the shape of a FeedViewPost
                 // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
                 let newPosts = res.data.filter(post => new Date((post as FeedViewPost).post.indexedAt) >= lastUpdate)

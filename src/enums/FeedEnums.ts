@@ -22,6 +22,7 @@ export namespace FeedEnums{
         Replies = "replies",
         Messages = "messages",
         Trending = "trending",
+        FeedGenerator = "feed_generator",
         None = 'none'
     }
     export enum Widths{

@@ -50,11 +50,11 @@
                         <UserSearchBar v-if="selectedFeedType == FeedEnums.Types.User" @user-selected="selectUser" :data-list="searchResults"/>
                         <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
                             <CheckBox :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
-                            <SquareButton @click="testGetNotifs">Load Notifs</SquareButton>
+                            <!-- <SquareButton @click="testGetNotifs">Load Notifs</SquareButton> -->
                         </div>
                         <div v-if="selectedFeedType == FeedEnums.Types.Trending">
                             <div>No Options Currently</div>
-                            <SquareButton @click="getTrending">Get Trending</SquareButton>
+                            <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
                         </div>
                     </div>
                     <div v-else-if="currentPage == 2">

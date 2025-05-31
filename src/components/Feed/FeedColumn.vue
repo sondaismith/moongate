@@ -125,7 +125,8 @@
             </div>
             <TransitionGroup name="feedpost">
                 <div v-if="feedData?.description.feedType == FeedEnums.Types.User ||
-                feedData?.description.feedType == FeedEnums.Types.Tag"
+                feedData?.description.feedType == FeedEnums.Types.Tag ||
+                feedData?.description.feedType == FeedEnums.Types.FeedGenerator"
                 class="flex flex-col gap-2">
                     <div v-for="n in feedData?.data" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">

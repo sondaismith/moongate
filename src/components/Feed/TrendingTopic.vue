@@ -1,6 +1,8 @@
 <template>
     <div class="flex p-2 text-primary items-center gap-2 overflow-hidden hover:bg-btnHover
-    cursor-pointer">
+    cursor-pointer"
+    title="Create Feed for Topic"
+    @click="createFeedForTopic">
         <div class="select-none">#{{ position }}</div>
         <div class="flex flex-col overflow-hidden">
             <div class="flex gap-2 items-center">
@@ -40,6 +42,10 @@
 import { defineComponent, PropType } from 'vue'
 import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 import { convertToShortTimestamp, getCompactNumberValue } from '../../helpers/converters';
+import { GetBrowsingAgent } from '../../lib/api.vue';
+import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces';
+import { AddFeedToList, GenerateUniqueId } from '../../state/FeedList.vue';
+import { FeedEnums } from '../../enums/FeedEnums';
 
 export default defineComponent({
     props:{
@@ -78,6 +84,7 @@ export default defineComponent({
             }
             return '0 posts';
         },
+        /**Returns Trend category with title case capitalization. */
         getTrendCategory(){
             if(this.trend){
                 if(this.trend.category){
@@ -90,6 +97,54 @@ export default defineComponent({
                 }
             }
             return 'N/A';
+        },
+    },
+    methods:{
+        /**
+         * Method that allows the user to view the assoicated "trending topic"
+         * Feed created by Bluesky's "trending.bsky.app" Feed Generator(s).
+         * NOTE: The `feedTags` field is used to store the Feed name.
+         */
+        async createFeedForTopic(){
+            if(this.trend){
+                var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
+                var usedFeedId:string =  GenerateUniqueId(10);
+                var defaultAppearance:IFeedColumnSettings = {
+                    width: FeedEnums.Widths.Small,
+                }
+
+                var desc:IFeedDescription = {
+                    feedId: usedFeedId,
+                    userId:1,
+                    feedHandle:'loading_tag',
+                    feedName:'[loading name]',
+                    feedType:FeedEnums.Types.FeedGenerator,
+                    feedIcon:FeedEnums.Icons.Trending,
+                    newPosts:10,totalPosts:30,
+                    feedColumnSettings:defaultAppearance,
+                    feedSourceDID:'',
+                    feedTags:''
+                }
+
+                let urlParts = this.trend.link.split('\/');
+                let did = '';
+                console.log('Returned Topic Feed Data:');
+                await GetBrowsingAgent().resolveHandle({handle:urlParts[2]})
+                .then(res =>{
+                    did = res.data.did;
+                    desc.feedHandle = urlParts[2];
+                    desc.feedName = this.trend?.displayName ? this.trend.displayName : "N/A";
+                    desc.feedSourceDID = `at://${did}/app.bsky.feed/${urlParts[urlParts.length-1]}`;
+                    desc.feedTags = this.trend?.displayName ? this.trend.displayName : ''; //Currently the only way I know to get the "Feed Generator" name when re-loading
+                })
+                await GetBrowsingAgent().app.bsky.feed.getFeed({feed:desc.feedSourceDID})
+                .then(res => {
+                    feedResult.data = res.data.feed;
+                    feedResult.cursor = res.data.cursor;
+                    console.log(res.data);
+                })
+                AddFeedToList(desc,feedResult.data,feedResult.cursor,'',false);
+            }
         }
     }
 })
