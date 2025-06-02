@@ -15,7 +15,14 @@
                             <FeedButton :icon="FeedEnums.Icons.Home" tooltip="Home"/>
                             <TransitionGroup name="feedbutton">
                                 <!-- <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/> -->
-                                <FeedButton v-for="feed in FeedState.FeedList" :key="feed" :feedId="feed.description.feedId" :icon="feed.description.feedIcon" :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts" :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"/>
+                                <FeedButton v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
+                                :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
+                                :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
+                                :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
+                                :class="{'drag-start' : index === oldIndex, 'drag-over' : index === newIndex}"
+                                draggable="true"
+                                @dragstart="handleDragstart($event,index)" @dragover.prevent="handleDragover(index)"
+                                @drop="handleDrop" @dragend="handleDragend"/>
                             </TransitionGroup>
                         </div>
                     </div>
@@ -184,7 +191,9 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 OptionIconList,
                 APIResponse: {},
                 DBResponse: {},
-                FeedEnums
+                FeedEnums,
+                oldIndex:-100,
+                newIndex:-100,
             }
         },
         methods: {
@@ -374,6 +383,28 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 await this.loadAppConfig();
                 invoke('show_main_window');//unhide main window and focus it via Rust
             },
+            //Below methods from https://csswolf.com/handling-drag-and-drop-events-using-vuejs/
+            handleDragstart(e:DragEvent,oldIndex:number){
+                e.dataTransfer?.setData("text/plain", (e.target as HTMLElement).style.cursor = "move");
+                this.oldIndex = oldIndex;
+            },
+            handleDragover(newIndex:number){
+                // only if the drop target is not same as the dragged element
+                if (newIndex !== this.oldIndex) {
+                    this.newIndex = newIndex;
+                }
+            },
+            handleDrop() {
+                // remove element from its oldIndex
+                const elRemoved = FeedState.FeedList.splice(this.oldIndex, 1)[0];
+                // insert it at its new index
+                FeedState.FeedList.splice(this.newIndex, 0, elRemoved);
+            },
+            handleDragend(){
+            // reset global properties
+                this.oldIndex = -100;
+                this.newIndex = -100;
+            }
         },
         created(){
             this.appStartupProcedure();
@@ -444,5 +475,14 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
 .peek-leave-to {
     opacity: 0 !important;
     transform: translateY(-5px);
+}
+
+.drag-start {
+	background-color: var(--color-btn-hover);
+	opacity: 0.5; /* faded */
+}
+.drag-over {
+	outline: 2px dashed black;
+	background-color: rgba(100, 100, 100, 0.6); /* greyed out */
 }
 </style>
