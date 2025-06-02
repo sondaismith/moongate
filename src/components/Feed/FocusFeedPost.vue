@@ -290,6 +290,11 @@ export default defineComponent({
                     //Is a QRT with video
                     return true;
                 }
+                else if(this.postToShow?.embeds && AppBskyEmbedRecordWithMedia.isView(this.postToShow.embeds[0]) &&
+                AppBskyEmbedVideo.isView(this.postToShow.embeds[0].media)){
+                    //Is a QRT with video
+                    return true;
+                }
             }
             return false;
         },
@@ -373,6 +378,11 @@ export default defineComponent({
                 if(this.postToShow?.embeds && AppBskyEmbedVideo.isView(this.postToShow.embeds[0])){
                     //Is a QRT with video
                     return this.postToShow.embeds[0];
+                }
+                else if(this.postToShow?.embeds && AppBskyEmbedRecordWithMedia.isView(this.postToShow.embeds[0]) &&
+                AppBskyEmbedVideo.isView(this.postToShow.embeds[0].media)){
+                    //Is a QRT with video
+                    return this.postToShow.embeds[0].media;
                 }
             }
             // return {cid:'',playlist:''};//Empty AppBskyEmbedVideo.View object, shouldn't ever be returned
