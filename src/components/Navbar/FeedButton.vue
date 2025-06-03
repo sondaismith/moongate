@@ -46,6 +46,11 @@ export default defineComponent({
         icon: String,
         userDid:String,
         newPosts: Number,
+        /**
+         * Indicates if any `FeedButton` is being dragged when this one was "clicked".
+         * Used to prevent click when button is being dropped.
+         */
+        buttonBeingDragged:Boolean
     },
     methods:{
         displayButtonTooltip(event:PointerEvent){
@@ -83,7 +88,7 @@ export default defineComponent({
             console.log(this.$el)
             //Only if it is related to a FeedDisplay and we are not already scrolling
             //Also if we are not dragging the button
-            if(this.feedId && !this.isScrolling && !(this.$el as HTMLElement).classList.contains('dragging')){
+            if(this.feedId && !this.isScrolling && !this.buttonBeingDragged){
                 var el = document.getElementById(this.feedId);
                 if(el){
                     this.startScrolling();

@@ -12,7 +12,7 @@
                 <div class="flex flex-col h-full">
                     <div class="flex-shrink preload-gutter overflow-x-hidden">
                         <div class="space-y-2 py-2 pl-2 pr-1">
-                            <FeedButton :icon="FeedEnums.Icons.Home" tooltip="Home"/>
+                            <!-- <FeedButton :icon="FeedEnums.Icons.Home" tooltip="Home"/> -->
                             <TransitionGroup name="feedbutton">
                                 <!-- <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/> -->
                                 <!-- <FeedButton v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
@@ -28,7 +28,9 @@
                                 :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
                                 :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
                                 :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
+                                :button-being-dragged="isDraggingButton"
                                 @pointerdown="handleLongpress($event,index)" @pointerup="handleMouseup"
+                                @pointerover="handleMouseover($event,index)" @pointerleave="handleMouseLeave"
                                 class="draggable"/>
                             </TransitionGroup>
                         </div>
@@ -201,7 +203,13 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 FeedEnums,
                 oldIndex:-100,
                 newIndex:-100,
-                longpressTimeout:-1
+                /**Holds the timeout object used to detect a longpress of a `FeedButton`. */
+                longpressTimeout:-1,
+                /**Holds a copy of the `FeedButton` element that is being dragged. */
+                draggedButton: undefined,
+                /**Indicates that one of the `FeedButton` components is being dragged. */
+                isDraggingButton:false,
+                dragStartingY:0,
             }
         },
         methods: {
@@ -391,49 +399,89 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 await this.loadAppConfig();
                 invoke('show_main_window');//unhide main window and focus it via Rust
             },
-            //Below methods from https://csswolf.com/handling-drag-and-drop-events-using-vuejs/
-            handleDragstart(e:DragEvent,oldIndex:number){
-                e.dataTransfer?.setData("text/plain", (e.target as HTMLElement).style.cursor = "move");
-                this.oldIndex = oldIndex;
+            /**
+             * Used to handle a "long press" on a {@link FeedButton}. Allows the User to drag
+             * and reposition the Feed item.
+             * @param e MouseDown/PointerDown `MouseEvent`.
+             * @param oldIndex The index of the {@link FeedButton} currently being long pressed.
+             */
+            handleLongpress(e:Event,oldIndex:number){
+                let pressedButton = (e.target as HTMLElement);
+                this.longpressTimeout = setTimeout(() => {
+                    this.isDraggingButton = true;
+                    pressedButton.classList.add('drag-start','dragging');
+                    this.oldIndex = oldIndex;
+                    this.dragStartingY = pressedButton.offsetTop;
+                    document.addEventListener("mousemove", this.dragMove);//allows user to move button
+                    document.addEventListener("mousedown", this.dropFeedButton);//when user "drops" button
+                }, 800);
             },
-            handleDragover(newIndex:number){
-                // only if the drop target is not same as the dragged element
+            /**
+             * Used to cancel a long press. Will still allow the click action
+             * to be performed.
+             */
+            handleMouseup(){
+                clearTimeout(this.longpressTimeout);
+            },
+            /**
+             * Used to "drop" the currently selected Feed into its new position in the list.
+             */
+            dropFeedButton(){
+                clearTimeout(this.longpressTimeout);
+                let buttonBeingDropped = (document.getElementsByClassName('dragging')[0] as HTMLElement);
+
+                if(buttonBeingDropped.classList.contains('drag-start')){
+                    buttonBeingDropped.classList.remove('drag-start');
+                    //Smoothly transition element to location - top element unfortunately will not move smoothly
+                    buttonBeingDropped.style.transition = "top 0.3s ease";
+                    buttonBeingDropped.style.top = "0px";
+                    document.removeEventListener("mousemove", this.dragMove);
+                    // remove element from its oldIndex
+                    const elRemoved = FeedState.FeedList.splice(this.oldIndex, 1)[0];
+                    // insert it at its new index
+                    FeedState.FeedList.splice(this.newIndex, 0, elRemoved);
+                    //delay removal of class to prevent click after longpress + let transition finish
+                    setTimeout(() => {
+                        buttonBeingDropped.style.removeProperty('top');
+                        buttonBeingDropped.style.removeProperty('transition');
+                        buttonBeingDropped.classList.remove('dragging');
+                        this.isDraggingButton = false;
+                    }, 300);
+                }
+                this.oldIndex = -100;
+                this.newIndex = -100;
+                document.removeEventListener("mousedown", this.dropFeedButton);
+            },
+            /**
+             * Called when the User's pointer enters a `FeedButton`. Used to determine where
+             * the dragged Feed will be repositioned to.
+             * @param e MouseOver `MouseEvent`.
+             * @param newIndex The index of the `FeedButton` that was hovered over.
+             */
+            handleMouseover(e:Event, newIndex:number){
+                if(!this.isDraggingButton) return;
                 if (newIndex !== this.oldIndex) {
                     this.newIndex = newIndex;
                 }
             },
-            handleDrop() {
-                // remove element from its oldIndex
-                const elRemoved = FeedState.FeedList.splice(this.oldIndex, 1)[0];
-                // insert it at its new index
-                FeedState.FeedList.splice(this.newIndex, 0, elRemoved);
+            /**
+             * Called when the User's pointer leaves a `FeedButton`. Used to cancel Feed
+             * repositioning.
+             */
+            handleMouseLeave(){
+                this.newIndex = this.oldIndex;
             },
-            handleDragend(){
-            // reset global properties
-                this.oldIndex = -100;
-                this.newIndex = -100;
-            },
-            handleLongpress(e:Event,oldIndex:number){
-                let pressedButton = (e.target as HTMLElement);
-                // if(pressedButton.classList.contains('drag-start')) return;
-                this.longpressTimeout = setTimeout(() => {
-                    pressedButton.classList.add('drag-start','dragging');
-                    this.oldIndex = oldIndex;
-                    console.log('drag started');
-                }, 800);
-            },
-            handleMouseup(e:Event){
-                clearTimeout(this.longpressTimeout);
-                let pressedButton = (e.target as HTMLElement);
-                if(pressedButton.classList.contains('drag-start')){
-                    pressedButton.classList.remove('drag-start');
-                    //delay removal of class to prevent click after longpress
-                    setTimeout(() => {
-                        pressedButton.classList.remove('dragging');
-                    }, 50);
-                }
-                this.oldIndex = -100;
-                this.newIndex = -100;
+            /**
+             * Method used to move the {@link FeedButton} that is being dragged in order
+             * to re-order the Feed list.
+             * @param e MouseEvent tracking User's pointer movement.
+             */
+            dragMove(e:MouseEvent){
+                let y = e.clientY;
+                let currentDraggedButton = document.getElementsByClassName('dragging')[0];
+                let scrollPos = currentDraggedButton.parentElement?.parentElement ? currentDraggedButton.parentElement.parentElement.scrollTop : 0;
+                // (currentDraggedButton as HTMLElement).style.top = `${y-20}px`;//absolute position version
+                (currentDraggedButton as HTMLElement).style.top = `${y-20-this.dragStartingY+scrollPos}px`;
             }
         },
         created(){
@@ -507,13 +555,18 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
     transform: translateY(-5px);
 }
 
+/* `FeedButton` drag & drop helper classes */
 .draggable{
     transition: scale 0.3s ease, transform 0.3s ease;
 }
-
+.dragging{
+    /* position: absolute; */
+    z-index: 1;
+    pointer-events: none;
+}
 .drag-start {
 	background-color: var(--color-btn-hover);
-	opacity: 0.5; /* faded */
+	opacity: 85%; /* faded */
     scale: 120%;
     transform: rotate(10deg);
     cursor: grabbing;
