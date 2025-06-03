@@ -15,14 +15,21 @@
                             <FeedButton :icon="FeedEnums.Icons.Home" tooltip="Home"/>
                             <TransitionGroup name="feedbutton">
                                 <!-- <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/> -->
-                                <FeedButton v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
+                                <!-- <FeedButton v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
                                 :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
                                 :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
                                 :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
                                 :class="{'drag-start' : index === oldIndex, 'drag-over' : index === newIndex}"
                                 draggable="true"
                                 @dragstart="handleDragstart($event,index)" @dragover.prevent="handleDragover(index)"
-                                @drop="handleDrop" @dragend="handleDragend"/>
+                                @drop="handleDrop" @dragend="handleDragend"/> -->
+
+                                <FeedButton v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
+                                :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
+                                :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
+                                :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
+                                @pointerdown="handleLongpress($event,index)" @pointerup="handleMouseup"
+                                class="draggable"/>
                             </TransitionGroup>
                         </div>
                     </div>
@@ -194,6 +201,7 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 FeedEnums,
                 oldIndex:-100,
                 newIndex:-100,
+                longpressTimeout:-1
             }
         },
         methods: {
@@ -404,6 +412,28 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
             // reset global properties
                 this.oldIndex = -100;
                 this.newIndex = -100;
+            },
+            handleLongpress(e:Event,oldIndex:number){
+                let pressedButton = (e.target as HTMLElement);
+                // if(pressedButton.classList.contains('drag-start')) return;
+                this.longpressTimeout = setTimeout(() => {
+                    pressedButton.classList.add('drag-start','dragging');
+                    this.oldIndex = oldIndex;
+                    console.log('drag started');
+                }, 800);
+            },
+            handleMouseup(e:Event){
+                clearTimeout(this.longpressTimeout);
+                let pressedButton = (e.target as HTMLElement);
+                if(pressedButton.classList.contains('drag-start')){
+                    pressedButton.classList.remove('drag-start');
+                    //delay removal of class to prevent click after longpress
+                    setTimeout(() => {
+                        pressedButton.classList.remove('dragging');
+                    }, 50);
+                }
+                this.oldIndex = -100;
+                this.newIndex = -100;
             }
         },
         created(){
@@ -477,9 +507,16 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
     transform: translateY(-5px);
 }
 
+.draggable{
+    transition: scale 0.3s ease, transform 0.3s ease;
+}
+
 .drag-start {
 	background-color: var(--color-btn-hover);
 	opacity: 0.5; /* faded */
+    scale: 120%;
+    transform: rotate(10deg);
+    cursor: grabbing;
 }
 .drag-over {
 	outline: 2px dashed black;

@@ -25,7 +25,6 @@ pub fn run() {
             .title("moongate app")
             .center()
             .visible(false)
-            .disable_drag_drop_handler()
             .build()?;
             Ok(())
         })
