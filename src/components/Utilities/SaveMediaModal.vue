@@ -13,7 +13,12 @@
                     <div class="h-full bg-contain bg-no-repeat bg-center" :style="`background-image: url(${AppState.saveMedia.uri})`"></div>
                 </div>
                 <div class="flex">
-                    <InLaInput class="h-10 text-[12px] rounded-r-none grow" text-label="Filename" :model-value="AppState.fileSaveDetails.full" @update:model-value="updateFileName"/>
+                    <InLaInput v-if="isTauri()" class="h-10 text-[12px] rounded-r-none grow"
+                    text-label="Filename" :model-value="AppState.fileSaveDetails.full"
+                    @update:model-value="updateFileName"/>
+                    <InLaInput v-else class="h-10 text-[12px] rounded-r-none grow" text-label="Click to Copy Filename"
+                    :model-value="AppState.fileSaveDetails.full" @update:model-value="updateFileName"
+                    :is-text-copy-control="true"/>
                     <div class="flex items-end rounded-r px-2 py-1
                     text-sm text-slate-400 bg-slate-800 border border-l-0 border-slate-500
                     select-none">
