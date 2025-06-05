@@ -1,7 +1,8 @@
 <template>
     <div data-test="feed-column" :id="feedData?.description.feedId"
     class="flex flex-col relative w-72 pr-1 bg-banner
-    overflow-hidden max-w-[600px] origin-top-left" :style="`min-width:${feedData?.description.feedColumnSettings.width}px`">
+    overflow-hidden max-w-[600px] origin-top-left"
+    :style="`min-width:${feedData?.description.feedColumnSettings.width}px`">
         {{ void "feed title" }}
         <div class="flex w-full shrink-0 border-b-2 border-outline bg-banner pl-2 pr-1 pt-2 pb-1 text-primary">
             <div class="flex w-full items-center">
@@ -30,7 +31,11 @@
                             <i-mingcute:refresh-3-fill/>
                         </div>
                         <div title="Options" @click="toggleFeedColumnOptionsMenu()" class="text-2xl cursor-pointer hover:text-cyan-400"><i-mingcute:settings-6-fill/></div>
-                        <div title="Reorder" @click="addNewPost"><i-mingcute:menu-line title="Reorder" class="text-2xl cursor-grab hover:text-cyan-400"/></div>
+                        <div title="Reorder"
+                        class="text-2xl cursor-grab hover:text-cyan-400"
+                        @pointerdown="handleFeedColumnMouseDown($event,listIndex)">
+                            <i-mingcute:menu-line class="pointer-events-none"/>
+                        </div>
                 </div>
             </div>
         </div>
@@ -179,7 +184,8 @@
                 <ToContainerTop v-show="isScrollToTopVisible"/>
             </Transition>
         </div>
-        <div data-test="feedColumn-highlight" class="absolute pointer-events-none h-full left-0 right-0 border-2 rounded-sm border-sky-500/0 transition-colors"></div>
+        <div data-test="feedColumn-highlight" class="absolute pointer-events-none h-full
+        left-0 right-0 border-2 rounded-sm border-sky-500/0 opacity-0s bg-transparent transition-colors duration-300"></div>
     </div>
 </template>
 <!-- <div v-if="false" data-test="feedColumn-resizer" @mousedown="startDrag($event)" class="relative bg-slate-900 w-1 cursor-ew-resize"></div> -->
@@ -255,6 +261,14 @@ export default defineComponent({
     props: {
         // feedData: Object as PropType<IFeedDescription>,
         feedData: Object as PropType<IFeedListing>,
+        /**
+         * The current index of this FeedColumn component. Used to allow FeedColumn
+         * components to be re-ordered.
+         */
+        listIndex:{
+            type: Number,
+            required: true
+        },
     },
     watch:{
         selectedWidthSetting(newWidth){
@@ -443,7 +457,77 @@ export default defineComponent({
                 id = (feedPost as TrendView).topic.replace(' ','_');
             }
             return id;
-        }
+        },
+        /**
+         * Used to start the dragging of the selected {@link FeedColumn} component. Allows
+         * the User to drag and reposition the Feed item.
+         * @param e PointerEvent of user clicking on drag element.
+         * @param oldIndex The index of the {@link FeedColumn} currently being dragged.
+         */
+        handleFeedColumnMouseDown(e:PointerEvent,oldIndex:number){
+            if(FeedState.isGrabbingColumn) return;
+            let grabbedColumn = (this.$el as HTMLElement);
+            let feedContainer = document.getElementById('feedcolumnDisplay');
+            //prevent drag from selecting text + elements
+            feedContainer?.classList.add('select-none','cursor-grabbing');
+            //start drag
+            grabbedColumn.classList.add('drag-column-start','dragging');
+            //update `FeedColumn` related variables in State
+            FeedState.isGrabbingColumn = true;
+            FeedState.oldFeedColumnIndex = oldIndex;
+            FeedState.dragColumnStartingX = grabbedColumn.offsetLeft;
+            FeedState.dragColumnClickXPos = e.layerX;
+            //Update grab position when initially dragged
+            let x = e.clientX;
+            let scrollPos = feedContainer ? feedContainer.scrollLeft : 0;
+            (grabbedColumn as HTMLElement).style.left = `${x-FeedState.dragColumnStartingX-grabbedColumn.clientWidth/2+scrollPos}px`;//will drag from center of column
+            document.addEventListener("mousemove", this.dragMoveFeedColumn);//allows user to move column
+            document.addEventListener("mouseup", this.dropFeedColumn);//when user "drops" column
+        },
+        /**
+         * Used to "drop" the currently selected Feed into its new position in the list.
+         */
+        dropFeedColumn(){
+            // clearTimeout(this.longpressTimeout);
+            let columnBeingDropped = (document.getElementsByClassName('dragging')[0] as HTMLElement);
+            if(columnBeingDropped.classList.contains('drag-column-start')){
+                columnBeingDropped.classList.remove('drag-column-start');
+                let feedContainer = document.getElementById('feedcolumnDisplay');
+                feedContainer?.classList.remove('select-none','cursor-grabbing');//allow selecting text + elements again
+                //Smoothly transition element to location - top element unfortunately will not move smoothly
+                columnBeingDropped.style.transition = "left 0.3s ease";
+                // columnBeingDropped.style.left = "0px";
+                document.removeEventListener("mousemove", this.dragMoveFeedColumn);
+                //If position is new
+                if(FeedState.newFeedColumnIndex != FeedState.oldFeedColumnIndex){
+                    // remove element from its oldIndex
+                    const elRemoved = FeedState.FeedList.splice(FeedState.oldFeedColumnIndex, 1)[0];
+                    // insert it at its new index
+                    FeedState.FeedList.splice(FeedState.newFeedColumnIndex, 0, elRemoved);
+                }
+                columnBeingDropped.style.removeProperty('left');
+                columnBeingDropped.style.removeProperty('transition');
+                columnBeingDropped.classList.remove('dragging');
+                FeedState.isGrabbingColumn = false;
+            }
+            FeedState.oldFeedColumnIndex = -100;
+            FeedState.newFeedColumnIndex = -100;
+            document.removeEventListener("mouseup", this.dropFeedColumn);
+        },
+        /**
+         * Method used to move the {@link FeedColumn} that is being dragged in order
+         * to re-order the Feed list.
+         * @param e MouseEvent tracking User's pointer movement.
+         */
+        dragMoveFeedColumn(e:MouseEvent){
+            let x = e.clientX;
+            let currentDraggedColumn = document.getElementsByClassName('dragging')[0];
+            let feedContainer = document.getElementById('feedcolumnDisplay');
+            let scrollPos = feedContainer ? feedContainer.scrollLeft : 0;
+            // (currentDraggedButton as HTMLElement).style.top = `${y-20}px`;//absolute position version
+            // (currentDraggedColumn as HTMLElement).style.left = `${x-FeedState.dragColumnStartingX-FeedState.dragColumnClickXPos+scrollPos}px`;//will drag from clicked area
+            (currentDraggedColumn as HTMLElement).style.left = `${x-FeedState.dragColumnStartingX-currentDraggedColumn.clientWidth/2+scrollPos}px`;//will drag from center of column
+        },
     },
     mounted(){
         for (let i = 0; i < this.feedData.totalPosts; i++) {
@@ -528,5 +612,13 @@ export default defineComponent({
     100% {
         background-position: 0 28px;
     }
+}
+
+.drag-column-start {
+	background-color: var(--color-btn-hover);
+	opacity: 85%; /* faded */
+    scale: 102%;
+    /* transform: rotate(2deg); */
+    cursor: grabbing;
 }
 </style>

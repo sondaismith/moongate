@@ -12,10 +12,26 @@
                 <div class="flex flex-col h-full">
                     <div class="flex-shrink preload-gutter overflow-x-hidden">
                         <div class="space-y-2 py-2 pl-2 pr-1">
-                            <FeedButton :icon="FeedEnums.Icons.Home" tooltip="Home"/>
+                            <!-- <FeedButton :icon="FeedEnums.Icons.Home" tooltip="Home"/> -->
                             <TransitionGroup name="feedbutton">
                                 <!-- <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/> -->
-                                <FeedButton v-for="feed in FeedState.FeedList" :key="feed" :feedId="feed.description.feedId" :icon="feed.description.feedIcon" :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts" :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"/>
+                                <!-- <FeedButton v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
+                                :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
+                                :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
+                                :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
+                                :class="{'drag-start' : index === oldIndex, 'drag-over' : index === newIndex}"
+                                draggable="true"
+                                @dragstart="handleDragstart($event,index)" @dragover.prevent="handleDragover(index)"
+                                @drop="handleDrop" @dragend="handleDragend"/> -->
+
+                                <FeedButton v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
+                                :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
+                                :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
+                                :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
+                                :button-being-dragged="isDraggingButton"
+                                @pointerdown="handleFeedButtonLongpress($event,index)" @pointerup="handleFeedButtonMouseup"
+                                @pointerover="handleFeedButtonMouseover($event,index)" @pointerleave="handleFeedButtonMouseLeave"
+                                class="draggable"/>
                             </TransitionGroup>
                         </div>
                     </div>
@@ -41,7 +57,11 @@
             <div class="flex">
                 <TransitionGroup name="feedcolumn">
                     <!-- <FeedColumn v-for="feed in feedListing.feedList" :key="feed" :feedData="feed"/> -->
-                    <FeedColumn v-for="feed in FeedState.FeedList" :key="feed.description.feedId" :feedData="feed"/>
+                    <FeedColumn v-for="(feed, index) in FeedState.FeedList" :list-index="index"
+                    :key="feed.description.feedId" :feedData="feed"
+                    @pointerover="handleFeedColumnMouseover($event,index)"
+                    @pointerleave="handleFeedColumnMouseLeave"
+                    class="draggable"/>
                 </TransitionGroup>
                 <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
                     <div>X Pos: {{ scrollXPos }}</div>
@@ -151,12 +171,14 @@ import SaveMediaModal from "./components/Utilities/SaveMediaModal.vue";
 import PostFocusModal from "./components/Post/PostFocusModal.vue";
 import SettingsPanel from "./components/Settings/SettingsPanel.vue";
 import { AppSettingsState } from "./state/AppSettingsState.vue";
+import FeedColumn from "./components/Feed/FeedColumn.vue";
 
 
     export default defineComponent({
         name:'Sidebar',
         components:{
             FeedButton,
+            FeedColumn,
             FeedEditModal,
             PostFocusModal,
             UserFocusModal,
@@ -184,7 +206,17 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 OptionIconList,
                 APIResponse: {},
                 DBResponse: {},
-                FeedEnums
+                FeedEnums,
+                oldFeedButtonIndex:-100,
+                newFeedButtonIndex:-100,
+                /**Holds the timeout object used to detect a longpress of a `FeedButton`. */
+                longpressTimeout:-1,
+                /**Holds a copy of the `FeedButton` element that is being dragged. */
+                draggedButton: undefined,
+                /**Indicates that one of the `FeedButton` components is being dragged. */
+                isDraggingButton:false,
+                /**Used to correctly position `FeedButton` when it is being dragged. */
+                dragButtonStartingY:0,
             }
         },
         methods: {
@@ -374,6 +406,114 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 await this.loadAppConfig();
                 invoke('show_main_window');//unhide main window and focus it via Rust
             },
+            /**
+             * Used to handle a "long press" on a {@link FeedButton}. Allows the User to drag
+             * and reposition the Feed item.
+             * @param e MouseDown/PointerDown `MouseEvent`.
+             * @param oldIndex The index of the {@link FeedButton} currently being long pressed.
+             */
+            handleFeedButtonLongpress(e:Event,oldIndex:number){
+                let pressedButton = (e.target as HTMLElement);
+                this.longpressTimeout = setTimeout(() => {
+                    this.isDraggingButton = true;
+                    pressedButton.classList.add('drag-start','dragging');
+                    this.oldFeedButtonIndex = oldIndex;
+                    this.dragButtonStartingY = pressedButton.offsetTop;
+                    document.addEventListener("mousemove", this.dragMoveFeedButton);//allows user to move button
+                    document.addEventListener("mousedown", this.dropFeedButton);//when user "drops" button
+                }, 800);
+            },
+            /**
+             * Used to cancel a long press. Will still allow the click action
+             * to be performed.
+             */
+            handleFeedButtonMouseup(){
+                clearTimeout(this.longpressTimeout);
+            },
+            /**
+             * Used to "drop" the currently selected Feed into its new position in the list.
+             */
+            dropFeedButton(){
+                clearTimeout(this.longpressTimeout);
+                let buttonBeingDropped = (document.getElementsByClassName('dragging')[0] as HTMLElement);
+
+                if(buttonBeingDropped.classList.contains('drag-start')){
+                    buttonBeingDropped.classList.remove('drag-start');
+                    //Smoothly transition element to location - top element unfortunately will not move smoothly
+                    buttonBeingDropped.style.transition = "top 0.3s ease";
+                    buttonBeingDropped.style.top = "0px";
+                    document.removeEventListener("mousemove", this.dragMoveFeedButton);
+                    //If position is new
+                    if(this.newFeedButtonIndex != this.oldFeedButtonIndex){
+                        // remove element from its oldIndex
+                        const elRemoved = FeedState.FeedList.splice(this.oldFeedButtonIndex, 1)[0];
+                        // insert it at its new index
+                        FeedState.FeedList.splice(this.newFeedButtonIndex, 0, elRemoved);
+                    }
+                    //delay removal of class to prevent click after longpress + let transition finish
+                    setTimeout(() => {
+                        buttonBeingDropped.style.removeProperty('top');
+                        buttonBeingDropped.style.removeProperty('transition');
+                        buttonBeingDropped.classList.remove('dragging');
+                        this.isDraggingButton = false;
+                    }, 300);
+                }
+                this.oldFeedButtonIndex = -100;
+                this.newFeedButtonIndex = -100;
+                document.removeEventListener("mousedown", this.dropFeedButton);
+            },
+            /**
+             * Called when the User's pointer enters a `FeedButton`. Used to determine where
+             * the dragged Feed will be repositioned to.
+             * @param e MouseOver `MouseEvent`.
+             * @param newIndex The index of the `FeedButton` that was hovered over.
+             */
+            handleFeedButtonMouseover(e:Event, newIndex:number){
+                if(!this.isDraggingButton) return;
+                if (newIndex !== this.oldFeedButtonIndex) {
+                    this.newFeedButtonIndex = newIndex;
+                }
+            },
+            /**
+             * Called when the User's pointer leaves a `FeedButton`. Used to cancel Feed
+             * repositioning.
+             */
+            handleFeedButtonMouseLeave(){
+                this.newFeedButtonIndex = this.oldFeedButtonIndex;
+            },
+            /**
+             * Method used to move the {@link FeedButton} that is being dragged in order
+             * to re-order the Feed list.
+             * @param e MouseEvent tracking User's pointer movement.
+             */
+            dragMoveFeedButton(e:MouseEvent){
+                let y = e.clientY;
+                let currentDraggedButton = document.getElementsByClassName('dragging')[0];
+                let scrollPos = currentDraggedButton.parentElement?.parentElement ? currentDraggedButton.parentElement.parentElement.scrollTop : 0;
+                // (currentDraggedButton as HTMLElement).style.top = `${y-20}px`;//absolute position version
+                (currentDraggedButton as HTMLElement).style.top = `${y-20-this.dragButtonStartingY+scrollPos}px`;
+            },
+            /**
+             * Called when the User's pointer enters a {@link FeedColumn}. Used to determine
+             * where the dragged Feed will be repositioned to.
+             * @param e `PointerEvent` of one Feed being dragged over another.
+             * @param newIndex The index of the `FeedButton` that was hovered over.
+             */
+            handleFeedColumnMouseover(e:PointerEvent, newIndex:number){
+                if(!FeedState.isGrabbingColumn) return;
+                if (newIndex !== FeedState.oldFeedColumnIndex) {
+                    FeedState.newFeedColumnIndex = newIndex;
+                }
+                (e.currentTarget as HTMLElement).querySelectorAll("[data-test='feedColumn-highlight']")[0].classList.add('feed-dropzone-highlight');
+            },
+            /**
+             * Called when the User's pointer leaves a `FeedColumn`. Used to cancel Feed
+             * repositioning.
+             */
+            handleFeedColumnMouseLeave(e:PointerEvent){
+                FeedState.newFeedColumnIndex = FeedState.oldFeedColumnIndex;
+                (e.currentTarget as HTMLElement).querySelectorAll("[data-test='feedColumn-highlight']")[0].classList.remove('feed-dropzone-highlight');
+            },
         },
         created(){
             this.appStartupProcedure();
@@ -444,5 +584,26 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
 .peek-leave-to {
     opacity: 0 !important;
     transform: translateY(-5px);
+}
+
+/* `FeedButton` drag & drop helper classes */
+.draggable{
+    transition: scale 0.3s ease, transform 0.3s ease;
+}
+.dragging{
+    /* position: absolute; */
+    z-index: 1;
+    pointer-events: none;
+}
+.drag-start {
+	background-color: var(--color-btn-hover);
+	opacity: 85%; /* faded */
+    scale: 120%;
+    transform: rotate(10deg);
+    cursor: grabbing;
+}
+.drag-over {
+	outline: 2px dashed black;
+	background-color: rgba(100, 100, 100, 0.6); /* greyed out */
 }
 </style>

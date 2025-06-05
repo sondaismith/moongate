@@ -1,15 +1,17 @@
 <template>
-    <div class="relative" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
+    <div class="relative cursor-pointer" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
     @click="highlightFeed" @contextmenu="showFeedOptionsMenu">
-        <a class="group cursor-pointer relative flex justify-center items-center
+        <a class="group relative flex justify-center items-center
             rounded-xl drop-shadow-md bg-feedBtn border border-outline transition-[border]
-            hover:border-secondary button-size !w-full overflow-hidden">
-            <FeedIcon v-if="!userDid" :icon="icon" class="h-full text-2xl text-primary"/>
-            <i-mingcute:loading-fill v-show="awaitingPFPRequest" class="absolute text-primary spinner self-center"/>
-            <div v-if="userPfp" class="button-size bg-contain bg-centers scale-[1.15] bg-no-repeat"
+            hover:border-secondary button-size !w-full overflow-hidden pointer-events-none">
+            <FeedIcon v-if="!userDid" :icon="icon"
+            class="h-full text-2xl text-primary select-none pointer-events-none"/>
+            <i-mingcute:loading-fill v-show="awaitingPFPRequest"
+            class="absolute text-primary spinner self-center select-none pointer-events-none"/>
+            <div v-if="userPfp" class="button-size bg-contain bg-centers scale-[1.15] bg-no-repeat pointer-events-none"
             :style="{'background-image': 'url('+userPfp+')'}"></div>
         </a>
-        <UnreadMsgCount :unreadCount="newPosts"/>
+        <UnreadMsgCount :unreadCount="newPosts" class="select-none"/>
     </div>
 </template>
 
@@ -44,6 +46,11 @@ export default defineComponent({
         icon: String,
         userDid:String,
         newPosts: Number,
+        /**
+         * Indicates if any `FeedButton` is being dragged when this one was "clicked".
+         * Used to prevent click when button is being dropped.
+         */
+        buttonBeingDragged:Boolean
     },
     methods:{
         displayButtonTooltip(event:PointerEvent){
@@ -78,8 +85,10 @@ export default defineComponent({
          * and highlighting with a "flash".
          */
         highlightFeed(){
+            console.log(this.$el)
             //Only if it is related to a FeedDisplay and we are not already scrolling
-            if(this.feedId && !this.isScrolling){
+            //Also if we are not dragging the button
+            if(this.feedId && !this.isScrolling && !this.buttonBeingDragged){
                 var el = document.getElementById(this.feedId);
                 if(el){
                     this.startScrolling();
