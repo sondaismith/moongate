@@ -191,6 +191,13 @@ button {
   /* border-color: #0ea5e9 !important; */
 }
 
+.feed-dropzone-highlight{
+  border-color: greenyellow !important;
+  background-color: rgba(112, 128, 144, 0.6) !important;
+  /* opacity: 0.7 !important; */
+  /* transition: background-color 0.3s ease, opacity 0.3s ease; */
+}
+
 .spinner{
   animation: spin 1s linear infinite;
 }
