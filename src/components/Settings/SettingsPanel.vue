@@ -1,11 +1,17 @@
 <template>
     <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
-        <div class="relative z-20 flex flex-col max-w-[40rem] w-4/5 md:w-2/3s h-4/5 max-h-[30rem] mx-auto my-auto rounded bg-focusBG
-        text-primary border border-sidebar drop-shadow-lg overflow-hidden">
-            <div class="flex gap-1 px-2 py-1 border-b border-outline text-3xl font-light select-none">
+        <div class="relative z-20 flex flex-col max-w-[40rem] w-full md:w-2/3s h-full max-h-[30rem]
+        m-4 my-auto sm:m-auto rounded bg-focusBG text-primary border border-sidebar drop-shadow-lg
+        overflow-hidden">
+            <div class="flex gap-1 px-2 py-1 border-b border-outline items-center text-3xl font-light select-none">
                 <i-mingcute:settings-2-line/>
                 <div>Application Settings</div>
+                <div @click="closeModal" class="rounded overflow-hidden borders border-outline text-2xl
+                text-red-500 ml-auto sm:hidden cursor-pointer hover:bg-btnHover"
+                title="Close Setting">
+                    <i-mingcute:close-fill/>
+                </div>
             </div>
             <div class="flex grow overflow-hidden">
                 <div class="flex flex-col gap-1 bg-postBG text-primary p-2 drop-shadow min-w-36">
@@ -31,7 +37,7 @@
                                     </div>
                                 </div>
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[1]"
-                                class="relative flex flex-col gap-2 w-full h-full overflow-hidden">
+                                class="relative flex flex-col gap-2 w-full h-full overflow-auto">
                                     <div class="font-thin text-2xl">Language Selection</div>
                                     <CheckBox :model-value="AppSettingsState.Settings.isDarkMode" @value-toggled="toggleTheme">
                                         Dark Mode?
