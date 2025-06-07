@@ -111,7 +111,6 @@
         <Transition name="modal">
             <SaveMediaModal v-if="AppState.isSavingMediaModalVisible"/>
         </Transition>
-        <PostDetailModal/>
         <Transition>
             <PostFocusModal v-if="postDetails.isFocusVisible"/>
         </Transition>

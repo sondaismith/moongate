@@ -1,35 +1,41 @@
 <template>
     <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
-        <div class="relative z-20 flex flex-col max-w-[40rem] w-4/5 md:w-2/3s h-4/5 mx-auto my-auto rounded bg-focusBG
-            text-primary drop-shadow-lg overflow-hidden">
+        <div class="relative z-20 flex flex-col max-w-[40rem] w-full sm:w-2/3s h-4/5
+        mx-2 sm:mx-auto my-auto rounded bg-focusBG text-primary drop-shadow-lg overflow-hidden">
+            {{ void "Control Bar" }}
+            <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8 w-full self-start
+            border-b border-outlineLighter *:h-full *:cursor-pointer *:w-12">
+                <i-mingcute:arrow-left-fill @click="goToPreviousNavHistory"
+                class="hover:bg-outline" :class="[{'text-disabled' : !hasPrevNavRecords}]"/>
+                <i-mingcute:arrow-right-fill @click="goToNextNavHistory"
+                class="hover:bg-outline" :class="[{'text-disabled' : !hasNextNavRecords}]"/>
+                <div @click="closeModal" class="flex ml-auto bg-blue-300 w-10
+                    justify-center text-2xl cursor-pointer"
+                    title="Close Window">
+                    <i-mingcute:close-fill/>
+                </div>
+            </div>
             {{ void "Main Container" }}
             <div id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="0">
                 <div class="flex flex-col h-full">
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0s grow items-center">
-                        <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8 w-full self-start
-                        border-b border-outlineLighter *:h-full *:cursor-pointer *:w-12">
-                            <i-mingcute:arrow-left-fill @click="goToPreviousNavHistory"
-                            class="hover:bg-outline" :class="[{'text-disabled' : !hasPrevNavRecords}]"/>
-                            <i-mingcute:arrow-right-fill @click="goToNextNavHistory"
-                            class="hover:bg-outline" :class="[{'text-disabled' : !hasNextNavRecords}]"/>
-                        </div>
                         {{ void "Banner+PFP Placeholder" }}
-                        <div v-if="awaitingProfileData" class="relative w-full animate-pulse z-[3]">
-                            <div class="bg-slate-500 w-full max-h-40 aspect-[3/1] shrink-0"/>
+                        <div v-if="awaitingProfileData" class="relative w-full animate-pulse z-[3] user-banner">
+                            <div class="bg-slate-500 w-full max-h-40s aspect-[3/1] shrink-0"/>
                             <div class="absolute bg-slate-400 rounded-full size-24 top-[4.5rem]s top-28 left-4
-                            shrink-0 border-2 border-slate-800"></div>
+                            shrink-0 border-2 border-slate-800 user-pfp"></div>
                         </div>
-                        <div v-else class="relative w-full">
-                            <div class="bg-red-400 w-full max-h-40 aspect-[3/1] shrink-0 bg-no-repeat bg-center bg-cover"
+                        <div v-else class="relative w-full user-banner">
+                            <div class="bg-red-400 w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-no-repeat bg-center bg-cover"
                             :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.banner+')'"/>
-                            <div class="absolute z-[3] flex bg-sky-400 rounded-full aspect-square size-24 top-[4.5rem]s top-28 left-4
-                            items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover"
+                            <div class="absolute z-[3] flex bg-sky-400 rounded-full aspect-square size-24 top-[4.5rem]s top-28s left-4
+                            items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp"
                             :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar+')'">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '' : 'PFP'}}</div>
                         </div>
                         {{ void "User Details Content" }}
-                        <div id="user-summary" class="flex flex-col z-[2] w-full sticky top-8 mt-10 py-2 px-4 bg-focusBG">
+                        <div id="user-summary" class="flex flex-col z-[2] w-full sticky top-0 mt-10 py-2 px-4 bg-focusBG">
                             <div v-if="awaitingProfileData" class="flex flex-col w-full mt-1 gap-2 animate-pulse">
                                 <div class="flex gap-2">
                                     <div class="flex flex-col w-full gap-1">
@@ -522,8 +528,8 @@ export default defineComponent({
         setUserSummaryBottomPos(){
             // console.log('Getting user-summary element:')
             // console.log((document.getElementById('user-summary') as HTMLElement).clientHeight);
-            let navbarHeight = (document.getElementById('user-modal-navbar') as HTMLElement).getBoundingClientRect().height;
-            this.userSummaryBottomPos = navbarHeight + (document.getElementById('user-summary') as HTMLElement).getBoundingClientRect().height;
+            // let navbarHeight = (document.getElementById('user-modal-navbar') as HTMLElement).getBoundingClientRect().height;
+            this.userSummaryBottomPos = (document.getElementById('user-summary') as HTMLElement).getBoundingClientRect().height;
         },
         /**
          * Method that returns the scroll-top position needed so the "post tabs" will be
@@ -534,9 +540,9 @@ export default defineComponent({
             let bio = document.getElementById('user-focus-bio');
             let summary = document.getElementById('user-summary');
             if(summary){
-                let navbarHeight = (document.getElementById('user-modal-navbar') as HTMLElement).getBoundingClientRect().height;
+                // let navbarHeight = (document.getElementById('user-modal-navbar') as HTMLElement).getBoundingClientRect().height;
                 let bioBottomPos = bio ? bio.offsetTop+bio.getBoundingClientRect().height : 0;
-                return bioBottomPos-(navbarHeight + summary.getBoundingClientRect().height);
+                return bioBottomPos-summary.getBoundingClientRect().height;
             }
             return 0;
         },
@@ -694,6 +700,15 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.user-banner{
+    container-type: inline-size;
+}
+@container (width > 0){
+    .user-pfp{
+        top: calc(100cqw/3 - 3rem);
+    }
+}
+
 .v-enter-active,
 .v-leave-active {
   transition: opacity 0.2s ease;

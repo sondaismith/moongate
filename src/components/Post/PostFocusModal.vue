@@ -1,8 +1,8 @@
 <template>
     <div data-test="post-focus-modal" id="post-focus-modal" tabindex="0"
-    class="absolute z-20 h-full w-full flex bg-slate-900/90 outline-none">
+    class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
         {{ void "Media Section" }}
-        <div class="flex flex-col w-3/5 grow">
+        <div class="flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
             {{ void "Close Button" }}
             <div @click="hideModal" class="flex shrink-0 ml-auto bg-blue-300 py-2 w-10
                 justify-center text-2xl cursor-pointer">
@@ -51,7 +51,7 @@
             </div> -->
         </div>
         {{ void "Comments Section" }}
-        <div class="flex flex-col w-2/5 shrink-0 max-w-96 bg-postFocusBG overflow-y-scroll">
+        <div class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG">
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
             <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
                 <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
@@ -101,7 +101,7 @@
                     </div>
                 </div>
                 {{ void "Post Content - Text" }}
-                <div class="text-sm pt-2 text-primary">
+                <div class="text-sm pt-2 text-primary break-words">
                     {{ postDetails.currentThreadView ? postDetails.currentThreadView.post.record.text : "initial state - undefined" }}
                 </div>
                 {{ void "Post Metadata" }}
