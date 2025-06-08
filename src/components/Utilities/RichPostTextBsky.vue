@@ -56,7 +56,7 @@ export default defineComponent({
                     this.markdown += `<component :is="Userlink" :userlinkValue="'${segment.text}'">${segment.text}</component>`
                 }
                 else if(segment.isTag()){
-                    this.markdown += `<component :is="Hashtag" :tagValue="'${segment.tag?.tag}'">#${segment.tag?.tag}</component>`
+                    this.markdown += `<component :is="Hashtag" tagValue="${segment.tag?.tag}">#${segment.tag?.tag}</component>`
                 }
                 else{
                     this.markdown += segment.text
