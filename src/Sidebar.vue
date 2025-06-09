@@ -1,5 +1,5 @@
 <template>
-    <div data-test="app-viewport" id="app-viewport" class="flex flex-row h-screen w-screen"
+    <div data-test="app-viewport" id="app-viewport" class="flex flex-row absolute h-full w-screen"
     :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
         {{ void "sidebar" }}
         <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar min-w-16 items-center">
@@ -340,10 +340,6 @@ import FeedColumn from "./components/Feed/FeedColumn.vue";
                     if (!confirmed) {
                         // user did not confirm closing the window; let's prevent it
                         event.preventDefault();
-                    }
-                    else{
-                        //Save currently open Feeds
-                        await updateSavedFeedsTable({data:stringifyFeedListData(FeedState.FeedList)});
                     }
                 });
                 // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION

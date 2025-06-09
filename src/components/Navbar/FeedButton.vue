@@ -216,6 +216,15 @@ export default defineComponent({
             }
         }
     },
+    watch:{
+        /**
+         * If the userDid changes, update the displayed Icon/PFP.
+         */
+        userDid(newDid:string, oldDid:string){
+            if(newDid.trim() != '') this.GetUserFeedPFP();
+            else this.userPfp ='';
+        }
+    },
     created(){
         this.GetUserFeedPFP();
     }

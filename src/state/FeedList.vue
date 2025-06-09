@@ -13,6 +13,8 @@ import { IUserSearchResult } from '../interfaces/UserInterfaces';
 import { GetBrowsingAgent } from '../lib/api.vue';
 import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
 import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
+import { isTauri } from '@tauri-apps/api/core';
+import { stringifyFeedListData, updateSavedFeedsTable } from '../lib/db/local_db';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
 function dec2hex (dec: number) {
@@ -69,14 +71,16 @@ export const FeedState = reactive({
  * @param cursor Cursor to use when attempting to paginate displayed Posts.
  * @param awaitingData Indicates if the Feed is waiting for data to display.
  */
-export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true){
+export async function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true){
     FeedState.FeedList.push({
         description:description,
         data:feed,
         cursor:cursor,
         seenAt:seenAt,
         isAwaitingFeedData:awaitingData,
-    })
+    });
+    //Attempt to save FeedList to disk
+    await SaveFeedChanges();
 }
 
 /**
@@ -503,7 +507,7 @@ export function GetFeed(feedId:string){
  * @param description The updated IFeedDescription for the Feed.
  * @param feedData The new Feed content retrieved using the updated specifications.
  */
-export function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]|Notification[]|TrendView[], cursor:string=''){
+export async function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]|Notification[]|TrendView[], cursor:string=''){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     //If feed found
     if(feed){
@@ -511,19 +515,39 @@ export function UpdateFeedDetails(feedId:string, description:IFeedDescription, f
         feed.data = feedData;
         if(cursor.trim() != '') feed.cursor = cursor;
     }
+    //Attempt to save FeedList to disk
+    await SaveFeedChanges();
+}
+
+/**
+ * Method that saves the application's updated saved Feed list to the relevant
+ * database. Handles determining the method to used based on the current
+ * platform.
+ */
+export async function SaveFeedChanges(){
+    if(isTauri()){
+        await updateSavedFeedsTable({data:stringifyFeedListData(FeedState.FeedList)});
+    }
+    //Add options for platforms other than Tauri desktop
+    else{
+        //Eventually should install the OS Information plugin to identify platform
+        toast.add({summary:"Using Platform other than Desktop", detail:`Will not be able to save feeds to disk`,severity:'info',group:'tr',life:2000});
+    }
 }
 
 /**
  * Removes specific Feed from FeedList.
  * @param feedId The `feedId` of the Feed you want to remove.
  */
-export function RemoveFeed(feedId:String){
+export async function RemoveFeed(feedId:String){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     if(feed){//Ensure matching Feed was found
         var removeIndex = FeedState.FeedList.indexOf(feed);
         //Remove item
         FeedState.FeedList.splice(removeIndex,1);
     }
+    //Attempt to save FeedList to disk
+    await SaveFeedChanges();
 }
 
 /**
