@@ -2,6 +2,9 @@ import { Monitor, PhysicalPosition, PhysicalSize } from "@tauri-apps/api/window"
 import { BaseDirectory, exists, remove } from "@tauri-apps/plugin-fs";
 import Database, { QueryResult } from "@tauri-apps/plugin-sql";
 import { IFeedDBData, IFeedListing } from "../../interfaces/FeedInterfaces";
+import { isTauri } from "@tauri-apps/api/core";
+import { web_db } from "./web_db";
+import { resolve } from "@tauri-apps/api/path";
 
 const APPLICATION_DB = "sqlite:moongate_app.db";
 
@@ -155,48 +158,54 @@ export async function createAppSettingTable(){
 }
 
 /**
- * Method that attempts to create the `user_accounts` table.
+ * Method that attempts to create the `user_accounts` table. Will only
+ * run on the Desktop version of the application.
  * @returns Result of trying to create the `user_accounts` table. Will be
  * a string starting with "ERROR:" if something went wrong.
  */
 export async function createUserAccountsTable(){
-    const db = await Database.load(APPLICATION_DB);
     var result;
-    try{
-        const newTableQuery = 'CREATE TABLE user_accounts (id INTEGER PRIMARY KEY,name TEXT NOT NULL,'
-        +'handle TEXT NOT NULL,did TEXT NOT NULL,pfp TEXT)';
-        result = await db.execute(newTableQuery);
+    if(isTauri()){//On Desktop
+        const db = await Database.load(APPLICATION_DB);
+        try{
+            const newTableQuery = 'CREATE TABLE user_accounts (id INTEGER PRIMARY KEY,name TEXT NOT NULL,'
+            +'handle TEXT NOT NULL,did TEXT NOT NULL,pfp TEXT)';
+            result = await db.execute(newTableQuery);
+        }
+        catch(error){
+            result = error;
+        }
+        await db.close(); //close connection
     }
-    catch(error){
-        result = error;
-    }
-    await db.close(); //close connection
     return checkIfError(result);
 }
 
 /**
- * Method that attempts to create the `saved_feeds` table.
+ * Method that attempts to create the `saved_feeds` table. Will only
+ * run on the Desktop version of the application.
  * @returns Result of trying to create the `saved_feeds` table. WIll be
  * a string starting with "ERROR:" if something went wrong.
  */
 export async function createSavedFeedsTable() {
-    const db = await Database.load(APPLICATION_DB);
     var result;
-    try{
-        const newTableQuery = 'CREATE TABLE saved_feeds (id INTEGER PRIMARY KEY,data TEXT NOT NULL)';
-        result = await db.execute(newTableQuery);
+    if(isTauri()){//On Desktop
+        const db = await Database.load(APPLICATION_DB);
+        try{
+            const newTableQuery = 'CREATE TABLE saved_feeds (id INTEGER PRIMARY KEY,data TEXT NOT NULL)';
+            result = await db.execute(newTableQuery);
+        }
+        catch(error){
+            result = error;
+        }
+        try {
+            const initialRecordQuery = 'INSERT INTO saved_feeds (data) VALUES("")';
+            result = await db.execute(initialRecordQuery);
+        }
+        catch(error){
+            result = error;
+        }
+        await db.close(); //close connection
     }
-    catch(error){
-        result = error;
-    }
-    try {
-        const initialRecordQuery = 'INSERT INTO saved_feeds (data) VALUES("")';
-        result = await db.execute(initialRecordQuery);
-    }
-    catch(error){
-        result = error;
-    }
-    await db.close(); //close connection
     return checkIfError(result);
 }
 
@@ -333,22 +342,25 @@ export async function checkIfAppSettingsTableExists(){
 
 /**
  * Method that checks if the `user_accounts` table exists, and if there's
- * at least one record row in it.
+ * at least one record row in it. Will only run on the Desktop version of
+ * the application.
  * @returns True (1) if table exists, False (0) if not.
  */
 export async function checkIfUserAccountsTableExists(){
     var result;
-    try{
-        const db = await Database.load(APPLICATION_DB);
-        var tableExists = await db.select("SELECT EXISTS (SELECT * FROM sqlite_master WHERE type='table' AND name='user_accounts')");
-        //returned object key is query text and result is value, the array indexes below extract the values
-        var tableResult = Boolean(Object.values(tableExists[0])[0]);
-        result = tableResult;
-        await db.close();
-        console.log("does `user_accounts` table exist: "+result);
-    }
-    catch(error){
-        result = error; //Make sure to handle returned error object wherever
+    if(isTauri()){
+        try{
+            const db = await Database.load(APPLICATION_DB);
+            var tableExists = await db.select("SELECT EXISTS (SELECT * FROM sqlite_master WHERE type='table' AND name='user_accounts')");
+            //returned object key is query text and result is value, the array indexes below extract the values
+            var tableResult = Boolean(Object.values(tableExists[0])[0]);
+            result = tableResult;
+            await db.close();
+            console.log("does `user_accounts` table exist: "+result);
+        }
+        catch(error){
+            result = error; //Make sure to handle returned error object wherever
+        }
     }
     return checkIfError(result);
 }
@@ -400,20 +412,39 @@ export async function updateSavedFeedsTable(newValues:SavedFeeds){
 }
 
 /**
- * Method the returns all the records currently held in the `saved_feeds` table.
+ * Method the returns all the records currently held in the "Saved Feeds" table.
+ * The table is stored in a different medium depending on the current app platform -
+ * this method automatically loads from the correct one.
  * @returns Result of trying to grab all the records held in the `saved_feeds` table.
  */
-export async function loadSavedFeedsRecords():Promise<SavedFeeds|Boolean|undefined|unknown>{
-    var result;
-    try{
-        const db = await Database.load(APPLICATION_DB);
-        result = await db.select('SELECT * FROM saved_feeds') as SavedFeeds;
-        await db.close();
-    }
-    catch(error){
-        result = error;
-    }
-    return checkIfError(result);
+export async function loadSavedFeedsRecords():Promise<SavedFeeds[]|Error>{
+    var result:SavedFeeds[]|Error;
+    return new Promise<SavedFeeds[]|Error>(async (resolve, reject) => {
+        if(isTauri()){//If on Desktop
+            const db = await Database.load(APPLICATION_DB);
+            await db.select('SELECT * FROM saved_feeds')
+            .then(res => {
+                result = res as SavedFeeds[];
+            })
+            .catch(async (err) => {
+                await db.close();
+                reject(new Error(err));
+            })
+            await db.close();
+        }
+        else{//On web-based platform - use Dexie.js to load SavedFeeds
+            await web_db.savedFeeds.toArray()
+            .then(res =>{
+                if(res.length>0){
+                    result = res as SavedFeeds[];
+                }
+            })
+            .catch(err => {
+                reject(new Error(err));
+            })
+        }
+        resolve(result as SavedFeeds[]);
+    });
 }
 
 /**

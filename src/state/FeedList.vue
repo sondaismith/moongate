@@ -15,6 +15,7 @@ import { Notification } from '@atproto/api/dist/client/types/app/bsky/notificati
 import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 import { isTauri } from '@tauri-apps/api/core';
 import { stringifyFeedListData, updateSavedFeedsTable } from '../lib/db/local_db';
+import { web_db } from '../lib/db/web_db';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
 function dec2hex (dec: number) {
@@ -30,6 +31,7 @@ export function GenerateUniqueId(len: number) : string{
     // feedListing.feedList.forEach(feed => {
 
     // });
+    if(FeedState.FeedList.find(f => f.description.feedId == newId) != undefined) return GenerateUniqueId(len);
     return newId;
 }
 
@@ -69,9 +71,13 @@ export const FeedState = reactive({
  * @param description Details about the Feed (type, DID source, etc.).
  * @param feed The Feed data returned by the Bluesky API.
  * @param cursor Cursor to use when attempting to paginate displayed Posts.
- * @param awaitingData Indicates if the Feed is waiting for data to display.
+ * @param awaitingData Indicates if the Feed is waiting for data to display. Using
+ * the default value of true usually means the Feed is being added from the "Saved Feed"
+ * database.
  */
 export async function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true){
+    // let isFeedDuplicate = FeedState.FeedList.find(feed => feed.description.feedId == description.feedId) != undefined;
+    // if(isFeedDuplicate) return;
     FeedState.FeedList.push({
         description:description,
         data:feed,
@@ -79,8 +85,8 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
         seenAt:seenAt,
         isAwaitingFeedData:awaitingData,
     });
-    //Attempt to save FeedList to disk
-    await SaveFeedChanges();
+    //Attempt to save FeedList to disk if Feed was newly created
+    if(!awaitingData) await SaveFeedChanges();
 }
 
 /**
@@ -531,7 +537,9 @@ export async function SaveFeedChanges(){
     //Add options for platforms other than Tauri desktop
     else{
         //Eventually should install the OS Information plugin to identify platform
-        toast.add({summary:"Using Platform other than Desktop", detail:`Will not be able to save feeds to disk`,severity:'info',group:'tr',life:2000});
+        // toast.add({summary:"Using Platform other than Desktop", detail:`Will not be able to save feeds to disk`,severity:'info',group:'tr',life:2000});
+        console.log(`Saving FeedList changes w/ Dexie.js...`);
+        web_db.savedFeeds.put({id:1, data:stringifyFeedListData(FeedState.FeedList)});
     }
 }
 
@@ -645,12 +653,4 @@ export function ToggleFeedOptionsMenu(){
 export function UpdateSelectedFeed(newVal:string){
     FeedState.selectedFeed = newVal;
 }
-
-export const userFeedList : IFeedListing = reactive({
-    feedList: [
-        {feedId:GenerateUniqueId(10), feedName:'Friends', feedHandle:'friends', feedType:FeedEnums.Types.User, newPosts: 3, totalPosts: 2},
-        // {feedId:GenerateUniqueId(10), feedName:'Local News', feedHandle:'bbcNews', feedType:FeedEnums.Icons.News, newPosts: 5, totalPosts: 3},
-        // {feedId:GenerateUniqueId(10), feedName:'Artists', feedHandle:'artists', feedType:FeedEnums.Icons.Art, newPosts: 7, totalPosts: 1},
-    ]
-})
 </script>

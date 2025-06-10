@@ -134,7 +134,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { userFeedList, FeedState, AddFeedToList, createFeedDescription, AddSavedFeed, LoadFeedPostsAsync } from "./state/FeedList.vue";
+import { FeedState, AddFeedToList, createFeedDescription, AddSavedFeed, LoadFeedPostsAsync } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState, toast } from "./state/AppState.vue";
@@ -152,7 +152,7 @@ createSavedFeedsTable, updateSavedFeedsTable,
 loadSavedFeedsRecords,
 stringifyFeedListData,
 stringToJSON} from "./lib/db/local_db";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke, isTauri } from "@tauri-apps/api/core";
 import { Window } from "@tauri-apps/api/window";
 import { getUserHomeFeed } from "./lib/api/Feed.vue";
 import { FeedEnums } from "./enums/FeedEnums";
@@ -171,6 +171,7 @@ import PostFocusModal from "./components/Post/PostFocusModal.vue";
 import SettingsPanel from "./components/Settings/SettingsPanel.vue";
 import { AppSettingsState } from "./state/AppSettingsState.vue";
 import FeedColumn from "./components/Feed/FeedColumn.vue";
+import { IFeedDBData } from "./interfaces/FeedInterfaces";
 
 
     export default defineComponent({
@@ -186,12 +187,6 @@ import FeedColumn from "./components/Feed/FeedColumn.vue";
         },
         data(){
             return{
-                // feedList: [
-                //     {feedName:'Friends', feedType:'friends', newPosts: 3},
-                //     {feedName:'Local News', feedType:'news', newPosts: 5},
-                //     {feedName:'Artists', feedType:'art', newPosts: 7},
-                // ]
-                feedListing: userFeedList,
                 FeedState,
                 OptionsMenuState,
                 AccountPeekState,
@@ -332,17 +327,18 @@ import FeedColumn from "./components/Feed/FeedColumn.vue";
              * Called during creation of component.
              */
             async setUpListeners(){
-                var window = Window.getCurrent();
-
-                //Listen to any attempt to close the app window.
-                const unlisten = await window.onCloseRequested(async (event) => {
-                    const confirmed = await confirm('Are you sure?');
-                    if (!confirmed) {
-                        // user did not confirm closing the window; let's prevent it
-                        event.preventDefault();
-                    }
-                });
-                // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
+                if(isTauri()){
+                    var window = Window.getCurrent();
+                    //Listen to any attempt to close the app window.
+                    const unlisten = await window.onCloseRequested(async (event) => {
+                        const confirmed = await confirm('Are you sure?');
+                        if (!confirmed) {
+                            // user did not confirm closing the window; let's prevent it
+                            event.preventDefault();
+                        }
+                    });
+                    // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
+                }
             },
             /**
              * Method that ensures that the `user_accounts` table exists.
@@ -372,34 +368,43 @@ import FeedColumn from "./components/Feed/FeedColumn.vue";
              */
             async loadAppConfig(){
                 //Load application settings
-                await AppSettingsState.loadSettingsFromStore();
-
-                //Load saved Feeds
-                var lastOpenFeeds = await loadSavedFeedsRecords() as SavedFeeds[];
-                console.log(lastOpenFeeds);
-                //Ensure there is data to load before trying to display Feeds
-                if(lastOpenFeeds && lastOpenFeeds[0].data.length>0){
-                    var loadedFeeds = stringToJSON(lastOpenFeeds[0].data);
-                    console.log(loadedFeeds);
-                    //Set AppState to "loading feeds" - prevent interaction until
-                    //all data has been loaded
-                    for (let i = 0; i < loadedFeeds.length; i++) {
-                        await AddSavedFeed(loadedFeeds[i]);
-                    }
-                    for (let i = 0; i < FeedState.FeedList.length; i++) {
-                        LoadFeedPostsAsync(FeedState.FeedList[i].description); //add await if you want these done sequentially
-                        await new Promise((resolve) => setTimeout(resolve,200)) //use if you want to add a small delay between each API call
-                    }
-                    //Set AppState "loading feeds" to false
+                if(isTauri()){
+                    await AppSettingsState.loadSettingsFromStore();
                 }
-                else{console.log('No saved Feeds to restore.')}
+                //Load saved Feeds
+                await loadSavedFeedsRecords()
+                .then(async (res) => {
+                    let feedResult = res as SavedFeeds[];
+                    if(feedResult && feedResult.length>0){
+                        let loadedFeeds:IFeedDBData[]|undefined = stringToJSON(feedResult[0].data);
+                        console.log(loadedFeeds);
+                        //Ensure there is data to load before trying to display Feeds
+                        if(loadedFeeds && loadedFeeds.length>0){
+                            console.log(loadedFeeds);
+                            //Set AppState to "loading feeds" - prevent interaction until
+                            //all data has been loaded
+                            for (let i = 0; i < loadedFeeds.length; i++) {
+                                await AddSavedFeed(loadedFeeds[i]);
+                            }
+                            for (let i = 0; i < FeedState.FeedList.length; i++) {
+                                LoadFeedPostsAsync(FeedState.FeedList[i].description); //add await if you want these done sequentially
+                                await new Promise((resolve) => setTimeout(resolve,200)) //use if you want to add a small delay between each API call
+                            }
+                            //Set AppState "loading feeds" to false
+                        }
+                        else{console.log('No saved Feeds to restore.')}
+                    }
+                })
+                .catch(err => {
+                    toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000})
+                });
             },
             async appStartupProcedure(){
                 await this.userAccountsDatabaseSetup();
                 await this.savedFeedsDatabaseSetup();
                 await this.setUpListeners();
                 await this.loadAppConfig();
-                invoke('show_main_window');//unhide main window and focus it via Rust
+                if(isTauri()) invoke('show_main_window');//unhide main window and focus it via Rust
             },
             /**
              * Used to handle a "long press" on a {@link FeedButton}. Allows the User to drag
