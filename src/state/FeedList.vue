@@ -15,7 +15,7 @@ import { Notification } from '@atproto/api/dist/client/types/app/bsky/notificati
 import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 import { isTauri } from '@tauri-apps/api/core';
 import { stringifyFeedListData, updateSavedFeedsTable } from '../lib/db/local_db';
-import { web_db } from '../lib/db/web_db';
+import { clearIndexedDBSavedFeeds, Feed, web_db } from '../lib/db/web_db';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
 function dec2hex (dec: number) {
@@ -636,6 +636,22 @@ export function ClearFeed(feedId:String){
     if(feed){//Ensure matching Feed was found
         feed.data = [];
     }
+}
+
+/**
+ * Method that clears the `savedFeeds` table held in the `web_db` IndexedDB
+ * database.
+ */
+export async function DeleteIndexedDBSavedFeeds(){
+    console.log('Clearing savedFeed in IndexedDB - current value:');
+    await web_db.savedFeeds.toArray().then(res => {
+        console.log(res);
+    })
+    await web_db.savedFeeds.clear();
+    console.log('Cleared savedFeed in IndexedDB - current value:');
+    await web_db.savedFeeds.toArray().then(res => {
+        console.log(res);
+    })
 }
 
 /**

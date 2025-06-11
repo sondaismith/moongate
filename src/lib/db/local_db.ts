@@ -4,7 +4,6 @@ import Database, { QueryResult } from "@tauri-apps/plugin-sql";
 import { IFeedDBData, IFeedListing } from "../../interfaces/FeedInterfaces";
 import { isTauri } from "@tauri-apps/api/core";
 import { web_db } from "./web_db";
-import { resolve } from "@tauri-apps/api/path";
 
 const APPLICATION_DB = "sqlite:moongate_app.db";
 
