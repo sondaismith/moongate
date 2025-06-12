@@ -85,7 +85,6 @@ export default defineComponent({
          * and highlighting with a "flash".
          */
         highlightFeed(){
-            console.log(this.$el)
             //Only if it is related to a FeedDisplay and we are not already scrolling
             //Also if we are not dragging the button
             if(this.feedId && !this.isScrolling && !this.buttonBeingDragged){
