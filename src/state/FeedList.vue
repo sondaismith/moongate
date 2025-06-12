@@ -235,10 +235,14 @@ export function createFeedDescription(userId:number,handle:string,name:string,ty
  * @param feedToUpdate The Feed you wish to update the `FeedColumn` settings of.
  * @param newColumnSettings The new `FeedColumn` settings to update with.
  */
-export function updateFeedColumnSettings(feedToUpdate:IFeedListing, newColumnSettings:IFeedColumnSettings){
+export async function updateFeedColumnSettings(feedToUpdate:IFeedListing, newColumnSettings:IFeedColumnSettings){
     var feed = FeedState.FeedList.find(element => element.description.feedId == feedToUpdate.description.feedId);
     //If existing Feed is found...
-    if(feed) feed.description.feedColumnSettings = newColumnSettings;
+    if(feed){
+        feed.description.feedColumnSettings = newColumnSettings;
+        //Attempt to save Feed changes to disk
+        await SaveFeedChanges();
+    }
 }
 
 /**
@@ -340,7 +344,7 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
         newPosts:10,totalPosts:30,
-        feedColumnSettings:defaultAppearance,
+        feedColumnSettings:{width:savedFeed.settings.width},
         feedSourceDID:'',
         feedTags:''
     }
@@ -539,7 +543,10 @@ export async function SaveFeedChanges(){
         //Eventually should install the OS Information plugin to identify platform
         // toast.add({summary:"Using Platform other than Desktop", detail:`Will not be able to save feeds to disk`,severity:'info',group:'tr',life:2000});
         console.log(`Saving FeedList changes w/ Dexie.js...`);
-        web_db.savedFeeds.put({id:1, data:stringifyFeedListData(FeedState.FeedList)});
+        web_db.savedFeeds.put({id:1, data:stringifyFeedListData(FeedState.FeedList)})
+        .then(res => toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:2000}))
+        .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
+
     }
 }
 
