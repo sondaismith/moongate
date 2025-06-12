@@ -105,7 +105,6 @@ import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from 
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import CheckBox from '../Utilities/CheckBox.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
-import { BskyAgent } from '@atproto/api';
 
 export default defineComponent({
     components:{

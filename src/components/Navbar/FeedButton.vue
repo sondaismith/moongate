@@ -85,7 +85,6 @@ export default defineComponent({
          * and highlighting with a "flash".
          */
         highlightFeed(){
-            console.log(this.$el)
             //Only if it is related to a FeedDisplay and we are not already scrolling
             //Also if we are not dragging the button
             if(this.feedId && !this.isScrolling && !this.buttonBeingDragged){
@@ -214,6 +213,15 @@ export default defineComponent({
                 })
                 .catch(err => toast.add(HandleAPIError(err, 'Error getting UserButton profile avatar')));
             }
+        }
+    },
+    watch:{
+        /**
+         * If the userDid changes, update the displayed Icon/PFP.
+         */
+        userDid(newDid:string, oldDid:string){
+            if(newDid.trim() != '') this.GetUserFeedPFP();
+            else this.userPfp ='';
         }
     },
     created(){

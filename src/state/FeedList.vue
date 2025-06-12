@@ -13,6 +13,9 @@ import { IUserSearchResult } from '../interfaces/UserInterfaces';
 import { GetBrowsingAgent } from '../lib/api.vue';
 import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
 import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
+import { isTauri } from '@tauri-apps/api/core';
+import { stringifyFeedListData, updateSavedFeedsTable } from '../lib/db/local_db';
+import { clearIndexedDBSavedFeeds, Feed, web_db } from '../lib/db/web_db';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
 function dec2hex (dec: number) {
@@ -28,6 +31,7 @@ export function GenerateUniqueId(len: number) : string{
     // feedListing.feedList.forEach(feed => {
 
     // });
+    if(FeedState.FeedList.find(f => f.description.feedId == newId) != undefined) return GenerateUniqueId(len);
     return newId;
 }
 
@@ -67,16 +71,22 @@ export const FeedState = reactive({
  * @param description Details about the Feed (type, DID source, etc.).
  * @param feed The Feed data returned by the Bluesky API.
  * @param cursor Cursor to use when attempting to paginate displayed Posts.
- * @param awaitingData Indicates if the Feed is waiting for data to display.
+ * @param awaitingData Indicates if the Feed is waiting for data to display. Using
+ * the default value of true usually means the Feed is being added from the "Saved Feed"
+ * database.
  */
-export function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true){
+export async function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true){
+    // let isFeedDuplicate = FeedState.FeedList.find(feed => feed.description.feedId == description.feedId) != undefined;
+    // if(isFeedDuplicate) return;
     FeedState.FeedList.push({
         description:description,
         data:feed,
         cursor:cursor,
         seenAt:seenAt,
         isAwaitingFeedData:awaitingData,
-    })
+    });
+    //Attempt to save FeedList to disk if Feed was newly created
+    if(!awaitingData) await SaveFeedChanges();
 }
 
 /**
@@ -225,10 +235,14 @@ export function createFeedDescription(userId:number,handle:string,name:string,ty
  * @param feedToUpdate The Feed you wish to update the `FeedColumn` settings of.
  * @param newColumnSettings The new `FeedColumn` settings to update with.
  */
-export function updateFeedColumnSettings(feedToUpdate:IFeedListing, newColumnSettings:IFeedColumnSettings){
+export async function updateFeedColumnSettings(feedToUpdate:IFeedListing, newColumnSettings:IFeedColumnSettings){
     var feed = FeedState.FeedList.find(element => element.description.feedId == feedToUpdate.description.feedId);
     //If existing Feed is found...
-    if(feed) feed.description.feedColumnSettings = newColumnSettings;
+    if(feed){
+        feed.description.feedColumnSettings = newColumnSettings;
+        //Attempt to save Feed changes to disk
+        await SaveFeedChanges();
+    }
 }
 
 /**
@@ -330,7 +344,7 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
         newPosts:10,totalPosts:30,
-        feedColumnSettings:defaultAppearance,
+        feedColumnSettings:{width:savedFeed.settings.width},
         feedSourceDID:'',
         feedTags:''
     }
@@ -503,7 +517,7 @@ export function GetFeed(feedId:string){
  * @param description The updated IFeedDescription for the Feed.
  * @param feedData The new Feed content retrieved using the updated specifications.
  */
-export function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]|Notification[]|TrendView[], cursor:string=''){
+export async function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]|Notification[]|TrendView[], cursor:string=''){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     //If feed found
     if(feed){
@@ -511,19 +525,44 @@ export function UpdateFeedDetails(feedId:string, description:IFeedDescription, f
         feed.data = feedData;
         if(cursor.trim() != '') feed.cursor = cursor;
     }
+    //Attempt to save FeedList to disk
+    await SaveFeedChanges();
+}
+
+/**
+ * Method that saves the application's updated saved Feed list to the relevant
+ * database. Handles determining the method to used based on the current
+ * platform.
+ */
+export async function SaveFeedChanges(){
+    if(isTauri()){
+        await updateSavedFeedsTable({data:stringifyFeedListData(FeedState.FeedList)});
+    }
+    //Add options for platforms other than Tauri desktop
+    else{
+        //Eventually should install the OS Information plugin to identify platform
+        // toast.add({summary:"Using Platform other than Desktop", detail:`Will not be able to save feeds to disk`,severity:'info',group:'tr',life:2000});
+        console.log(`Saving FeedList changes w/ Dexie.js...`);
+        web_db.savedFeeds.put({id:1, data:stringifyFeedListData(FeedState.FeedList)})
+        .then(res => toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:2000}))
+        .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
+
+    }
 }
 
 /**
  * Removes specific Feed from FeedList.
  * @param feedId The `feedId` of the Feed you want to remove.
  */
-export function RemoveFeed(feedId:String){
+export async function RemoveFeed(feedId:String){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     if(feed){//Ensure matching Feed was found
         var removeIndex = FeedState.FeedList.indexOf(feed);
         //Remove item
         FeedState.FeedList.splice(removeIndex,1);
     }
+    //Attempt to save FeedList to disk
+    await SaveFeedChanges();
 }
 
 /**
@@ -607,6 +646,22 @@ export function ClearFeed(feedId:String){
 }
 
 /**
+ * Method that clears the `savedFeeds` table held in the `web_db` IndexedDB
+ * database.
+ */
+export async function DeleteIndexedDBSavedFeeds(){
+    console.log('Clearing savedFeed in IndexedDB - current value:');
+    await web_db.savedFeeds.toArray().then(res => {
+        console.log(res);
+    })
+    await web_db.savedFeeds.clear();
+    console.log('Cleared savedFeed in IndexedDB - current value:');
+    await web_db.savedFeeds.toArray().then(res => {
+        console.log(res);
+    })
+}
+
+/**
  * Method that toggles the visibility of the `FeedOptionsMenu`.
  */
 export function ToggleFeedOptionsMenu(){
@@ -621,12 +676,4 @@ export function ToggleFeedOptionsMenu(){
 export function UpdateSelectedFeed(newVal:string){
     FeedState.selectedFeed = newVal;
 }
-
-export const userFeedList : IFeedListing = reactive({
-    feedList: [
-        {feedId:GenerateUniqueId(10), feedName:'Friends', feedHandle:'friends', feedType:FeedEnums.Types.User, newPosts: 3, totalPosts: 2},
-        // {feedId:GenerateUniqueId(10), feedName:'Local News', feedHandle:'bbcNews', feedType:FeedEnums.Icons.News, newPosts: 5, totalPosts: 3},
-        // {feedId:GenerateUniqueId(10), feedName:'Artists', feedHandle:'artists', feedType:FeedEnums.Icons.Art, newPosts: 7, totalPosts: 1},
-    ]
-})
 </script>

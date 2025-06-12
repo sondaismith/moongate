@@ -546,6 +546,8 @@ export default defineComponent({
             }
         },100);
         this.FeedDataType = this.feedData ? this.feedData.description.feedType : FeedEnums.Types.User;
+        /**Mark correct FeedColumn width size button as selected */
+        if(this.feedData) this.selectedWidthSetting = Object.keys(FeedEnums.Widths).indexOf(this.feedData.description.feedColumnSettings.width.toString());
     },
 })
 </script>

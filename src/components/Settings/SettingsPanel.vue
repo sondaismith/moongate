@@ -20,9 +20,9 @@
                         {{ category.name }}
                     </SettingsCategory>
                 </div>
-                <div class="relative grow p-2 h-full">
-                    <div class="relative p-2 rounded border border-outline h-full overflow-hidden">
-                        <div class="relative h-full overflow-hidden">
+                <div class="relative grow p-2 w-full h-full overflow-hidden">
+                    <div class="relative p-2 rounded border border-outline w-full h-full overflow-hidden">
+                        <div class="relative w-full h-full overflow-hidden">
                             <TransitionGroup>
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[0]">
                                     <div class="flex flex-col gap-1">
@@ -89,6 +89,64 @@
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[2]">
                                     <div class="italic">Account Settings are still not supported. Check back later!</div>
                                 </div>
+                                <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[3]"
+                                class="relative flex flex-col w-full h-full overflow-y-auto pr-2">
+                                    <div class="italic">Devloper testing commands - Be careful!</div>
+                                    <div v-if="!isTauri()" class="flex flex-col gap-1 border border-outline rounded p-2">
+                                        <div class="font-thin text-2xl">IndexedDB Options</div>
+                                        <hr class="border-outline pb-1"/>
+                                        <SquareButton @click="debugGetSavedFeedsWeb"
+                                            class="self-start text-xs !p-1 bg-btn hover:bg-btnHover"
+                                            title="Click to load 'savedFeeds' table data">
+                                            Load Saved Feeds
+                                        </SquareButton>
+                                        <div v-if="isSavedFeedsLoaded" class="text-sm">
+                                            <div>
+                                                {{ `There is/are ${SetttingData.Options.Developer.data.recordsFromDB.length}
+                                                SavedFeed record(s) stored via IndexedDB.` }}
+                                            </div>
+                                            <div>{{ `There is/are ${SetttingData.Options.Developer.data.savedFeeds.length}
+                                                Feed(s) saved.` }}</div>
+                                        </div>
+                                        <div v-if="isSavedFeedsLoaded" class="flex flex-col rounded border border-outline
+                                        p-1 overflow-auto">
+                                            <table class="text-sm whitespace-nowrap border-separate">
+                                                <thead>
+                                                    <th v-for="col in Object.keys(SetttingData.Options.Developer.data.savedFeeds[0])">
+                                                        {{ col }}
+                                                    </th>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="(feed, index) in SetttingData.Options.Developer.data.savedFeeds"
+                                                    class="bg-btn border">
+                                                        <td v-for="(col, colIndex) in Object.keys(feed)" class="borders text-center px-1"
+                                                        :class="{'rounded-tl' : index == 0 && colIndex == 0, 'rounded-tr' : index == 0 && colIndex == 6}">
+                                                            {{ feed[col] }}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div v-else class="text-xs">
+                                            Click button above to load savedFeed table data
+                                        </div>
+                                        <div v-if="noReturnedFeeds" class="rounded border border-outline p-1 text-sm">
+                                            <span>There are no records in the </span>
+                                            <span class="rounded-md bg-btn px-1 py-0.5 italic text-btnText">savedFeed</span>
+                                            <span> table.</span>
+                                        </div>
+                                        <SquareButton @click="confirmDebugClearIndexedDBSavedFeeds"
+                                            class="self-start text-xs text-white !p-1 bg-red-500 hover:bg-red-700"
+                                            title="Clear 'Saved Feeds' from IndexedDB">
+                                            Clear Saved Feeds
+                                        </SquareButton>
+                                    </div>
+                                    <div v-else class="flex flex-col gap-1">
+                                        <div class="font-thin text-2xl">IndexedDB Options</div>
+                                        <hr class="pb-1"/>
+                                        <div class="text-sm">IndexedDB Options are not available in the Desktop version of the app.</div>
+                                    </div>
+                                </div>
                             </TransitionGroup>
                         </div>
                     </div>
@@ -111,6 +169,10 @@ import SquareButton from '../Utilities/SquareButton.vue';
 import { getCurrentWindow, PhysicalSize } from '@tauri-apps/api/window';
 import { LangCode } from '../../interfaces/SettingsInterfaces';
 import CheckBox from '../Utilities/CheckBox.vue';
+import { loadSavedFeedsRecords, SavedFeeds, stringToJSON } from '../../lib/db/local_db';
+import { IFeedDBData } from '../../interfaces/FeedInterfaces';
+import { DeleteIndexedDBSavedFeeds } from '../../state/FeedList.vue';
+import { isTauri } from '@tauri-apps/api/core';
 
 
 export default defineComponent({
@@ -119,6 +181,8 @@ export default defineComponent({
             AppState,
             AppSettingsState,
             LocalesObject,
+            stringToJSON,
+            isTauri,
             SetttingData: {
                 Options:{
                     General:{
@@ -140,6 +204,24 @@ export default defineComponent({
                         name:'Account',
                         data:{
                             TBA:true
+                        }
+                    },
+                    Developer:{
+                        name:'Dev Options',
+                        data:{
+                            /**The Feeds that will currently be loaded in the application. */
+                            savedFeeds:[] as IFeedDBData[],
+                            /**
+                             * A collection of every "Saved Feed" data row held in IndexedDB
+                             * Only one should be returned, but if there are others you can see
+                             * them here (they will be ignored by the app).
+                             */
+                            recordsFromDB:[] as SavedFeeds[],
+                            /**
+                             * Indicates that the User has requested to view the IndexedDB
+                             * data. Used to display "no records" message.
+                             */
+                            hasIndexedDBDataBeenRequested: false
                         }
                     }
                 }
@@ -198,11 +280,61 @@ export default defineComponent({
             var loadedWindowSize = new PhysicalSize(800,600);
             var curWindow = getCurrentWindow();
             curWindow.setSize(loadedWindowSize);
+        },
+        /**
+         * Debug method for viewing what is stored in the `savedFeeds` IndexedDB
+         * table.
+         */
+        async debugGetSavedFeedsWeb(){
+            await loadSavedFeedsRecords()
+            .then(res => {
+                console.log(res);
+                let feedResult = res as SavedFeeds[];
+                this.SetttingData.Options.Developer.data.hasIndexedDBDataBeenRequested = true;
+                if(feedResult && feedResult.length>0){
+                    let loadedFeeds:IFeedDBData[]|undefined = stringToJSON(feedResult[0].data);
+                    this.SetttingData.Options.Developer.data.savedFeeds = loadedFeeds;
+                    this.SetttingData.Options.Developer.data.recordsFromDB = feedResult;
+                }
+            })
+            .catch(err => {
+                toast.add({summary:'Error', detail:`Error loading saved feeds: ${err}`, severity:'error', group:'tr', life:3000});
+            })
+        },
+        /**
+         * Debug method that ask the User for confirmation before clearing all records from
+         * the `saveFeeds` IndexedDB array.
+         */
+        async confirmDebugClearIndexedDBSavedFeeds(){
+            AppState.showConfirmModal('Are you sure you wish to clear the Saved Feeds?', this.clearSavedFeeds);
+        },
+        /**
+         * Method that calls the method that clears the records held in the `savedFeeds`
+         * IndexedDB table. Also clears the table displayed on the `SettingsPanel` table.
+         */
+        clearSavedFeeds(){
+            DeleteIndexedDBSavedFeeds();
+            this.SetttingData.Options.Developer.data.savedFeeds = [];
+            this.SetttingData.Options.Developer.data.recordsFromDB = [];
+            this.SetttingData.Options.Developer.data.hasIndexedDBDataBeenRequested = false;
         }
     },
     computed:{
         langControlsDisabled(){
             if(AppSettingsState.Settings.isAcceptingAllLanguages) return true;
+            return false;
+        },
+        isSavedFeedsLoaded(){
+            if(this.SetttingData.Options.Developer.data.savedFeeds.length>0) return true;
+            return false;
+        },
+        /**
+         * Indicates that a request for `savedFeeds` table data from IndexedDB has
+         * been attempted and no records were found.
+         */
+        noReturnedFeeds(){
+            if(this.SetttingData.Options.Developer.data.hasIndexedDBDataBeenRequested &&
+                this.SetttingData.Options.Developer.data.savedFeeds.length<1) return true;
             return false;
         }
     },
