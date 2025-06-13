@@ -1,7 +1,7 @@
 <template>
     <div class="flex gap-1 cursor-pointer"
     @click="toggleValue">
-        <div class="flex size-4 box-content my-auto rounded bg-btn border border-outline
+        <div class="flex shrink-0 size-4 box-content my-auto rounded bg-btn border border-outline
         items-center justify-center hover:bg-btnHover">
             <!-- <div class="relative h-full w-full leading-4 text-center align-middle bg-red-400">x</div> -->
                 <i-mdi:check v-if="checkState" class="bg-green-400s h-full"/>

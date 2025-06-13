@@ -14,7 +14,8 @@
                     <div class="flex p-2 gap-2 border-b border-outline">
                         <input type="checkbox" :checked="isAllVisibleSelected" title="Select all visible"
                         @change="toggleAllVisibleOptions"/>
-                        <input v-model="filterText" type="text" class="w-full px-2 py-1 bg-postFocusBG border border-outline"
+                        <!-- <CheckBox :model-value="isAllVisibleSelected" @value-toggled="toggleAllVisibleOptions"/> -->
+                        <input @input="(e) => updateFilterText(e)" type="text" class="w-full px-2 py-1 bg-postFocusBG border border-outline"
                         placeholder="Filter">
                     </div>
                     <div class="p-2 max-h-32 h-fulls overflow-y-scroll ">
@@ -29,15 +30,6 @@
                 </div>
             </div>
         </Transition>
-        <!-- <div>Selected Options</div>
-        <div class="flex flex-wrap gap-2 h-full overflow-hidden">
-            <div v-for="item in heldOptions.filter(x => x.selected)"
-                title="Remove Item"
-            class="rounded-full px-2 p-1 bg-slate-600 hover:bg-hover cursor-pointer"
-            @click="toggleSelectedOption(item)">
-                {{ valueKey ? (item.option as IIndexable)[valueKey] : item.option }}
-            </div>
-        </div> -->
     </div>
 </template>
 
@@ -86,6 +78,7 @@ export default defineComponent({
         /**Toggles the visibility of the options drop-down list.*/
         toggleOptions(){
             this.isOptionsVisible = !this.isOptionsVisible;
+            if(this.isOptionsVisible != false) this.filterText = ''; //clear on close
         },
         /**
          * Toggles all of the visible options - if the list has been
@@ -113,6 +106,9 @@ export default defineComponent({
                 match.selected = !match.selected;
                 this.$emit('selectedOptionsChanged',this.selectedOptions);
             }
+        },
+        updateFilterText(e:Event){
+            this.filterText = (e.target as HTMLInputElement).value;
         }
     },
     emits:{

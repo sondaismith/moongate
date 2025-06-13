@@ -42,7 +42,6 @@ declare module 'vue' {
     'IMingcute:arrowLeftFill': typeof import('~icons/mingcute/arrow-left-fill')['default']
     'IMingcute:arrowRightFill': typeof import('~icons/mingcute/arrow-right-fill')['default']
     'IMingcute:butterfly2Fill': typeof import('~icons/mingcute/butterfly2-fill')['default']
-    'IMingcute:butterfly2Line': typeof import('~icons/mingcute/butterfly2-line')['default']
     'IMingcute:checkFill': typeof import('~icons/mingcute/check-fill')['default']
     'IMingcute:closeCircleFill': typeof import('~icons/mingcute/close-circle-fill')['default']
     'IMingcute:closeFill': typeof import('~icons/mingcute/close-fill')['default']
