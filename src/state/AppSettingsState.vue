@@ -2,6 +2,8 @@
 import { reactive } from 'vue'
 import { AppSettingsArray, AppSettingsClass, IAppSettings, LangCode } from '../interfaces/SettingsInterfaces';
 import { load, Store } from '@tauri-apps/plugin-store';
+import { isTauri } from '@tauri-apps/api/core';
+import { AppSettings, web_db } from '../lib/db/web_db';
 
 export interface OptionHolder<T>{
     option: T,
@@ -87,38 +89,57 @@ export const AppSettingsState = reactive({
      * before loading the settings.
      */
     async loadSettingsFromStore(){
-        //Use to check if store file exists, creates file if does not exist
-        //File will then be overwritten during initialization method
-        let doesAppSettingsExist = false;
-        const appSettings = await load('moongate_settings.json',{autoSave:false});
-        //Check if app settings values exist
-        if(AppSettingsArray.length>0 && await appSettings.has(AppSettingsArray[0])){
-            console.log(AppSettingsArray);
-            doesAppSettingsExist = true;
-        }
-        //If no settings values, initialize settings values
-        if(!doesAppSettingsExist){
-            await AppSettingsState.initializeAppSettingsStore(appSettings);
-        }
-        //Load settings from file into app
-        await appSettings.reload();//ensure that we have changes from any initialization
-        //Debug - show loaded values
-        // let settings = await appSettings.entries();
-        // console.log(settings);
-        //Used to get list of keys ↓
-        let defaultValues = new AppSettingsClass;
-        //For each app setting key, load that key's value into `AppSettingState`
-        for (let i = 0; i < AppSettingsArray.length; i++) {
-            let valueType = defaultValues[AppSettingsArray[i]];//Used to get type
-            let settingValue = await appSettings.get<{value:typeof valueType}>(AppSettingsArray[i]);
-            //Debug
-            // console.log(settingValue);
-            // console.log(`Setting Key: ${AppSettingsArray[i]}`);
-            // console.log(`Store value: ${settingValue?.value}`);//debug
-            // console.log(`State value: ${this.Settings[AppSettingsArray[i]]}`);
-            if(settingValue && settingValue.value != undefined){
-                (this.Settings[AppSettingsArray[i]] as typeof valueType) = settingValue.value
+        if(isTauri()){
+            //Use to check if store file exists, creates file if does not exist
+            //File will then be overwritten during initialization method
+            let doesAppSettingsExist = false;
+            const appSettings = await load('moongate_settings.json',{autoSave:false});
+            //Check if app settings values exist
+            if(AppSettingsArray.length>0 && await appSettings.has(AppSettingsArray[0])){
+                console.log(AppSettingsArray);
+                doesAppSettingsExist = true;
             }
+            //If no settings values, initialize settings values
+            if(!doesAppSettingsExist){
+                await AppSettingsState.initializeAppSettingsStore(appSettings);
+            }
+            //Load settings from file into app
+            await appSettings.reload();//ensure that we have changes from any initialization
+            //Debug - show loaded values
+            // let settings = await appSettings.entries();
+            // console.log(settings);
+            //Used to get list of keys ↓
+            let defaultValues = new AppSettingsClass;
+            //For each app setting key, load that key's value into `AppSettingState`
+            for (let i = 0; i < AppSettingsArray.length; i++) {
+                let valueType = defaultValues[AppSettingsArray[i]];//Used to get type
+                let settingValue = await appSettings.get<{value:typeof valueType}>(AppSettingsArray[i]);
+                //Debug
+                // console.log(settingValue);
+                // console.log(`Setting Key: ${AppSettingsArray[i]}`);
+                // console.log(`Store value: ${settingValue?.value}`);//debug
+                // console.log(`State value: ${this.Settings[AppSettingsArray[i]]}`);
+                if(settingValue && settingValue.value != undefined){
+                    (this.Settings[AppSettingsArray[i]] as typeof valueType) = settingValue.value
+                }
+            }
+        }
+        else{//Web App
+            await web_db.appSettings.toArray()
+            .then(res => {
+                console.log('Loading AppSettings from IndexedDB');
+                console.log(res);
+                let appSettings = AppSettingsState.Settings;
+                let loadedSettings = res[0] as AppSettings;
+                appSettings.isAcceptingAllLanguages = loadedSettings.isAcceptingAllLanguages;
+                appSettings.isBlacklist = loadedSettings.isBlacklist;
+                appSettings.isDarkMode = loadedSettings.isDarkMode;
+                appSettings.isWhitelist = loadedSettings.isWhitelist;
+                appSettings.selectedLanguages = JSON.parse(loadedSettings.selectedLanguages);
+            })
+            .catch(err => {
+                console.log(err);
+            })
         }
     },
     /**
@@ -127,17 +148,38 @@ export const AppSettingsState = reactive({
      * [SettingsPanel]({@link file://./../components/Settings/SettingsPanel.vue}) component.
      */
     async saveSettingsToStore(){
-        const appSettings = await load('moongate_settings.json',{autoSave:false});
-        //Save settings to store
-        //For each `AppSettingState` setting variable, save that value to the store
-        for (let i = 0; i < AppSettingsArray.length; i++) {
-            appSettings.set(AppSettingsArray[i],{value:this.Settings[AppSettingsArray[i]]});
+        if(isTauri()){
+            const appSettings = await load('moongate_settings.json',{autoSave:false});
+            //Save settings to store
+            //For each `AppSettingState` setting variable, save that value to the store
+            for (let i = 0; i < AppSettingsArray.length; i++) {
+                appSettings.set(AppSettingsArray[i],{value:this.Settings[AppSettingsArray[i]]});
+            }
+            //DEBUG
+            // let settings = await appSettings.entries();
+            // console.log(settings);
+            //Save
+            appSettings.save();
         }
-        //DEBUG
-        // let settings = await appSettings.entries();
-        // console.log(settings);
-        //Save
-        appSettings.save();
+        else{
+            let cs = AppSettingsState.Settings;
+            console.log(`Saving FeedList changes w/ Dexie.js...`);
+            web_db.appSettings.put({
+                id:1,
+                isAcceptingAllLanguages:cs.isAcceptingAllLanguages,
+                isBlacklist:cs.isBlacklist,
+                isDarkMode:cs.isDarkMode,
+                isWhitelist:cs.isWhitelist,
+                selectedLanguages:JSON.stringify(cs.selectedLanguages)
+            })
+            // .then(res => {
+            //     console.log(res);
+            // })
+            .catch(err => {
+                console.log(`Error trying to save settings to IndexedDB`);
+                console.log(err);
+            })
+        }
     }
 })
 </script>

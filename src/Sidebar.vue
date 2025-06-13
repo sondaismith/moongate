@@ -368,8 +368,11 @@ import { IFeedDBData } from "./interfaces/FeedInterfaces";
              */
             async loadAppConfig(){
                 //Load application settings
+                await AppSettingsState.loadSettingsFromStore();
+                //Tauri - ensure databases exist
                 if(isTauri()){
-                    await AppSettingsState.loadSettingsFromStore();
+                    await this.userAccountsDatabaseSetup();
+                    await this.savedFeedsDatabaseSetup();
                 }
                 //Load saved Feeds
                 await loadSavedFeedsRecords()
@@ -377,10 +380,10 @@ import { IFeedDBData } from "./interfaces/FeedInterfaces";
                     let feedResult = res as SavedFeeds[];
                     if(feedResult && feedResult.length>0){
                         let loadedFeeds:IFeedDBData[]|undefined = stringToJSON(feedResult[0].data);
+                        console.log('Loaded Feeds:')
                         console.log(loadedFeeds);
                         //Ensure there is data to load before trying to display Feeds
                         if(loadedFeeds && loadedFeeds.length>0){
-                            console.log(loadedFeeds);
                             //Set AppState to "loading feeds" - prevent interaction until
                             //all data has been loaded
                             for (let i = 0; i < loadedFeeds.length; i++) {
@@ -400,8 +403,6 @@ import { IFeedDBData } from "./interfaces/FeedInterfaces";
                 });
             },
             async appStartupProcedure(){
-                await this.userAccountsDatabaseSetup();
-                await this.savedFeedsDatabaseSetup();
                 await this.setUpListeners();
                 await this.loadAppConfig();
                 if(isTauri()) invoke('show_main_window');//unhide main window and focus it via Rust
