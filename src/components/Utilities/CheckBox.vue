@@ -1,10 +1,10 @@
 <template>
-    <div class="flex gap-1 cursor-pointer"
+    <div class="flex gap-1 cursor-pointer transition-colors"
     @click="toggleValue">
         <div class="flex shrink-0 size-4 box-content my-auto rounded bg-btn border border-outline
-        items-center justify-center hover:bg-btnHover">
+        items-center justify-center hover:bg-checkboxHover overflow-hidden">
             <!-- <div class="relative h-full w-full leading-4 text-center align-middle bg-red-400">x</div> -->
-                <i-mdi:check v-if="checkState" class="bg-green-400s h-full"/>
+                <i-mdi:check v-if="modelValue" class="bg-green-400s h-full"/>
         </div>
         <!-- <div>Show Post after creation?</div> -->
         <slot></slot>
@@ -16,7 +16,7 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
     props:{
-        /**Allows you to set the starting value of the checkbox. */
+        /**The current value of the checkbox. */
         modelValue:Boolean
     },
     data(){
@@ -27,7 +27,7 @@ export default defineComponent({
     emits:{
         valueToggled:(value:boolean) => {
             return value;
-        }
+        },
     },
     methods:{
         toggleValue(){

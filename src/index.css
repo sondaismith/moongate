@@ -27,6 +27,7 @@
         --color-disabled-bg: oklch(37.2% 0.044 257.287);
         --color-toggle-button: oklch(20.8% 0.042 265.755);
         --color-toggle-gutter: oklch(12.9% 0.042 264.695);
+        --color-checkbox-hover: oklch(70.4% 0.04 256.788);
         --color-feed-highlight: oklch(82.8% 0.189 84.429);
     }
 }
@@ -54,6 +55,7 @@
     --color-disabled-bg: oklch(87.2% 0.01 258.338);
     --color-toggle-button: oklch(86.9% 0.022 252.894);
     --color-toggle-gutter: oklch(70.7% 0.022 261.325);
+    --color-checkbox-hover: oklch(70.4% 0.04 256.788);
     --color-feed-highlight: oklch(82.8% 0.189 84.429);
 
 }

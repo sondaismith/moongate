@@ -27,6 +27,7 @@ export default {
         disabledBG: "oklch(from var(--color-disabled-bg) l c h / <alpha-value>)",
         toggleButton: "oklch(from var(--color-toggle-button) l c h / <alpha-value>)",
         toggleGutter: "oklch(from var(--color-toggle-gutter) l c h / <alpha-value>)",
+        checkboxHover: "oklch(from var(--color-checkbox-hover) l c h / <alpha-value>)",
         feedHighlight: "oklch(from var(--color-feed-highlight) l c h / <alpha-value>)",
       },
       fontSize:{
