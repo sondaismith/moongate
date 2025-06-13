@@ -548,7 +548,6 @@ export async function SaveFeedChanges(){
         web_db.savedFeeds.put({id:1, data:stringifyFeedListData(FeedState.FeedList)})
         .then(res => toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:3000}))
         .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
-
     }
 }
 

@@ -446,6 +446,7 @@ export async function loadSavedFeedsRecords():Promise<SavedFeeds[]|Error>{
 }
 
 /**
+ * DO NOT USE - use {@link AppSettingsState.loadSettingsFromStore()}.
  * Method the returns all the records currently held in the `app_settings` table.
  * @returns Result of trying to grab all the records held in the `app_settings` table.
  */
@@ -473,7 +474,7 @@ export function stringifyFeedListData(data:IFeedListing[]):string{
     data.forEach(e => {
         t.push({id:e.description.feedId,userId:e.description.userId,did:e.description.feedSourceDID,tags:e.description.feedTags,type:e.description.feedType,icon:e.description.feedIcon,settings:e.description.feedColumnSettings});
     });
-    console.log(JSON.stringify(t));
+    // console.log(JSON.stringify(t));
     return JSON.stringify(t);
 }
 
