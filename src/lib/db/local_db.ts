@@ -387,27 +387,26 @@ export async function checkIfSavedFeedsTableExists(){
 }
 
 /**
- * Method that allows the updating of the values held in the `saved_feeds` table.
+ * Method that allows the updating of the values held in the `saved_feeds` SQLite table.
  * @param newValues The values to update the `saved_feeds` table with.
- * @returns Promise<> if success, false if action has failed.
+ * @returns Promise<{@link QueryResult}> with action result.
  */
-export async function updateSavedFeedsTable(newValues:SavedFeeds){
+export async function updateSavedFeedsTable(newValues:SavedFeeds):Promise<QueryResult>{
     const db = await Database.load(APPLICATION_DB);
-    var result;
-    var updateQueryResult;
-
-    try{
+    var result:QueryResult;
+    return new Promise<QueryResult>(async (resolve, reject) => {
         var query = createQueryString(QueryAction.UPDATE, newValues, DBTable.saved_feeds);
-        if(query == undefined) updateQueryResult = "ERROR: Creation of 'update' query failed";
-        else
-            updateQueryResult = await db.execute(query,Object.values(newValues));
-        result = updateQueryResult;
-    }
-    catch (error){
-        result = error;
-    }
-    await db.close(); //close connection
-    return checkIfError(result);
+        await db.execute(query ? query : '',Object.values(newValues))
+        .then(res => {
+            result = res;
+        })
+        .catch(async (err) => {
+            await db.close();
+            reject(new Error(err));
+        })
+        await db.close(); //close connection
+        resolve(result);
+    });
 }
 
 /**

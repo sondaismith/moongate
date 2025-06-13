@@ -537,8 +537,8 @@ export async function UpdateFeedDetails(feedId:string, description:IFeedDescript
 export async function SaveFeedChanges(){
     if(isTauri()){
         await updateSavedFeedsTable({data:stringifyFeedListData(FeedState.FeedList)})
-        // .then(res => toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:2000}))
-        // .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
+        .then(res => toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:3000}))
+        .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
     }
     //Add options for platforms other than Tauri desktop
     else{
@@ -546,7 +546,7 @@ export async function SaveFeedChanges(){
         // toast.add({summary:"Using Platform other than Desktop", detail:`Will not be able to save feeds to disk`,severity:'info',group:'tr',life:2000});
         console.log(`Saving FeedList changes w/ Dexie.js...`);
         web_db.savedFeeds.put({id:1, data:stringifyFeedListData(FeedState.FeedList)})
-        .then(res => toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:2000}))
+        .then(res => toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:3000}))
         .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
 
     }
