@@ -536,7 +536,9 @@ export async function UpdateFeedDetails(feedId:string, description:IFeedDescript
  */
 export async function SaveFeedChanges(){
     if(isTauri()){
-        await updateSavedFeedsTable({data:stringifyFeedListData(FeedState.FeedList)});
+        await updateSavedFeedsTable({data:stringifyFeedListData(FeedState.FeedList)})
+        // .then(res => toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:2000}))
+        // .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
     }
     //Add options for platforms other than Tauri desktop
     else{

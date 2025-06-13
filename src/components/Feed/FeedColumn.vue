@@ -227,6 +227,12 @@ export default defineComponent({
     data(){
         return{
             AppState,
+            /**
+             * Indicates if the component been mounded. Used to prevent the column
+             * width setting from being updated when value is loaded during
+             * creation.
+             */
+            isMounted: false,
             lastUpdate: new Date(),
             /**Determines if the refresh command is currently "on cooldown". */
             isAwaitingRefreshTimeout:false,
@@ -272,31 +278,33 @@ export default defineComponent({
     },
     watch:{
         selectedWidthSetting(newWidth){
-            switch (newWidth) {
-                case 0:
-                    // this.getFeedElement().classList.remove('medium');
-                    // this.getFeedElement().classList.remove('large');
-                    if(this.feedData){
-                        updateFeedColumnSettings(this.feedData, {width:FeedEnums.Widths.Small});
-                    }
-                    // this.feedData?.description.feedColumnSettings.width = FeedEnums.Widths.Small
-                    break;
-                case 1:
-                    // this.getFeedElement().classList.add('medium');
-                    // this.getFeedElement().classList.remove('large');
-                    if(this.feedData){
-                        updateFeedColumnSettings(this.feedData, {width:FeedEnums.Widths.Medium});
-                    }
-                    break;
-                case 2:
-                    // this.getFeedElement().classList.remove('medium');
-                    // this.getFeedElement().classList.add('large');
-                    if(this.feedData){
-                        updateFeedColumnSettings(this.feedData, {width:FeedEnums.Widths.Large});
-                    }
-                    break;
-                default:
-                    break;
+            if(this.isMounted){
+                switch (newWidth) {
+                    case 0:
+                        // this.getFeedElement().classList.remove('medium');
+                        // this.getFeedElement().classList.remove('large');
+                        if(this.feedData){
+                            updateFeedColumnSettings(this.feedData, {width:FeedEnums.Widths.Small});
+                        }
+                        // this.feedData?.description.feedColumnSettings.width = FeedEnums.Widths.Small
+                        break;
+                    case 1:
+                        // this.getFeedElement().classList.add('medium');
+                        // this.getFeedElement().classList.remove('large');
+                        if(this.feedData){
+                            updateFeedColumnSettings(this.feedData, {width:FeedEnums.Widths.Medium});
+                        }
+                        break;
+                    case 2:
+                        // this.getFeedElement().classList.remove('medium');
+                        // this.getFeedElement().classList.add('large');
+                        if(this.feedData){
+                            updateFeedColumnSettings(this.feedData, {width:FeedEnums.Widths.Large});
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         },
     },
@@ -530,6 +538,7 @@ export default defineComponent({
         },
     },
     mounted(){
+        this.isMounted = true;
         for (let i = 0; i < this.feedData.totalPosts; i++) {
             this.PostCollection.push(createPost(8));
         }

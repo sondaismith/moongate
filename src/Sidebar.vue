@@ -369,6 +369,8 @@ import { IFeedDBData } from "./interfaces/FeedInterfaces";
             async loadAppConfig(){
                 //Load application settings
                 if(isTauri()){
+                    await this.userAccountsDatabaseSetup();
+                    await this.savedFeedsDatabaseSetup();
                     await AppSettingsState.loadSettingsFromStore();
                 }
                 //Load saved Feeds
@@ -400,8 +402,6 @@ import { IFeedDBData } from "./interfaces/FeedInterfaces";
                 });
             },
             async appStartupProcedure(){
-                await this.userAccountsDatabaseSetup();
-                await this.savedFeedsDatabaseSetup();
                 await this.setUpListeners();
                 await this.loadAppConfig();
                 if(isTauri()) invoke('show_main_window');//unhide main window and focus it via Rust
