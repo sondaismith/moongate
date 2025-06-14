@@ -57,11 +57,13 @@ export function GenerateTagLinkText(text:string|undefined, hashTagStyle:string|u
     return result;
 }
 
-interface IParseResults{
+export interface IParseResults{
     foundIndex: number,
     foundValue: string,
-    type: string,
+    type: RichTextOptions,
 }
+
+type RichTextOptions = "hashtag" | "userlink";
 
 /**
  * Method that searches a provided text string and returns the
@@ -73,7 +75,7 @@ export function GetHashtagPositions(text:string):IParseResults[]{
     var result = [];
     let matches = text.matchAll(tagRegex);
     for(const match of matches){
-        result.push({foundIndex: match.index, foundValue: match[0], type:'hashtag'});
+        result.push({foundIndex: match.index, foundValue: match[0], type:"hashtag" as RichTextOptions});
     }
     return result;
 }
