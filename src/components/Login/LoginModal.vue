@@ -97,7 +97,7 @@ export default defineComponent({
     methods:{
         async loginAccount(){
             this.attemptingLogin = true;
-            this.$toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
+            toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
             var handleAddress = `${this.enteredUsername}.${this.hostProvider}`;
             await LoginBskyAccount(handleAddress, this.enteredPassword)
             .then(res => {
@@ -121,7 +121,7 @@ export default defineComponent({
             AppState.currentUsername = "Guest";
             AppState.canBrowse = true;
             AppState.ToggleLoginModal();
-            this.$toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
+            toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
         },
         closeModal(){
             AppState.ToggleLoginModal();

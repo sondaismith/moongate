@@ -242,7 +242,7 @@ import { IFeedDBData } from "./interfaces/FeedInterfaces";
              */
             showScrollXPos(){
                 const el = document.getElementById("feedcolumnDisplay");
-                this.scrollXPos = el.scrollLeft;
+                if(el) this.scrollXPos = el.scrollLeft;
                 this.getFeedDisplayViewWidth();
             },
             /**

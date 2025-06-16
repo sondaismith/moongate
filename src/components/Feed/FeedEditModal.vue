@@ -23,7 +23,7 @@
                     <div v-if="currentPage == 0" class="h-full w-full">
                         <div class="mb-2">
                             <div class="flex items-start flex-wrap gap-1">
-                                <PillButton @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
+                                <PillButton data-testid="user-feed-type-button" @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
                                 <PillButton @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
                                 <PillButton @click="selectFeedType(FeedEnums.Types.Trending)">Trending</PillButton>
                                 <PillButton :disabled="!AppState.isAuthBrowsing"
@@ -47,7 +47,7 @@
                                 </div>
                             </div>
                         </div>
-                        <UserSearchBar v-if="selectedFeedType == FeedEnums.Types.User" @user-selected="selectUser" :data-list="searchResults"/>
+                        <UserSearchBar data-testid="create-feed-user-search" v-if="selectedFeedType == FeedEnums.Types.User" @user-selected="selectUser" :data-list="searchResults"/>
                         <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
                             <CheckBox :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
                             <!-- <SquareButton @click="testGetNotifs">Load Notifs</SquareButton> -->

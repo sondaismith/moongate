@@ -16,7 +16,7 @@ describe('Feed Create/Edit modal show/hide', () => {
         test('create feed modal is shown after selecting to browse as guest', async () => {
             await addFeedButton.trigger('click'); //click "add feed" button
             expect(wrapper.find('[data-testid="login-modal"').exists()).toBe(true); //login modal shown
-        const browseAsGuestButton = wrapper.get('[data-testid="browse-as-guest-button"');
+            const browseAsGuestButton = wrapper.get('[data-testid="browse-as-guest-button"');
             await browseAsGuestButton.trigger('click'); //select to browse as guest
             expect(wrapper.find('[data-testid="login-modal"').exists()).toBe(false);
             await addFeedButton.trigger('click'); //click "add feed" button
@@ -28,12 +28,11 @@ describe('Feed Create/Edit modal show/hide', () => {
     })
     describe('user feed is selected to be created from FeedEditModal', () => {
         const wrapper = mount(FeedEditModal);
-        // const userFeedType = wrapper.get('[data-testid="user-feed-type-button"');
-        // test('user feed type selected', async () => {
-        //     await userFeedType.trigger('click'); //select "user feed"
-
-        //     expect(wrapper.find('[data-testid="create-feed-user-search"]').exists()).toBe(true);
-        // })
+        const userFeedType = wrapper.get('[data-testid="user-feed-type-button"]');
+        test('user feed type selected', async () => {
+            await userFeedType.trigger('click'); //select "user feed"
+            expect(wrapper.find('[data-testid="create-feed-user-search"]').exists()).toBe(true);
+        })
         afterAll(() => {
             wrapper.unmount();
         })
