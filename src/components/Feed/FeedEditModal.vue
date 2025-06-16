@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute z-10 flex w-full h-full bg-slate-800/40 backdrop-blur-sm">
+    <div data-testid="feed-edit-modal" class="absolute z-10 flex w-full h-full bg-slate-800/40 backdrop-blur-sm">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{void "Modal Control"}}
         <div class="z-20 flex flex-col w-4/5 md:w-2/3 h-2/3 mx-auto my-auto rounded bg-slate-800

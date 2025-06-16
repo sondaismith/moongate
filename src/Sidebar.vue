@@ -36,7 +36,7 @@
                         </div>
                     </div>
                     <div class="border-t border-gray-700 space-y-2 px-2 py-2 flex-none">
-                        <FeedButton :icon="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
+                        <FeedButton data-testid="add-feed-button" :icon="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
                         <FeedButton :icon="FeedEnums.Icons.RemoveList" tooltip="Remove Feed" @click="removeFeed"/>
                         <FeedButton :icon="FeedEnums.Icons.CreatePost" tooltip="Create New Post" @click="createNewPost"/>
                     </div>
@@ -86,7 +86,7 @@
             <FeedPost/>
         </div>
         <Transition name="modal">
-            <LoginModal v-if="AppState.isLoggingIntoAccount"/>
+            <LoginModal data-testid="login-modal" v-if="AppState.isLoggingIntoAccount"/>
         </Transition>
         <Toast position="bottom-center" group="bc"/>
         <!-- <Toast position="bottom-center" group="bc":pt="{
