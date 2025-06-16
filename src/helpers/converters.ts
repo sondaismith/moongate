@@ -14,6 +14,7 @@ export function convertToShortTimestamp(ts:string = ""){
 
         var isSameHour = (curDate.getTime() - date.getTime())<(1000*60*60);
         var isSameDay = curDate.getUTCDate() == date.getUTCDate();
+        var isSameMonth = curDate.getMonth() == date.getMonth();
         var isSameYear = curDate.getFullYear() == date.getFullYear();
 
         var dateFormat = "";
@@ -21,7 +22,7 @@ export function convertToShortTimestamp(ts:string = ""){
             var diff = (curDate.getUTCMinutes() - date.getUTCMinutes());
             dateFormat = (diff<0?diff+60:diff)+'m'; //if diff is negative, add 60(mins) to get real minutes
         }
-        else if(isSameDay){
+        else if(isSameDay && isSameMonth){
             var diff = (curDate.getTime() - date.getTime())
             //Avoids situations where 13:19-11:59 would return 2h
             //Maybe we eventually choose to round up...
