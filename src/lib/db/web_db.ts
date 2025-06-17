@@ -1,6 +1,4 @@
-import "fake-indexeddb/auto";
 import Dexie, {type EntityTable} from 'dexie';
-// import { indexedDB, IDBKeyRange } from "fake-indexeddb";
 
 interface Feed{
     id: number;
@@ -18,7 +16,6 @@ interface AppSettings{ //extends IAppSettings{
 
 /**IndexedDB database with `savedFeeds` store/table.*/
 const web_db = new Dexie('moongateData') as Dexie & {
-// const web_db = new Dexie('moongateData', {indexedDB: indexedDB, IDBKeyRange: IDBKeyRange}) as Dexie & {
   savedFeeds: EntityTable<
     Feed,
     'id' // primary key "id" (for the typings only)

@@ -1,7 +1,9 @@
+import "fake-indexeddb/auto";
 import { mount } from "@vue/test-utils";
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { afterAll, describe, expect, it, test } from "vitest";
 import Sidebar from '../../Sidebar.vue';
 import FeedEditModal from "./FeedEditModal.vue";
+import UserSearchBar from "../Utilities/UserSearchBar.vue"
 
 describe('Feed Create/Edit modal show/hide', () => {
     describe('feed create/edit FeedButton pressed from main page', () => {
@@ -26,12 +28,51 @@ describe('Feed Create/Edit modal show/hide', () => {
             wrapper.unmount();
         })
     })
-    describe('user feed is selected to be created from FeedEditModal', () => {
+})
+describe('Creating new Feed', () => {
+    describe('User selects to create User Feed', () => {
         const wrapper = mount(FeedEditModal);
-        const userFeedType = wrapper.get('[data-testid="user-feed-type-button"]');
-        test('user feed type selected', async () => {
+        const userFeedType = wrapper.get('[data-testid="feedEditModal-user-feed-button"]');
+        it('navigates to user feed options page', async () => {
             await userFeedType.trigger('click'); //select "user feed"
-            expect(wrapper.find('[data-testid="create-feed-user-search"]').exists()).toBe(true);
+            expect(wrapper.find('[data-testid="feedEditModal-user-search-bar"]').exists()).toBe(true);
+        })
+        it('prevents navigation to summary page until user is entered', () => {
+            // const toCreatePageButton = wrapper.get('[data-testid="feededit-next-page-button"');
+            expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(false);
+        })
+        it('navigates back to Feed type selection page when back button clicked', async () => {
+            // expect(wrapper.find('[data-testid="feed-edit-back-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-back-button"').trigger('click');//navigate back to start
+            expect(wrapper.find('[data-testid="feedEditModal-user-feed-button"]').exists()).toBe(true);
+        })
+        it('navigates to summary/submit page when type and specifications have been selected', async () => {
+            await userFeedType.trigger('click'); //select "user feed"
+            let userSearchBar = wrapper.findComponent(UserSearchBar);
+            expect(userSearchBar.exists()).toBe(true);
+
+            //Make sure value entered into `UserSearchBar` is emitting (don't really need to test this)
+            // let userSearchInput = wrapper.findComponent({name: 'InLaInput'});
+            // expect(userSearchInput.exists()).toBe(true);
+            // userSearchInput.setValue('bob');
+            // userSearchInput.trigger('submit');
+            // expect(userSearchInput.emitted()).toHaveProperty('update:modelValue', [['bob']]) //.toEqual('failed');
+            // expect(userSearchInput.emitted()).toEqual('failed');
+
+            //Mock that API data has been returned to `UserSearchBar`
+            await userSearchBar.setData({
+                apiData: [{did:'did:1234_5678', handle:'fake_account', displayName:'a test bot'}],
+                searchTerm: 'bob',
+                debouncedSearchTerm: 'bob'
+            })
+
+            //Check if API data is retrieved
+            expect(userSearchBar.find('[data-testid="userSearchBar-returned-users-container"').exists()).toBe(true);
+            //Select "returned" user result
+            await userSearchBar.find('[data-testid="userSearchBar-returned-users-container"').find('div').trigger('click');
+            //Check that we navigated to summary page
+            expect(wrapper.find('[data-testid="feedEditModal-summary-page"').exists()).toBe(true);
+            expect(wrapper.find('[data-testid="feedEditModal-create-button"').exists()).toBe(true);
         })
         afterAll(() => {
             wrapper.unmount();

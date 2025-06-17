@@ -1,6 +1,6 @@
 <template>
     <div class="relative flex flex-col group" :class="fillContainer ? 'w-full' : ''">
-        <input @keyup.enter="emitValue" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"
+        <input data-testid="inlainput-input" @keyup.enter="emitValue" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"
             class="peer bg-slate-900 leading-8 px-2 pt-3 h-11
             border-gray-500 group-hover:border-blue-400 focus:border-blue-600 rounded-md
             disabled:border-gray-700 disabled:text-gray-500

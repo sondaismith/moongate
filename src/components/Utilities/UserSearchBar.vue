@@ -28,7 +28,7 @@
         <div v-if="searchTerm.trim() && debouncedSearchTerm.trim()" class="border-t-0
         border-inherit border-slate-500 rounded-b flex bg-slate-800 overflow-auto"
         :class="[filteredUsers.length<1 ? 'border-none' : 'border']">
-            <div class="relative flex flex-col w-full">
+            <div data-testid="userSearchBar-returned-users-container" class="relative flex flex-col w-full">
                 <div @click="selectUser(result)" class="flex items-center hover:bg-gray-700 p-2
                     cursor-pointer gap-1"
                     v-for="result, index in filteredUsers" :key="index">
