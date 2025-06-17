@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute z-10 flex w-full h-full bg-slate-800/40 backdrop-blur-sm">
+    <div data-testid="feed-edit-modal" class="absolute z-10 flex w-full h-full bg-slate-800/40 backdrop-blur-sm">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{void "Modal Control"}}
         <div class="z-20 flex flex-col w-4/5 md:w-2/3 h-2/3 mx-auto my-auto rounded bg-slate-800
@@ -23,9 +23,9 @@
                     <div v-if="currentPage == 0" class="h-full w-full">
                         <div class="mb-2">
                             <div class="flex items-start flex-wrap gap-1">
-                                <PillButton @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
-                                <PillButton @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
-                                <PillButton @click="selectFeedType(FeedEnums.Types.Trending)">Trending</PillButton>
+                                <PillButton data-testid="feedEditModal-user-feed-button" @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
+                                <PillButton data-testid="feedEditModal-tag-feed-button" @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
+                                <PillButton data-testid="feedEditModal-trending-feed-button" @click="selectFeedType(FeedEnums.Types.Trending)">Trending</PillButton>
                                 <PillButton :disabled="!AppState.isAuthBrowsing"
                                 @click="selectFeedType(FeedEnums.Types.Notifications)"
                                 :title="!AppState.isAuthBrowsing ? 'Login Required' : ''">
@@ -36,18 +36,18 @@
                             </div>
                         </div>
                     </div>
-                    <div v-else-if="currentPage == 1" class="flex flex-col h-full w-full">
-                        <InLaInput v-if="selectedFeedType == FeedEnums.Types.Tag" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag"/>
+                    <div data-testid="feedEditModal-options-page" v-else-if="currentPage == 1" class="flex flex-col h-full w-full">
+                        <InLaInput data-testid="feedEditModal-tag-input" v-if="selectedFeedType == FeedEnums.Types.Tag" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag"/>
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mt-1 overflow-x-hidden">
                             <div class="mb-1">Discovered Tags:</div>
-                            <div class="flex gap-1 flex-wrap">
+                            <div data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap">
                                 <div v-for="n, index in validTags" :key="index"
                                 class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 break-all">
                                     {{ n }}
                                 </div>
                             </div>
                         </div>
-                        <UserSearchBar v-if="selectedFeedType == FeedEnums.Types.User" @user-selected="selectUser" :data-list="searchResults"/>
+                        <UserSearchBar data-testid="feedEditModal-user-search-bar" v-if="selectedFeedType == FeedEnums.Types.User" @user-selected="selectUser" :data-list="searchResults"/>
                         <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
                             <CheckBox :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
                             <!-- <SquareButton @click="testGetNotifs">Load Notifs</SquareButton> -->
@@ -57,7 +57,7 @@
                             <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
                         </div>
                     </div>
-                    <div v-else-if="currentPage == 2">
+                    <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 2">
                         <div>Feed Type: {{ selectedFeedType }}</div>
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ validTags.join(', ') }}</div>
                         <div v-else-if="selectedFeedType == FeedEnums.Types.User">
@@ -76,14 +76,17 @@
                 <!-- <div v-for="page in modalPages">{{ page.title }}</div> -->
             </div>
             <div class="flex space-x-2 justify-between">
-                <SquareButton @click="backOnePage" class="bg-gray-500 hover:bg-gray-600">
+                <SquareButton data-testid="feedEditModal-back-button" @click="backOnePage" class="bg-gray-500 hover:bg-gray-600">
                     {{currentPage == 0 ? 'Cancel':'Back'}}
                 </SquareButton>
                 <div class="flex">
-                    <SquareButton v-if="isTagSpecsEntryComplete || isSelectedTypeNotifications ||
+                    <SquareButton data-testid="feedEditModal-next-page-button"
+                    v-if="isTagSpecsEntryComplete ||
+                    isSelectedTypeNotifications ||
                     isSelectedTypeTrending"
                     @click="forwardOnePage">Next</SquareButton>
-                    <SquareButton @click="createFeed()" v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)"
+                    <SquareButton data-testid="feedEditModal-create-button" @click="createFeed()"
+                    v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
             </div>

@@ -62,7 +62,7 @@
                 <div class="h-[1px] bg-slate-500 my-2"></div>
                 {{ void "browse without account" }}
                 <div class="relative flex flex-col items-start">
-                    <div @click="browseAsGuest" tabindex="0" class="text-blue-400 hover:text-blue-500 cursor-pointer">
+                    <div data-testid="browse-as-guest-button" @click="browseAsGuest" tabindex="0" class="text-blue-400 hover:text-blue-500 cursor-pointer">
                         Or Browse without an account
                     </div>
                     <div class="text-feedPostName leading-4">Note: Some content is unable to be viewed without an account due to
@@ -97,7 +97,7 @@ export default defineComponent({
     methods:{
         async loginAccount(){
             this.attemptingLogin = true;
-            this.$toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
+            toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
             var handleAddress = `${this.enteredUsername}.${this.hostProvider}`;
             await LoginBskyAccount(handleAddress, this.enteredPassword)
             .then(res => {
@@ -121,7 +121,7 @@ export default defineComponent({
             AppState.currentUsername = "Guest";
             AppState.canBrowse = true;
             AppState.ToggleLoginModal();
-            this.$toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
+            toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
         },
         closeModal(){
             AppState.ToggleLoginModal();
