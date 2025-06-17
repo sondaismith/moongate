@@ -24,7 +24,7 @@
                         <div class="mb-2">
                             <div class="flex items-start flex-wrap gap-1">
                                 <PillButton data-testid="feedEditModal-user-feed-button" @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
-                                <PillButton @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
+                                <PillButton data-testid="feedEditModal-tag-feed-button" @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
                                 <PillButton @click="selectFeedType(FeedEnums.Types.Trending)">Trending</PillButton>
                                 <PillButton :disabled="!AppState.isAuthBrowsing"
                                 @click="selectFeedType(FeedEnums.Types.Notifications)"
@@ -37,10 +37,10 @@
                         </div>
                     </div>
                     <div v-else-if="currentPage == 1" class="flex flex-col h-full w-full">
-                        <InLaInput v-if="selectedFeedType == FeedEnums.Types.Tag" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag"/>
+                        <InLaInput data-testid="feedEditModal-tag-input" v-if="selectedFeedType == FeedEnums.Types.Tag" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag"/>
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mt-1 overflow-x-hidden">
                             <div class="mb-1">Discovered Tags:</div>
-                            <div class="flex gap-1 flex-wrap">
+                            <div data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap">
                                 <div v-for="n, index in validTags" :key="index"
                                 class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 break-all">
                                     {{ n }}

@@ -78,4 +78,47 @@ describe('Creating new Feed', () => {
             wrapper.unmount();
         })
     })
+    describe('User selects to create Tag Feed', () => {
+        const wrapper = mount(FeedEditModal);
+        const tagFeedButton = wrapper.find('[data-testid="feedEditModal-tag-feed-button"]');
+        expect(tagFeedButton.exists()).toBe(true);
+        it('navigates to tag feed options page', async () => {
+            await tagFeedButton.trigger('click'); //select "user feed"
+            expect(wrapper.find('[data-testid="feedEditModal-tag-input"]').exists()).toBe(true);
+        })
+        it('prevents navigation to summary page until tag is entered', () => {
+            // const toCreatePageButton = wrapper.get('[data-testid="feededit-next-page-button"');
+            expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(false);
+        })
+        it('navigates back to Feed type selection page when back button clicked', async () => {
+            // expect(wrapper.find('[data-testid="feed-edit-back-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-back-button"').trigger('click');//navigate back to start
+            expect(wrapper.find('[data-testid="feedEditModal-tag-feed-button"]').exists()).toBe(true);
+        })
+        it('navigates to summary/submit page when type and specifications have been selected', async () => {
+            await tagFeedButton.trigger('click'); //select "user feed"
+            //Check that we're on the "tag entry" page
+            let inlainputContainer = wrapper.find('[data-testid="feedEditModal-tag-input"]');
+            expect(inlainputContainer.exists()).toBe(true);
+            let tagInput = inlainputContainer.find('input');
+            expect(tagInput.exists()).toBe(true);
+            //Enter tag(s)
+            await tagInput.setValue('#dev #test #check');
+            // await wrapper.setData({
+            //     feedFilters:{
+            //         tag:'#dev #test #check'
+            //     }
+            // })
+            //Check that tags have been discovered
+            let validTagContainer = wrapper.find('[data-testid="feedEditModal-valid-tag-container"');
+            expect(validTagContainer.exists()).toBe(true);
+            expect(validTagContainer.findAll('div').length).toBe(3);
+            //Navigate to summary page
+            expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
+            //Ensure we're on summary page
+            expect(wrapper.find('[data-testid="feedEditModal-summary-page"').exists()).toBe(true);
+            expect(wrapper.find('[data-testid="feedEditModal-create-button"').exists()).toBe(true);
+        })
+    })
 })
