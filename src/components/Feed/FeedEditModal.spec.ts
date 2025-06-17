@@ -120,5 +120,34 @@ describe('Creating new Feed', () => {
             expect(wrapper.find('[data-testid="feedEditModal-summary-page"').exists()).toBe(true);
             expect(wrapper.find('[data-testid="feedEditModal-create-button"').exists()).toBe(true);
         })
+        afterAll(() => {
+            wrapper.unmount();
+        })
+    })
+    describe('User selects to create Trending Feed', () => {
+        const wrapper = mount(FeedEditModal);
+        const trendingFeedButton = wrapper.find('[data-testid="feedEditModal-trending-feed-button"]');
+        expect(trendingFeedButton.exists()).toBe(true);
+        it('navigates to trending feed options page', async () => {
+            await trendingFeedButton.trigger('click'); //select "user feed"
+            expect(wrapper.find('[data-testid="feedEditModal-options-page"').exists()).toBe(true);
+        })
+        it('navigates back to Feed type selection page when back button clicked', async () => {
+            // expect(wrapper.find('[data-testid="feed-edit-back-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-back-button"').trigger('click');//navigate back to start
+            expect(wrapper.find('[data-testid="feedEditModal-tag-feed-button"]').exists()).toBe(true);
+        })
+        it('navigates to summary/submit page when type and specifications have been selected', async () => {
+            await trendingFeedButton.trigger('click'); //select "user feed"
+            //No option currently, so we can got straight to summary
+            expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
+            //Ensure we're on summary page
+            expect(wrapper.find('[data-testid="feedEditModal-summary-page"').exists()).toBe(true);
+            expect(wrapper.find('[data-testid="feedEditModal-create-button"').exists()).toBe(true);
+        })
+        afterAll(() => {
+            wrapper.unmount();
+        })
     })
 })

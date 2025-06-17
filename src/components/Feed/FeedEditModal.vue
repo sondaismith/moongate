@@ -25,7 +25,7 @@
                             <div class="flex items-start flex-wrap gap-1">
                                 <PillButton data-testid="feedEditModal-user-feed-button" @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
                                 <PillButton data-testid="feedEditModal-tag-feed-button" @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
-                                <PillButton @click="selectFeedType(FeedEnums.Types.Trending)">Trending</PillButton>
+                                <PillButton data-testid="feedEditModal-trending-feed-button" @click="selectFeedType(FeedEnums.Types.Trending)">Trending</PillButton>
                                 <PillButton :disabled="!AppState.isAuthBrowsing"
                                 @click="selectFeedType(FeedEnums.Types.Notifications)"
                                 :title="!AppState.isAuthBrowsing ? 'Login Required' : ''">
@@ -36,7 +36,7 @@
                             </div>
                         </div>
                     </div>
-                    <div v-else-if="currentPage == 1" class="flex flex-col h-full w-full">
+                    <div data-testid="feedEditModal-options-page" v-else-if="currentPage == 1" class="flex flex-col h-full w-full">
                         <InLaInput data-testid="feedEditModal-tag-input" v-if="selectedFeedType == FeedEnums.Types.Tag" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag"/>
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mt-1 overflow-x-hidden">
                             <div class="mb-1">Discovered Tags:</div>
