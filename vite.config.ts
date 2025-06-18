@@ -16,6 +16,7 @@ export default defineConfig(async () => ({
     Icons({compiler: 'vue3'}, ),
     Components({
       dts: true,
+      include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
       resolvers: [
         IconsResolver()
       ],

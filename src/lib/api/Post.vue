@@ -8,6 +8,10 @@ import { postDetails, showFocusModal } from "../../state/PostDetails.vue";
 import { FeedState } from "../../state/FeedList.vue";
 import { PostActions } from "../../enums/PostEnums";
 
+export default{
+    name:"Post API Methods"
+}
+
 export class InvalidPostDIDError extends Error{
     constructor(did = ""){
         super(did);

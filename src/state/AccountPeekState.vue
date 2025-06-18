@@ -6,6 +6,10 @@ import { postDetails } from './PostDetails.vue';
 import { toast } from './AppState.vue';
 import { HandleAPIError } from '../helpers/errors';
 
+export default{
+    name:"AccountPeekState"
+}
+
 export const AccountPeekState = reactive({
     /**Indicates if `AccountPeek` component is visible. */
     isUserPeeking: false,

@@ -4,6 +4,10 @@ import { GetBrowsingAgent } from "../api.vue";
 import { AppSettingsState } from "../../state/AppSettingsState.vue";
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
+export default{
+    name:"Feed API Methods"
+}
+
 export async function getUserHomeFeed():Promise<AppBskyFeedGetTimeline.Response>{
     let result = await GetBrowsingAgent().getTimeline();
     return result;

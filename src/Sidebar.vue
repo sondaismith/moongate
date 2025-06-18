@@ -166,7 +166,6 @@ import FeedButton from "./components/Navbar/FeedButton.vue";
 import CreatePost from "./components/Post/CreatePost.vue"
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { HandleAPIError } from "./helpers/errors";
-import SaveMediaModal from "./components/Utilities/SaveMediaModal.vue";
 import PostFocusModal from "./components/Post/PostFocusModal.vue";
 import SettingsPanel from "./components/Settings/SettingsPanel.vue";
 import { AppSettingsState } from "./state/AppSettingsState.vue";

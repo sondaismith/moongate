@@ -10,6 +10,10 @@ interface INavigationHistory{
 
 }
 
+export default{
+    name:"UserFocusModalState"
+}
+
 export const UserFocusModalState = reactive({
     /**
      * Object containing a collection of data relating to the User Accounts

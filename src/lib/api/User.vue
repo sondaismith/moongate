@@ -2,6 +2,9 @@
 import { AppBskyActorGetProfile, ComAtprotoIdentityResolveHandle } from '@atproto/api/dist/client';
 import { GetBrowsingAgent } from '../api.vue';
 
+export default{
+    name:"User API Methods"
+}
 
 /**
  * Method that gets the profile of a specifc User, based on their DID.

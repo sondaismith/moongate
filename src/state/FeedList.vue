@@ -41,6 +41,10 @@ const toast = {
     removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
 };
 
+export default{
+    name:"FeedState"
+}
+
 export const FeedState = reactive({
     FeedList : [] as IFeedListing[],
     selectedFeed: '',

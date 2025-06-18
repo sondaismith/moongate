@@ -3,7 +3,11 @@ import { reactive } from 'vue'
 import { AppSettingsArray, AppSettingsClass, IAppSettings, LangCode } from '../interfaces/SettingsInterfaces';
 import { load, Store } from '@tauri-apps/plugin-store';
 import { isTauri } from '@tauri-apps/api/core';
-import { AppSettings, web_db } from '../lib/db/web_db';
+import { WebDBAppSettings, web_db } from '../lib/db/web_db';
+
+export default{
+    name:"AppSettingsState"
+}
 
 export interface OptionHolder<T>{
     option: T,
@@ -52,7 +56,7 @@ export const AppSettingsState = reactive({
                 //Even though the underline is being displayed below, the 2 objects should be
                 //the same "type" since we checked above. Should probably use an interface or
                 //type in the future.
-                this.Settings = loadedJSON;
+                this.Settings = loadedJSON as IAppSettings;
             }
             else{
                 console.log(`Settings could not be loaded - the loaded object is empty or contains unexpected data. Default settings will be used.`);
@@ -130,7 +134,7 @@ export const AppSettingsState = reactive({
                 console.log('Loading AppSettings from IndexedDB');
                 console.log(res);
                 let appSettings = AppSettingsState.Settings;
-                let loadedSettings = res[0] as AppSettings;
+                let loadedSettings = res[0] as WebDBAppSettings;
                 appSettings.isAcceptingAllLanguages = loadedSettings.isAcceptingAllLanguages;
                 appSettings.isBlacklist = loadedSettings.isBlacklist;
                 appSettings.isDarkMode = loadedSettings.isDarkMode;

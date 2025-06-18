@@ -3,6 +3,10 @@
 import { Agent, AtpAgentLoginOpts, ComAtprotoServerCreateSession, CredentialSession } from "@atproto/api";
 import { AppState } from '../state/AppState.vue';
 
+export default{
+    name:"API Agent Setup"
+}
+
 // export const agent = new AtpAgent({
 //   // App View URL
 //   service: "https://api.bsky.app",
