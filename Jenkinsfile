@@ -5,7 +5,7 @@ remote.knownHosts = '/var/lib/jenkins/.ssh/known_hosts'
 
 pipeline {
     agent any
-    tools {nodejs "personal-laptop-nodejs-version"}
+    tools {nodejs "personal-desktop-nodejs-version"}
     parameters{
         booleanParam(name: 'skip_dependencies', defaultValue: true, description:'Set to true to skip installation of dependencies')
     }
@@ -14,7 +14,7 @@ pipeline {
             when {expression {params.skip_dependencies != true} }
             steps {
                 checkout scmGit(
-                    branches: [[name: 'dev']],
+                    branches: [[name: 'feature/ci-cd-pipeline']],
                     userRemoteConfigs: [[credentialsId:'moongate-repo-PAT',
                         url: 'https://github.com/sondaismith/moongate.git'
                     ]]
@@ -29,12 +29,12 @@ pipeline {
                 sh 'npm run test'
             }
         }
-        // stage('Build application'){
-        //     when {expression {params.skip_dependencies != true} }
-        //     steps{
-        //         sh 'npm run build'
-        //     }
-        // }
+        stage('Build application'){
+            when {expression {params.skip_dependencies != true} }
+            steps{
+                sh 'npm run build'
+            }
+        }
         stage('Attempt to connect to deployment Droplet via SSH') {
             steps {
                 sh 'cd /var/jenkins_home/workspace/build-and-test/ && ls -la'
