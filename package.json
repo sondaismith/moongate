@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vite build",
+    "build-web": "vite build --base=/moon/",
     "test": "vitest",
     "preview": "vite preview",
     "tauri": "tauri"

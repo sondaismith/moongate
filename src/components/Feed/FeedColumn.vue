@@ -195,8 +195,7 @@ import { defineComponent, PropType } from 'vue';
 import { DebugFlags } from '../../state/Debug.vue';
 import { IFeedListing } from '../../interfaces/FeedInterfaces';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
-import { createPost } from '../../fake-data/PostFactory'
-import { addDummyPostToFeed, ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
+import { ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { debounce } from '../../helpers/debouncer';
@@ -539,9 +538,6 @@ export default defineComponent({
     },
     mounted(){
         this.isMounted = true;
-        for (let i = 0; i < this.feedData.totalPosts; i++) {
-            this.PostCollection.push(createPost(8));
-        }
         this.lastUpdate = new Date();
     },
     created() {

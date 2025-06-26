@@ -2,6 +2,10 @@
 import { reactive } from 'vue'
 import { IOptionMenuItem } from '../components/Utilities/OptionsMenu.vue';
 
+export default{
+    name:"OptionsMenuState"
+}
+
 export const OptionsMenuState = reactive({
     /**Determines if the Options Menu is visible or not. */
     isOptionsMenuVisible: false,

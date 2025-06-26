@@ -31,5 +31,5 @@ web_db.version(1).stores({
   appSettings: '++id'
 });
 
-export type {Feed, AppSettings};
+export type {Feed, AppSettings as WebDBAppSettings};
 export {web_db};

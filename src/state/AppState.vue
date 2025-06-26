@@ -17,6 +17,10 @@ export const toast = {
     removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
 };
 
+export default{
+    name:"AppState"
+}
+
 /**
  * Object that defines the current App state. Controls values such
  * as theming, current user, etc.

@@ -16,6 +16,10 @@ import SolarShareBold from '~icons/solar/share-bold';
 import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
 import { AppBskyFeedThreadgate } from '@atproto/api';
 
+export default{
+    name:"PostDetails State"
+}
+
 // export const postDetails : IPostDetailsList = reactive({
 export const postDetails = reactive({
     isVisible: false,
