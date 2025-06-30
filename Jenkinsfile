@@ -7,14 +7,15 @@ pipeline {
     agent any
     tools {nodejs "personal-desktop-nodejs-version"}
     parameters{
-        booleanParam(name: 'skip_dependencies', defaultValue: true, description:'Set to true to skip installation of dependencies')
+        booleanParam(name: 'skip_dependencies', defaultValue: false, description:'Set to true to skip installation of dependencies')
     }
+    triggers{pollSCM 'H/10 * * * *'}
     stages {
         stage('Get application code + Install dependencies') {
             when {expression {params.skip_dependencies != true} }
             steps {
                 checkout scmGit(
-                    branches: [[name: 'feature/ci-cd-pipeline']],
+                    branches: [[name: 'dev']],
                     userRemoteConfigs: [[credentialsId:'moongate-repo-PAT',
                         url: 'https://github.com/sondaismith/moongate.git'
                     ]]
