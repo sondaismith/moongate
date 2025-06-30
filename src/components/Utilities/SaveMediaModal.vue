@@ -38,8 +38,13 @@
                     <div class="rounded bg-blue-500 h-full w-0"
                     :style="{'width' : downloadProgress+'%', 'transition':'width 0.4s ease'}"></div>
                 </div>
+                <div class="rounded p-1 !text-white bg-sky-500 hover:bg-sky-600 cursor-pointer"
+                @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full)">
+                    Save test
+                    <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/>
+                </div>
                 <SquareButton v-if="isTauri()" @click="saveImage" :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading">Save Image</SquareButton>
-                <SquareButton v-else @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton>
+                <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton>
             </div>
         </div>
     </div>
@@ -176,7 +181,56 @@ export default defineComponent({
          */
         closeModal(){
             if(!this.isDownloading) AppState.isSavingMediaModalVisible = false;
-        }
+        },
+        /**
+         * Method that attempts to initiate download of specified file.
+         * Code is from https://muhimasri.com/blogs/how-to-save-files-in-javascript/#download-and-save-a-file-using-the-fetch-api
+         * @param url The URL of the file to download.
+         * @param filename The string to use as the default/starting file name.
+         */
+        saveFile(url:string, filename:string) {
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename || "file-name";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        },
+        /**
+         * Used to download media from Bluesky.
+         * Code is modified from https://muhimasri.com/blogs/how-to-save-files-in-javascript/#download-and-save-a-file-using-the-fetch-api
+         * @param url The URL of the file to download. Should begin with 'https://cdn.bsky.app'.
+         * @param filename The string to use as the default/starting file name.
+         */
+        async downloadFileFromBskyCDN(url:string, filename:string) {
+            if(!url.includes('https://cdn.bsky.app')){
+                toast.add({summary:'Error', detail:`URL provided to download must be link to Bluesky CDN`, severity:'error', group:'tr', life:3000});
+                console.log(`Provided URL was: ${url}`);
+            }
+            else{
+                this.isDownloading = true;
+                await fetch(url.split('https://cdn.bsky.app')[1],{
+                    headers:{
+                        Accept:
+                        "image/png, image/jpeg, image/*",
+                    },
+                })
+                .then(async res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    const blob = await res.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    this.saveFile(blobUrl, filename);
+                    URL.revokeObjectURL(blobUrl);
+                    this.isDownloading = false;
+                })
+                .catch(err => {
+                    console.error("Error in fetching and downloading file:", err);
+                    this.isDownloading = false;
+                })
+            }
+        },
     },
     computed:{
         downloadProgress(){
