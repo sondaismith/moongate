@@ -150,3 +150,7 @@ export function CreateBskyWeblink(postUri:string, handle:string=""):string|undef
     if (!template) return undefined;
     return template(parsedUri).link;
 }
+
+export function CreateBskyMediaDownloadURL(mediaURL:string){
+
+}
