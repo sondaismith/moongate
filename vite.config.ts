@@ -13,7 +13,7 @@ const sus = process.cwd();
 // https://vitejs.dev/config/
 export default defineConfig(async ({mode}) => {
   const env = loadEnv(mode, process.cwd());
-  const BSKY_MEDIA_DOWNLOAD_ROUTE = `${env.VITE_BSKY_MEDIA_DOWNLOAD_PROXY_ROUTE}`;
+  const BSKY_MEDIA_DOWNLOAD_ROUTE = env.VITE_BSKY_MEDIA_DOWNLOAD_PROXY_ROUTE;
   const BSKY_MEDIA_DOWNLOAD_TARGET = `${env.VITE_BSKY_MEDIA_DOWNLOAD_PROXY_TARGET}`;
 
   return{
@@ -56,7 +56,18 @@ export default defineConfig(async ({mode}) => {
       proxy:{
          [BSKY_MEDIA_DOWNLOAD_ROUTE]:{
           target:BSKY_MEDIA_DOWNLOAD_TARGET,
-          changeOrigin: true
+          changeOrigin: true,
+          configure: (proxy, _options) => {
+            proxy.on('error', (err, _req, _res) => {
+              console.log('proxy error', err);
+            });
+            proxy.on('proxyReq', (proxyReq, req, _res) => {
+              console.log('Sending Request to the Target:', req.method, req.url);
+            });
+            proxy.on('proxyRes', (proxyRes, req, _res) => {
+              console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+            });
+          },
         }
       }
     },

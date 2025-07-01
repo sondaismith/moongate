@@ -61,6 +61,7 @@ import { exists } from '@tauri-apps/plugin-fs';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { invoke, isTauri } from '@tauri-apps/api/core';
+import { CreateBskyMediaDownloadURL } from '../../helpers/converters';
 
 export default defineComponent({
     components:{
@@ -203,13 +204,14 @@ export default defineComponent({
          * @param filename The string to use as the default/starting file name.
          */
         async downloadFileFromBskyCDN(url:string, filename:string) {
-            if(!url.includes('https://cdn.bsky.app')){
+            const target = `${import.meta.env.VITE_BSKY_MEDIA_DOWNLOAD_PROXY_TARGET}`;
+            if(!url.includes(target)){
                 toast.add({summary:'Error', detail:`URL provided to download must be link to Bluesky CDN`, severity:'error', group:'tr', life:3000});
                 console.log(`Provided URL was: ${url}`);
             }
             else{
                 this.isDownloading = true;
-                await fetch(url.split('https://cdn.bsky.app')[1],{
+                await fetch(CreateBskyMediaDownloadURL(url),{
                     headers:{
                         Accept:
                         "image/png, image/jpeg, image/*",

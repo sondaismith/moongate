@@ -151,6 +151,25 @@ export function CreateBskyWeblink(postUri:string, handle:string=""):string|undef
     return template(parsedUri).link;
 }
 
+/**
+ * Method that is used to convert a normal link to media hosted on Bluesky's
+ * CDN servers into a URL that can be used to download/fetch the file.
+ * See {@link '../../vite.config.ts'} and {@link '../../.env'} for variables
+ * that make the whole thing work..
+ * @param mediaURL The URL to convert.
+ * @returns The URL to use to download media from Bluesky's servers via
+ * the application's proxy.
+ */
 export function CreateBskyMediaDownloadURL(mediaURL:string){
-
+    //If URL is empty string
+    if(mediaURL.trim() == '') throw new Error('Provided URL is empty.');
+    //Get environment variables
+    const target = `${import.meta.env.VITE_BSKY_MEDIA_DOWNLOAD_PROXY_TARGET}`;
+    const route = import.meta.env.VITE_BSKY_MEDIA_DOWNLOAD_PROXY_ROUTE_SCAN_URL;
+    var routeRegex = new RegExp(route);
+    //If URL does not follow expected format
+    if(!routeRegex.test(mediaURL)) throw new Error('Invalid URL');
+    //discard "target" part of URL
+    var proxyMediaURL = mediaURL.split(target)[1];
+    return `${proxyMediaURL}`;
 }
