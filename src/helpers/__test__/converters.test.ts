@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, should, vi } from "vitest";
-import { convertToLongTimestamp, convertToShortTimestamp } from "../converters";
+import { convertToLongTimestamp, convertToShortTimestamp, CreateBskyMediaDownloadURL } from "../converters";
 
 describe('attempt convert timestamp into long readable date', () => {
     it('should fail when given invalid date format', () =>{
@@ -119,5 +119,18 @@ describe('attempt to convert into short readable date', () => {
         const fakeDate = new Date(2025,5,27,17,7);
         vi.setSystemTime(fakeDate);
         expect(convertToShortTimestamp('2027-06-24T08:44:00')).toBe('Jun 24 2027');
+    })
+})
+
+describe('test conversion of Bluesky media URL to format can be used with proxy route+target', () => {
+    it('should fail when given empty string', () =>{
+        expect(() => CreateBskyMediaDownloadURL("")).toThrow('empty');
+    })
+    it('should fail when given invalid url', () =>{
+        expect(() => CreateBskyMediaDownloadURL("this is not a valid url")).toThrow('Invalid URL');
+    })
+    it('should return formatted link for download', () =>{
+        expect(CreateBskyMediaDownloadURL("https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:5lhjs7l3lheh4jdo4ljceaif/bafkreiarov6gichxnmjdnohpohaglvjksbmm7cdnm7af6ywhs2f5wmubhy@jpeg"))
+        .toBe('/img/feed_thumbnail/plain/did:plc:5lhjs7l3lheh4jdo4ljceaif/bafkreiarov6gichxnmjdnohpohaglvjksbmm7cdnm7af6ywhs2f5wmubhy@jpeg');
     })
 })
