@@ -29,7 +29,7 @@
                                         <CheckBox :model-value="AppSettingsState.Settings.isDarkMode" @value-toggled="toggleTheme">
                                             Dark Mode?
                                         </CheckBox>
-                                        <SquareButton @click="confirmAppWindowSizeReset"
+                                        <SquareButton v-if="isTauri()" @click="confirmAppWindowSizeReset"
                                         class="self-start text-xs !p-1 bg-btn hover:bg-btnHover"
                                         title="Return Window Size to 800x600">
                                             Reset App Window Size

@@ -1,5 +1,5 @@
 <template>
-    <div class="rounded p-2 cursor-pointer text-center transition-colors"
+    <div class="flex rounded p-2 cursor-pointer justify-center items-center gap-1 transition-colors"
     :class="[$attrs.class ? $attrs.class : 'bg-sky-500 hover:bg-sky-700 hover:border-sky-700',
         isDisabled ? '!bg-gray-600 text-gray-400 pointer-events-none select-none' : ''
     ]">

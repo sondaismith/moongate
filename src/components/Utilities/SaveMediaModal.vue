@@ -15,7 +15,7 @@
                 <div class="flex">
                     <InLaInput v-if="isTauri()" class="h-10 text-[12px] rounded-r-none grow"
                     text-label="Filename" :model-value="AppState.fileSaveDetails.full"
-                    @update:model-value="updateFileName"/>
+                    @update:model-value="updateFileName" title="Edit filename"/>
                     <InLaInput v-else class="h-10 text-[12px] rounded-r-none grow" text-label="Click to Copy Filename"
                     :model-value="AppState.fileSaveDetails.full" @update:model-value="updateFileName"
                     :is-text-copy-control="true"/>
@@ -31,20 +31,23 @@
                     cursor-pointer"></div>
                     <InLaInput :is-disabled="true" text-label="Save Folder" :model-value="AppState.lastMediaSaveDirectory.trim() != '' ? AppState.lastMediaSaveDirectory : 'Please select save folder'"/>
                 </div>
-                <div v-else class="text-xs">Currently on web/mobile you'll need to copy and use the filename yourself😔</div>
                 <div v-show="!isFileNameValid" class="text-xs text-red-500">Invalid file name</div>
                 <div v-show="isFileNameTaken" class="text-xs text-orange-300">File already exists, will be overwritten</div>
                 <div v-if="isTauri()" class="rounded h-3 overflow-hidden bg-slate-400 border border-slate-800">
                     <div class="rounded bg-blue-500 h-full w-0"
                     :style="{'width' : downloadProgress+'%', 'transition':'width 0.4s ease'}"></div>
                 </div>
-                <div class="rounded p-1 !text-white bg-sky-500 hover:bg-sky-600 cursor-pointer"
-                @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full)">
-                    Save test
-                    <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/>
-                </div>
-                <SquareButton v-if="isTauri()" @click="saveImage" :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading">Save Image</SquareButton>
-                <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton>
+                <SquareButton v-if="isTauri()" @click="saveImage" title="Save Image"
+                :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading">
+                    Save Image
+                </SquareButton>
+                <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
+                <SquareButton v-else :is-disabled="isDownloading"
+                @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full)"
+                title="Download Image">
+                    <div>Save Image</div>
+                    <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
+                </SquareButton>
             </div>
         </div>
     </div>

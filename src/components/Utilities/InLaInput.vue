@@ -100,9 +100,11 @@ export default defineComponent({
             if(navigator.clipboard){//Modern method - requires app to serve page(s) over HTTPS
                 try{
                     navigator.clipboard.writeText(this.modelValue ? this.modelValue : '');
+                    toast.add({summary:'Text Copied',severity:'success', group:'bc', life:1000});
                 }
                 catch(err){
                     console.error('Unable to copy to clipboard', err);
+                    toast.add({summary:'Error copying text',severity:'error', group:'bc', life:1000});
                 }
             }
             else{
@@ -114,12 +116,13 @@ export default defineComponent({
                 textArea.select();
                 try{
                     document.execCommand('copy');
+                    toast.add({summary:'Text Copied',severity:'success', group:'bc', life:1000});
                 }
                 catch(err){
                     console.error('Unable to copy to clipboard', err);
+                    toast.add({summary:'Error copying text',severity:'error', group:'bc', life:1000});
                 }
                 document.body.removeChild(textArea);
-                toast.add({summary:'Text Copied',severity:'success', group:'bc', life:1000});
             }
         }
     },
