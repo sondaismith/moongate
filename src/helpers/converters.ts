@@ -13,11 +13,11 @@ export function convertToShortTimestamp(ts:string = ""){
 
         if(Math.abs(timeDiff) < 1000*60){
             //under 1 min
-            dateFormat = timeDiff/1000+'sec';
+            dateFormat = Math.round(timeDiff/1000)+'sec';
         }
         else if(Math.abs(timeDiff) < 1000*60*60){
             //under 1 hour
-            dateFormat = timeDiff/(1000*60)+'m';
+            dateFormat = Math.round(timeDiff/(1000*60))+'m';
         }
         else if(Math.abs(timeDiff) < 1000*60*60*24){
             //under 24 hours

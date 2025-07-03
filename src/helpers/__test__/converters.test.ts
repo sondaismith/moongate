@@ -40,6 +40,11 @@ describe('attempt to convert into short readable date', () => {
         vi.setSystemTime(fakeDate);
         expect(convertToShortTimestamp('2025-06-27T16:05:30')).toBe('-30sec');
     })
+    it('should return valid short timestamp - posted under 1 minute ago', () => {
+        const fakeDate = new Date(2025,5,27,16,5);
+        vi.setSystemTime(fakeDate);
+        expect(convertToShortTimestamp('2025-06-27T16:04:35.22122')).toBe('25sec');
+    })
     it('should return valid short timestamp - posted under 1 hour ago', () => {
         const fakeDate = new Date(2025,5,27,16,5);
         vi.setSystemTime(fakeDate);
@@ -49,6 +54,11 @@ describe('attempt to convert into short readable date', () => {
         const fakeDate = new Date(2025,5,27,16,5);
         vi.setSystemTime(fakeDate);
         expect(convertToShortTimestamp('2025-06-27T16:23:00')).toBe('-18m');
+    })
+    it('should return valid short timestamp - posted under 1 hour ago, rounded down', () => {
+        const fakeDate = new Date(2025,5,27,16,5,22,1222);
+        vi.setSystemTime(fakeDate);
+        expect(convertToShortTimestamp('2025-06-27T15:31:01.3333')).toBe('34m');
     })
     it('should return valid short timestamp - posted under 24 hours ago, same day, hour rounded up', () => {
         const fakeDate = new Date(2025,5,27,16);
