@@ -37,7 +37,6 @@
                     </div>
                     <div class="border-t border-gray-700 space-y-2 px-2 py-2 flex-none">
                         <FeedButton data-testid="add-feed-button" :icon="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
-                        <FeedButton :icon="FeedEnums.Icons.RemoveList" tooltip="Remove Feed" @click="removeFeed"/>
                         <FeedButton :icon="FeedEnums.Icons.CreatePost" tooltip="Create New Post" @click="createNewPost"/>
                     </div>
                 </div>
@@ -53,8 +52,37 @@
         </div>
         {{ void "main content" }}
         <div data-test="feed-viewport" :onscroll="showScrollXPos" id="feedcolumnDisplay"
-            class="flex w-full bg-slate-700 overflow-y-hidden" >
+            class="flex w-full bg-viewportBG overflow-y-hidden" >
             <div class="flex">
+                <div class="p-2 text-primary min-w-[18rem] max-w-[30rem]">
+                    <div class="flex flex-col rounded p-1 gap-2 border border-1 border-outline">
+                        <div class="flex gap-x-1 text-xs self-end text-blue-400 hover:text-hover cursor-pointer">
+                            <div>Dismiss message</div>
+                            <i-mingcute:close-fill/>
+                        </div>
+                        <div class="text-2xl">Getting Started</div>
+                        <div class="flex flex-wrap gap-x-1">
+                            <div>To add a new Feed to the viewport, click the</div>
+                            <div class="flex rounded px-1 border-secondary items-center
+                            gap-1 border whitespace-nowrap text-sm">
+                                <i-mdi:playlist-add/>
+                                <div>Add Feed</div>
+                            </div>
+                            <div>button in the sidebar to the left.</div>
+                        </div>
+                        <div class="flex flex-wrap gap-x-1 items-center">
+                            <div class="bg-pink-500w">
+                                After creating a Feed, you can remove it by
+                                right-clicking/long-pressing the created button
+                            </div>
+                            <div class="flex h-9 w-11 p-1 rounded-xl bg-feedBtn border border-outline transition-[border]
+                            hover:border-secondary items-center justify-center">
+                                <i-mdi:paint-outline/>
+                            </div>
+                            <div class="inline">on the left.</div>
+                        </div>
+                    </div>
+                </div>
                 <TransitionGroup name="feedcolumn">
                     <!-- <FeedColumn v-for="feed in feedListing.feedList" :key="feed" :feedData="feed"/> -->
                     <FeedColumn v-for="(feed, index) in FeedState.FeedList" :list-index="index"
@@ -606,4 +634,4 @@ import { IFeedDBData } from "./interfaces/FeedInterfaces";
 	outline: 2px dashed black;
 	background-color: rgba(100, 100, 100, 0.6); /* greyed out */
 }
-</style>
+</style>FeedEnums,

@@ -29,6 +29,7 @@ export default {
         toggleGutter: "oklch(from var(--color-toggle-gutter) l c h / <alpha-value>)",
         checkboxHover: "oklch(from var(--color-checkbox-hover) l c h / <alpha-value>)",
         feedHighlight: "oklch(from var(--color-feed-highlight) l c h / <alpha-value>)",
+        viewportBG: "oklch(from var(--color-viewport-background) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',
