@@ -30,6 +30,7 @@ export default {
         checkboxHover: "oklch(from var(--color-checkbox-hover) l c h / <alpha-value>)",
         feedHighlight: "oklch(from var(--color-feed-highlight) l c h / <alpha-value>)",
         viewportBG: "oklch(from var(--color-viewport-background) l c h / <alpha-value>)",
+        messageDismiss: "oklch(from var(--color-message-dismiss) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',
