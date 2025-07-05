@@ -37,7 +37,6 @@
                     </div>
                     <div class="border-t border-gray-700 space-y-2 px-2 py-2 flex-none">
                         <FeedButton data-testid="add-feed-button" :icon="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
-                        <FeedButton :icon="FeedEnums.Icons.RemoveList" tooltip="Remove Feed" @click="removeFeed"/>
                         <FeedButton :icon="FeedEnums.Icons.CreatePost" tooltip="Create New Post" @click="createNewPost"/>
                     </div>
                 </div>
@@ -53,9 +52,10 @@
         </div>
         {{ void "main content" }}
         <div data-test="feed-viewport" :onscroll="showScrollXPos" id="feedcolumnDisplay"
-            class="flex w-full bg-slate-700 overflow-y-hidden" >
+            class="flex w-full bg-viewportBG overflow-y-hidden" >
             <div class="flex">
                 <TransitionGroup name="feedcolumn">
+                    <IntroMessage v-cloak key="intro_message-a12u2uss1w" v-if="AppSettingsState.isSettingsLoaded && AppSettingsState.Settings.isShowingIntroMessage"/>
                     <!-- <FeedColumn v-for="feed in feedListing.feedList" :key="feed" :feedData="feed"/> -->
                     <FeedColumn v-for="(feed, index) in FeedState.FeedList" :list-index="index"
                     :key="feed.description.feedId" :feedData="feed"
@@ -171,6 +171,7 @@ import SettingsPanel from "./components/Settings/SettingsPanel.vue";
 import { AppSettingsState } from "./state/AppSettingsState.vue";
 import FeedColumn from "./components/Feed/FeedColumn.vue";
 import { IFeedDBData } from "./interfaces/FeedInterfaces";
+import IntroMessage from "./components/Intro/IntroMessage.vue";
 
 
     export default defineComponent({
@@ -183,6 +184,7 @@ import { IFeedDBData } from "./interfaces/FeedInterfaces";
             UserFocusModal,
             CreatePost,
             SettingsPanel,
+            IntroMessage,
         },
         data(){
             return{
@@ -606,4 +608,4 @@ import { IFeedDBData } from "./interfaces/FeedInterfaces";
 	outline: 2px dashed black;
 	background-color: rgba(100, 100, 100, 0.6); /* greyed out */
 }
-</style>
+</style>FeedEnums,

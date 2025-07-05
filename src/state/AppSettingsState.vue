@@ -15,12 +15,17 @@ export interface OptionHolder<T>{
 }
 
 export const AppSettingsState = reactive({
+    ///Used to check if App Settings have been loaded - mainly used to
+    ///only show certain elements if the required variable value has
+    ///been loaded.
+    isSettingsLoaded:false,
     Settings:{
         isDarkMode:false,
         isAcceptingAllLanguages: true,
         isWhitelist: true,
         isBlacklist: false,
         selectedLanguages:[] as LangCode[],
+        isShowingIntroMessage: true,
     } as IAppSettings,
     AppStore:Store,
     /**
@@ -140,11 +145,13 @@ export const AppSettingsState = reactive({
                 appSettings.isDarkMode = loadedSettings.isDarkMode;
                 appSettings.isWhitelist = loadedSettings.isWhitelist;
                 appSettings.selectedLanguages = JSON.parse(loadedSettings.selectedLanguages);
+                appSettings.isShowingIntroMessage = loadedSettings.isShowingIntroMessage;
             })
             .catch(err => {
                 console.log(err);
             })
         }
+        this.isSettingsLoaded = true;
     },
     /**
      * Method used to save the current values held in {@link AppSettingsState.Settings}
@@ -174,7 +181,8 @@ export const AppSettingsState = reactive({
                 isBlacklist:cs.isBlacklist,
                 isDarkMode:cs.isDarkMode,
                 isWhitelist:cs.isWhitelist,
-                selectedLanguages:JSON.stringify(cs.selectedLanguages)
+                selectedLanguages:JSON.stringify(cs.selectedLanguages),
+                isShowingIntroMessage:cs.isShowingIntroMessage,
             })
             // .then(res => {
             //     console.log(res);

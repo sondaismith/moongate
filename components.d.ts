@@ -68,6 +68,7 @@ declare module 'vue' {
     'IMingcute:warningFill': typeof import('~icons/mingcute/warning-fill')['default']
     'IMingcute:world2Line': typeof import('~icons/mingcute/world2-line')['default']
     InLaInput: typeof import('./src/components/Utilities/InLaInput.vue')['default']
+    IntroMessage: typeof import('./src/components/Intro/IntroMessage.vue')['default']
     'ISolar:boxMinimalisticBoldDuotone': typeof import('~icons/solar/box-minimalistic-bold-duotone')['default']
     'ISolar:chatDotsOutline': typeof import('~icons/solar/chat-dots-outline')['default']
     'ISolar:earthOutline': typeof import('~icons/solar/earth-outline')['default']

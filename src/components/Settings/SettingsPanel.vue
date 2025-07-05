@@ -29,6 +29,12 @@
                                         <CheckBox :model-value="AppSettingsState.Settings.isDarkMode" @value-toggled="toggleTheme">
                                             Dark Mode?
                                         </CheckBox>
+                                        <SquareButton :is-disabled="AppSettingsState.Settings.isShowingIntroMessage"
+                                        class="self-start bg-btn hover:bg-btnHover"
+                                        title="Display Introductory Tutorial/Instructions"
+                                        @click="AppSettingsState.Settings.isShowingIntroMessage = true">
+                                            Show Intro Instructions
+                                        </SquareButton>
                                         <SquareButton v-if="isTauri()" @click="confirmAppWindowSizeReset"
                                         class="self-start text-xs !p-1 bg-btn hover:bg-btnHover"
                                         title="Return Window Size to 800x600">
