@@ -12,6 +12,7 @@ interface AppSettings{ //extends IAppSettings{
   isWhitelist: boolean;
   isBlacklist: boolean;
   selectedLanguages: string //have to convert from LangCode[] to string
+  isShowingIntroMessage: boolean;
 }
 
 /**IndexedDB database with `savedFeeds` store/table.*/

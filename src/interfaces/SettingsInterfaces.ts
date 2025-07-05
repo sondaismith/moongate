@@ -16,6 +16,7 @@ export class AppSettingsClass {
     isWhitelist = true;
     isBlacklist = false;
     selectedLanguages = [] as LangCode[];
+    isShowingIntroMessage = true;
 }
 export interface IAppSettings extends AppSettingsClass{}
 type AppSettingsPropsArray = Array<keyof IAppSettings>;
