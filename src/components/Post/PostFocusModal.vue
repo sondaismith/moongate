@@ -86,13 +86,14 @@
                     :handle="postDetails.currentThreadView.post.author.handle"/>
                     <div class="self-center overflow-hidden text-primary ml-1">
                         <div class="flex items-center gap-1">
-                            <div class="font-bold leading-4 text-ellipsis text-nowrap overflow-hidden"
+                            <div data-testid="PostFocusModal-displayName"
+                            class="font-bold leading-4 text-ellipsis text-nowrap overflow-hidden"
                             :title="postDetails.currentThreadView.post.author.displayName">
                                 {{ postDetails.currentThreadView.post.author.displayName }}
                             </div>
                             <VerifiedBadge v-if="isUserVerified" class="size-4"/>
                         </div>
-                        <div class="text-feedPostName text-ellipsis overflow-hidden">@{{ postDetails.currentThreadView.post.author.handle }}</div>
+                        <div data-testid="PostFocusModal-handle" class="text-feedPostName text-ellipsis overflow-hidden">@{{ postDetails.currentThreadView.post.author.handle }}</div>
                     </div>
                     <div class="rounded-full self-center ml-auto
                     py-1 px-3 bg-slate-300 font-bold hover:bg-slate-200
