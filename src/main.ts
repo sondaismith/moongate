@@ -1,5 +1,5 @@
-// import { createApp } from "vue";
-import { createApp } from "vue/dist/vue.esm-bundler";
+import { createApp } from "vue";
+// import { createApp } from "vue/dist/vue.esm-bundler";
 import App from "./App.vue";
 import './index.css';
 import PrimeVue from 'primevue/config';
