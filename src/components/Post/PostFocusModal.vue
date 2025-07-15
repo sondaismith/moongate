@@ -151,7 +151,7 @@
                     <div v-for="navItem in postDetails.threadNavHistory">{{ navItem.post.author.displayName }} ></div>
                 </div> -->
             </div>
-            <PostThreadView v-if="!postDetails.isAwaitingFocusData"/>
+            <PostThreadView v-if="!postDetails.isAwaitingFocusData" :current-thread-view="postDetails.currentThreadView"/>
         </div>
     </div>
 </template>

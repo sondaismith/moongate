@@ -105,11 +105,7 @@ describe("test", () => {
             threadNavHistory: testPostThreadView,
             currentThreadView: testPostThreadView[0],
         }});
-        // await wrapper.setData({postDetails:{
-        //     isAwaitingFocusData: false,
-        // }});
-        console.log(wrapper.vm.$data.postDetails.currentThreadView.replies);
-        console.log(wrapper.html());
+        // console.log(wrapper.html());
         //Check handle
         expect(wrapper.find('[data-testid="PostFocusModal-handle"]').exists()).toBe(true);
         expect(wrapper.find('[data-testid="PostFocusModal-handle"]').text()).toContain('@'+testPostThreadView[0].post.author.handle);
@@ -117,17 +113,20 @@ describe("test", () => {
         expect(wrapper.find('[data-testid="PostFocusModal-displayName"]').exists()).toBe(true);
         expect(wrapper.find('[data-testid="PostFocusModal-displayName"]').text()).toContain(testPostThreadView[0].post.author.displayName);
         //Check that expected replies are displayed
+        let testReplyList = wrapper.findAllComponents(FocusFeedPost);
+        expect(testReplyList.length).toEqual(3);
     })
 
     test.skip("clicking reply timestamp updates PostThreadView via API request", async () => {
         // const wrapper = mount(PostFocusModal);
-        const wrapper = mount(PostThreadView, {
+        const wrapper = mount(PostFocusModal, {
             data() {
                 return{
                     postDetails:{
                         postThread: testPostThreadView[0],
                         threadNavHistory: testPostThreadView,
                         currentThreadView: testPostThreadView[0],
+                        whoCanReply: () => {return 'Everybody can Reply'},
                     }
                 }
             },
@@ -147,9 +146,6 @@ describe("test", () => {
         // console.log(wrapper.vm.$data.postDetails.currentThreadView);
         // console.log(wrapper.html());
         // console.log(testPostThreadView);
-        //Testing that FocusFeedPost postToShow is getting indexedAt date value
-        let focusPostWrapper = wrapper.findComponent(FocusFeedPost);
-        console.log(focusPostWrapper.vm.$data);
     })
     afterEach(() => {
         wrapper.unmount();
