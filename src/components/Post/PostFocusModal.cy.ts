@@ -1,8 +1,8 @@
 import PostFocusModal from './PostFocusModal.vue';
 import PostThreadView from './PostThreadView.vue';
+import postDetails from '../../state/PostDetails.vue'
 
 const today = new Date();
-
 const testPostThreadView = [{
     $type:"app.bsky.feed.defs#threadViewPost",
     post: {
@@ -91,12 +91,14 @@ const testPostThreadView = [{
 describe('Clicking timestamp requests data', () => {
   it('renders', () => {
     // see: https://on.cypress.io/mounting-vue
-    cy.mount(PostThreadView,{
+    cy.mount(PostFocusModal,{
         data() {
             return{
                 postDetails:{
+                    postThread: testPostThreadView[0],
                     threadNavHistory: testPostThreadView,
                     currentThreadView: testPostThreadView[0],
+                    whoCanReply: () => {return 'Everybody can reply'}
                 }
             }
         },

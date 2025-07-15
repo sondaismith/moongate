@@ -125,6 +125,7 @@ describe("test", () => {
             data() {
                 return{
                     postDetails:{
+                        postThread: testPostThreadView[0],
                         threadNavHistory: testPostThreadView,
                         currentThreadView: testPostThreadView[0],
                     }
