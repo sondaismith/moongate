@@ -1,6 +1,7 @@
 import PostFocusModal from './PostFocusModal.vue';
 import PostThreadView from './PostThreadView.vue';
 import postDetails from '../../state/PostDetails.vue'
+import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 
 const today = new Date();
 const testPostThreadView = [{
@@ -98,7 +99,8 @@ describe('Clicking timestamp requests data', () => {
                     postThread: testPostThreadView[0],
                     threadNavHistory: testPostThreadView,
                     currentThreadView: testPostThreadView[0],
-                    whoCanReply: () => {return 'Everybody can reply'}
+                    whoCanReply: () => {return 'Everybody can reply'},
+                    setThreadContext: (newThread:ThreadViewPost) => {}
                 }
             }
         },

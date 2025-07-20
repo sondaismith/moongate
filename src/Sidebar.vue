@@ -112,7 +112,7 @@
             <SaveMediaModal v-if="AppState.isSavingMediaModalVisible"/>
         </Transition>
         <Transition>
-            <PostFocusModal v-if="postDetails.isFocusVisible"/>
+            <PostFocusModal v-if="postDetails.isFocusVisible" :initial-thread-uri="postDetails.uriOfPostToShow" :clicked-media-index="postDetails.clickedMediaIndex"/>
         </Transition>
         <Transition name="modal">
             <FeedEditModal v-if="AppState.isCreatingFeed || AppState.isUpdatingFeed"/>
