@@ -66,9 +66,10 @@ export default defineComponent({
          * a `FocusFeedPost` timestamp is clicked.
          * This emit travels from `PostThreadView` to `PostFocusModal`.
          * @param postThreadURI The URI pointing to the new Post Thread context to display.
+         * @param mediaIndex The Index of the media in the Post's collection to display.
          */
-        updateThreadContext:(postThreadURI:string) => {
-            return postThreadURI;
+        updateThreadContext:(postThreadURI:string, mediaIndex:number) => {
+            return {postThreadURI,mediaIndex};
         }
     },
     methods:{
@@ -77,9 +78,9 @@ export default defineComponent({
          * Emits {@link updateThreadContext} message with URI of Post Thread to display.
          * @param newThreadURI The URI pointing to the new Post Thread context to display.
          */
-        changeThreadFromPost(newThreadURI:string){
+        changeThreadFromPost(newThreadURI:string,mediaIndex:number){
             // alert(newThread.post.author.handle);
-            this.$emit('updateThreadContext', newThreadURI);
+            this.$emit('updateThreadContext', newThreadURI, mediaIndex);
         }
     }
 })

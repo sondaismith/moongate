@@ -224,7 +224,7 @@ export default defineComponent({
             isVideoView,
             /**Used to determine which media item to display. */
             AppBskyEmbedRecordWithMedia,
-            /** */
+            /**Index of media in Post's collection that is currently being displayed. */
             currentMediaIndex: 0,
             /**
              * Holds details of the "Thread" of the initial Post that was opened up in the Focus modal.
@@ -374,13 +374,15 @@ export default defineComponent({
          * Triggered by an emitted message coming from a child `FocusFeedPost`
          * timestamp being clicked.
          * @param newThreadContextURI The URI pointing to the new Post Thread context to display.
+         * @param mediaIndex The Index of the media in the Post's collection to display.
          */
-        async updateThreadContextFromPost(newThreadContextURI:string){
+        async updateThreadContextFromPost(newThreadContextURI:string,mediaIndex:number){
             postDetails.isAwaitingFocusData = true;
             // await getPostThread(newThreadContext.post.uri)
             await getPostThread(newThreadContextURI)
             .then(res => {
                 this.setThreadContext(res.data.thread as ThreadViewPost);
+                this.currentMediaIndex = mediaIndex;
             })
             .catch(err => toast.add(HandleAPIError(err, 'Error getting reply')))
             .finally(() => postDetails.isAwaitingFocusData = false);

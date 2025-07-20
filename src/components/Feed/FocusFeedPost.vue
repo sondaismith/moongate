@@ -114,7 +114,7 @@
                     {{ void "Post Media" }}
                     <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
-                    @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(i)"/>
+                    @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '', i) : openFocusDetails(i)"/>
                     <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
                     :labels="postToShow.labels" :author="postToShow.author.handle"/>
                     <div v-if="postContainsExternalEmbed">
@@ -221,10 +221,11 @@ export default defineComponent({
          * QRT Posts will emit to the container `FocusFeedPost` and then continue up
          * the previously outlined route.
          * @param postThreadURI The URI pointing to the new Post Thread context to display.
+         * @param mediaIndex The Index of the media in the Post's collection to display.
          */
-        threadReplyClicked:(postThreadURI:string) => {
+        threadReplyClicked:(postThreadURI:string,mediaIndex:number) => {
             if(postThreadURI.trim() != '')
-                return postThreadURI;
+                return {postThreadURI,mediaIndex};
             else return false;
         }
     },
@@ -261,9 +262,9 @@ export default defineComponent({
          * Emits `threadReplyClicked` with URI of Post Thread to display.
          * @param newThreadURI The URI pointing to the new Post Thread context to display.
          */
-        emitThreadReplyClicked(newThreadURI:string){
+        emitThreadReplyClicked(newThreadURI:string, mediaIndex:number=0){
             if(newThreadURI.trim() != '')
-                this.$emit('threadReplyClicked',newThreadURI);
+                this.$emit('threadReplyClicked',newThreadURI,mediaIndex);
         }
     },
     computed:{
