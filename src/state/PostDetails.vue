@@ -42,6 +42,11 @@ export const postDetails = reactive({
      */
     currentPostData: emptyPostView,
     /**
+     * Holds reference to the currently displayed Post thread context. Updated with values
+     * held in the thread navigation history array - `threadNavHistory`.
+     */
+    currentThreadView : emptyPostThread,
+    /**
      * Holds record of the Thread associated with the Post the User last
      * interacted with. Currently just used to find the "root" Post of last
      * interacted Post.

@@ -22,10 +22,10 @@
                 class="rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
                 :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[currentMediaIndex] as ViewImage).fullsize+')'}">
                 </div>
-                <video-container v-else-if="isVideoView(currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
+                <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
                 class="relative flex flex-col max-w-full h-full justify-center p-5"
-                :style="{'aspect-ratio':`${currentThreadView.post.embed.aspectRatio?.width}/${currentThreadView.post.embed.aspectRatio?.height}`}"
-                :video-view="currentThreadView.post.embed">
+                :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
+                :video-view="postDetails.currentThreadView.post.embed">
                 </video-container>
                 <EmbedExternal v-else-if="hasEmbedGIFMedia" :embed="getEmbedGIFMedia"/>
                 <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
@@ -41,7 +41,7 @@
                 <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ getEmbededImageAltText }}</div>
             </div>
             <div v-else-if="hasEmbededVideoWithAltText" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 text-sm bg-slate-500/20">
-                <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ currentThreadView.post.embed?.alt }}</div>
+                <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed?.alt }}</div>
             </div>
             {{ void "Post Details" }}
             <!-- <div class="flex space-x-2 mx-8 px-2 py-4 ">
@@ -81,19 +81,19 @@
             {{ void "User Info/Actions" }}
             <div v-if="!postDetails.isAwaitingFocusData" class="p-4 pb-1">
                 <div class="flex gap-1">
-                    <AvatarRound :avatar="currentThreadView.post.author.avatar"
-                    :did="currentThreadView.post.author.did"
-                    :handle="currentThreadView.post.author.handle"/>
+                    <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
+                    :did="postDetails.currentThreadView.post.author.did"
+                    :handle="postDetails.currentThreadView.post.author.handle"/>
                     <div class="self-center overflow-hidden text-primary ml-1">
                         <div class="flex items-center gap-1">
                             <div data-testid="PostFocusModal-displayName"
                             class="font-bold leading-4 text-ellipsis text-nowrap overflow-hidden"
-                            :title="currentThreadView.post.author.displayName">
-                                {{ currentThreadView.post.author.displayName }}
+                            :title="postDetails.currentThreadView.post.author.displayName">
+                                {{ postDetails.currentThreadView.post.author.displayName }}
                             </div>
                             <VerifiedBadge v-if="isUserVerified" class="size-4"/>
                         </div>
-                        <div data-testid="PostFocusModal-handle" class="text-feedPostName text-ellipsis overflow-hidden">@{{ currentThreadView.post.author.handle }}</div>
+                        <div data-testid="PostFocusModal-handle" class="text-feedPostName text-ellipsis overflow-hidden">@{{ postDetails.currentThreadView.post.author.handle }}</div>
                     </div>
                     <div class="rounded-full self-center ml-auto
                     py-1 px-3 bg-slate-300 font-bold hover:bg-slate-200
@@ -103,18 +103,18 @@
                 </div>
                 {{ void "Post Content - Text" }}
                 <div class="text-sm pt-2 text-primary break-words">
-                    {{ currentThreadView ? currentThreadView.post.record.text : "initial state - undefined" }}
+                    {{ postDetails.currentThreadView ? postDetails.currentThreadView.post.record.text : "initial state - undefined" }}
                 </div>
                 {{ void "Post Metadata" }}
                 <div class="flex flex-col gap-2">
                     <div class="flex flex-wrap gap-1s leading-5 py-0.5 border-b-[1px] border-slate-600">
-                        <div class="text-feedPostName bgs-lime-300 text-secondary cursor-pointer hover:underline mr-1">{{ convertToLongTimestamp(currentThreadView.post.indexedAt) }}</div>
+                        <div class="text-feedPostName bgs-lime-300 text-secondary cursor-pointer hover:underline mr-1">{{ convertToLongTimestamp(postDetails.currentThreadView.post.indexedAt) }}</div>
                         <div class="flex bg-spink-300 items-center text-feedPostName text-secondary cursor-pointer hover:underline">
                             <i-mdi:accounts/>
-                            <div>{{ postDetails.whoCanReply(currentThreadView.post) }}</div>
+                            <div>{{ postDetails.whoCanReply(postDetails.currentThreadView.post) }}</div>
                         </div>
                     </div>
-                    <PostInteractionIcons :post-data="currentThreadView.post"/>
+                    <PostInteractionIcons :post-data="postDetails.currentThreadView.post"/>
                 </div>
             </div>
             {{ void "post reply input" }}
@@ -152,13 +152,13 @@
                 </div> -->
             </div>
             <PostThreadView v-if="!postDetails.isAwaitingFocusData" @update-thread-context="updateThreadContextFromPost"
-            :is-changing-thread-context="isChangingThreadContext" :current-thread-view="currentThreadView"/>
+            :is-changing-thread-context="isChangingThreadContext" :current-thread-view="postDetails.currentThreadView"/>
         </div>
     </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { defineComponent } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { convertToLongTimestamp } from '../../helpers/converters';
 import PostThreadView from './PostThreadView.vue';
@@ -168,7 +168,7 @@ import { isView as isImageView, ViewImage } from '@atproto/api/dist/client/types
 import { isView as isVideoView, View as ViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { AppBskyEmbedExternal, AppBskyEmbedRecordWithMedia, AtUri } from '@atproto/api';
+import { AppBskyEmbedExternal, AppBskyEmbedRecordWithMedia } from '@atproto/api';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import PostInteractionIcons from './PostInteractionIcons.vue';
@@ -231,11 +231,6 @@ export default defineComponent({
              * Should not be modified once set except to be cleared.
              */
             postThread : emptyPostThread,
-            /**
-             * Holds reference to the currently displayed Post thread context. Updated with values
-             * held in the thread navigation history array - `threadNavHistory`.
-             */
-            currentThreadView : emptyPostThread,
             /**
              * Holds record of how/where the User has navigated down
              * the Post reply tree. The 1st element will always be a
@@ -304,7 +299,7 @@ export default defineComponent({
                 this.postThread = res.data.thread as ThreadViewPost;
                 // postDetails.currentThreadView = postDetails.threadNavHistory[0] = postDetails.postThread;
                 //Take Post Thread prop and update relevant variables
-                this.currentThreadView = this.threadNavHistory[0] = this.postThread;
+                postDetails.currentThreadView = this.threadNavHistory[0] = this.postThread;
                 this.currentMediaIndex = this.clickedMediaIndex; //Set initial media item to show
                 postDetails.isAwaitingFocusData = false;
                 console.log(this.postThread);
@@ -315,12 +310,12 @@ export default defineComponent({
             var result = this.findThreadView(cid,this.postThread);
 
             if(result){
-                this.currentThreadView = result;
+                postDetails.currentThreadView = result;
             }
             else{
                 //go back to Post origin ThreadView
                 console.log('Finding Post ThreadView failed :(');
-                this.currentThreadView = this.postThread;
+                postDetails.currentThreadView = this.postThread;
             }
             this.updateCurrentBreadcrumbs();
         },
@@ -331,7 +326,7 @@ export default defineComponent({
                 this.threadNavIndex++;
                 // this.clickedMediaIndex = mediaIndex;
                 this.currentMediaIndex = mediaIndex;
-                this.currentThreadView = this.threadNavHistory[this.threadNavIndex];
+                postDetails.currentThreadView = this.threadNavHistory[this.threadNavIndex];
                 setTimeout(() => {
                     this.isChangingThreadContext = false;
                 }, 1);
@@ -344,7 +339,7 @@ export default defineComponent({
                 this.threadNavIndex--;
                 // this.clickedMediaIndex = 0; //prevents accessing element that does not exist
                 this.currentMediaIndex = 0; //prevents accessing element that does not exist
-                this.currentThreadView = this.threadNavHistory[this.threadNavIndex];
+                postDetails.currentThreadView = this.threadNavHistory[this.threadNavIndex];
                 setTimeout(() => {
                     this.isChangingThreadContext = false;
                 }, 1);
@@ -392,7 +387,7 @@ export default defineComponent({
          * origin.
          */
         returnToThreadOrigin() {
-            this.currentThreadView = this.postThread;
+            postDetails.currentThreadView = this.postThread;
             this.updateCurrentBreadcrumbs();
         },
         /**
@@ -401,13 +396,13 @@ export default defineComponent({
          */
         updateCurrentBreadcrumbs(){
             //If there the reply object containing the parent ref does not exist
-            if(!this.currentThreadView.post.record.reply){
+            if(!postDetails.currentThreadView.post.record.reply){
                 this.currentBreadcrumb.splice(0, this.currentBreadcrumb.length, ...[{userName:"Origin",postCID:"root"}]);
             }
             else{
                 //reset breadcrumbs
                 this.currentBreadcrumb.splice(0, this.currentBreadcrumb.length, ...[]);
-                this.discoverBreadcrumbs(this.currentThreadView.post.cid, this.currentThreadView);
+                this.discoverBreadcrumbs(postDetails.currentThreadView.post.cid, postDetails.currentThreadView);
                 //add origin "home button" to start of breadcrumbs
                 this.currentBreadcrumb.unshift({userName:"Origin",postCID:"this_cid_is_unset"});
             }
@@ -463,26 +458,26 @@ export default defineComponent({
         /**Checks to see if the current post contains any image media. */
         hasImageMedia(){
             //Image Post
-            if((this.currentThreadView.post.embed &&
-            isImageView(this.currentThreadView.post.embed)))
+            if((postDetails.currentThreadView.post.embed &&
+            isImageView(postDetails.currentThreadView.post.embed)))
                 return true;
             //Image Post w/ QRT
-            if(AppBskyEmbedRecordWithMedia.isView(this.currentThreadView.post.embed) &&
-            isImageView(this.currentThreadView.post.embed.media))
+            if(AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            isImageView(postDetails.currentThreadView.post.embed.media))
                 return true;
             return false;
         },
         /**Checks to see if the current post contains an embeded GIF. */
         hasEmbedGIFMedia(){
             //GIF Post
-            if((this.currentThreadView.post.embed &&
-            this.currentThreadView.post.embed.media &&
-            AppBskyEmbedExternal.isView(this.currentThreadView.post.embed.media)))
+            if((postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.media &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed.media)))
                 return true;
             //GIF Post in QRT
-            if((this.currentThreadView.post.embed &&
-            this.currentThreadView.post.embed.external &&
-            AppBskyEmbedExternal.isView(this.currentThreadView.post.embed)))
+            if((postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.external &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed)))
                 return true;
             return false;
         },
@@ -492,16 +487,16 @@ export default defineComponent({
          */
         hasEmbededImagesWithAltText(){
             //Image Post
-            if(this.currentThreadView.post.embed &&
-            this.currentThreadView.post.embed.images &&
-            (this.currentThreadView.post.embed.images as ViewImage[])[this.currentMediaIndex].alt.trim() != '')
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.images &&
+            (postDetails.currentThreadView.post.embed.images as ViewImage[])[this.currentMediaIndex].alt.trim() != '')
                 return true;
             //Image Post w/ QRT
-            else if(this.currentThreadView.post.embed &&
-            AppBskyEmbedRecordWithMedia.isView(this.currentThreadView.post.embed) &&
-            this.currentThreadView.post.embed.media.images &&
-            (this.currentThreadView.post.embed.media.images as ViewImage[]).length > 0 &&
-            (this.currentThreadView.post.embed.media.images as ViewImage[])[0].alt.trim() != '')
+            else if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            postDetails.currentThreadView.post.embed.media.images &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0 &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[0].alt.trim() != '')
                 return true;
             return false;
         },
@@ -510,10 +505,10 @@ export default defineComponent({
          * it has any descriptive ALT text.
          */
          hasEmbededVideoWithAltText(){
-            if(this.currentThreadView.post.embed &&
-            isVideoView(this.currentThreadView.post.embed) &&
-            (this.currentThreadView.post.embed as ViewVideo).alt &&
-            (this.currentThreadView.post.embed as ViewVideo).alt.trim() != '') return true;
+            if(postDetails.currentThreadView.post.embed &&
+            isVideoView(postDetails.currentThreadView.post.embed) &&
+            (postDetails.currentThreadView.post.embed as ViewVideo).alt &&
+            (postDetails.currentThreadView.post.embed as ViewVideo).alt.trim() != '') return true;
             return false;
         },
         /**
@@ -522,13 +517,13 @@ export default defineComponent({
          * object.
          */
         getEmbededImageAltText():string{
-            if(this.currentThreadView.post.embed &&
-            this.currentThreadView.post.embed.images)
-                return (this.currentThreadView.post.embed.images as ViewImage[])[this.currentMediaIndex].alt;
-            else if(this.currentThreadView.post.embed &&
-            AppBskyEmbedRecordWithMedia.isView(this.currentThreadView.post.embed) &&
-            (this.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
-                return (this.currentThreadView.post.embed.media.images as ViewImage[])[0].alt;
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.images)
+                return (postDetails.currentThreadView.post.embed.images as ViewImage[])[this.currentMediaIndex].alt;
+            else if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
+                return (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[0].alt;
             return '';
         },
         /**
@@ -537,14 +532,14 @@ export default defineComponent({
          * the Post object.
          */
         getEmbededImageViewImageObjects():ViewImage[]{
-            if(this.currentThreadView.post.embed &&
-            this.currentThreadView.post.embed.images)
-                return (this.currentThreadView.post.embed.images as ViewImage[]);
-            else if(this.currentThreadView.post.embed &&
-            AppBskyEmbedRecordWithMedia.isView(this.currentThreadView.post.embed) &&
-            this.currentThreadView.post.embed.media.images &&
-            (this.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
-                return (this.currentThreadView.post.embed.media.images as ViewImage[]);
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.images)
+                return (postDetails.currentThreadView.post.embed.images as ViewImage[]);
+            else if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            postDetails.currentThreadView.post.embed.media.images &&
+            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
+                return (postDetails.currentThreadView.post.embed.media.images as ViewImage[]);
             return [];
         },
         /**
@@ -554,16 +549,16 @@ export default defineComponent({
          */
         getEmbedGIFMedia():AppBskyEmbedExternal.View|undefined{
             //GIF Post
-            if(this.currentThreadView.post.embed &&
-            this.currentThreadView.post.embed.media &&
-            AppBskyEmbedExternal.isView(this.currentThreadView.post.embed.media
+            if(postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.media &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed.media
             ))
-                return this.currentThreadView.post.embed.media
+                return postDetails.currentThreadView.post.embed.media
             //GIF Post in QRT
-            if((this.currentThreadView.post.embed &&
-            this.currentThreadView.post.embed.external &&
-            AppBskyEmbedExternal.isView(this.currentThreadView.post.embed)))
-                return this.currentThreadView.post.embed;
+            if((postDetails.currentThreadView.post.embed &&
+            postDetails.currentThreadView.post.embed.external &&
+            AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed)))
+                return postDetails.currentThreadView.post.embed;
         },
         /**Determines if the current media index can be decreased.*/
         canDecreaseMediaIndex(){
@@ -589,7 +584,7 @@ export default defineComponent({
          * Method used to see if the User of the focused Post is verified.
          */
         isUserVerified(){
-            let profile = this.currentThreadView.post.author;
+            let profile = postDetails.currentThreadView.post.author;
             if(profile != undefined && profile.verification && profile.verification.verifiedStatus == 'valid')
                 return true;
             return false;

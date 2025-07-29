@@ -1,4 +1,5 @@
 import PostFocusModal from './PostFocusModal.vue';
+import postDetails from '../../state/PostDetails.vue';
 
 const today = new Date();
 const testPostThreadView = [{
@@ -9,7 +10,7 @@ const testPostThreadView = [{
             handle:'liltesty.test',
             displayName:'test dude'
         },
-        cid:'this-is-a-test-CID',
+        cid:'bafyreihecnca4as334ixhhfdltmigdlzelxiixdnj2uj4yylgmckfbua54',// cid:'this-is-a-test-CID',
         indexedAt: new Date().toISOString(),
         record:{
             type: "app.bsky.feed.post",
@@ -114,29 +115,33 @@ describe('Clicking timestamp requests data', () => {
         console.log(req);
     }).as('getPostThreadTest');
     cy.mount(PostFocusModal,{
-        data() {
-            return{
-                postThread: testPostThreadView[0],
-                threadNavHistory: testPostThreadView,
-                currentThreadView: testPostThreadView[0],
-                whoCanReply: () => {return 'Everybody can reply'},
-            }
-        },
+        // data() {
+        //     return{
+        //         postThread: testPostThreadView[0],
+        //         threadNavHistory: testPostThreadView,
+        //         postDetails:{//PostDetails state
+        //             currentThreadView: testPostThreadView[0],
+        //             whoCanReply: () => {return 'Everybody can reply'},
+        //         }
+        //         // whoCanReply: () => {return 'Everybody can reply'},
+        //     }
+        // },
+        props:{
+            initialThreadUri:testPostThreadView[0].post.uri,
+        }
     }).then(async ({ wrapper, component }) => {
       // `wrapper` is the Vue Test Utils wrapper
       // `component` is the component instance itself
-    //   await wrapper.setData({postDetails:{
-    //       postThread: testPostThreadView[0],
-    //       threadNavHistory: testPostThreadView,
-    //       currentThreadView: testPostThreadView[0],
-    //   }});
       //PostDetails state is not set globally, need to update manually
     //   let threadWrapper = wrapper.findComponent(PostThreadView);
-    //   await threadWrapper.setData({postDetails:{
-    //       postThread: testPostThreadView[0],
-    //       threadNavHistory: testPostThreadView,
+    //   await threadWrapper.setProps({
     //       currentThreadView: testPostThreadView[0],
-    //   }});
+    //   });
+      let postDetailsWrapper = wrapper.findComponent(postDetails);
+      console.log(postDetailsWrapper);
+    //   await postDetailsWrapper.setProps({
+    //       currentThreadView: testPostThreadView[0],
+    //   });
     })
   })
 })
