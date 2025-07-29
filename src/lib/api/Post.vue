@@ -89,7 +89,7 @@ export async function CreateNewPost(postData:Record, openPostAfterCreation:boole
                     //If the created Post has a parent (it's a reply) show the parent Post
                     if((newPostRes.data.thread as ThreadViewPost).parent) postToShow = ((newPostRes.data.thread as ThreadViewPost).parent as ThreadViewPost).post
                     showFocusModal({post: postToShow},0);
-                    postDetails.currentPostData.replyCount++;
+                    // postDetails.currentPostData.replyCount++;//This is probably no longer needed, since the latest version of the Post is retrieved when the modal is displayed
                     AppState.UpdatePostsInFeedList(postDetails.currentPostData);
                 }
                 else if(postDetails.isFocusVisible && postDetails.currentPostAction != PostActions.Quote){//if we can see the PostFocusModal
