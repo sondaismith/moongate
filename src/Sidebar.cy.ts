@@ -1,7 +1,8 @@
 import Sidebar from './Sidebar.vue'
 import App from './App.vue';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import GenerateUniqueId from './state/FeedList.vue';
+import { GenerateUniqueId } from './state/FeedList.vue';
+import { GenerateCID } from './helpers/generators';
 
 /**
  * Test Feed data. Used to define the starting Feed displayed
@@ -46,6 +47,12 @@ var testFeedData = {
             }
         },
     ],
+}
+
+interface fakeThreadPost{
+    uri: string,
+    text: string,
+    replies: fakeThreadPost[]
 }
 
 /**
@@ -97,9 +104,13 @@ var testCIDs = ['bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza','b
  * @param postUri The URI of the created Post.
  * @returns Object representing the `getPostThread()` API response.
  */
-function createNewPostObject(postUri:string){
+async function createNewPostObject(postUri:string){
     var savedPost = getPostTextContent(postUri);
     var curTime = new Date().toISOString();
+    var generatedCID = '';
+    await GenerateCID('bazinga').then(res =>{
+        generatedCID = res.toString();
+    })
     var newPost = {
         body:{
             thread:{
@@ -111,7 +122,7 @@ function createNewPostObject(postUri:string){
                         displayName: "dummyplug",
                         avatar: "https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg",
                     },
-                    cid:testCIDs[Math.round(Math.random()*1)],//cid:'bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza',
+                    cid:generatedCID, //testCIDs[Math.round(Math.random()*1)],//cid:'bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza',
                     indexedAt: curTime,
                     record:{
                         $type: "app.bsky.feed.post",
@@ -160,7 +171,7 @@ describe('Creating a new Post updates relevant elements', () => {
         }).as('createRecordTest');
         //Intercept attempts to get a Post Thread
         // cy.intercept('GET','**/app.bsky.feed.getPostThread?uri=at%3A%2F%2Fdid%3Aplc%3Anew-test-post', (req) => {
-        cy.intercept('GET','**/app.bsky.feed.getPostThread?uri*', (req) => {
+        cy.intercept('GET','**/app.bsky.feed.getPostThread?uri*', async (req) => {
             //DEBUG
             console.log(req);
             let queryURI:string = req.query.uri.toString();
@@ -191,7 +202,7 @@ describe('Creating a new Post updates relevant elements', () => {
             //     },
             //     statusCode: 200
             // });
-            let test = createNewPostObject(queryURI);
+            let test = await createNewPostObject(queryURI);
             req.reply(test);
         }).as('getPostThreadTest');
         //Intercept calls to get User Profile data
