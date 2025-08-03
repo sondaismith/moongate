@@ -4,7 +4,7 @@
         {{ void "Media Section" }}
         <div class="flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
             {{ void "Close Button" }}
-            <div @click="hideModal" class="flex shrink-0 ml-auto bg-blue-300 py-2 w-10
+            <div data-test="postFocusModal-close-button" @click="hideModal" class="flex shrink-0 ml-auto bg-blue-300 py-2 w-10
                 justify-center text-2xl cursor-pointer">
                 <i-mingcute:close-fill/>
             </div>

@@ -53,7 +53,7 @@
                             :isPasswordInput="true" :fillContainer="true"/>
                     </div>
                     <div class="flex flex-col md:float-end" :class="{ disabled: attemptingLogin}">
-                        <a @click="loginAccount" tabindex="0" class="relative flex md:self-end rounded cursor-pointer
+                        <a data-test="loginModal-login-button" @click="loginAccount" tabindex="0" class="relative flex md:self-end rounded cursor-pointer
                             bg-blue-700 justify-center md:w-40 px-3 py-2 font-semibold
                             hover:text-white hover:bg-blue-500 focus:bg-blue-600
                             select-none">Login</a>

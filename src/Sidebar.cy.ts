@@ -49,10 +49,17 @@ var testFeedData = {
     ],
 }
 
-interface fakeThreadPost{
+interface IFakeThreadPost{
+    /**URI to access Post. */
     uri: string,
+    /**Unique ID for Post. */
+    cid: string,
+    /**Text content of Post. */
     text: string,
-    replies: fakeThreadPost[]
+    /**Time Post was created. */
+    created: string,
+    /**URI to access the parent Post that this a child (reply) of. */
+    parentUri?: string,
 }
 
 /**
@@ -60,7 +67,7 @@ interface fakeThreadPost{
  * posts during intercepted API calls. Holds the dummy
  * URI and the post text content.
  */
-const textContentToReturn:Array<{uri:string,text:string}> = []
+const textContentToReturn:Array<IFakeThreadPost> = []
 
 /**
  * Method used to add a new Post to the "database"
@@ -68,8 +75,38 @@ const textContentToReturn:Array<{uri:string,text:string}> = []
  * @param uri The URI of the new Post.
  * @param text The text content of the new Post.
  */
-function trackNewPost(uri:string, text:string){
-    textContentToReturn.push({uri,text});
+async function trackNewPost(uri:string, text:string, parentURI:string=''){
+    let generatedCID = '';
+    await GenerateCID(text).then(res =>{
+        generatedCID = res.toString();
+    })
+    /**Time Post was made. */
+    var curTime = new Date().toISOString();
+    // if(parentURI.trim() != ''){
+    //     //this is a reply, add to existing post's replies
+    //     var searchResult = findReplyParent(textContentToReturn, parentURI);
+    //     if(searchResult){
+    //         if(!searchResult.replies) searchResult.replies = [];
+    //         searchResult.replies.unshift({uri,text})
+    //     }
+    // }
+    // else //standalone post
+    //     textContentToReturn.push({uri,text,replies:[]});
+    textContentToReturn.push({uri:uri,cid:generatedCID,text:text,created:curTime,parentUri:parentURI});
+}
+
+function findReplyParent(data:Array<IFakeThreadPost>|undefined, parentUri:string):IFakeThreadPost|undefined{
+    for(const item of data){
+        const result:IFakeThreadPost|undefined = (item.uri == parentUri ? item : findReplyParent(item.replies, parentUri));
+        if(result) return result;
+    }
+}
+
+function findFakePost(data:Array<IFakeThreadPost>|undefined, uri:string):IFakeThreadPost|undefined{
+    for(const item of data){
+        const result:IFakeThreadPost|undefined = (item.uri == uri ? item : findReplyParent(item.replies, uri));
+        if(result) return result;
+    }
 }
 
 /**
@@ -88,7 +125,8 @@ function untrackPost(uri:string){
  * @returns The URI and text content of the "Post".
  */
 function getPostTextContent(uri:string){
-    return textContentToReturn.find(x=>x.uri == uri);
+    // return textContentToReturn.find(x=>x.uri == uri);
+    return findFakePost(textContentToReturn,uri);
 }
 
 /**
@@ -104,44 +142,140 @@ var testCIDs = ['bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza','b
  * @param postUri The URI of the created Post.
  * @returns Object representing the `getPostThread()` API response.
  */
-async function createNewPostObject(postUri:string){
-    var savedPost = getPostTextContent(postUri);
-    var curTime = new Date().toISOString();
-    var generatedCID = '';
-    await GenerateCID('bazinga').then(res =>{
-        generatedCID = res.toString();
-    })
-    var newPost = {
-        body:{
-            thread:{
-                $type:"app.bsky.feed.defs#threadViewPost",
-                post: {
-                    author:{
-                        did: "did:plc:6unmjnerkpiy3yh6x4auqpy3",
-                        handle: "dummyplug.bsky.social",
-                        displayName: "dummyplug",
-                        avatar: "https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg",
-                    },
-                    cid:generatedCID, //testCIDs[Math.round(Math.random()*1)],//cid:'bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza',
-                    indexedAt: curTime,
-                    record:{
-                        $type: "app.bsky.feed.post",
-                        createdAt: curTime,
-                        langs: [
-                            "en-US"
-                        ],
-                        text: savedPost ? savedPost.text : 'error getting text'
-                    },
-                    replyCount: 0,
-                    repostCount: 0,
-                    likeCount: 0,
-                    quoteCount: 0,
-                    uri:savedPost ? savedPost.uri : 'error getting uri'//uri:'at://did:plc:new-test-post'
-                },
-                replies:[]
-            }
+async function createGetPostThreadResponse(postUri:string){
+    var savedPost = textContentToReturn.find(x => x.uri == postUri);
+    // // if(!savedPost) return; //no saved post found - exit
+    // var curTime = new Date().toISOString();
+    // var savedPostReplies = textContentToReturn.filter(x => x.parentUri == savedPost?.uri);
+    // var savedPostParent = savedPost && savedPost.parentUri && (savedPost.parentUri.trim() != '') ? await createGetPostThreadResponse(savedPost.parentUri) : undefined //textContentToReturn.find(x => x.uri == savedPost?.parentUri);
+    // // var parentObject = [];
+    // // if(savedPostParent) parentObject.push(await createNewPostObject(savedPostParent.uri));
+    // var replyObjects = [];
+    // for (let i = 0; i < savedPostReplies.length; i++) {
+    //     replyObjects.push(await createGetPostThreadResponse(savedPostReplies[i].uri));
+    // }
+    // var newPost:Object = {
+    //     // body:{
+    //         // thread:{
+    //             $type:"app.bsky.feed.defs#threadViewPost",
+    //             post: {
+    //                 author:{
+    //                     did: "did:plc:6unmjnerkpiy3yh6x4auqpy3",
+    //                     handle: "dummyplug.bsky.social",
+    //                     displayName: "dummyplug",
+    //                     avatar: "https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg",
+    //                 },
+    //                 cid: savedPost ? savedPost.cid : 'error getting cid',//generatedCID, //testCIDs[Math.round(Math.random()*1)],//cid:'bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza',
+    //                 indexedAt: curTime,
+    //                 record:{
+    //                     $type: "app.bsky.feed.post",
+    //                     createdAt: curTime,
+    //                     langs: [
+    //                         "en-US"
+    //                     ],
+    //                     text: savedPost ? savedPost.text : 'error getting text'
+    //                 },
+    //                 replyCount: savedPostReplies.length,
+    //                 repostCount: 0,
+    //                 likeCount: 0,
+    //                 quoteCount: 0,
+    //                 uri:savedPost ? savedPost.uri : 'error getting uri'//uri:'at://did:plc:new-test-post'
+    //             },
+    //             parent:savedPostParent,
+    //             replies:replyObjects
+    //     //     }
+    //     // },
+    //     // statusCode: 200
+    // }
+    var newPost = CreateNewPostObject(savedPost);
+    return newPost;
+}
+
+/**
+ *
+ * @param savedFakePost Object from {@link textContentToReturn} representing the Post to make
+ * a API Repsonse for.
+ * @returns A `ThreadViewPost` object containing fake data for testing purposes. If there is
+ * a Parent Post or any replies they will be included in the object.
+ */
+function CreateNewPostObject(savedFakePost:IFakeThreadPost|undefined):ThreadViewPost|undefined{
+    if(!savedFakePost) return undefined; //Exit if passed-in object is empty
+
+    var savedPostReplies = textContentToReturn.filter(x => x.parentUri == savedFakePost.uri);
+    var replyObjects:ThreadViewPost[] = [];
+    savedPostReplies.forEach(reply => {
+        let newPostObject = CreateNewPostObject(reply)
+        if(newPostObject) replyObjects.push(newPostObject); //Only add reply if found
+    });
+
+    var parentObject = savedFakePost.parentUri ? createNewPostObjectShallow(textContentToReturn.find(x => x.uri == savedFakePost.parentUri)) : undefined;
+
+    var newPost:ThreadViewPost = {
+        $type:"app.bsky.feed.defs#threadViewPost",
+        post: {
+            author:{
+                did: "did:plc:6unmjnerkpiy3yh6x4auqpy3",
+                handle: "dummyplug.bsky.social",
+                displayName: "dummyplug",
+                avatar: "https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg",
+            },
+            cid: savedFakePost ? savedFakePost.cid : 'error getting cid',//generatedCID, //testCIDs[Math.round(Math.random()*1)],//cid:'bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza',
+            indexedAt: savedFakePost.created,
+            record:{
+                $type: "app.bsky.feed.post",
+                createdAt: savedFakePost.created,
+                langs: [
+                    "en-US"
+                ],
+                text: savedFakePost ? savedFakePost.text : 'error getting text'
+            },
+            replyCount: savedPostReplies.length,
+            repostCount: 0,
+            likeCount: 0,
+            quoteCount: 0,
+            uri:savedFakePost ? savedFakePost.uri : 'error getting uri'//uri:'at://did:plc:new-test-post'
         },
-        statusCode: 200
+        parent:parentObject,
+        replies:replyObjects
+    }
+    return newPost;
+}
+
+/**
+ *
+ * @param savedFakePost Object from {@link textContentToReturn} representing the Post to make
+ * a API Repsonse for.
+ * @returns A `ThreadViewPost` object containing fake data for testing purposes. No Parent Post
+ * or any replies will be included in the object.
+ */
+function createNewPostObjectShallow(savedFakePost:IFakeThreadPost|undefined):ThreadViewPost|undefined{
+    if(!savedFakePost) return undefined; //Exit if passed-in object is empty
+
+    var newPost:ThreadViewPost = {
+        $type:"app.bsky.feed.defs#threadViewPost",
+        post: {
+            author:{
+                did: "did:plc:6unmjnerkpiy3yh6x4auqpy3",
+                handle: "dummyplug.bsky.social",
+                displayName: "dummyplug",
+                avatar: "https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg",
+            },
+            cid: savedFakePost ? savedFakePost.cid : 'error getting cid',//generatedCID, //testCIDs[Math.round(Math.random()*1)],//cid:'bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza',
+            indexedAt: savedFakePost.created,
+            record:{
+                $type: "app.bsky.feed.post",
+                createdAt: savedFakePost.created,
+                langs: [
+                    "en-US"
+                ],
+                text: savedFakePost ? savedFakePost.text : 'error getting text'
+            },
+            replyCount: 0,
+            repostCount: 0,
+            likeCount: 0,
+            quoteCount: 0,
+            uri:savedFakePost ? savedFakePost.uri : 'error getting uri'//uri:'at://did:plc:new-test-post'
+        },
     }
     return newPost;
 }
@@ -149,7 +283,7 @@ async function createNewPostObject(postUri:string){
 describe('Creating a new Post updates relevant elements', () => {
     it('renders Sidebar', () => {
         //Simulate API call and return matching Post/Reply from test data (testPostThreadView)
-        cy.intercept('POST','**/xrpc/com.atproto.repo.createRecord*', (req) => {
+        cy.intercept('POST','**/xrpc/com.atproto.repo.createRecord*', async (req) => {
             //DEBUG
             console.log(req);
             // console.log(findTestReply(testPostThreadView,req.query.uri.toString()));
@@ -166,7 +300,8 @@ describe('Creating a new Post updates relevant elements', () => {
                 },
                 statusCode: 200
             });
-            trackNewPost(newPostURI,req.body.record.text);
+            var parentUri = req.body.record.reply ? req.body.record.reply.parent.uri : undefined;//Check if this a reply
+            await trackNewPost(newPostURI,req.body.record.text, parentUri);
             console.log(textContentToReturn);
         }).as('createRecordTest');
         //Intercept attempts to get a Post Thread
@@ -202,8 +337,15 @@ describe('Creating a new Post updates relevant elements', () => {
             //     },
             //     statusCode: 200
             // });
-            let test = await createNewPostObject(queryURI);
-            req.reply(test);
+            // let fakeApiResult = await createNewPostObject(queryURI);
+            createGetPostThreadResponse(queryURI).then(res => {
+                req.reply({
+                    body:{
+                        thread: res
+                    },
+                    statusCode:200
+                });
+            })
         }).as('getPostThreadTest');
         //Intercept calls to get User Profile data
         cy.intercept('GET','**/app.bsky.actor.getProfile*', (req) => {
@@ -339,5 +481,100 @@ describe('Creating a new Post updates relevant elements', () => {
             ]
             console.log(sidebarComponent.vm.$data);//Check after changes
         })
+
+        //---CREATE NEW POST---
+        //Enter Post text
+        cy.get('#post-textarea').type('hhhgreg!');
+        //Click to create Post
+        cy.get('[data-test="create-post-button"]').click();
+        //Click login button after being prompted
+        cy.get('[data-test="loginModal-login-button"]').click();
+        //Wait for stubbed API login & getAuthorFeed() response to resolve
+        cy.wait(['@createSessionTest','@getAuthorFeedTest']);
+        //Click to create Post again
+        cy.get('[data-test="create-post-button"]').click();
+        //Wait for stubbed createRecord() & getPostThread() to resolve
+        cy.wait(['@createRecordTest','@getPostThreadTest']);
+        cy.wait(200);//FeedColumn is updated slighly after API call response is receieved
+        //Check that Post was added to `FeedColumn`
+        cy.get('[data-test="feedColumn-post"]').then($posts =>{
+            const postCount = $posts.length;
+            cy.get('[data-test="focusFeedPost-text"').then($postText => {
+                const newPostText = $postText
+                expect(postCount).to.eq(2);
+                expect(newPostText[1].textContent).to.contain('hhhgreg!');
+            })
+        });
+
+        //---REPLY TO NEW POST---
+        //Click to add reply to new Post
+        cy.get('[data-test="postInteraction-reply-button"]').eq(1).click()
+        //Enter reply text
+        cy.get('#post-textarea').type('$99');
+        //Post reply
+        cy.get('[data-test="create-post-button"]').click();
+        //Wait for stubbed createRecord() & getPostThread() to resolve
+        cy.wait(['@createRecordTest','@getPostThreadTest']);
+        cy.wait(200);//Reply count is updated slighly after API call response is receieved
+        //Check that the reply count for the 1st Post we created has increased
+        cy.get('[data-test="postInteraction-reply-button"]').eq(1).then($item => {
+            const replyCount = $item.text()
+            console.log(replyCount)
+            expect(replyCount).to.eq('1');
+        })
+
+        //---REPLY TO REPLY VIA POSTFOCUSMODAL---
+        //View the Post Thread
+        cy.get('[data-test="focusFeedPost-timestamp-button"]').eq(1).click();
+        //Reply to latest reply
+        cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+            cy.get('[data-test="postInteraction-reply-button"]').eq(1).click();
+        })
+        //Enter reply text
+        cy.get('#post-textarea').type('dvd player');
+        //Post reply
+        cy.get('[data-test="create-post-button"]').click();
+        //Wait for stubbed createRecord() & getPostThread() to resolve
+        cy.wait(['@createRecordTest','@getPostThreadTest']);
+        cy.wait(200);//Reply count is updated slighly after API call response is receieved
+        //Check that reply count increased
+        cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+            cy.get('[data-test="postInteraction-reply-button"]').eq(1).then($item => {
+                const replyCount = $item.text()
+                console.log(replyCount)
+                expect(replyCount).to.eq('1');
+            })
+        });
+
+        //---REPLY TO FIRST POST VIA POSTFOCUSMODAL---
+        //Reply to parent Post
+        cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+            cy.get('[data-test="postInteraction-reply-button"]').eq(0).click();
+        });
+        //Enter reply text
+        cy.get('#post-textarea').type('...huh?');
+        //Post reply
+        cy.get('[data-test="create-post-button"]').click();
+        //Wait for stubbed createRecord() & getPostThread() to resolve
+        cy.wait(['@createRecordTest','@getPostThreadTest']);
+        cy.wait(200);//Reply count is updated slighly after API call response is receieved
+        //Check that reply count increased
+        cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+            cy.get('[data-test="postInteraction-reply-button"]').eq(0).then($item => {
+                const replyCount = $item.text()
+                console.log(replyCount)
+                expect(replyCount).to.eq('2');
+            })
+        });
+
+        //---ENSURE POST COUNT IN FEEDCOLUMN HAS UPDATE CORRECTLY AS WELL---
+        //Close PostFocusModal
+        cy.get('[data-test="postFocusModal-close-button"]').click();
+        //Check that reply count increased
+        cy.get('[data-test="postInteraction-reply-button"]').eq(1).then($item => {
+            const replyCount = $item.text()
+            console.log(replyCount)
+            expect(replyCount).to.eq('2');
+        });
     })
 })
