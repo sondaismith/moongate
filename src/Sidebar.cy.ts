@@ -82,16 +82,6 @@ async function trackNewPost(uri:string, text:string, parentURI:string=''){
     })
     /**Time Post was made. */
     var curTime = new Date().toISOString();
-    // if(parentURI.trim() != ''){
-    //     //this is a reply, add to existing post's replies
-    //     var searchResult = findReplyParent(textContentToReturn, parentURI);
-    //     if(searchResult){
-    //         if(!searchResult.replies) searchResult.replies = [];
-    //         searchResult.replies.unshift({uri,text})
-    //     }
-    // }
-    // else //standalone post
-    //     textContentToReturn.push({uri,text,replies:[]});
     textContentToReturn.push({uri:uri,cid:generatedCID,text:text,created:curTime,parentUri:parentURI});
 }
 
@@ -130,69 +120,22 @@ function getPostTextContent(uri:string){
 }
 
 /**
- * Dummy data used to confirm that duplicate CIDs were causing new Posts to not be
- * added during testing.
- */
-var testCIDs = ['bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza','bafyreidhzzxks2dl6ns3ijv3jlcjbt5mck47gydfqjaoo4ucr674xbqwn4']
-
-/**
  * Method used to generate a response for calling `getPostThread()`
  * during testing. Grabs Post data (URI and text content) from
  * `textContentToReturn` "database".
- * @param postUri The URI of the created Post.
+ * @param postUri The URI of the created Post to return.
  * @returns Object representing the `getPostThread()` API response.
  */
 async function createGetPostThreadResponse(postUri:string){
     var savedPost = textContentToReturn.find(x => x.uri == postUri);
-    // // if(!savedPost) return; //no saved post found - exit
-    // var curTime = new Date().toISOString();
-    // var savedPostReplies = textContentToReturn.filter(x => x.parentUri == savedPost?.uri);
-    // var savedPostParent = savedPost && savedPost.parentUri && (savedPost.parentUri.trim() != '') ? await createGetPostThreadResponse(savedPost.parentUri) : undefined //textContentToReturn.find(x => x.uri == savedPost?.parentUri);
-    // // var parentObject = [];
-    // // if(savedPostParent) parentObject.push(await createNewPostObject(savedPostParent.uri));
-    // var replyObjects = [];
-    // for (let i = 0; i < savedPostReplies.length; i++) {
-    //     replyObjects.push(await createGetPostThreadResponse(savedPostReplies[i].uri));
-    // }
-    // var newPost:Object = {
-    //     // body:{
-    //         // thread:{
-    //             $type:"app.bsky.feed.defs#threadViewPost",
-    //             post: {
-    //                 author:{
-    //                     did: "did:plc:6unmjnerkpiy3yh6x4auqpy3",
-    //                     handle: "dummyplug.bsky.social",
-    //                     displayName: "dummyplug",
-    //                     avatar: "https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg",
-    //                 },
-    //                 cid: savedPost ? savedPost.cid : 'error getting cid',//generatedCID, //testCIDs[Math.round(Math.random()*1)],//cid:'bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza',
-    //                 indexedAt: curTime,
-    //                 record:{
-    //                     $type: "app.bsky.feed.post",
-    //                     createdAt: curTime,
-    //                     langs: [
-    //                         "en-US"
-    //                     ],
-    //                     text: savedPost ? savedPost.text : 'error getting text'
-    //                 },
-    //                 replyCount: savedPostReplies.length,
-    //                 repostCount: 0,
-    //                 likeCount: 0,
-    //                 quoteCount: 0,
-    //                 uri:savedPost ? savedPost.uri : 'error getting uri'//uri:'at://did:plc:new-test-post'
-    //             },
-    //             parent:savedPostParent,
-    //             replies:replyObjects
-    //     //     }
-    //     // },
-    //     // statusCode: 200
-    // }
     var newPost = CreateNewPostObject(savedPost);
     return newPost;
 }
 
 /**
- *
+ * Method used to create a structured object representing API data that would be returned
+ * when using `getPostThread()` via the Bluesky API. Created object will include replies
+ * and/or Parent Post reference, if there are/is any.
  * @param savedFakePost Object from {@link textContentToReturn} representing the Post to make
  * a API Repsonse for.
  * @returns A `ThreadViewPost` object containing fake data for testing purposes. If there is
@@ -219,7 +162,7 @@ function CreateNewPostObject(savedFakePost:IFakeThreadPost|undefined):ThreadView
                 displayName: "dummyplug",
                 avatar: "https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg",
             },
-            cid: savedFakePost ? savedFakePost.cid : 'error getting cid',//generatedCID, //testCIDs[Math.round(Math.random()*1)],//cid:'bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza',
+            cid: savedFakePost ? savedFakePost.cid : 'error getting cid',
             indexedAt: savedFakePost.created,
             record:{
                 $type: "app.bsky.feed.post",
@@ -233,7 +176,7 @@ function CreateNewPostObject(savedFakePost:IFakeThreadPost|undefined):ThreadView
             repostCount: 0,
             likeCount: 0,
             quoteCount: 0,
-            uri:savedFakePost ? savedFakePost.uri : 'error getting uri'//uri:'at://did:plc:new-test-post'
+            uri:savedFakePost ? savedFakePost.uri : 'error getting uri'
         },
         parent:parentObject,
         replies:replyObjects
@@ -242,7 +185,9 @@ function CreateNewPostObject(savedFakePost:IFakeThreadPost|undefined):ThreadView
 }
 
 /**
- *
+ * Method used to create a "shallow" structured object representing API data that would be
+ * returned when using `getPostThread()` via the Bluesky API. "Shallow" means that the
+ * created object will not include replies or a Parent Post reference.
  * @param savedFakePost Object from {@link textContentToReturn} representing the Post to make
  * a API Repsonse for.
  * @returns A `ThreadViewPost` object containing fake data for testing purposes. No Parent Post
@@ -260,7 +205,7 @@ function createNewPostObjectShallow(savedFakePost:IFakeThreadPost|undefined):Thr
                 displayName: "dummyplug",
                 avatar: "https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg",
             },
-            cid: savedFakePost ? savedFakePost.cid : 'error getting cid',//generatedCID, //testCIDs[Math.round(Math.random()*1)],//cid:'bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza',
+            cid: savedFakePost ? savedFakePost.cid : 'error getting cid',
             indexedAt: savedFakePost.created,
             record:{
                 $type: "app.bsky.feed.post",
@@ -274,14 +219,14 @@ function createNewPostObjectShallow(savedFakePost:IFakeThreadPost|undefined):Thr
             repostCount: 0,
             likeCount: 0,
             quoteCount: 0,
-            uri:savedFakePost ? savedFakePost.uri : 'error getting uri'//uri:'at://did:plc:new-test-post'
+            uri:savedFakePost ? savedFakePost.uri : 'error getting uri'
         },
     }
     return newPost;
 }
 
 describe('Creating a new Post updates relevant elements', () => {
-    it('renders Sidebar', () => {
+    before(() => {
         //Simulate API call and return matching Post/Reply from test data (testPostThreadView)
         cy.intercept('POST','**/xrpc/com.atproto.repo.createRecord*', async (req) => {
             //DEBUG
@@ -305,39 +250,10 @@ describe('Creating a new Post updates relevant elements', () => {
             console.log(textContentToReturn);
         }).as('createRecordTest');
         //Intercept attempts to get a Post Thread
-        // cy.intercept('GET','**/app.bsky.feed.getPostThread?uri=at%3A%2F%2Fdid%3Aplc%3Anew-test-post', (req) => {
         cy.intercept('GET','**/app.bsky.feed.getPostThread?uri*', async (req) => {
             //DEBUG
-            console.log(req);
+            // console.log(req);
             let queryURI:string = req.query.uri.toString();
-            // console.log(req.query.uri);
-            // console.log(findTestReply(testPostThreadView,req.query.uri.toString()));
-            // var savedPost = getPostTextContent(req.query.uri.toString());
-            // req.reply({
-            //     body:{
-            //         thread:{
-            //             $type:"app.bsky.feed.defs#threadViewPost",
-            //             post: {
-            //                 author:{
-            //                     did: "did:plc:6unmjnerkpiy3yh6x4auqpy3",
-            //                     handle: "dummyplug.bsky.social",
-            //                     displayName: "dummyplug",
-            //                     avatar: "https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg",
-            //                 },
-            //                 cid:'bafyreibiv5xfp7ium6ekcgz7flmwpfcjmroflez5ydjosfzoan2i6g2uza',
-            //                 indexedAt: new Date().toISOString(),
-            //                 record:{
-            //                     type: "app.bsky.feed.post",
-            //                     text: savedPost ? savedPost.text : 'error getting text'
-            //                 },
-            //                 uri:savedPost ? savedPost.uri : 'error getting uri'//uri:'at://did:plc:new-test-post'
-            //             },
-            //             replies:[]
-            //         }
-            //     },
-            //     statusCode: 200
-            // });
-            // let fakeApiResult = await createNewPostObject(queryURI);
             createGetPostThreadResponse(queryURI).then(res => {
                 req.reply({
                     body:{
@@ -422,8 +338,8 @@ describe('Creating a new Post updates relevant elements', () => {
                     email: "testSession@mail.com",
                     emailConfirmed: true,
                     emailAuthFactor: false,
-                    accessJwt: "eyJ0eXAiOiJhdCtqd3QiLCJhbGciOiJFUzI1NksifQ.eyJzY29wZSI6ImNvbS5hdHByb3RvLmFjY2VzcyIsInN1YiI6ImRpZDpwbGM6NnVubWpuZXJrcGl5M3loNng0YXVxcHkzIiwiaWF0IjoxNzUzNDQ5MTI2LCJleHAiOjE3NTM0NTYzMjYsImF1ZCI6ImRpZDp3ZWI6aG9sbG93Zm9vdC51cy13ZXN0Lmhvc3QuYnNreS5uZXR3b3JrIn0.FcEW0zsCxyFwCpUoucWZ16IlZMwCjNvrD1l2nBx9Sn8_WvtV6bDlJmzUzHcjlEGwoUYTVWm1jlT5NnriB_0rPA",
-                    refreshJwt: "eyJ0eXAiOiJyZWZyZXNoK2p3dCIsImFsZyI6IkVTMjU2SyJ9.eyJzY29wZSI6ImNvbS5hdHByb3RvLnJlZnJlc2giLCJzdWIiOiJkaWQ6cGxjOjZ1bm1qbmVya3BpeTN5aDZ4NGF1cXB5MyIsImF1ZCI6ImRpZDp3ZWI6YnNreS5zb2NpYWwiLCJqdGkiOiJGdHJOT0lrK29VMmtER0VHbnhKajltaFg1QzFKRThOa01LckhnN1lrUUk0IiwiaWF0IjoxNzUzNDQ5MTI2LCJleHAiOjE3NjEyMjUxMjZ9.wjj6Sw1ZBIBaHx1VkUSMFJLrUfeW07clYYhPyvY9PhtAQbWlMS-DgqUnMobr3YFcewR8pIqb57PdOdrloVkEXw",
+                    accessJwt: "testAccessJwt",
+                    refreshJwt: "testRefreshJwt",
                     active: true
                 },
                 statusCode: 200
@@ -440,6 +356,7 @@ describe('Creating a new Post updates relevant elements', () => {
             });
             console.log(req);
         }).as('getAuthorFeedTest');
+
         cy.mount(App,{
             global:{
                 stubs:{transition:false, 'transition-group': false},
@@ -447,15 +364,7 @@ describe('Creating a new Post updates relevant elements', () => {
         })
         .then(async ({ wrapper, component }) => {
             var sidebarComponent = wrapper.getComponent(Sidebar);
-            // console.log(sidebarComponent.vm.$data);
-            // await sidebarComponent.setData({
-            //     AppState:{
-            //         isCreatingNewPost:true,
-            //     }
-            // })
             sidebarComponent.vm.$data.AppState.isCreatingNewPost = true; //Show "create post" modal
-            // sidebarComponent.vm.$data.AppState.isAuthBrowsing = true; //Mark User as logged in so Post can be made
-            // sidebarComponent.vm.$data.AppState.canBrowse = true;
             sidebarComponent.vm.$data.FeedState.FeedList = [
                 {
                     description: {
@@ -481,7 +390,9 @@ describe('Creating a new Post updates relevant elements', () => {
             ]
             console.log(sidebarComponent.vm.$data);//Check after changes
         })
+    })
 
+    it('creates new post, replies to post, and relevent elements update', () => {
         //---CREATE NEW POST---
         //Enter Post text
         cy.get('#post-textarea').type('hhhgreg!');
