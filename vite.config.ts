@@ -37,6 +37,10 @@ export default defineConfig(async ({mode}) => {
       globals: true,
       environment: "jsdom",
     },
+    //Hide DEBUG messages outside of dev environment
+    esbuild:{
+      pure: ['console.log'],
+    },
 
     // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
     //
