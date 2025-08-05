@@ -133,7 +133,7 @@
                 feedData?.description.feedType == FeedEnums.Types.Tag ||
                 feedData?.description.feedType == FeedEnums.Types.FeedGenerator"
                 class="flex flex-col gap-2">
-                    <div v-for="n in feedData?.data" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
+                    <div v-for="n in feedData?.data" data-test="feedColumn-post" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">
                         <FocusFeedPost class="border-0" :post-data="(n as FeedViewPost).post"
                         :post-reason="(n as FeedViewPost).reason" :reply="(n as FeedViewPost).reply"

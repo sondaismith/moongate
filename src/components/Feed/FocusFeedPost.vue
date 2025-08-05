@@ -103,18 +103,18 @@
                         </div>
                         <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postToShow.author.handle">@{{ postToShow.author.handle }}</div>
                     </div>
-                    <div v-if="!isViewRecord(postToShow)" @click="isReplyStyle ? postDetails.setThreadContext(threadData) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
-                    <div v-else-if="isViewRecord(postToShow)" @click="isReplyStyle ? postDetails.setThreadContext(threadData) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
+                    <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
+                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
                     {{ void "Post Text Content" }}
-                    <RichPostTextBsky v-if="!isViewRecord(postToShow)" :post-text="postToShow.record.text"/>
-                    <RichPostTextBsky v-else :post-text="postToShow.value.text"/>
+                    <RichPostTextBsky data-test="focusFeedPost-text" v-if="!isViewRecord(postToShow)" :post-text="postToShow.record.text"/>
+                    <RichPostTextBsky data-test="focusFeedPost-text" v-else :post-text="postToShow.value.text"/>
                     {{ void "Post Media" }}
                     <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
-                    @media-click="(i:number) => isReplyStyle ? postDetails.setThreadContext(threadData,i) : openFocusDetails(i)"/>
+                    @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '', i) : openFocusDetails(i)"/>
                     <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
                     :labels="postToShow.labels" :author="postToShow.author.handle"/>
                     <div v-if="postContainsExternalEmbed">
@@ -122,9 +122,11 @@
                     </div>
                     {{ void "Reposts - ViewRecord and View" }}
                     <FocusFeedPost v-if="postToShow.embed?.record && postToShow.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postToShow.embed.record.record)"
-                    :post-data="postToShow.embed.record.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
+                    :post-data="postToShow.embed.record.record" :post-reason="postReason"
+                    @focus-post-avatar-clicked="callFocusPostAvatarClicked" @thread-reply-clicked="emitThreadReplyClicked(postToShow.embed.record.record.uri)"/>
                     <FocusFeedPost v-else-if="postToShow.embed && AppBskyEmbedRecord.isView(postToShow.embed)"
-                    :post-data="postToShow.embed.record" :post-reason="postReason" @focus-post-avatar-clicked="callFocusPostAvatarClicked"/>
+                    :post-data="postToShow.embed.record" :post-reason="postReason"
+                    @focus-post-avatar-clicked="callFocusPostAvatarClicked" @thread-reply-clicked="emitThreadReplyClicked(postToShow.embed.record.uri)"/>
                     {{ void "Post Interaction Buttons/Icons" }}
                     <PostInteractionIcons class="pb-0 !bg-lime-300s" :post-data="postToShow"/>
                 </div>
@@ -134,7 +136,7 @@
 </template>
 
 <script lang="ts">
-import { isGeneratorView, isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { isGeneratorView, isPostView, isReasonPin, isReasonRepost, isThreadViewPost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
@@ -212,6 +214,20 @@ export default defineComponent({
             if(isDid(userDid)) return true;
             else return false;
         },
+        /**
+         * Updates the Posts/Replies displayed in the PostFocusModal component when
+         * a `FocusFeedPost` timestamp is clicked.
+         * This emit travels from `FocusFeedPost` to `PostThreadView` to `PostFocusModal`.
+         * QRT Posts will emit to the container `FocusFeedPost` and then continue up
+         * the previously outlined route.
+         * @param postThreadURI The URI pointing to the new Post Thread context to display.
+         * @param mediaIndex The Index of the media in the Post's collection to display.
+         */
+        threadReplyClicked:(postThreadURI:string,mediaIndex:number) => {
+            if(postThreadURI.trim() != '')
+                return {postThreadURI,mediaIndex};
+            else return false;
+        }
     },
     methods:{
         /**
@@ -223,21 +239,32 @@ export default defineComponent({
             this.$emit('focusPostAvatarClicked',did)
         },
         /**
-         * Method used to display a particular post in the `FocusFeedPost` component.
+         * Method used to display a particular post in the `PostFocusModal` component.
          * @param mediaIndex The index of the media content to initially show.
          */
         openFocusDetails(mediaIndex:number){
             if(this.postToShow){
-                // postDetails.showFocusModal(this.postData, mediaIndex);
-                showFocusModal({post: this.postToShow}, mediaIndex);
-                //update `PostDetailIcons` in `Post` State
-                // postDetails.updatePostDetailIconValues(this.postData.post.replyCount.toString(),this.postData.post.repostCount.toString(),this.postData.post.likeCount.toString());
+                //Check if modal is already visible - if it is we are not showing it
+                //for the first time, the thread context is being updated
+                if(postDetails.isFocusVisible)
+                    this.emitThreadReplyClicked(this.postToShow.uri);
+                else
+                    showFocusModal({post: this.postToShow}, mediaIndex);
             }
         },
         openFocusDetailsPost(post:PostView, mediaIndex:number=0){
             if(this.postToShow){
                 showFocusModal({post: post}, mediaIndex);
             }
+        },
+        /**
+         * Updates the Posts/Replies displayed in the PostFocusModal component.
+         * Emits `threadReplyClicked` with URI of Post Thread to display.
+         * @param newThreadURI The URI pointing to the new Post Thread context to display.
+         */
+        emitThreadReplyClicked(newThreadURI:string, mediaIndex:number=0){
+            if(newThreadURI.trim() != '')
+                this.$emit('threadReplyClicked',newThreadURI,mediaIndex);
         }
     },
     computed:{

@@ -1,17 +1,19 @@
 <template>
     <!-- <ReplyBreadcrumb class="px-4"/> -->
-    <div class="flex pl-4 sm:overflow-y-scroll">
+    <div class="flex pl-4 sm:overflow-y-scroll bg-postFocusBG">
         <div class="flex flex-col w-full text-xl text-primary">
             <!-- <div class="w-auto">No Replies</div> -->
-            <div v-if="!postDetails.isChangingThreadContext" class="flex flex-col bg-orange-400s preload-gutter divide-y border-slate-600 divide-inherit text-sm">
+            <div v-if="!isChangingThreadContext" class="flex flex-col bg-orange-400s preload-gutter divide-y border-slate-600 divide-inherit text-sm">
                 {{ void "replies" }}
                 <TransitionGroup>
-                    <div v-for="replies in postDetails.currentThreadView.replies" :key="(replies as ThreadViewPost).post.cid" class="py-2 pr-3 flex flex-col gap-2">
-                        <FocusFeedPost v-if="isThreadViewPost(replies)" :thread-data="replies" :is-reply-style="true" :reply-index="0" :total-replies="replies.post.replyCount"/>
+                    <div v-for="replies in currentThreadView.replies" :key="(replies as ThreadViewPost).post.cid" class="py-2 pr-3 flex flex-col gap-2">
+                        <FocusFeedPost v-if="isThreadViewPost(replies)" @thread-reply-clicked="changeThreadFromPost"
+                        :thread-data="replies" :is-reply-style="true" :reply-index="0" :total-replies="replies.post.replyCount"/>
                         {{ void "displays replies to comment" }}
                         <TransitionGroup>
                             <div v-for="(reply, index) in (replies as ThreadViewPost).replies" :key="(reply as ThreadViewPost).post.cid">
-                                <FocusFeedPost :thread-data="reply" :is-reply-style="true" :reply-index="index+1" :total-replies="replies.replies.length"/>
+                                <FocusFeedPost @thread-reply-clicked="changeThreadFromPost" :thread-data="reply" :is-reply-style="true"
+                                :reply-index="index+1" :total-replies="replies.replies.length"/>
                             </div>
                         </TransitionGroup>
                     </div>
@@ -22,16 +24,35 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import PostReply from './PostReply.vue';
-import { isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { isThreadViewPost, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
+import { emptyPostThread } from '../../fake-data/dumPostData';
 
 export default defineComponent({
     components:{
         PostReply,
         FocusFeedPost,
+    },
+    props:{
+        /**
+         * Post thread to display. Should be passed by parent
+         * `PostFocusModal` component.
+         */
+        currentThreadView:{
+            type: Object as PropType<ThreadViewPost>,
+            default: emptyPostThread,
+        },
+        /**
+         * Used to cause the displayed Replies to update when the context changes.
+         * Updated from `PostFocusModal`.
+         */
+        isChangingThreadContext:{
+            type: Boolean,
+            required: true,
+        }
     },
     data(){
         return{
@@ -39,6 +60,29 @@ export default defineComponent({
             postDetails,
         }
     },
+    emits:{
+        /**
+         * Updates the Posts/Replies displayed in the PostFocusModal component when
+         * a `FocusFeedPost` timestamp is clicked.
+         * This emit travels from `PostThreadView` to `PostFocusModal`.
+         * @param postThreadURI The URI pointing to the new Post Thread context to display.
+         * @param mediaIndex The Index of the media in the Post's collection to display.
+         */
+        updateThreadContext:(postThreadURI:string, mediaIndex:number) => {
+            return {postThreadURI,mediaIndex};
+        }
+    },
+    methods:{
+        /**
+         * Updates the Posts/Replies displayed in the PostFocusModal component.
+         * Emits {@link updateThreadContext} message with URI of Post Thread to display.
+         * @param newThreadURI The URI pointing to the new Post Thread context to display.
+         */
+        changeThreadFromPost(newThreadURI:string,mediaIndex:number){
+            // alert(newThread.post.author.handle);
+            this.$emit('updateThreadContext', newThreadURI, mediaIndex);
+        }
+    }
 })
 
 </script>

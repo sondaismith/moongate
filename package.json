@@ -9,7 +9,8 @@
     "build-web": "vite build --base=/moon/",
     "test": "vitest",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "cy:open": "cypress open"
   },
   "dependencies": {
     "@atproto/api": "^0.15.5",
@@ -23,6 +24,7 @@
     "@tauri-apps/plugin-upload": "^2.2.1",
     "@tauri-apps/plugin-window-state": "^2.2.2",
     "dexie": "^4.0.11",
+    "multiformats": "^13.3.7",
     "primevue": "^4.2.5",
     "vue": "^3.5.13"
   },
@@ -35,6 +37,7 @@
     "@vue/compiler-sfc": "^3.5.13",
     "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.20",
+    "cypress": "^14.5.1",
     "esbuild": "^0.24.0",
     "fake-indexeddb": "^6.0.1",
     "jsdom": "^26.0.0",

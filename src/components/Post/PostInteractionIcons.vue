@@ -1,7 +1,7 @@
 <template>
     <div :class="textColorClass" class="flex flex-wrap -mt-1 bg-red-300s text-secondary gap-1 justify-around
      *:p-1">
-        <div class="flex rounded-full items-center"
+        <div data-test="postInteraction-reply-button" class="flex rounded-full items-center"
         :class="canUserReply ? 'group cursor-pointer hover:bg-btnSubtle' : 'text-disabled select-none'"
         @click="canUserReply && replyToPost()" :title="postDetails.whoCanReply(postData)">
             <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-600"/>

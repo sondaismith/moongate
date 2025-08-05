@@ -17,6 +17,11 @@ export default defineConfig(async ({mode}) => {
   const BSKY_MEDIA_DOWNLOAD_TARGET = `${env.VITE_BSKY_MEDIA_DOWNLOAD_PROXY_TARGET}`;
 
   return{
+    resolve: {
+      alias: {
+        'vue': 'vue/dist/vue.esm-bundler.js',
+      }
+    },
     plugins: [
       vue(),
       Icons({compiler: 'vue3'}, ),

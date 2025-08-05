@@ -5,7 +5,8 @@
         border-outlineLighter p-3 my-auto m-4 sm:m-auto gap-3">
             <div class="flex items-center justify-between">
                 <div @click="confirmClose(canSubmitPost)" class="font-bold text-sky-500 hover:text-sky-300 cursor-pointer">Cancel</div>
-                <PillButton @click="createNewPost" class="transition-colors px-4 py-1 bg-sky-500" :class="(!canSubmitPost || postDetails.isAwaitingPostThreadData) ? '!bg-gray-400 text-gray-500 !cursor-default' : ''">Post</PillButton>
+                <PillButton data-test="create-post-button" @click="createNewPost" class="transition-colors px-4 py-1 bg-sky-500"
+                :class="(!canSubmitPost || postDetails.isAwaitingPostThreadData) ? '!bg-gray-400 text-gray-500 !cursor-default' : ''">Post</PillButton>
             </div>
             <div v-if="postDetails.currentPostAction == PostActions.Reply && postDetails.isAwaitingPostThreadData">
                 <i-mingcute:loading-fill class="text-primary spinner self-center size-10"/>

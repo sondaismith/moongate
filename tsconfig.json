@@ -23,6 +23,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "src/components/Utilities/ImageContainer.test.js", "src/components/Post/__test__/ReplyBreadcrumb.test.js", "src/components/Post/__test__/ReplyBreadcrumb.test.js"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "cypress", "src/components/Utilities/ImageContainer.test.js", "src/components/Post/__test__/ReplyBreadcrumb.test.js", "src/components/Post/__test__/ReplyBreadcrumb.test.js"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
