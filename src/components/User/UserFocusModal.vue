@@ -226,6 +226,10 @@
                                     :title="n.post.embed?.images ? n.post.embed?.images[0].alt : null"
                                     :style="'background-image: url('+(n.post.embed.images ? n.post.embed.images[0].thumb : n.post.embed?.thumbnail)+')'">
                                     </div>
+                                    <!-- Started on using `ImageContainer` for the thumbnails displayed on the media tab
+                                    but realized that it doesn't really make sense when you can just download the image after
+                                    opening the `PostFocusModal`. Maybe I'll change things later. -->
+                                    <!-- <ImageContainer @click="showMediaContent(n)" :images-to-display="n.post.embed.images ? n.post.embed.images.slice(0,1) : [{alt:'',fullsize:n.post.embed?.thumbnail,thumb:n.post.embed?.thumbnail}]" :author="n.post.author.handle"/> -->
                                 </div>
                             </div>
                             <div v-if="!UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"

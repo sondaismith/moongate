@@ -18,10 +18,12 @@
                     </div>
                 </div>
                 <div v-if="postDetails.isAwaitingFocusData" class="h-full w-full rounded-sm border-0 bg-slate-500 animate-pulse"></div>
-                <div v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
+                <!-- <div v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
                 class="rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
                 :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[currentMediaIndex] as ViewImage).fullsize+')'}">
-                </div>
+                </div> -->
+                <ImageContainer v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData" :show-fullsize="true"
+                :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postThread.post.author.handle"/>
                 <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
                 class="relative flex flex-col max-w-full h-full justify-center p-5"
                 :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
@@ -176,6 +178,7 @@ import { emptyPostThread } from '../../fake-data/dumPostData';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { getPostThread } from '../../lib/api/Post.vue';
 import { HandleAPIError } from '../../helpers/errors';
+import ImageContainer from '../Utilities/ImageContainer.vue';
 
 export default defineComponent({
     components:{
@@ -183,6 +186,7 @@ export default defineComponent({
         PostInteractionIcons,
         PostThreadView,
         ReplyBreadcrumb,
+        ImageContainer,
         VideoContainer,
         EmbedExternal,
         VerifiedBadge,

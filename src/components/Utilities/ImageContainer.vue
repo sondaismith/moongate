@@ -1,28 +1,30 @@
 <template>
-    <div v-if="Array.isArray(imagesToDisplay)" ref="imageContainer" class="@container relative grid grid-cols-2 grid-flow-row grid-rows-2 w-full gap-0.5 border
-        border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 cursor-pointer"
+    <div v-if="Array.isArray(imagesToDisplay)" ref="imageContainer" class="@container relative grid grid-cols-2 grid-flow-row grid-rows-2 w-fulls gap-0.5 border
+        border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 h-full"
         :style="[
             (imagesToDisplay?.length === 1 && !imagesToDisplay[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),
             (imagesToDisplay?.length === 1 && imagesToDisplay[0].aspectRatio ? `aspect-ratio: ${imagesToDisplay[0].aspectRatio?.width} / ${imagesToDisplay[0].aspectRatio?.height}`:''),
             (imagesToDisplay?.length && imagesToDisplay.length > 1 ? 'aspect-ratio: 16 / 9':'')
         ]">
         <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Image"/>
-        <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, author, postText)" class="overflow-hidden cursor-pointer"
+        <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, author, postText)" class="overflow-hidden"
             :class="[
                         (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
                         (imagesToDisplay?.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
                         (imagesToDisplay?.length === 2 && index === 1 ? 'col-start-2 row-span-2':''),
-                        (imagesToDisplay?.length === 3 && index === 0 ? 'col-start-1 row-span-2':'')
+                        (imagesToDisplay?.length === 3 && index === 0 ? 'col-start-1 row-span-2':''),
+                        showFullsize ? '' : 'cursor-pointer'
                     ]">
-            <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
+            <!-- Hide image extension when in "fullsize/fullscreen" mode -->
+            <div v-if="!showFullsize" class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
             <div class="h-full w-full bg-center bg-no-repeat"
             :title="image.alt"
-            :class="(imagesToDisplay?.length === 1 && !image.aspectRatio ? 'bg-contain' : 'bg-cover')"
-                :style="{'background-image': 'url('+image.thumb+')'}"></div>
+            :class="(imagesToDisplay?.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
+                :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div>
         </div>
     </div>
     <div v-else ref="imageContainer" class="@container relative w-full gap-0.5 border
-    border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 cursor-pointer">
+    border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
         <div class="flex justify-center overflow-hidden cursor-pointer w-full h-full" @contextmenu="showOptionsMenu($event, imagesToDisplay, author, postText)">
             <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div>
             <!-- GIF -->
@@ -96,7 +98,12 @@ export default defineComponent({
         imagesToDisplay: Object as PropType<ViewImage[]>|PropType<ViewExternal>,
         labels: Object as PropType<Label[]>,
         author: String,
-        postText: String
+        postText: String,
+        /**Setting this to `true` will use the fullsize image instead of the thumbnail.*/
+        showFullsize: {
+            type: Boolean,
+            default: false
+        }
     },
     methods:{
         /**
