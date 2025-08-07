@@ -1,5 +1,5 @@
 <template>
-    <div v-if="Array.isArray(imagesToDisplay)" ref="imageContainer" class="@container relative grid grid-cols-2 grid-flow-row grid-rows-2 w-fulls gap-0.5 border
+    <div v-if="Array.isArray(imagesToDisplay)" ref="imageContainer" class="@container relative grid grid-cols-2 grid-flow-row grid-rows-2 gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 h-full"
         :style="[
             (imagesToDisplay?.length === 1 && !imagesToDisplay[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),

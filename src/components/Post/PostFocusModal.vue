@@ -2,22 +2,20 @@
     <div data-test="post-focus-modal" id="post-focus-modal" tabindex="0"
     class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
         {{ void "Media Section" }}
-        <div class="flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
-            {{ void "Close Button" }}
-            <div data-test="postFocusModal-close-button" @click="hideModal" class="flex shrink-0 ml-auto bg-blue-300 py-2 w-10
-                justify-center text-2xl cursor-pointer">
-                <i-mingcute:close-fill/>
+        <div class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
+            <div class="h-10 w-full shrink-0 bg-blacks">
+                {{ void "Close Button" }}
+                <div data-test="postFocusModal-close-button" @click="hideModal" class="flex shrink-0 text-primary bg-btn rounded-br items-center aspect-square w-10
+                    justify-center text-2xl cursor-pointer sm:ml-auto sm:rounded-bl sm:rounded-br-none">
+                    <i-mingcute:close-fill/>
+                </div>
             </div>
             {{ void "Media Container" }}
             <div class="flex items-center h-full justify-center overflow-hidden">
-                <div class="flex shrink-0 text-2xl bg-blue-400 w-10">
-                    <div @click="decreaseCurrentMediaIndex"
-                    v-if="canDecreaseMediaIndex"
-                    class="cursor-pointer">
-                        <i-mingcute:left-fill/>
-                    </div>
+                <div class="flex h-full w-10 shrink-0 items-center mr-auto">
+                    <SlideshowArrow v-if="canDecreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Left" @button-clicked="decreaseCurrentMediaIndex"/>
                 </div>
-                <div v-if="postDetails.isAwaitingFocusData" class="h-full w-full rounded-sm border-0 bg-slate-500 animate-pulse"></div>
+                <div v-if="postDetails.isAwaitingFocusData" class="h-full w-2/3 rounded-sm border-0 bg-slate-500 animate-pulse mx-auto"></div>
                 <!-- <div v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
                 class="rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
                 :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[currentMediaIndex] as ViewImage).fullsize+')'}">
@@ -30,12 +28,8 @@
                 :video-view="postDetails.currentThreadView.post.embed">
                 </video-container>
                 <EmbedExternal v-else-if="hasEmbedGIFMedia" :embed="getEmbedGIFMedia"/>
-                <div class="flex shrink-0 text-2xl justify-center bg-blue-400 w-10">
-                    <div @click="increaseCurrentMediaIndex"
-                    v-if="canIncreaseMediaIndex"
-                    class="cursor-pointer">
-                        <i-mingcute:right-fill/>
-                    </div>
+                <div class="flex h-full w-10 shrink-0 items-center ml-auto">
+                    <SlideshowArrow v-if="canIncreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Right" @button-clicked="increaseCurrentMediaIndex"/>
                 </div>
             </div>
             <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 h-16 animate-pulse text-sm bg-slate-500/30"></div>
@@ -45,6 +39,7 @@
             <div v-else-if="hasEmbededVideoWithAltText" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 text-sm bg-slate-500/20">
                 <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed?.alt }}</div>
             </div>
+            <div v-else class="h-10 w-full shrink-0"></div>
             {{ void "Post Details" }}
             <!-- <div class="flex space-x-2 mx-8 px-2 py-4 ">
                 <div>Comments</div>
@@ -179,6 +174,7 @@ import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/def
 import { getPostThread } from '../../lib/api/Post.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import ImageContainer from '../Utilities/ImageContainer.vue';
+import SlideshowArrow from '../Utilities/SlideshowArrow.vue';
 
 export default defineComponent({
     components:{
@@ -189,6 +185,7 @@ export default defineComponent({
         ImageContainer,
         VideoContainer,
         EmbedExternal,
+        SlideshowArrow,
         VerifiedBadge,
     },
     props:{
