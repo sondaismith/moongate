@@ -1,6 +1,11 @@
 <template>
     <div data-test="post-focus-modal" id="post-focus-modal" tabindex="0"
     class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
+        {{ void "Fullscreen Image" }}
+        <div v-if="isImageFullscreen" @click="hideImageFullscreen" class="absolute flex h-full w-full text-primary items-center justify-center scroll-auto bg-pink-500 bg-contain bg-center bg-no-repeat z-20"
+        :style="{'background-image': 'url('+(fullscreenImageURL)+'s)'}">
+            <img :src="fullscreenImageURL" class="max-h-full max-w-full"/>
+        </div>
         {{ void "Media Section" }}
         <div class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
             <div class="h-10 w-full shrink-0 bg-blacks">
@@ -11,7 +16,7 @@
                 </div>
             </div>
             {{ void "Media Container" }}
-            <div class="flex items-center h-full justify-center overflow-hidden">
+            <div class="flex items-center h-full w-full justify-center overflow-hidden">
                 <div class="flex h-full w-10 shrink-0 items-center mr-auto">
                     <SlideshowArrow v-if="canDecreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Left" @button-clicked="decreaseCurrentMediaIndex"/>
                 </div>
@@ -20,7 +25,8 @@
                 class="rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
                 :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[currentMediaIndex] as ViewImage).fullsize+')'}">
                 </div> -->
-                <ImageContainer v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData" :show-fullsize="true"
+                <ImageContainer v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
+                @image-clicked="showImageFullscreen" :show-fullsize="true"
                 :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postThread.post.author.handle"/>
                 <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
                 class="relative flex flex-col max-w-full h-full justify-center p-5"
@@ -247,6 +253,10 @@ export default defineComponent({
             /**Used to cause the Replies displayed in `PostThreadView` to update when the context changes. */
             isChangingThreadContext:false,
             currentBreadcrumb : [{userName:"Origin",postCID:"this_cid_is_unset"}],
+            /**Is a Post image currently being shown at fullscreen size? */
+            isImageFullscreen: false,
+            /**URL of image to display at fullscreen size. */
+            fullscreenImageURL : ''
         }
     },
     methods:{
@@ -259,6 +269,14 @@ export default defineComponent({
             if(this.currentMediaIndex-1 >= 0)
                 // postDetails.setClickedMediaIndex(postDetails.getClickedMediaIndex()-1);
                 this.currentMediaIndex = this.currentMediaIndex-1;
+        },
+        showImageFullscreen(imageUrl:string){
+            this.fullscreenImageURL = imageUrl;
+            this.isImageFullscreen = true;
+        },
+        hideImageFullscreen(){
+            this.isImageFullscreen = false;
+            this.fullscreenImageURL = '';
         },
         hideModal(){
             postDetails.hideFocusModal();
