@@ -1,5 +1,5 @@
 <template>
-    <div class="h-full w-fulls bg-lime-300s content-center">
+    <div class="h-full content-center">
         <div v-if="Array.isArray(imagesToDisplay)" ref="imageContainer" class="@container relative grid border
             border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 max-h-full max-w-full" :class="showFullsize ? 'min-w-0' : 'grid-cols-2 grid-flow-row grid-rows-2 gap-0.5'"
             :style="[
@@ -15,7 +15,7 @@
                             (imagesToDisplay?.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
                             (imagesToDisplay?.length === 2 && index === 1 ? 'col-start-2 row-span-2':''),
                             (imagesToDisplay?.length === 3 && index === 0 ? 'col-start-1 row-span-2':''),
-                            showFullsize ? 'mx-auto' : 'cursor-pointer'
+                            showFullsize ? 'w-full' : 'cursor-pointer'
                         ]">
                 <!-- Hide image extension when in "fullsize/fullscreen" mode -->
                 <div v-if="!showFullsize" class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
@@ -23,7 +23,7 @@
                 :title="image.alt"
                 :class="(imagesToDisplay?.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
                     :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div>
-                <img v-else @click="$emit('imageClicked', image.fullsize)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full bg-contain"/>
+                <img v-else @click="$emit('imageClicked', image.fullsize)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full bg-contain mx-auto"/>
             </div>
         </div>
         <div v-else ref="imageContainer" class="@container relative w-full gap-0.5 border
