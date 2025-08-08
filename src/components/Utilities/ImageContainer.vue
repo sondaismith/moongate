@@ -23,7 +23,7 @@
                 :title="image.alt"
                 :class="(imagesToDisplay?.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
                     :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div>
-                <img v-else @click="$emit('imageClicked', image.fullsize)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full bg-contain mx-auto"/>
+                <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full bg-contain mx-auto"/>
             </div>
         </div>
         <div v-else ref="imageContainer" class="@container relative w-full gap-0.5 border
@@ -40,7 +40,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
-import { isViewImage, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { Label } from '@atproto/api/dist/client/types/com/atproto/label/defs';
 import SpoilerOverlay from './SpoilerOverlay.vue';
 import { IOptionMenuItem } from './OptionsMenu.vue';
@@ -50,6 +50,7 @@ import { AppState } from '../../state/AppState.vue';
 //Option Menu icons
 import MdiImageOutline from '~icons/mdi/image-outline';
 import MdiImagePlusOutline from '~icons/mdi/image-plus-outline';
+import MdiOpenInNew from '~icons/mdi/open-in-new';
 import { MediaType } from '../../enums/PostEnums';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { isTauri } from '@tauri-apps/api/core';
@@ -91,6 +92,19 @@ async function saveImageWithAuthor(image:ViewImage|ViewExternal, author:string|u
         AppState.fileSaveDetails.postText = postText ? postText : '';
     }
     AppState.isSavingMediaModalVisible = true;
+}
+
+/**
+ * Method used to open a specific Image in a new browser tab.
+ * @param imageToShow Object representing the Image to open in the new tab.
+ */
+function OpenImageInNewTab(imageToShow:ViewImage|ViewExternal){
+    if(!imageToShow.uri){//not Tenor GIF
+        open((imageToShow as ViewImage).fullsize);
+    }
+    else{
+        open((imageToShow as ViewExternal).uri);
+    }
 }
 
 export default defineComponent({
@@ -142,7 +156,8 @@ export default defineComponent({
                 OptionsMenuState.currentMenuItems = [
                     {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,author,postText)}},
                     {Icon:MdiImageOutline,Label:'Save Image',Action:()=>void 0},
-                ] as IOptionMenuItem[]
+                ] as IOptionMenuItem[];
+                if(!isTauri()) OptionsMenuState.currentMenuItems.push({Icon:MdiOpenInNew,Label:'Open Image in New Tab',Action:function(){OpenImageInNewTab(image)}})
                 OptionsMenuState.showOptionMenu(e);
             // }
         },
@@ -151,10 +166,10 @@ export default defineComponent({
         /**
          * Emit event called when clicking on image when in `showFullsize` mode.
          * Used to show image at "fullscreen" size when in the `PostFocusModal`.
-         * @param url The URL of the image to display in fullscreen view.
+         * @param image Object representing the image to display in fullscreen view.
          */
-        imageClicked(url:string){
-            if(url.trim() != '') return true;
+        imageClicked(image:ViewImage|ViewExternal){
+            if(image) return true;
         },
         /**
          * Emit event called when clicking on image when not in `showFullsize` mode.

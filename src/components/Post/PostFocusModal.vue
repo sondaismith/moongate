@@ -2,10 +2,15 @@
     <div data-test="post-focus-modal" id="post-focus-modal" tabindex="0"
     class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
         {{ void "Fullscreen Image" }}
-        <div v-if="isImageFullscreen" @click="hideImageFullscreen" class="absolute flex h-full w-full text-primary items-center justify-center scroll-auto bg-pink-500 bg-contain bg-center bg-no-repeat z-20"
-        :style="{'background-image': 'url('+(fullscreenImageURL)+'s)'}">
-            <img :src="fullscreenImageURL" class="max-h-full max-w-full"/>
-        </div>
+        <Transition>
+            <div v-if="isImageFullscreen" @click="hideImageFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto bg-black/95 bg-contain bg-center bg-no-repeat z-20"
+            :style="{'background-image': 'url('+(fullscreenImage)+'s)'}">
+                <div @click="(e)=>{e.stopPropagation()}" class="absolute text-black bottom-0 left-0 px-2 bg-white/50 z-10">
+                    {{`${(fullscreenImage as ViewImage).aspectRatio?.width}x${(fullscreenImage as ViewImage).aspectRatio?.height}px`}}
+                </div>
+                <img @contextmenu="(e) => {e.preventDefault()}" :src="(fullscreenImage as ViewExternal).uri ? (fullscreenImage as ViewExternal).uri : (fullscreenImage as ViewImage).fullsize" class="max-h-full max-w-full"/>
+            </div>
+        </Transition>
         {{ void "Media Section" }}
         <div class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
             <div class="h-10 w-full shrink-0 bg-blacks">
@@ -181,6 +186,7 @@ import { getPostThread } from '../../lib/api/Post.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import SlideshowArrow from '../Utilities/SlideshowArrow.vue';
+import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 
 export default defineComponent({
     components:{
@@ -255,8 +261,8 @@ export default defineComponent({
             currentBreadcrumb : [{userName:"Origin",postCID:"this_cid_is_unset"}],
             /**Is a Post image currently being shown at fullscreen size? */
             isImageFullscreen: false,
-            /**URL of image to display at fullscreen size. */
-            fullscreenImageURL : ''
+            /**Object representing image to display at fullscreen size. */
+            fullscreenImage : {} as ViewImage|ViewExternal
         }
     },
     methods:{
@@ -270,13 +276,13 @@ export default defineComponent({
                 // postDetails.setClickedMediaIndex(postDetails.getClickedMediaIndex()-1);
                 this.currentMediaIndex = this.currentMediaIndex-1;
         },
-        showImageFullscreen(imageUrl:string){
-            this.fullscreenImageURL = imageUrl;
+        showImageFullscreen(image:ViewImage|ViewExternal){
+            this.fullscreenImage = image;
             this.isImageFullscreen = true;
         },
         hideImageFullscreen(){
             this.isImageFullscreen = false;
-            this.fullscreenImageURL = '';
+            this.fullscreenImage = {} as ViewImage|ViewExternal;
         },
         hideModal(){
             postDetails.hideFocusModal();
@@ -628,4 +634,13 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
 </style>
