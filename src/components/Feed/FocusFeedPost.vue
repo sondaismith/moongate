@@ -118,7 +118,7 @@
                     <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
                     :labels="postToShow.labels" :author="postToShow.author.handle"/>
                     <div v-if="postContainsExternalEmbed">
-                        <EmbedExternal :embed="getPostEmbed"/>
+                        <EmbedExternal :embed="getPostEmbed" @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '', i) : openFocusDetails(i)"/>
                     </div>
                     {{ void "Reposts - ViewRecord and View" }}
                     <FocusFeedPost v-if="postToShow.embed?.record && postToShow.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postToShow.embed.record.record)"

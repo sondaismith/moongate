@@ -5,10 +5,10 @@
         :class="{'border-b-[1px]':!isTenorGIF}">
             <img v-if="!isTenorGIF" class="absolute w-full h-full object-center object-cover"
             :src="embed && embed.external ? embed.external.thumb : ''"/>
-            <ImageContainer v-else class="absolute w-full h-full object-center object-cover border-0"
-            :title="embed.external.title"
-            :src="embed && embed.external ? embed.external.uri : ''"
-            :images-to-display="embed.external"/>
+            <ImageContainer v-else
+            @image-clicked="img => $emit('imageClicked',img)"
+            @media-click="i => $emit('media-click',i)"
+            :show-fullsize="showFullsize" :images-to-display="embed.external"/>
         </div>
         <div v-if="!isTenorGIF" class="p-2">
             <div class="text-sm font-semibold">{{ embed.external.title}}</div>
@@ -25,11 +25,15 @@
 </template>
 
 <script lang="ts">
-import { View } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import { View, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { defineComponent, PropType } from 'vue'
 import ImageContainer from './ImageContainer.vue';
+import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 
 export default defineComponent({
+    components:{
+        ImageContainer
+    },
     props:{
         embed: {
             type: Object as PropType<View>,
@@ -37,10 +41,15 @@ export default defineComponent({
             default(){
                 return {};
             }
+        },
+        /**
+         * Setting this to `true` will cause the `ImageContainer` use the fullsize styling.
+         * Usually set when placing component in `PostFocusModal`.
+         */
+        showFullsize: {
+            type: Boolean,
+            default: false
         }
-    },
-    components:{
-        ImageContainer
     },
     data(){
         return{
@@ -50,6 +59,24 @@ export default defineComponent({
     computed:{
         isTenorGIF(){
             return this.embed.external.uri.includes("tenor.com");
+        }
+    },
+    emits:{
+        /**
+         * Emit event called when clicking on image when in `showFullsize` mode.
+         * Used to show image at "fullscreen" size when in the `PostFocusModal`.
+         * Passes emit sent by `ImageContainer` component.
+         * @param image Object representing the image to display in fullscreen view.
+         */
+        imageClicked(image:ViewImage|ViewExternal){
+            if(image) return true;
+        },
+        /**
+         * Emit event called to open `PostFocusModal` at relevant media index.
+         * @param index The index value representing the media to display.
+        */
+        'media-click'(index:number){
+            if(index>-1) return true;
         }
     }
 })

@@ -5,7 +5,7 @@
         <Transition>
             <div v-if="isImageFullscreen" @click="hideImageFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto bg-black/95 bg-contain bg-center bg-no-repeat z-20"
             :style="{'background-image': 'url('+(fullscreenImage)+'s)'}">
-                <div @click="(e)=>{e.stopPropagation()}" class="absolute text-black bottom-0 left-0 px-2 bg-white/50 z-10">
+                <div v-if="!(fullscreenImage as ViewExternal).uri" @click="(e)=>{e.stopPropagation()}" class="absolute text-black bottom-0 left-0 px-2 bg-white/50 z-10">
                     {{`${(fullscreenImage as ViewImage).aspectRatio?.width}x${(fullscreenImage as ViewImage).aspectRatio?.height}px`}}
                 </div>
                 <img @contextmenu="(e) => {e.preventDefault()}" :src="(fullscreenImage as ViewExternal).uri ? (fullscreenImage as ViewExternal).uri : (fullscreenImage as ViewImage).fullsize" class="max-h-full max-w-full"/>
@@ -38,7 +38,7 @@
                 :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
                 :video-view="postDetails.currentThreadView.post.embed">
                 </video-container>
-                <EmbedExternal v-else-if="hasEmbedGIFMedia" :embed="getEmbedGIFMedia"/>
+                <EmbedExternal v-else-if="hasEmbedGIFMedia" @image-clicked="showImageFullscreen" :embed="getEmbedGIFMedia" :show-fullsize="true"/>
                 <div class="flex h-full w-10 shrink-0 items-center ml-auto">
                     <SlideshowArrow v-if="canIncreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Right" @button-clicked="increaseCurrentMediaIndex"/>
                 </div>
