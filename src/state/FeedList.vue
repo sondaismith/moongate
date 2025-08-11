@@ -103,8 +103,10 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
  * separated collection of hashtags.
  */
 export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSearchResult={did:'',name:'',handle:''},tags:string=''):Promise<IFeedListing>{
+    /**Object that will hold the returned Feed data. */
+    var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
     /**The object that will be added to the FeedList. */
-    var feedResult;
+    var feedPosts;
     /**Object containing profile data on User. Used when creating User-type Feeds. */
     var profile:ProfileView = {did:'', handle:''};
     //Perform required API call based on Feed Type
@@ -131,10 +133,19 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
                 userData.name = profile.displayName ? profile.displayName : '';
             }
 
-            feedResult = await getAuthorFeed(did);
+            await getAuthorFeed(did).then(res => {
+                feedResult.data = res.data.feed
+                if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
+            })
             break;
         case FeedEnums.Types.Tag:
-            feedResult = await getTagPosts(tags);
+            await getTagPosts(tags).then(res => {
+                if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
+                //Place Posts in a "Feed" shaped Object
+                res.data.posts.forEach(p => {
+                    (feedResult.data as FeedViewPost[]).push({post:p});
+                })
+            })
             break;
         default:
             break;
@@ -171,7 +182,7 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
     //Select correct returned Object value based on Feed Type
     switch (feedType) {
         case FeedEnums.Types.User:
-            feedResult = feedResult.data.feed;
+            // feedPosts = feedResult.data.feed;
             //Generate Feed Description based on selected options
             desc = {...desc,
                 feedHandle:userData.handle,
@@ -180,12 +191,12 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
             }
             break;
         case FeedEnums.Types.Tag:
-            var posts = [];
-            //Place Posts in a "Feed" shaped Object
-            feedResult.data.posts.forEach(p => {
-                posts.push({post:p})
-            });
-            feedResult = posts;
+            // var posts = [];
+            // //Place Posts in a "Feed" shaped Object
+            // feedResult.data.posts.forEach(p => {
+            //     posts.push({post:p})
+            // });
+            // feedPosts = posts;
             //Generate Feed Description based on selected options
             desc = {...desc,
                 feedType:FeedEnums.Types.Tag,
@@ -198,7 +209,7 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
     }
 
     AppState.isCreatingFeed = false;
-    return {description:desc, data:feedResult};
+    return {description:desc, data:feedResult.data, cursor:feedResult.cursor, isAwaitingFeedData:false};
 }
 
 /**
