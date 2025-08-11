@@ -93,6 +93,7 @@ export const AppState = reactive({
      * This variable might belong in another State.
      */
     currentUsername: "Login Here",
+    currentPFP: '',
     /**Is the user currently trying to create a new Feed to add to the
      * view.
      */

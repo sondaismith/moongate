@@ -31,6 +31,7 @@ export default {
         feedHighlight: "oklch(from var(--color-feed-highlight) l c h / <alpha-value>)",
         viewportBG: "oklch(from var(--color-viewport-background) l c h / <alpha-value>)",
         messageDismiss: "oklch(from var(--color-message-dismiss) l c h / <alpha-value>)",
+        loginHighlight: "oklch(from var(--color-login-highlight) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

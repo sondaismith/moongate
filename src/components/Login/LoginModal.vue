@@ -82,6 +82,7 @@ import { LoginBskyAccount } from '../../lib/api/Login.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
+import { GetBrowsingAgent } from '../../lib/api.vue';
 
 export default defineComponent({
     data(){
@@ -99,12 +100,14 @@ export default defineComponent({
             this.attemptingLogin = true;
             toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
             var handleAddress = `${this.enteredUsername}.${this.hostProvider}`;
+            var accountDID = '';
             await LoginBskyAccount(handleAddress, this.enteredPassword)
             .then(res => {
                 console.log(res);
                 AppState.isAuthBrowsing = true;
                 AppState.isGuestBrowsing = false;
                 AppState.currentUsername = "Logged In";
+                accountDID = res.data.did;
                 AppState.canBrowse = true;
                 AppState.ToggleLoginModal();
                 AccountPeekState.lastMouseEvent = new MouseEvent('login');
@@ -113,6 +116,12 @@ export default defineComponent({
                 toast.add({summary:"Login Success", detail:``,severity:'success',group:'tr',life:3000});
             })
             .catch(err => toast.add(HandleAPIError(err, 'Error logging in')));
+            //Get User's PFP
+            await GetBrowsingAgent().getProfile({actor:accountDID})
+            .then(res => {
+                AppState.currentPFP = res.data.avatar ? res.data.avatar : '';
+                AppState.currentUsername = res.data.displayName ? res.data.displayName : res.data.handle;
+            })
             this.attemptingLogin = false;
         },
         browseAsGuest(){

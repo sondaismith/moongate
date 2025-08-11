@@ -31,6 +31,7 @@
         --color-feed-highlight: oklch(82.8% 0.189 84.429);
         --color-viewport-background: oklch(27.9% 0.041 260.031);
         --color-message-dismiss: oklch(70.7% 0.165 254.624);
+        --color-login-highlight: oklch(79.2% 0.209 151.711);
     }
 }
 
@@ -61,4 +62,5 @@
     --color-feed-highlight: oklch(82.8% 0.189 84.429);
     --color-viewport-background: oklch(92.9% 0.013 255.508);
     --color-message-dismiss: oklch(62.3% 0.214 259.815);
+    --color-login-highlight: oklch(79.2% 0.209 151.711);
 }
