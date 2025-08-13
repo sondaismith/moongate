@@ -3,7 +3,7 @@
         <input data-testid="inlainput-input" @keyup.enter="emitValue" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"
             class="peer bg-searchbarBG leading-8 px-2 pt-3 h-11
             border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight rounded-md
-            disabled:border-gray-700 disabled:text-gray-500 shadow-none
+            disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none
             w-full" :class="$attrs.class" :type="isPasswordInput ? 'password' : 'text'"
             :disabled="isDisabled ? true : false"/>
         <div class="absolute top-[-2px] left-2 select-none text-feedTimestamp text-secondary">

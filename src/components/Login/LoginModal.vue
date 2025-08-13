@@ -2,7 +2,7 @@
     <div class="absolute z-50 flex
         flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm">
         <div class="flex flex-col w-4/5 md:w-2/3 lg:max-w-[700px]
-            h-2/3 md:h-auto bg-slate-800 p-4 mx-auto my-auto rounded-md">
+            h-2/3 md:h-auto bg-focusBG text-primary p-4 mx-auto my-auto rounded-md">
             <div class="hidden">
                 <div>Which account do you wish to use?</div>
                 <div>
@@ -37,25 +37,25 @@
                 {{ void "login form" }}
                 <form class="flex flex-col gap-2">
                     <div>
-                        <div class="text-3xl text-blue-700 font-extrabold ">Login</div>
+                        <div class="text-3xl text-loginBtn font-extrabold ">Login</div>
                         <div class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">Enter your username and password</div>
                     </div>
                     <div class="h-[1px] bg-slate-500"></div>
-                    <div class="flex flex-col">
+                    <div class="flex gap-1 flex-col">
                         <!-- <div>Hosting Provider</div>
                         <div>bsky.social</div> -->
                         <div class="group-heading">Account</div>
                         <div class="flex">
-                            <InLaInput v-model="enteredUsername" textLabel="Handle" :fillContainer="true"/>
-                            <InLaInput v-model="hostProvider" textLabel="Host" :isDisabled="true" :fillContainer="true"/>
+                            <InLaInput v-model="enteredUsername" class="rounded-r-none" textLabel="Handle" :fillContainer="true"/>
+                            <InLaInput v-model="hostProvider" class="rounded-l-none border-l-0" textLabel="Host" :isDisabled="true" :fillContainer="true"/>
                         </div>
                         <InLaInput v-model="enteredPassword" textLabel="Password"
                             :isPasswordInput="true" :fillContainer="true"/>
                     </div>
                     <div class="flex flex-col md:float-end" :class="{ disabled: attemptingLogin}">
                         <a data-test="loginModal-login-button" @click="loginAccount" tabindex="0" class="relative flex md:self-end rounded cursor-pointer
-                            bg-blue-700 justify-center md:w-40 px-3 py-2 font-semibold
-                            hover:text-white hover:bg-blue-500 focus:bg-blue-600
+                            bg-loginBtn justify-center md:w-40 px-3 py-2 font-semibold
+                            transition-colors hover:bg-loginBtnHover text-primary
                             select-none">Login</a>
                     </div>
                 </form>

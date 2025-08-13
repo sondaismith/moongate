@@ -37,8 +37,10 @@
                                 <div class="flex flex-wrap gap-1">
                                     <div v-for="item in feedTypeOptions" :key="item.id"
                                     @click="selectFeedType(item.value)"
-                                    class="cursor-pointer px-3 py-1 border-2 border-transparent rounded-full transition-colors bg-btn hover:bg-feedTypeBtnHover"
-                                    :class="[item.value == selectedFeedType ? '!border-outlineLighter' : '']">
+                                    class="cursor-pointer px-3 py-1 border-2 border-transparent rounded-full transition-colors bg-btn select-none"
+                                    :class="[item.value == selectedFeedType ? '!border-outlineLighter' : '',
+                                        !AppState.isAuthBrowsing && item.value == FeedEnums.Types.Notifications ? 'bg-disabled' : 'hover:bg-feedTypeBtnHover'
+                                    ]">
                                         {{ item.name }}
                                     </div>
                                 </div>
@@ -48,7 +50,10 @@
                                     <div v-if="selectedFeedType == FeedEnums.Types.User">A User feed is</div>
                                     <div v-else-if="selectedFeedType == FeedEnums.Types.Tag">A Tag feed displays</div>
                                     <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">Trending will display the current hot topics.</div>
-                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">Notifications will create a Feed Column that displays all of your notifications.</div>
+                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
+                                        <div v-if="!AppState.isAuthBrowsing" class="font-medium text-feedHighlight">Login Required</div>
+                                        Notifications will create a Feed Column that displays all of your notifications.
+                                    </div>
                                 </TransitionGroup>
                             </div>
                         </div>
@@ -66,7 +71,7 @@
                         </div>
                         <UserSearchBar data-testid="feedEditModal-user-search-bar" v-if="selectedFeedType == FeedEnums.Types.User" @user-selected="selectUser" :data-list="searchResults"/>
                         <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
-                            <CheckBox :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
+                            <CheckBox @value-toggled="toggleJustMentions" :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
                             <!-- <SquareButton @click="testGetNotifs">Load Notifs</SquareButton> -->
                         </div>
                         <div v-if="selectedFeedType == FeedEnums.Types.Trending">
@@ -100,7 +105,6 @@
                     <SquareButton data-testid="feedEditModal-next-page-button"
                     v-if="isTagSpecsEntryComplete ||
                     isFeedTypeConfirmed ||
-                    isSelectedTypeNotifications ||
                     isSelectedTypeTrending"
                     @click="forwardOnePage">Next</SquareButton>
                     <SquareButton data-testid="feedEditModal-create-button" @click="createFeed()"
@@ -269,6 +273,9 @@ export default defineComponent({
                 console.log(res.data);
             });
         },
+        toggleJustMentions(){
+            this.feedFilters.notifications.justNotifs = !this.feedFilters.notifications.justNotifs;
+        },
         /**
          * Method that adds a new feed with specified options
          * to the App's `FeedList`.
@@ -389,9 +396,18 @@ export default defineComponent({
             this.selectedFeedType == FeedEnums.Types.Tag &&
             this.currentPage != this.totalPages-1 && this.currentPage != 0;
         },
+        /**
+         * Validates that a Feed Type was selected from available
+         * options.
+         */
         isFeedTypeConfirmed(){
-            return this.selectedFeedType.trim() != "" &&
-            this.currentPage == 0;
+            if(this.selectedFeedType.trim() != "" &&
+            this.currentPage != this.totalPages-1){
+                if(this.selectedFeedType == FeedEnums.Types.Notifications && !AppState.isAuthBrowsing) return false;
+                return true;
+            }
+            // return this.selectedFeedType.trim() != "" &&
+            // this.currentPage == 0;
         },
         isSelectedTypeNotifications(){
             return this.selectedFeedType == FeedEnums.Types.Notifications &&
