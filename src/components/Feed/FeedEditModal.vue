@@ -1,8 +1,8 @@
 <template>
-    <div data-testid="feed-edit-modal" class="absolute z-10 flex w-full h-full bg-slate-800/40 backdrop-blur-sm">
+    <div data-testid="feed-edit-modal" class="absolute z-10 flex w-full h-full text-primary bg-slate-800/40 backdrop-blur-sm">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{void "Modal Control"}}
-        <div class="z-20 flex flex-col w-4/5 md:w-2/3 h-2/3 mx-auto my-auto rounded bg-slate-800
+        <div class="z-20 flex flex-col w-4/5 md:w-2/3 h-2/3 mx-auto my-auto rounded bg-feedColumnBG
             p-4 drop-shadow-lg">
             <div class="flex gap-2">
                 <div class="text-2xl">{{modalPages[currentPage].title}}</div>
@@ -12,8 +12,8 @@
             {{ void "Pages" }}
             <div class="flex items-center my-1 w-full">
                 <template v-for="n in totalPages">
-                    <div class="border border-white rounded-full aspect-square p-1"
-                        :class="{'bg-white' : currentPage==n-1}"></div>
+                    <div class="border border-primary rounded-full aspect-square p-1"
+                        :class="{'bg-primary' : currentPage==n-1}"></div>
                     <div v-if="n != totalPages" class="h-[1px] bg-gray-500 w-full"></div>
                 </template>
             </div>
@@ -21,18 +21,35 @@
             <div class="flex flex-col relative grow overflow-hidden">
                 <Transition>
                     <div v-if="currentPage == 0" class="h-full w-full">
-                        <div class="mb-2">
+                        <div class="flex flex-col gap-2">
                             <div class="flex items-start flex-wrap gap-1">
-                                <PillButton data-testid="feedEditModal-user-feed-button" @click="selectFeedType(FeedEnums.Types.User)">User</PillButton>
+                                <!-- <PillButton data-testid="feedEditModal-user-feed-button" @click="selectFeedType(FeedEnums.Types.User)"
+                                class="px-4 py-2 border-2 border-outlineLighter bg-slate-700">User</PillButton>
                                 <PillButton data-testid="feedEditModal-tag-feed-button" @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
                                 <PillButton data-testid="feedEditModal-trending-feed-button" @click="selectFeedType(FeedEnums.Types.Trending)">Trending</PillButton>
                                 <PillButton :disabled="!AppState.isAuthBrowsing"
                                 @click="selectFeedType(FeedEnums.Types.Notifications)"
                                 :title="!AppState.isAuthBrowsing ? 'Login Required' : ''">
                                     Notifications
-                                </PillButton>
+                                </PillButton> -->
                                 <!-- <PillButton :disabled="true">Mentions</PillButton>
                                 <PillButton :disabled="true">DMs</PillButton> -->
+                                <div class="flex flex-wrap gap-1">
+                                    <div v-for="item in feedTypeOptions" :key="item.id"
+                                    @click="selectFeedType(item.value)"
+                                    class="cursor-pointer px-3 py-1 border-2 border-transparent rounded-full transition-colors bg-btn hover:bg-feedTypeBtnHover"
+                                    :class="[item.value == selectedFeedType ? '!border-outlineLighter' : '']">
+                                        {{ item.name }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="selectedFeedType.trim() != ''" class="flex self-start border border-outline rounded p-1">
+                                <TransitionGroup>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.User">A User feed is</div>
+                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Tag">A Tag feed displays</div>
+                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">Trending will display the current hot topics.</div>
+                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">Notifications will create a Feed Column that displays all of your notifications.</div>
+                                </TransitionGroup>
                             </div>
                         </div>
                     </div>
@@ -82,6 +99,7 @@
                 <div class="flex">
                     <SquareButton data-testid="feedEditModal-next-page-button"
                     v-if="isTagSpecsEntryComplete ||
+                    isFeedTypeConfirmed ||
                     isSelectedTypeNotifications ||
                     isSelectedTypeTrending"
                     @click="forwardOnePage">Next</SquareButton>
@@ -139,6 +157,12 @@ export default defineComponent({
             },
             currentPage:0,
             totalPages:3,
+            feedTypeOptions:[
+                {id:0, name:'User',value:FeedEnums.Types.User},
+                {id:1, name:'Tag',value:FeedEnums.Types.Tag},
+                {id:2, name:'Trending',value:FeedEnums.Types.Trending},
+                {id:3, name:'Notifications',value:FeedEnums.Types.Notifications},
+            ],
             selectedFeedType:"",
             feedTypeSelected:false,
             feedSpecificationsSet:false,
@@ -193,7 +217,7 @@ export default defineComponent({
         selectFeedType(feedType:FeedEnums.Types){
             this.selectedFeedType = feedType;
             console.log(this.selectedFeedType);
-            this.forwardOnePage();
+            //this.forwardOnePage();
         },
         /**
          * Method that fires when a user is selected in the
@@ -364,6 +388,10 @@ export default defineComponent({
             return (this.validTags.length>0) &&
             this.selectedFeedType == FeedEnums.Types.Tag &&
             this.currentPage != this.totalPages-1 && this.currentPage != 0;
+        },
+        isFeedTypeConfirmed(){
+            return this.selectedFeedType.trim() != "" &&
+            this.currentPage == 0;
         },
         isSelectedTypeNotifications(){
             return this.selectedFeedType == FeedEnums.Types.Notifications &&

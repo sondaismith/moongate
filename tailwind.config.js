@@ -15,6 +15,7 @@ export default {
         btnHover: "oklch(from var(--color-btn-hover) l c h / <alpha-value>)",
         sidebar: "oklch(from var(--color-sidebar) l c h / <alpha-value>)",
         feedBtn: "oklch(from var(--color-feed-btn) l c h / <alpha-value>)",
+        feedTypeBtnHover: "oklch(from var(--color-feedtype-btn-hover) l c h / <alpha-value>)",
         feedColumnBG: "oklch(from var(--color-fc-bg) l c h / <alpha-value>)",
         postBG: "oklch(from var(--color-post-bg) l c h / <alpha-value>)",
         postMsg: "oklch(from var(--color-post-msg) l c h / <alpha-value>)",
