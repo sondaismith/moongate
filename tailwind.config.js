@@ -33,6 +33,12 @@ export default {
         viewportBG: "oklch(from var(--color-viewport-background) l c h / <alpha-value>)",
         messageDismiss: "oklch(from var(--color-message-dismiss) l c h / <alpha-value>)",
         loginHighlight: "oklch(from var(--color-login-highlight) l c h / <alpha-value>)",
+        searchbarBtn: "oklch(from var(--color-searchbar-btn) l c h / <alpha-value>)",
+        searchbarBtnHover: "oklch(from var(--color-searchbar-btn-hover) l c h / <alpha-value>)",
+        searchbarBG: "oklch(from var(--color-searchbar-bg) l c h / <alpha-value>)",
+        searchbarFocusHightlight: "oklch(from var(--color-searchbar-focus-highlight) l c h / <alpha-value>)",
+        searchbarResultHover: "oklch(from var(--color-searchbar-result-hover) l c h / <alpha-value>)",
+        searchbarHandle: "oklch(from var(--color-searchbar-handle) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

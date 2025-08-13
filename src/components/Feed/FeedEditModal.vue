@@ -93,7 +93,7 @@
                 <!-- <div v-for="page in modalPages">{{ page.title }}</div> -->
             </div>
             <div class="flex space-x-2 justify-between">
-                <SquareButton data-testid="feedEditModal-back-button" @click="backOnePage" class="bg-gray-500 hover:bg-gray-600">
+                <SquareButton data-testid="feedEditModal-back-button" @click="backOnePage" class="bg-btn hover:bg-btnHover">
                     {{currentPage == 0 ? 'Cancel':'Back'}}
                 </SquareButton>
                 <div class="flex">
