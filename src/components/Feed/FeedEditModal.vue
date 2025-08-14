@@ -35,14 +35,17 @@
                                 <!-- <PillButton :disabled="true">Mentions</PillButton>
                                 <PillButton :disabled="true">DMs</PillButton> -->
                                 <div class="flex flex-wrap gap-1">
-                                    <div v-for="item in feedTypeOptions" :key="item.id"
+                                    <button v-for="item in feedTypeOptions" :key="item.id"
                                     @click="selectFeedType(item.value)"
-                                    class="cursor-pointer px-3 py-1 border-2 border-transparent rounded-full transition-colors bg-btn select-none"
-                                    :class="[item.value == selectedFeedType ? '!border-outlineLighter' : '',
+                                    tabindex="0"
+                                    class="group cursor-pointer border-2 border-transparent rounded-full transition-colors
+                                    bg-btn select-none p-[1px] overflow-hidden"
+                                    :class="[item.value == selectedFeedType ? '!border-feedtypeBtnSelected' : '',
                                         !AppState.isAuthBrowsing && item.value == FeedEnums.Types.Notifications ? 'bg-disabled' : 'hover:bg-feedTypeBtnHover'
                                     ]">
-                                        {{ item.name }}
-                                    </div>
+                                        <div class="border-2 border-transparent group-focus:border-feedtypeBtnFocusHighlight rounded-full px-3 py-1s">{{ item.name }}</div>
+                                        <!-- {{ item.name }} -->
+                                    </button>
                                 </div>
                             </div>
                             <div v-if="selectedFeedType.trim() != ''" class="flex self-start border border-outline rounded p-1">
@@ -69,7 +72,9 @@
                                 </div>
                             </div>
                         </div>
-                        <UserSearchBar data-testid="feedEditModal-user-search-bar" v-if="selectedFeedType == FeedEnums.Types.User" @user-selected="selectUser" :data-list="searchResults"/>
+                        <UserSearchBar data-testid="feedEditModal-user-search-bar"
+                        v-if="selectedFeedType == FeedEnums.Types.User"
+                        @user-selected="selectUser" :data-list="searchResults"/>
                         <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
                             <CheckBox @value-toggled="toggleJustMentions" :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
                             <!-- <SquareButton @click="testGetNotifs">Load Notifs</SquareButton> -->
@@ -98,15 +103,15 @@
                 <!-- <div v-for="page in modalPages">{{ page.title }}</div> -->
             </div>
             <div class="flex space-x-2 justify-between">
-                <SquareButton data-testid="feedEditModal-back-button" @click="backOnePage" class="bg-btn hover:bg-btnHover">
+                <SquareButton data-testid="feedEditModal-back-button" @click="backOnePage"
+                tabindex="0" class="bg-btn hover:bg-btnHover">
                     {{currentPage == 0 ? 'Cancel':'Back'}}
                 </SquareButton>
                 <div class="flex">
                     <SquareButton data-testid="feedEditModal-next-page-button"
-                    v-if="isTagSpecsEntryComplete ||
-                    isFeedTypeConfirmed ||
-                    isSelectedTypeTrending"
-                    @click="forwardOnePage">Next</SquareButton>
+                    v-if="canGoToNextPage"
+                    @click="forwardOnePage"
+                    tabindex="0">Next</SquareButton>
                     <SquareButton data-testid="feedEditModal-create-button" @click="createFeed()"
                     v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
@@ -408,6 +413,25 @@ export default defineComponent({
             }
             // return this.selectedFeedType.trim() != "" &&
             // this.currentPage == 0;
+        },
+        /**
+         * Validates that the User can navigate to the next page in the
+         * Feed creation process.
+         */
+        canGoToNextPage(){
+            if(this.currentPage == 0){
+                return this.isFeedTypeConfirmed;
+            }
+            else if(this.currentPage != this.totalPages-1){
+                switch (this.selectedFeedType) {
+                    case FeedEnums.Types.User:
+                        return this.feedFilters.user.did.trim() != "";
+                    case FeedEnums.Types.Tag:
+                        return this.validTags.length>0;
+                    default:
+                        return true;
+                }
+            }
         },
         isSelectedTypeNotifications(){
             return this.selectedFeedType == FeedEnums.Types.Notifications &&
