@@ -50,12 +50,12 @@
                             </div>
                             <div v-if="selectedFeedType.trim() != ''" class="flex self-start border border-outline rounded p-1">
                                 <TransitionGroup>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.User">A User feed is</div>
-                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Tag">A Tag feed displays</div>
-                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">Trending will display the current hot topics.</div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.User">A User feed allows you to see all the content shared by a specific User account (Posts, Shares, Replies, etc.)</div>
+                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Tag">A Tag Feed displays returns the latest posts matching specified hashtags.</div>
+                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">A Trending Feed will display Bluesky's currently trending topics in a list.</div>
                                     <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
                                         <div v-if="!AppState.isAuthBrowsing" class="font-medium text-feedHighlight">Login Required</div>
-                                        Notifications will create a Feed Column that displays all of your notifications.
+                                        Notifications will create a Feed Column that displays all of the currently logged in User's notifications.
                                     </div>
                                 </TransitionGroup>
                             </div>
