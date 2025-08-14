@@ -45,6 +45,8 @@ export default {
         loginBtnHover: "oklch(from var(--color-login-btn-hover) l c h / <alpha-value>)",
         feedtypeBtnSelected: "oklch(from var(--color-feedtype-btn-selected) l c h / <alpha-value>)",
         feedtypeBtnFocusHighlight: "oklch(from var(--color-feedtype-btn-focus-highlight) l c h / <alpha-value>)",
+        savemodalBG: "oklch(from var(--color-savemodal-bg) l c h / <alpha-value>)",
+        savemodalFileExtBG: "oklch(from var(--color-savemodal-ext-bg) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',
