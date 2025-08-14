@@ -35,6 +35,9 @@ describe('Creating new Feed', () => {
         const userFeedType = wrapper.get('[data-testid="feedEditModal-user-feed-button"]');
         it('navigates to user feed options page', async () => {
             await userFeedType.trigger('click'); //select "user feed"
+            //Confirm "user feed" selection
+            expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
             expect(wrapper.find('[data-testid="feedEditModal-user-search-bar"]').exists()).toBe(true);
         })
         it('prevents navigation to summary page until user is entered', () => {
@@ -48,6 +51,9 @@ describe('Creating new Feed', () => {
         })
         it('navigates to summary/submit page when type and specifications have been selected', async () => {
             await userFeedType.trigger('click'); //select "user feed"
+            //Confirm "user feed" selection
+            expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
             let userSearchBar = wrapper.findComponent(UserSearchBar);
             expect(userSearchBar.exists()).toBe(true);
 
@@ -83,7 +89,10 @@ describe('Creating new Feed', () => {
         const tagFeedButton = wrapper.find('[data-testid="feedEditModal-tag-feed-button"]');
         expect(tagFeedButton.exists()).toBe(true);
         it('navigates to tag feed options page', async () => {
-            await tagFeedButton.trigger('click'); //select "user feed"
+            await tagFeedButton.trigger('click'); //select "tag feed"
+            //Confirm "tag feed" selection
+            expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
             expect(wrapper.find('[data-testid="feedEditModal-tag-input"]').exists()).toBe(true);
         })
         it('prevents navigation to summary page until tag is entered', () => {
@@ -96,7 +105,10 @@ describe('Creating new Feed', () => {
             expect(wrapper.find('[data-testid="feedEditModal-tag-feed-button"]').exists()).toBe(true);
         })
         it('navigates to summary/submit page when type and specifications have been selected', async () => {
-            await tagFeedButton.trigger('click'); //select "user feed"
+            await tagFeedButton.trigger('click'); //select "tag feed"
+            //Confirm "tag feed" selection
+            expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
             //Check that we're on the "tag entry" page
             let inlainputContainer = wrapper.find('[data-testid="feedEditModal-tag-input"]');
             expect(inlainputContainer.exists()).toBe(true);
@@ -129,7 +141,10 @@ describe('Creating new Feed', () => {
         const trendingFeedButton = wrapper.find('[data-testid="feedEditModal-trending-feed-button"]');
         expect(trendingFeedButton.exists()).toBe(true);
         it('navigates to trending feed options page', async () => {
-            await trendingFeedButton.trigger('click'); //select "user feed"
+            await trendingFeedButton.trigger('click'); //select "trending feed"
+            //Confirm "trending feed" selection
+            expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
             expect(wrapper.find('[data-testid="feedEditModal-options-page"').exists()).toBe(true);
         })
         it('navigates back to Feed type selection page when back button clicked', async () => {
@@ -138,7 +153,10 @@ describe('Creating new Feed', () => {
             expect(wrapper.find('[data-testid="feedEditModal-tag-feed-button"]').exists()).toBe(true);
         })
         it('navigates to summary/submit page when type and specifications have been selected', async () => {
-            await trendingFeedButton.trigger('click'); //select "user feed"
+            await trendingFeedButton.trigger('click'); //select "trending feed"
+            //Confirm "trending feed" selection
+            expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
             //No option currently, so we can got straight to summary
             expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
             await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');

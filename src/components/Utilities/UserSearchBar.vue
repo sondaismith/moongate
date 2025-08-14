@@ -1,14 +1,15 @@
 <template>
     <div class="border-slate-500 flex flex-col mb-2 h-full overflow-hidden">
         {{ void "Searchbar" }}
-        <div class="flex">
+        <div class="flex rounded-md shadow-[0_2px_2px_0_rgba(0,0,0,0.2)]">
             <InLaInput id="user-searchbar" @inlainput-submit="submitSearch" :emit-on-enter="true"
             :is-disabled="isWaitingForResult"
             class="peer grow rounded-r-none border-r-0" v-model="searchTerm"
             text-label="User Search"/>
-            <div @click="submitSearch" class="peer-hover:border-blue-400 rounded-r p-2 bg-blue-500
-            border border-l-0 border-blue-500 transition-colors cursor-pointer
-            hover:bg-blue-400"
+            <div @click="submitSearch" tabindex="0"
+            class="peer-hover:border-blue-400 rounded-r p-2 bg-searchbarBtn
+            border border-l-0 border-outline transition-colors cursor-pointer
+            hover:bg-searchbarBtnHover"
             :class="[isWaitingForResult ? 'bg-gray-600 hover:bg-gray-500 cursor-wait' : '']">Search</div>
         </div>
         {{ void "Search for: elements" }}
@@ -26,20 +27,25 @@
                 class="loader w-[25px]"></div>
         </div>
         <div v-if="searchTerm.trim() && debouncedSearchTerm.trim()" class="border-t-0
-        border-inherit border-slate-500 rounded-b flex bg-slate-800 overflow-auto"
+        border-inherit border-outline rounded-b flex bg-feedColumnBG overflow-auto"
         :class="[filteredUsers.length<1 ? 'border-none' : 'border']">
             <div data-testid="userSearchBar-returned-users-container" class="relative flex flex-col w-full">
-                <div @click="selectUser(result)" class="flex items-center hover:bg-gray-700 p-2
-                    cursor-pointer gap-1"
-                    v-for="result, index in filteredUsers" :key="index">
-                    <div class="flex rounded-full min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover"
-                    :style="{'background-image': 'url('+result.avatar+')'}">
-                        <i-mingcute:user-add-fill v-if="!result.avatar"/>
+                <button @click="selectUser(result)" class="group flex items-center hover:bg-searchbarResultHover p-2s
+                    cursor-pointer rounded-none"
+                    v-for="result, index in filteredUsers" :key="index" tabindex="0">
+                    <div class="flex gap-1 w-full border-2 p-2 border-transparent
+                    group-focus:border-feedtypeBtnFocusHighlight">
+                        <div class="flex rounded-full min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover"
+                        :style="{'background-image': 'url('+result.avatar+')'}">
+                            <i-mingcute:user-add-fill v-if="!result.avatar"/>
+                        </div>
+                        <div class="flex w-full overflow-hidden flex-col items-start sm:flex-row sm:gap-1 sm:items-center">
+                            <div class="whitespace-nowrap overflow-hidden text-ellipsis">{{ result.displayName }}</div>
+                            <VerifiedBadge v-if="isUserVerified(result)" class="size-4"/>
+                            <div class="text-xs text-searchbarHandle">@{{ result.handle }}</div>
+                        </div>
                     </div>
-                    <div class="ml-1">{{ result.displayName }}</div>
-                    <VerifiedBadge v-if="isUserVerified(result)" class="size-4"/>
-                    <div class="text-xs text-sky-500">@{{ result.handle }}</div>
-                </div>
+                </button>
                 <!-- <div class="px-2 py-2 select-none" v-if="filteredUsers.length == 0 && debouncedSearchTerm.trim().length>0">No Results</div> -->
             </div>
         </div>

@@ -2,8 +2,8 @@
     <div class="absolute flex z-50 w-full h-full">
         <div @click="closeModal" class="absolute w-full h-full bg-slate-800/60 backdrop-blur-sm"></div>
         <div class="relative flex flex-col max-w-[48rem] w-4/5 m-auto z-50
-        rounded bg-slate-700 border border-slate-800 overflow-hidden">
-            <div class="px-2 py-1 bg-slate-800 border-b border-slate-500">Save as</div>
+        rounded bg-savemodalBG border border-slate-800 overflow-hidden">
+            <div class="px-2 py-1 bg-banner border-b border-slate-500">Save as</div>
             <div class="flex flex-col gap-2 p-3 overflow-hidden">
                 <div v-if="!AppState.saveMedia.uri" class="self-start rounded h-32 bg-slate-500 overflow-hidden"
                 :style="`aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}`">
@@ -12,7 +12,7 @@
                 <div v-else class="self-start rounded size-32 bg-slate-500 overflow-hidden" @contextmenu.prevent>
                     <div class="h-full bg-contain bg-no-repeat bg-center" :style="`background-image: url(${AppState.saveMedia.uri})`"></div>
                 </div>
-                <div class="flex">
+                <div class="flex text-primary">
                     <InLaInput v-if="isTauri()" class="h-10 text-[12px] rounded-r-none grow"
                     text-label="Filename" :model-value="AppState.fileSaveDetails.full"
                     @update:model-value="updateFileName" title="Edit filename"/>
@@ -20,7 +20,7 @@
                     :model-value="AppState.fileSaveDetails.full" @update:model-value="updateFileName"
                     :is-text-copy-control="true"/>
                     <div class="flex items-end rounded-r px-2 py-1
-                    text-sm text-slate-400 bg-slate-800 border border-l-0 border-slate-500
+                    text-sm text-searchbarBorder bg-savemodalFileExtBG border border-l-0 border-slate-500
                     select-none">
                     {{ AppState.fileSaveDetails.extension }}
                     </div>

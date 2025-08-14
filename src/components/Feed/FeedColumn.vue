@@ -106,7 +106,9 @@
                 </div>
             </div>
         </div>
-        <div class="flex flex-col h-full py-2 pl-1 pr-1 gap-2 bg-feedColumnBG preload-gutter overflow-y-auto" @scroll.passive="toggleScrollToTop">
+        <div class="flex flex-col h-full py-2 pl-1 pr-1 gap-2 bg-feedColumnBG preload-gutter overflow-y-auto"
+        tabindex="-1"
+        @scroll.passive="toggleScrollToTop">
             {{ void "Placeholder Post" }}
             <div v-if="feedData?.isAwaitingFeedData" class="flex rounded bg-slate-400 pl-1 pr-3 py-2 w-full">
                 <div class="animate-pulse drop-shadow-md">
