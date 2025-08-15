@@ -15,10 +15,12 @@
         <div class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
             <div class="h-10 w-full shrink-0 bg-blacks">
                 {{ void "Close Button" }}
-                <div data-test="postFocusModal-close-button" @click="hideModal" class="flex shrink-0 text-primary bg-btn rounded-br items-center aspect-square w-10
-                    justify-center text-2xl cursor-pointer sm:ml-auto sm:rounded-bl sm:rounded-br-none">
+                <SquareButton data-test="postFocusModal-close-button" @click="hideModal"
+                class="text-primary bg-btn !rounded-br aspect-square w-10 text-2xl
+                sm:ml-auto sm:!rounded-tl-none sm:!rounded-r-none"
+                button-padding="0">
                     <i-mingcute:close-fill/>
-                </div>
+                </SquareButton>
             </div>
             {{ void "Media Container" }}
             <div class="flex items-center h-full w-full justify-center overflow-hidden">
@@ -187,6 +189,7 @@ import { HandleAPIError } from '../../helpers/errors';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import SlideshowArrow from '../Utilities/SlideshowArrow.vue';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import SquareButton from '../Utilities/SquareButton.vue';
 
 export default defineComponent({
     components:{
@@ -199,6 +202,7 @@ export default defineComponent({
         EmbedExternal,
         SlideshowArrow,
         VerifiedBadge,
+        SquareButton,
     },
     props:{
         // /**
