@@ -294,11 +294,18 @@ export default defineComponent({
             this.threadNavHistory = [emptyPostThread];
         },
         /**
-         * Method used to navigate through the modal navigation history
+         * Method used to navigate through images held in the modal, using
+         * the Left Arrow or Right Arrow keys, and the modal navigation history
          * if the shortcut Alt + Left Arrow or Alt + Right Arrow is pressed.
          * @param e Key down event.
          */
         onKeyboardShorcutEntered(e:KeyboardEvent){
+            if(e.key == 'ArrowLeft' && !e.repeat){
+                this.decreaseCurrentMediaIndex();
+            }
+            else if(e.key == 'ArrowRight' && !e.repeat){
+                this.increaseCurrentMediaIndex();
+            }
             if(e.key == 'ArrowLeft' && e.altKey && !e.repeat){
                 this.decreaseThreadNavIndex();
             }
