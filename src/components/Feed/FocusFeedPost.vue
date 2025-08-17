@@ -109,8 +109,9 @@
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
                     {{ void "Post Text Content" }}
-                    <RichPostTextBsky data-test="focusFeedPost-text" v-if="!isViewRecord(postToShow)" :post-text="postToShow.record.text"/>
-                    <RichPostTextBsky data-test="focusFeedPost-text" v-else :post-text="postToShow.value.text"/>
+                    <RichPostTextBsky data-test="focusFeedPost-text" v-if="!isViewRecord(postToShow)" :post-text="(postToShow.record as Record).text" :post-facets="(postToShow.record as Record).facets"/>
+                    <!-- Is Quoted Post -->
+                    <RichPostTextBsky data-test="focusFeedPost-text" v-else :post-text="((postToShow as ViewRecord).value as Record).text" :post-facets="((postToShow as ViewRecord).value as Record).facets"/>
                     {{ void "Post Media" }}
                     <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
@@ -136,11 +137,11 @@
 </template>
 
 <script lang="ts">
-import { isGeneratorView, isPostView, isReasonPin, isReasonRepost, isThreadViewPost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { isGeneratorView, isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
-import { isViewBlocked, isViewNotFound, isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { isViewBlocked, isViewNotFound, isViewRecord, ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
@@ -152,6 +153,7 @@ import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
+import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 
 export default defineComponent({
     components:{

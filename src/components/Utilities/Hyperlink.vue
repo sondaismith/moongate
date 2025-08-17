@@ -1,9 +1,13 @@
 <template>
-    <span title="Open link"
-    class="underline font-light hover:text-blue-400 cursor-pointer"
-    :href="URL">
-        <slot></slot>
-    </span>
+    <a :title="`Open link in new tab`"
+    class="underline font-light cursor-pointer transition-colors border-2 border-transparent
+    focus-visible:!border-blue-500 focus-visible:!outline-none"
+    :href="URL" target="_blank">
+        <!-- <button @click="openLink" type="button" class="shadow-none hover:border-transparent border-2 border-transparent
+    focus:border-blue-500"> -->
+            <slot></slot>
+        <!-- </button> -->
+    </a>
 </template>
 
 <script lang="ts">
@@ -16,6 +20,14 @@ export default defineComponent({
     data(){
         return{
             URL:''
+        }
+    },
+    methods:{
+        /**
+         * Used to allow button to open link in new tab.
+         */
+        openLink(){
+            window.open(this.URL, '_blank')
         }
     },
     mounted(){
