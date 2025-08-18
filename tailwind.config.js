@@ -47,6 +47,8 @@ export default {
         feedtypeBtnFocusHighlight: "oklch(from var(--color-feedtype-btn-focus-highlight) l c h / <alpha-value>)",
         savemodalBG: "oklch(from var(--color-savemodal-bg) l c h / <alpha-value>)",
         savemodalFileExtBG: "oklch(from var(--color-savemodal-ext-bg) l c h / <alpha-value>)",
+        embedHoverBG: "oklch(from var(--color-embed-hover-bg) l c h / <alpha-value>)",
+        embedHoverBorder: "oklch(from var(--color-embed-hover-border) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',
