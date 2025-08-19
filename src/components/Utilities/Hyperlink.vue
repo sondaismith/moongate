@@ -3,10 +3,7 @@
     class="underline font-light cursor-pointer transition-colors border-2 border-transparent
     focus-visible:!border-blue-500 focus-visible:!outline-none"
     :href="URL" target="_blank">
-        <!-- <button @click="openLink" type="button" class="shadow-none hover:border-transparent border-2 border-transparent
-    focus:border-blue-500"> -->
-            <slot></slot>
-        <!-- </button> -->
+        <slot></slot>
     </a>
 </template>
 
