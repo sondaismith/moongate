@@ -49,6 +49,9 @@ export default {
         savemodalFileExtBG: "oklch(from var(--color-savemodal-ext-bg) l c h / <alpha-value>)",
         embedHoverBG: "oklch(from var(--color-embed-hover-bg) l c h / <alpha-value>)",
         embedHoverBorder: "oklch(from var(--color-embed-hover-border) l c h / <alpha-value>)",
+        scrollbarTrack: "oklch(from var(--color-scrollbar-track) l c h / <alpha-value>)",
+        scrollbarThumb: "oklch(from var(--color-scrollbar-thumb) l c h / <alpha-value>)",
+        scrollbarThumbHover: "oklch(from var(--color-scrollbar-thumb-hover) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',
