@@ -1,16 +1,14 @@
 <template>
-    <div class="flex flex-col rounded-lg border border-outline bg-postBG
-    overflow-hidden text-xs">
-        <div class="relative border-outline aspect-[1.91/1]"
-        :class="{'border-b-[1px]':!isTenorGIF}">
-            <img v-if="!isTenorGIF" class="absolute w-full h-full object-center object-cover"
+    <a v-if="!isTenorGIF" tabindex="0"
+    :href="embed.external.uri" target="_blank"
+    class="flex flex-col rounded-lg border text-primary transition-colors
+    border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
+    overflow-hidden text-xs cursor-pointer">
+        <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
+            <img class="absolute w-full h-full object-center object-cover"
             :src="embed && embed.external ? embed.external.thumb : ''"/>
-            <ImageContainer v-else
-            @image-clicked="img => $emit('imageClicked',img)"
-            @media-click="i => $emit('media-click',i)"
-            :show-fullsize="showFullsize" :images-to-display="embed.external"/>
         </div>
-        <div v-if="!isTenorGIF" class="p-2">
+        <div class="p-2 font-normal">
             <div class="text-sm font-semibold">{{ embed.external.title}}</div>
             <div class="line-clamp-2" :title="embed.external.description">
                 {{embed.external.description}}
@@ -18,8 +16,20 @@
             <div class="h-[1px] bg-slate-600 my-1"></div>
             <div class="flex text-nowrap gap-1 items-center">
                 <i-solar:earth-outline class="size-4 shrink-0"/>
-                <div class="overflow-hidden text-ellipsis">{{ embed.external.uri }}</div>
+                <div class="overflow-hidden text-ellipsis" :title="embed.external.uri">{{ embed.external.uri }}</div>
             </div>
+        </div>
+    </a>
+    <div v-else @keyup.enter="showEmbedImageInModal" tabindex="0"
+    :href="embed.external.uri" target="_blank"
+    class="flex flex-col rounded-lg border text-primary transition-colors
+    border-outline hover:bg-embedHoverBG bg-postBG
+    overflow-hidden text-xs cursor-pointer">
+        <div class="relative border-outline aspect-[1.91/1]">
+            <ImageContainer
+            @image-clicked="img => $emit('imageClicked',img)"
+            @media-click="i => $emit('media-click',i)"
+            :show-fullsize="showFullsize" :images-to-display="embed.external"/>
         </div>
     </div>
 </template>
@@ -53,7 +63,7 @@ export default defineComponent({
     },
     data(){
         return{
-
+            alert
         }
     },
     computed:{
@@ -77,6 +87,14 @@ export default defineComponent({
         */
         'media-click'(index:number){
             if(index>-1) return true;
+        }
+    },
+    methods:{
+        openEmbedLink(){
+            window.open(this.embed.external.uri, '_blank');
+        },
+        showEmbedImageInModal(){
+            this.$emit('media-click',0);
         }
     }
 })

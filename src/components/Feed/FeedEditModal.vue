@@ -1,5 +1,6 @@
 <template>
-    <div data-testid="feed-edit-modal" class="absolute z-10 flex w-full h-full text-primary bg-slate-800/40 backdrop-blur-sm">
+    <div data-testid="feed-edit-modal" tabindex="-1" @keydown="trapFocus"
+    class="absolute z-10 flex w-full h-full text-primary bg-slate-800/40 backdrop-blur-sm focus-visible:outline-none">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{void "Modal Control"}}
         <div class="z-20 flex flex-col w-4/5 md:w-2/3 h-2/3 mx-auto my-auto rounded bg-feedColumnBG
@@ -201,9 +202,11 @@ export default defineComponent({
                 this.selectedFeedType="";
             }
             else{
-                this.currentPage++}
-                this.feedTypeSelected = true;
-                if(this.validTags.length>0 || this.feedFilters.user) this.feedSpecificationsSet = true;
+                this.currentPage++
+            }
+            this.feedTypeSelected = true;
+            if(this.validTags.length>0 || this.feedFilters.user) this.feedSpecificationsSet = true;
+            (this.$el as HTMLElement).focus();
         },
         /**
          * Moves back one page in the modal. Closes the modal
@@ -369,6 +372,30 @@ export default defineComponent({
             }
             this.closeModal();
         },
+        /**
+         * Method used to trap tab focus to the modal, preventing
+         * unwanted selection of elements behind it.
+         * Thanks to Ben Nadel at
+         * https://www.bennadel.com/blog/4096-trapping-focus-within-an-element-using-tab-key-navigation-in-javascript.htm.
+         * @param e The Keydown KeyboardEvent that the method is called with.
+         */
+        trapFocus(e: KeyboardEvent){
+            let tabbable = this.$el.querySelectorAll("button, input, select, textarea, [href], [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
+            let target = e.target;
+            if(e.key.toLowerCase() !== 'tab') return; //cancel further actions
+            if(e.shiftKey){
+                if(target == this.$el || target == tabbable[0]){
+                    e.preventDefault();
+                    tabbable[tabbable.length-1].focus();
+                }
+            }
+            else{
+                if(target == tabbable[tabbable.length-1]){
+                    e.preventDefault();
+                    tabbable[0].focus();
+                }
+            }
+        },
         closeModal(){
             // AppState.ToggleCreateFeedModal();
             AppState.HideEditFeedModal();
@@ -464,8 +491,8 @@ export default defineComponent({
                     this.feedFilters.tag = existingFeed.description.feedTags;
                     break;
             }
-
         }
+        (this.$el as HTMLElement).focus();
     }
     // watch:{
     //     'feedFilters.tag': debounce(function (newVal){

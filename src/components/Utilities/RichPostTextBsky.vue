@@ -1,6 +1,5 @@
 <template>
     <div class="break-words">
-        <!-- <component v-if="transformed.template && transformed.template.length>0" :is="transformed"></component> -->
         <component v-if="postText?.trim() != ''" :is="transformed"></component>
     </div>
 </template>
@@ -59,7 +58,6 @@ export default defineComponent({
 
             for (const segment of text.segments()) {
                 if (segment.isLink()){
-                    // this.markdown += `<a href="${segment.link?.uri}">${segment.text}</a>`
                     let fullURL = this.getFullURLFromFacet(segment.link ? segment.link.uri : '')
                     this.markdown += `<component :is="Hyperlink" :urlLink="'${fullURL}'">${segment.text}</component>`
                 }
@@ -89,9 +87,11 @@ export default defineComponent({
             if(this.postFacets && this.postFacets.length>0){ //Search for full URL
                 let link = (this.postFacets[0].features.find(x => isLink(x) && x.uri.includes(cleanedPartial)) as Link);
                 if(link && link.uri) return link.uri
+                else return cleanedPartial;//No links in the `postFacets` object match, fall back to the shortened link
+
             }
             else{
-                return partialUrl;//We hope this shortened link works...
+                return cleanedPartial;//We hope this shortened link works...
             }
         }
     },
