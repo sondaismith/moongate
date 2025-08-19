@@ -6,18 +6,9 @@ import Sidebar from "./Sidebar.vue";
   <Sidebar/>
   <!-- <DemoSidebar/> -->
 </template>
-0
-<style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
 
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
-}
-
-</style>
 <style>
+
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -124,22 +115,21 @@ button {
   height: 0.25rem;
   width: 0.25rem;
 }
-
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #8888883a;
+  background: var(--color-scrollbar-track);
   border-radius: 5px;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-    background: #ffffff5b;
+    background: var(--color-scrollbar-thumb);
     border-radius: 5px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #969696;
+  background: var(--color-scrollbar-thumb-hover);
 }
 
 
@@ -167,8 +157,6 @@ button {
 
 .feed-highlight{
   border-color: var(--color-feed-highlight) !important;
-  /* border-color: #eab308 !important; */
-  /* border-color: #0ea5e9 !important; */
 }
 
 .feed-dropzone-highlight{
