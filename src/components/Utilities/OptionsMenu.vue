@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute flex w-full h-full" @contextmenu.prevent @keydown="(e) => TrapFocus($el,e)">
+    <div class="absolute flex w-full h-full" @contextmenu.prevent @keyup="handleKeyup" @keydown="(e) => TrapFocus($el,e)">
         <div id="options-btn-menu" :tabindex="-1"
         class="absolute flex flex-col rounded z-[100] p-1 bg-slate-800 border
         border-slate-600 *:divide-slate-500 text-xs space-y-1 drop-shadow-md-harder top-[-1000px] focus-visible:outline-none">
@@ -42,6 +42,14 @@ export default defineComponent({
         performAction(action:Function){
             action();
             OptionsMenuState.hideOptionMenu();
+        },
+        /**
+         * Method used to close the menu when the Escape Key is
+         * pressed.
+         * @param e The `KeyboardEvent` that called the handler.
+         */
+        handleKeyup(e:KeyboardEvent){
+            if(e.key.toLowerCase() == 'escape') this.hideMenu(e);
         }
     },
     mounted(){
