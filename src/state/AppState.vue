@@ -17,6 +17,44 @@ export const toast = {
     removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
 };
 
+/**
+ * Copies the passed in text value to the User's clipboard.
+ * @param textToCopy The text to copy.
+ * @param copyAction Affects the message displayed when copying is successful.
+ * Default is 'text' (e.g. Text Copied).
+ */
+export function CopyTextToClipboard(textToCopy:string, copyAction:'text'|'link' = 'text'){
+    if(navigator.clipboard){//Modern method - requires app to serve page(s) over HTTPS
+        try{
+            navigator.clipboard.writeText(textToCopy ? textToCopy : '');
+            toast.add({summary:`${copyAction[0].toUpperCase()+copyAction.substring(1)} Copied`,
+                severity:'success', group:'bc', life:1000});
+        }
+        catch(err){
+            console.error('Unable to copy to clipboard', err);
+            toast.add({summary:`Error copying ${copyAction}`,severity:'error', group:'bc', life:1000});
+        }
+    }
+    else{
+        //Unsecured text copy
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy ? textToCopy : '';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try{
+            document.execCommand('copy');
+            toast.add({summary:`${copyAction[0].toUpperCase()+copyAction.substring(1)} Copied`,
+                severity:'success', group:'bc', life:1000});
+        }
+        catch(err){
+            console.error('Unable to copy to clipboard', err);
+            toast.add({summary:`Error copying ${copyAction}`,severity:'error', group:'bc', life:1000});
+        }
+        document.body.removeChild(textArea);
+    }
+}
+
 export default{
     name:"AppState"
 }
