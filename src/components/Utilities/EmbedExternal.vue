@@ -1,56 +1,60 @@
 <template>
-    {{ void "External link in Web App and Desktop App" }}
-    <a v-if="!isTenorGIF && !isTauri()" tabindex="0"
-    :href="embed.external.uri" target="_blank"
-    class="flex flex-col rounded-lg border text-primary transition-colors
-    border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
-    overflow-hidden text-xs cursor-pointer">
-        <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
-            <img class="absolute w-full h-full object-center object-cover"
-            :src="embed && embed.external ? embed.external.thumb : ''"/>
-        </div>
-        <div class="p-2 font-normal">
-            <div class="text-sm font-semibold">{{ embed.external.title}}</div>
-            <div class="line-clamp-2" :title="embed.external.description">
-                {{embed.external.description}}
+    <div>
+        {{ void "External link in Web App and Desktop App" }}
+        <a v-if="!isTenorGIF && !isTauri()" tabindex="0"
+        :href="embed.external.uri" target="_blank"
+        class="flex flex-col rounded-lg border text-primary transition-colors
+        border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
+        overflow-hidden text-xs cursor-pointer">
+            <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
+                <img class="absolute w-full h-full object-center object-cover"
+                :src="embed && embed.external ? embed.external.thumb : ''"/>
             </div>
-            <div class="h-[1px] bg-slate-600 my-1"></div>
-            <div class="flex text-nowrap gap-1 items-center">
-                <i-solar:earth-outline class="size-4 shrink-0"/>
-                <div class="overflow-hidden text-ellipsis" :title="embed.external.uri">{{ embed.external.uri }}</div>
+            <div class="p-2 font-normal">
+                <div class="text-sm font-semibold">{{ embed.external.title}}</div>
+                <div class="line-clamp-2" :title="embed.external.description">
+                    {{embed.external.description}}
+                </div>
+                <div class="h-[1px] bg-slate-600 my-1"></div>
+                <div class="flex text-nowrap gap-1 items-center">
+                    <i-solar:earth-outline class="size-4 shrink-0"/>
+                    <div class="overflow-hidden text-ellipsis" :title="embed.external.uri">{{ embed.external.uri }}</div>
+                </div>
+            </div>
+        </a>
+        <div v-else-if="!isTenorGIF && isTauri()" @contextmenu.prevent
+        @click="(e) => showOptionsMenu(e, embed.external.uri)"
+        @keyup.enter="showOptionsMenu(mouseEventFromKeyboardEvent, 'keypress')" tabindex="0"
+        class="flex flex-col rounded-lg border text-primary transition-colors
+        border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
+        overflow-hidden text-xs cursor-pointer">
+            <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
+                <img class="absolute w-full h-full object-center object-cover"
+                :src="embed && embed.external ? embed.external.thumb : ''"/>
+            </div>
+            <div class="p-2 font-normal">
+                <div class="text-sm font-semibold">{{ embed.external.title}}</div>
+                <div class="line-clamp-2" :title="embed.external.description">
+                    {{embed.external.description}}
+                </div>
+                <div class="h-[1px] bg-slate-600 my-1"></div>
+                <div class="flex text-nowrap gap-1 items-center">
+                    <i-solar:earth-outline class="size-4 shrink-0"/>
+                    <div class="overflow-hidden text-ellipsis" :title="embed.external.uri">{{ embed.external.uri }}</div>
+                </div>
             </div>
         </div>
-    </a>
-    <div v-else-if="!isTenorGIF && isTauri()" @click="(e) => showOptionsMenu(e, embed.external.uri)" @keyup.enter="showOptionsMenu({} as MouseEvent, 'keypress')" tabindex="0"
-    class="flex flex-col rounded-lg border text-primary transition-colors
-    border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
-    overflow-hidden text-xs cursor-pointer">
-        <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
-            <img class="absolute w-full h-full object-center object-cover"
-            :src="embed && embed.external ? embed.external.thumb : ''"/>
-        </div>
-        <div class="p-2 font-normal">
-            <div class="text-sm font-semibold">{{ embed.external.title}}</div>
-            <div class="line-clamp-2" :title="embed.external.description">
-                {{embed.external.description}}
+        <div v-else @keyup.enter="showEmbedImageInModal" tabindex="0"
+        :href="embed.external.uri" target="_blank"
+        class="flex flex-col rounded-lg border text-primary transition-colors
+        border-outline hover:bg-embedHoverBG bg-postBG
+        overflow-hidden text-xs cursor-pointer">
+            <div class="relative border-outline aspect-[1.91/1]">
+                <ImageContainer
+                @image-clicked="img => $emit('imageClicked',img)"
+                @media-click="i => $emit('media-click',i)"
+                :show-fullsize="showFullsize" :images-to-display="embed.external"/>
             </div>
-            <div class="h-[1px] bg-slate-600 my-1"></div>
-            <div class="flex text-nowrap gap-1 items-center">
-                <i-solar:earth-outline class="size-4 shrink-0"/>
-                <div class="overflow-hidden text-ellipsis" :title="embed.external.uri">{{ embed.external.uri }}</div>
-            </div>
-        </div>
-    </div>
-    <div v-else @keyup.enter="showEmbedImageInModal" tabindex="0"
-    :href="embed.external.uri" target="_blank"
-    class="flex flex-col rounded-lg border text-primary transition-colors
-    border-outline hover:bg-embedHoverBG bg-postBG
-    overflow-hidden text-xs cursor-pointer">
-        <div class="relative border-outline aspect-[1.91/1]">
-            <ImageContainer
-            @image-clicked="img => $emit('imageClicked',img)"
-            @media-click="i => $emit('media-click',i)"
-            :show-fullsize="showFullsize" :images-to-display="embed.external"/>
         </div>
     </div>
 </template>
@@ -98,7 +102,16 @@ export default defineComponent({
     computed:{
         isTenorGIF(){
             return this.embed.external.uri.includes("tenor.com");
-        }
+        },
+        /**
+         * Creates a `MouseEvent` from the `KeyboardEvent` used to "click" the `EmbedExternal` element.
+         * Used to position the displayed `OptionsMenu`.
+         * @returns The created `MouseEvent` object.
+         */
+        mouseEventFromKeyboardEvent():MouseEvent{
+            let elRect = (this.$el as HTMLElement).getBoundingClientRect();
+            return ({clientX:elRect.x, clientY:elRect.y, preventDefault:()=>{}} as MouseEvent);
+        },
     },
     emits:{
         /**
