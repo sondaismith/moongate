@@ -55,6 +55,32 @@ export function CopyTextToClipboard(textToCopy:string, copyAction:'text'|'link' 
     }
 }
 
+/**
+ * Method used to trap tab focus to an element, preventing
+ * unwanted selection of elements behind it.
+ * Thanks to Ben Nadel at
+ * https://www.bennadel.com/blog/4096-trapping-focus-within-an-element-using-tab-key-navigation-in-javascript.htm.
+ * @param el The element to trap focus in.
+ * @param e The Keydown KeyboardEvent that the method is called with.
+ */
+export function TrapFocus(el:HTMLElement, e: KeyboardEvent){
+    let tabbable = el.querySelectorAll("button, input, select, textarea, [href], [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
+    let target = e.target;
+    if(e.key.toLowerCase() !== 'tab') return; //cancel further actions
+    if(e.shiftKey){
+        if(target == el || target == tabbable[0]){
+            e.preventDefault();
+            tabbable[tabbable.length-1].focus();
+        }
+    }
+    else{
+        if(target == tabbable[tabbable.length-1]){
+            e.preventDefault();
+            tabbable[0].focus();
+        }
+    }
+}
+
 export default{
     name:"AppState"
 }

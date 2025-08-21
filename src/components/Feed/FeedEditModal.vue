@@ -1,5 +1,5 @@
 <template>
-    <div data-testid="feed-edit-modal" tabindex="-1" @keydown="trapFocus"
+    <div data-testid="feed-edit-modal" tabindex="-1" @keydown="(e)=>TrapFocus($el,e)"
     class="absolute z-10 flex w-full h-full text-primary bg-slate-800/40 backdrop-blur-sm focus-visible:outline-none">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{void "Modal Control"}}
@@ -130,7 +130,7 @@ import PillButton from '../Utilities/PillButton.vue';
 import InLaInput from '../Utilities/InLaInput.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import UserSearchBar from '../Utilities/UserSearchBar.vue';
-import { AppState, toast } from '../../state/AppState.vue';
+import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { AddFeedToList, FeedState, GenerateUniqueId, GetFeed, GetFeedDataForFeedType, UpdateFeedDetails } from '../../state/FeedList.vue';
 import { HandleAPIError } from '../../helpers/errors.ts';
 import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces.ts';
@@ -188,6 +188,7 @@ export default defineComponent({
             debouncedSearchTerm:'',
             attemptingToCreateFeed: false,
             FeedEnums,
+            TrapFocus,
         }
     },
     methods:{
@@ -371,30 +372,6 @@ export default defineComponent({
                 UpdateFeedDetails(FeedState.selectedFeed,desc,feedResult.data,feedResult.cursor);
             }
             this.closeModal();
-        },
-        /**
-         * Method used to trap tab focus to the modal, preventing
-         * unwanted selection of elements behind it.
-         * Thanks to Ben Nadel at
-         * https://www.bennadel.com/blog/4096-trapping-focus-within-an-element-using-tab-key-navigation-in-javascript.htm.
-         * @param e The Keydown KeyboardEvent that the method is called with.
-         */
-        trapFocus(e: KeyboardEvent){
-            let tabbable = this.$el.querySelectorAll("button, input, select, textarea, [href], [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
-            let target = e.target;
-            if(e.key.toLowerCase() !== 'tab') return; //cancel further actions
-            if(e.shiftKey){
-                if(target == this.$el || target == tabbable[0]){
-                    e.preventDefault();
-                    tabbable[tabbable.length-1].focus();
-                }
-            }
-            else{
-                if(target == tabbable[tabbable.length-1]){
-                    e.preventDefault();
-                    tabbable[0].focus();
-                }
-            }
         },
         closeModal(){
             // AppState.ToggleCreateFeedModal();
