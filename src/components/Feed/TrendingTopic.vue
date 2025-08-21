@@ -46,6 +46,7 @@ import { GetBrowsingAgent } from '../../lib/api.vue';
 import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces';
 import { AddFeedToList, GenerateUniqueId } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
+import { toast } from '../../state/AppState.vue';
 
 export default defineComponent({
     props:{
@@ -106,6 +107,7 @@ export default defineComponent({
          * NOTE: The `feedTags` field is used to store the Feed name.
          */
         async createFeedForTopic(){
+            toast.add({summary:"Creating Feed...", detail:`Creating feed containing posts related to '${this.trend?.displayName}''`,severity:'info',group:'tr',life:3000});
             if(this.trend){
                 var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
                 var usedFeedId:string =  GenerateUniqueId(10);
