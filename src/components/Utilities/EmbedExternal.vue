@@ -24,7 +24,7 @@
         </a>
         <div v-else-if="!isTenorGIF && isTauri()" @contextmenu.prevent
         @click="(e) => showOptionsMenu(e, embed.external.uri)"
-        @keyup.enter="showOptionsMenu(mouseEventFromKeyboardEvent, 'keypress')" tabindex="0"
+        @keyup.enter="showOptionsMenu(mouseEventFromKeyboardEvent, embed.external.uri)" tabindex="0"
         class="flex flex-col rounded-lg border text-primary transition-colors
         border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
         overflow-hidden text-xs cursor-pointer">
