@@ -60,6 +60,10 @@
 </template>
 
 <script lang="ts">
+import MingcuteCopyLine from '~icons/mingcute/copy-line';
+import MingcuteWorld2Line from '~icons/mingcute/world-2-line';
+import MingcuteIncognitoModeLine from '~icons/mingcute/incognito-mode-line';
+
 import { View, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { defineComponent, PropType } from 'vue'
 import ImageContainer from './ImageContainer.vue';
@@ -67,11 +71,16 @@ import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images'
 import { isTauri } from '@tauri-apps/api/core';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from './OptionsMenu.vue';
-
-import MingcuteCopyLine from '~icons/mingcute/copy-line';
-import MingcuteWorld2Line from '~icons/mingcute/world-2-line';
-import MingcuteIncognitoModeLine from '~icons/mingcute/incognito-mode-line';
 import { CopyTextToClipboard } from '../../state/AppState.vue';
+import { openUrl } from '@tauri-apps/plugin-opener';
+
+/**
+ * Method used to open link in the system's default browser.
+ * @param url The URL to open in the default browser.
+ */
+async function OpenLink(url:string){
+    await openUrl(url);
+}
 
 export default defineComponent({
     components:{
@@ -145,8 +154,8 @@ export default defineComponent({
         showOptionsMenu(e:MouseEvent, linkURL:string){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){alert(`Opened '${linkURL}!''`)}},
-                {Icon:MingcuteIncognitoModeLine,Label:'Open in Default Browser (Private/Incognito)',Action:function(){alert(`Opened '${linkURL}'' secretly!`)}},
+                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)}},
+                // {Icon:MingcuteIncognitoModeLine,Label:'Open in Default Browser (Private/Incognito)',Action:function(){alert(`Opened '${linkURL}'' secretly!`)}},
                 {Icon:MingcuteCopyLine,Label:'Copy link to clipboard',Action:function(){CopyTextToClipboard(linkURL,'link')}},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
