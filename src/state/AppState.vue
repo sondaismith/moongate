@@ -17,6 +17,70 @@ export const toast = {
     removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
 };
 
+/**
+ * Copies the passed in text value to the User's clipboard.
+ * @param textToCopy The text to copy.
+ * @param copyAction Affects the message displayed when copying is successful.
+ * Default is 'text' (e.g. Text Copied).
+ */
+export function CopyTextToClipboard(textToCopy:string, copyAction:'text'|'link' = 'text'){
+    if(navigator.clipboard){//Modern method - requires app to serve page(s) over HTTPS
+        try{
+            navigator.clipboard.writeText(textToCopy ? textToCopy : '');
+            toast.add({summary:`${copyAction[0].toUpperCase()+copyAction.substring(1)} Copied`,
+                severity:'success', group:'bc', life:1000});
+        }
+        catch(err){
+            console.error('Unable to copy to clipboard', err);
+            toast.add({summary:`Error copying ${copyAction}`,severity:'error', group:'bc', life:1000});
+        }
+    }
+    else{
+        //Unsecured text copy
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy ? textToCopy : '';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try{
+            document.execCommand('copy');
+            toast.add({summary:`${copyAction[0].toUpperCase()+copyAction.substring(1)} Copied`,
+                severity:'success', group:'bc', life:1000});
+        }
+        catch(err){
+            console.error('Unable to copy to clipboard', err);
+            toast.add({summary:`Error copying ${copyAction}`,severity:'error', group:'bc', life:1000});
+        }
+        document.body.removeChild(textArea);
+    }
+}
+
+/**
+ * Method used to trap tab focus to an element, preventing
+ * unwanted selection of elements behind it.
+ * Thanks to Ben Nadel at
+ * https://www.bennadel.com/blog/4096-trapping-focus-within-an-element-using-tab-key-navigation-in-javascript.htm.
+ * @param el The element to trap focus in.
+ * @param e The Keydown KeyboardEvent that the method is called with.
+ */
+export function TrapFocus(el:HTMLElement, e: KeyboardEvent){
+    let tabbable = el.querySelectorAll("button, input, select, textarea, [href], [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
+    let target = e.target;
+    if(e.key.toLowerCase() !== 'tab') return; //cancel further actions
+    if(e.shiftKey){
+        if(target == el || target == tabbable[0]){
+            e.preventDefault();
+            tabbable[tabbable.length-1].focus();
+        }
+    }
+    else{
+        if(target == tabbable[tabbable.length-1]){
+            e.preventDefault();
+            tabbable[0].focus();
+        }
+    }
+}
+
 export default{
     name:"AppState"
 }

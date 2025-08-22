@@ -21,6 +21,7 @@ export const OptionsMenuState = reactive({
                 let pos = this.getSafeMenuPosition(event);
                 menu.style.top = pos.y+'px';
                 menu.style.left = pos.x+'px';
+                menu.focus();
             }
         }, 2);
     },

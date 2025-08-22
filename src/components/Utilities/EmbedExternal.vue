@@ -1,44 +1,86 @@
 <template>
-    <a v-if="!isTenorGIF" tabindex="0"
-    :href="embed.external.uri" target="_blank"
-    class="flex flex-col rounded-lg border text-primary transition-colors
-    border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
-    overflow-hidden text-xs cursor-pointer">
-        <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
-            <img class="absolute w-full h-full object-center object-cover"
-            :src="embed && embed.external ? embed.external.thumb : ''"/>
-        </div>
-        <div class="p-2 font-normal">
-            <div class="text-sm font-semibold">{{ embed.external.title}}</div>
-            <div class="line-clamp-2" :title="embed.external.description">
-                {{embed.external.description}}
+    <div>
+        {{ void "External link in Web App and Desktop App" }}
+        <a v-if="!isTenorGIF && !isTauri()" tabindex="0"
+        :href="embed.external.uri" target="_blank"
+        class="flex flex-col rounded-lg border text-primary transition-colors
+        border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
+        overflow-hidden text-xs cursor-pointer">
+            <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
+                <img class="absolute w-full h-full object-center object-cover"
+                :src="embed && embed.external ? embed.external.thumb : ''"/>
             </div>
-            <div class="h-[1px] bg-slate-600 my-1"></div>
-            <div class="flex text-nowrap gap-1 items-center">
-                <i-solar:earth-outline class="size-4 shrink-0"/>
-                <div class="overflow-hidden text-ellipsis" :title="embed.external.uri">{{ embed.external.uri }}</div>
+            <div class="p-2 font-normal">
+                <div class="text-sm font-semibold">{{ embed.external.title}}</div>
+                <div class="line-clamp-2" :title="embed.external.description">
+                    {{embed.external.description}}
+                </div>
+                <div class="h-[1px] bg-slate-600 my-1"></div>
+                <div class="flex text-nowrap gap-1 items-center">
+                    <i-solar:earth-outline class="size-4 shrink-0"/>
+                    <div class="overflow-hidden text-ellipsis" :title="embed.external.uri">{{ embed.external.uri }}</div>
+                </div>
+            </div>
+        </a>
+        <div v-else-if="!isTenorGIF && isTauri()" @contextmenu.prevent
+        @click="(e) => showOptionsMenu(e, embed.external.uri)"
+        @keyup.enter="showOptionsMenu(mouseEventFromKeyboardEvent, embed.external.uri)" tabindex="0"
+        class="flex flex-col rounded-lg border text-primary transition-colors
+        border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
+        overflow-hidden text-xs cursor-pointer">
+            <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
+                <img class="absolute w-full h-full object-center object-cover"
+                :src="embed && embed.external ? embed.external.thumb : ''"/>
+            </div>
+            <div class="p-2 font-normal">
+                <div class="text-sm font-semibold">{{ embed.external.title}}</div>
+                <div class="line-clamp-2" :title="embed.external.description">
+                    {{embed.external.description}}
+                </div>
+                <div class="h-[1px] bg-slate-600 my-1"></div>
+                <div class="flex text-nowrap gap-1 items-center">
+                    <i-solar:earth-outline class="size-4 shrink-0"/>
+                    <div class="overflow-hidden text-ellipsis" :title="embed.external.uri">{{ embed.external.uri }}</div>
+                </div>
             </div>
         </div>
-    </a>
-    <div v-else @keyup.enter="showEmbedImageInModal" tabindex="0"
-    :href="embed.external.uri" target="_blank"
-    class="flex flex-col rounded-lg border text-primary transition-colors
-    border-outline hover:bg-embedHoverBG bg-postBG
-    overflow-hidden text-xs cursor-pointer">
-        <div class="relative border-outline aspect-[1.91/1]">
-            <ImageContainer
-            @image-clicked="img => $emit('imageClicked',img)"
-            @media-click="i => $emit('media-click',i)"
-            :show-fullsize="showFullsize" :images-to-display="embed.external"/>
+        <div v-else @keyup.enter="showEmbedImageInModal" tabindex="0"
+        :href="embed.external.uri" target="_blank"
+        class="flex flex-col rounded-lg border text-primary transition-colors
+        border-outline hover:bg-embedHoverBG bg-postBG
+        overflow-hidden text-xs cursor-pointer">
+            <div class="relative border-outline aspect-[1.91/1]">
+                <ImageContainer
+                @image-clicked="img => $emit('imageClicked',img)"
+                @media-click="i => $emit('media-click',i)"
+                :show-fullsize="showFullsize" :images-to-display="embed.external"/>
+            </div>
         </div>
     </div>
 </template>
 
 <script lang="ts">
+import MingcuteCopyLine from '~icons/mingcute/copy-line';
+import MingcuteWorld2Line from '~icons/mingcute/world-2-line';
+import MingcuteIncognitoModeLine from '~icons/mingcute/incognito-mode-line';
+
 import { View, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { defineComponent, PropType } from 'vue'
 import ImageContainer from './ImageContainer.vue';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isTauri } from '@tauri-apps/api/core';
+import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
+import { IOptionMenuItem } from './OptionsMenu.vue';
+import { CopyTextToClipboard } from '../../state/AppState.vue';
+import { openUrl } from '@tauri-apps/plugin-opener';
+
+/**
+ * Method used to open link in the system's default browser.
+ * @param url The URL to open in the default browser.
+ */
+async function OpenLink(url:string){
+    await openUrl(url);
+}
 
 export default defineComponent({
     components:{
@@ -63,13 +105,22 @@ export default defineComponent({
     },
     data(){
         return{
-            alert
+            isTauri
         }
     },
     computed:{
         isTenorGIF(){
             return this.embed.external.uri.includes("tenor.com");
-        }
+        },
+        /**
+         * Creates a `MouseEvent` from the `KeyboardEvent` used to "click" the `EmbedExternal` element.
+         * Used to position the displayed `OptionsMenu`.
+         * @returns The created `MouseEvent` object.
+         */
+        mouseEventFromKeyboardEvent():MouseEvent{
+            let elRect = (this.$el as HTMLElement).getBoundingClientRect();
+            return ({clientX:elRect.x, clientY:elRect.y, preventDefault:()=>{}} as MouseEvent);
+        },
     },
     emits:{
         /**
@@ -95,7 +146,20 @@ export default defineComponent({
         },
         showEmbedImageInModal(){
             this.$emit('media-click',0);
-        }
+        },
+        /**
+         * Shows Options Menu allowing user to perform different actions
+         * relating to the selected embeded content.
+         */
+        showOptionsMenu(e:MouseEvent, linkURL:string){
+            e.preventDefault();
+            OptionsMenuState.currentMenuItems = [
+                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)}},
+                // {Icon:MingcuteIncognitoModeLine,Label:'Open in Default Browser (Private/Incognito)',Action:function(){alert(`Opened '${linkURL}'' secretly!`)}},
+                {Icon:MingcuteCopyLine,Label:'Copy link to clipboard',Action:function(){CopyTextToClipboard(linkURL,'link')}},
+            ] as IOptionMenuItem[]
+            OptionsMenuState.showOptionMenu(e);
+        },
     }
 })
 </script>
