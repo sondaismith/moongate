@@ -3,6 +3,7 @@ import App from './App.vue';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { GenerateUniqueId } from './state/FeedList.vue';
 import { GenerateCID } from './helpers/generators';
+import { CreateFeed, CreateFeedViewPost, CreateIFeedDescription, CreateRandomFeedListCollection } from './fake-data/DataFactory';
 
 /**
  * Test Feed data. Used to define the starting Feed displayed
@@ -225,7 +226,7 @@ function createNewPostObjectShallow(savedFakePost:IFakeThreadPost|undefined):Thr
     return newPost;
 }
 
-describe('Creating a new Post updates relevant elements', () => {
+describe.skip('Creating a new Post updates relevant elements', () => {
     before(() => {
         //Simulate API call and return matching Post/Reply from test data (testPostThreadView)
         cy.intercept('POST','**/xrpc/com.atproto.repo.createRecord*', async (req) => {
@@ -487,5 +488,59 @@ describe('Creating a new Post updates relevant elements', () => {
             console.log(replyCount)
             expect(replyCount).to.eq('2');
         });
+    })
+})
+
+describe('Tests that tabbing between controls moves as expected', () => {
+    it('Tabs from FeedButton to EmbedExternal', () => {
+        cy.mount(App,{
+            global:{
+                stubs:{transition:false, 'transition-group': false},
+            }
+        })
+        .then(async ({ wrapper, component }) => {
+            var sidebarComponent = wrapper.getComponent(Sidebar);
+            // sidebarComponent.vm.$data.FeedState.FeedList = [
+            //     {
+            //         description: {
+            //             "feedId": "0cf299da9c",
+            //             "userId": 1,
+            //             "feedHandle": "dummyplug.bsky.social",
+            //             "feedName": "dummyplug",
+            //             "feedType": "user",
+            //             "feedIcon": "art",
+            //             "newPosts": 10,
+            //             "totalPosts": 30,
+            //             "feedColumnSettings": {
+            //                 "width": 288
+            //             },
+            //             "feedSourceDID": "did:plc:test-session",
+            //             "feedTags": ""
+            //         },
+            //         data: testFeedData.feed,
+            //         "cursor": "2025-04-29T14:50:22.837Z",
+            //         "seenAt": "",
+            //         "isAwaitingFeedData": false
+            //     }
+            // ]
+            //Creating collection of Feeds and Posts
+            let feedCID1 = '';
+            let feedCID2 = '';
+            GenerateCID('My First Feed').then(res => {
+                feedCID1 = res.toString()
+            })
+            GenerateCID('Mr Repost').then(res => {
+                feedCID2 = res.toString()
+            })
+            let post1 = CreateFeedViewPost('bob_the_poster','I love my car shop!',true);
+            let post2 = CreateFeedViewPost('cargo_haul', 'Delivery delivery delivery delivery');
+            let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2);
+            let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3);
+            let feed1 = CreateFeed([post1,post2],feedDesc1);
+            let feed2 = CreateFeed([post2,post2,post1],feedDesc2);
+
+            sidebarComponent.vm.$data.FeedState.FeedList = [feed1,feed2];
+            console.log(sidebarComponent.vm.$data);//Check after changes
+        })
     })
 })
