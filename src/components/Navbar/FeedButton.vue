@@ -1,26 +1,33 @@
 <template>
     <div :data-testid="`feedButton-${feedId}`" class="relative cursor-pointer" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
     @click="highlightFeed" @contextmenu="showFeedOptionsMenu">
-        <a class="group relative flex justify-center items-center
+        <button class="group relative flex justify-center items-center
             rounded-xl drop-shadow-md bg-feedBtn border border-outline transition-[border]
-            hover:border-secondary button-size !w-full overflow-hidden pointer-events-none">
+            hover:border-secondary button-size !w-full p-0.5 overflow-hidden">
+            <div class="w-full h-full z-[1] group-focus-visible:bg-black/60 border-2 rounded-lg transition-[border] border-transparent
+            group-focus-visible:border-feedtypeBtnFocusHighlight"></div>
             <FeedIcon v-if="!userDid" :icon="icon"
-            class="h-full text-2xl text-primary select-none pointer-events-none"/>
+            class="absolute h-full text-2xl text-primary select-none pointer-events-none"/>
             <i-mingcute:loading-fill v-show="awaitingPFPRequest"
             class="absolute text-primary spinner self-center select-none pointer-events-none"/>
-            <div v-if="userPfp" class="button-size bg-contain bg-centers scale-[1.15] bg-no-repeat pointer-events-none"
+            <div v-if="userPfp" class="absolute button-size bg-contain bg-centers scale-[1.15] bg-no-repeat pointer-events-none"
             :style="{'background-image': 'url('+userPfp+')'}"></div>
-        </a>
+        </button>
         <UnreadMsgCount :unreadCount="newPosts" class="select-none"/>
     </div>
 </template>
 
 <script lang="ts">
+import MingcuteEdit4Line from '~icons/mingcute/edit-4-line';
+import SolarTrashBinTrashBold from '~icons/solar/trash-bin-trash-bold';
+
 import { defineComponent } from 'vue';
-import { FeedState, UpdateSelectedFeed } from '../../state/FeedList.vue';
+import { FeedState, RemoveFeed, UpdateSelectedFeed } from '../../state/FeedList.vue';
 import { getUserProfile } from '../../lib/api/User.vue';
-import { toast } from '../../state/AppState.vue';
+import { AppState, toast } from '../../state/AppState.vue';
 import { HandleAPIError } from '../../helpers/errors';
+import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
+import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to
@@ -30,6 +37,27 @@ import { HandleAPIError } from '../../helpers/errors';
  */
 export function calculateValidTargetPos(target:number):number{
     return Math.floor(target);
+}
+/**
+ * Used to update an already created Feed. Displays
+ * the Feed Edit modal.
+ */
+function UpdateFeed(){
+    console.log(`DEBUG: this is FeedId: ${FeedState.selectedFeed}`);
+    if(!AppState.checkIfCanBrowse()) return;
+    AppState.isUpdatingFeed = true;
+    //Hide menu when edit modal opens
+    // FeedState.isFeedOptionMenuVisible = false;
+    OptionsMenuState.hideOptionMenu();
+}
+/**
+ * Used to Delete an existing Feed. Currently does
+ * NOT ask for confirmation.
+ */
+function DeleteFeed(){
+    RemoveFeed(FeedState.selectedFeed);
+    // FeedState.isFeedOptionMenuVisible = false;
+    OptionsMenuState.hideOptionMenu();
 }
 
 export default defineComponent({
@@ -184,19 +212,20 @@ export default defineComponent({
 
             this.isScrollByFinished(el, target);
         },
-        showFeedOptionsMenu(event:MouseEvent){
-            event.preventDefault();
+        /**
+         * Used to display the options available to perform on an
+         * existing Feed. Current options are Edit and Delete.
+         * @param e The MouseEvent fired after context clicking the FeedButton.
+         */
+        showFeedOptionsMenu(e:MouseEvent){
+            e.preventDefault();
             if(this.feedId){
-                //Initial showing of menu
-                FeedState.isFeedOptionMenuVisible = true;
                 UpdateSelectedFeed(this.feedId);
-                var menu = document.getElementById('feed-btn-menu');
-                var button = (event.currentTarget as HTMLElement);
-                var containerScrollPos = button.parentElement?.parentElement?.scrollTop;
-                if(menu){
-                    menu.style.top = event.clientY+'px';
-                    menu.style.left = event.clientX+'px';
-                }
+                OptionsMenuState.currentMenuItems = [
+                    {Icon:MingcuteEdit4Line,Label:'Edit Feed',Action:function(){UpdateFeed()}},
+                    {Icon:SolarTrashBinTrashBold,Label:'Delete Feed',Action:function(){DeleteFeed()}},
+                ] as IOptionMenuItem[]
+                OptionsMenuState.showOptionMenu(e);
             }
         },
         /**

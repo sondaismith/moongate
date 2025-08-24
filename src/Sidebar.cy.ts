@@ -518,9 +518,9 @@ describe('Sidebar Tests', () => {
                 let feed2 = CreateFeed([post2,post2,post1],feedDesc2);
 
                 sidebarComponent.vm.$data.FeedState.FeedList = [feed1,feed2];
-                cy.get('[data-testid^=feedButton-]').should('have.length',2);
                 //Tab to 1st FeedButton
                 cy.press(Cypress.Keyboard.Keys.TAB);
+                cy.get('[data-testid^=feedButton-]').should('have.length',2).eq(0).should('have.focus');
             })
         })
     })
