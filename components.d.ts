@@ -94,6 +94,7 @@ declare module 'vue' {
     SaveMediaModal: typeof import('./src/components/Utilities/SaveMediaModal.vue')['default']
     SettingsCategory: typeof import('./src/components/Settings/SettingsCategory.vue')['default']
     SettingsPanel: typeof import('./src/components/Settings/SettingsPanel.vue')['default']
+    SidebarButton: typeof import('./src/components/Navbar/SidebarButton.vue')['default']
     SlideshowArrow: typeof import('./src/components/Utilities/SlideshowArrow.vue')['default']
     SpoilerOverlay: typeof import('./src/components/Utilities/SpoilerOverlay.vue')['default']
     SquareButton: typeof import('./src/components/Utilities/SquareButton.vue')['default']
