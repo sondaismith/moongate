@@ -2,7 +2,7 @@
     <div data-test="app-viewport" id="app-viewport" class="flex flex-row absolute h-full w-screen"
     :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
         {{ void "sidebar" }}
-        <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar min-w-16 items-center">
+        <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar w-16 shrink-0 items-center">
             {{ void "App Logo" }}
             <div class="w-full border-b border-gray-700 p-2 flex-none">
                 <UserButton tooltip="[logo here]"/>
@@ -36,15 +36,15 @@
                         </div>
                     </div>
                     <div class="border-t border-gray-700 space-y-2 px-2 py-2 flex-none">
-                        <FeedButton data-testid="add-feed-button" :icon="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
-                        <FeedButton :icon="FeedEnums.Icons.CreatePost" tooltip="Create New Post" @click="createNewPost"/>
+                        <SidebarButton data-testid="add-feed-button" :icon="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
+                        <SidebarButton data-testid="create-post-button" :icon="FeedEnums.Icons.CreatePost" tooltip="Create New Post" @click="createNewPost"/>
                     </div>
                 </div>
             </div>
             {{ void "Navbar Footer" }}
             <div class="w-full flex-none !mt-auto">
                 <div class="p-2 space-y-2">
-                    <FeedButton :icon="FeedEnums.Icons.Settings" tooltip="App Settings" @click="showSettingsPanel"/>
+                    <SidebarButton data-testid="app-settings-button" :icon="FeedEnums.Icons.Settings" tooltip="App Settings" @click="showSettingsPanel"/>
                     <UserButton :tooltip="AppState.currentUsername"/>
                 </div>
             </div>
@@ -172,12 +172,14 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
 import FeedColumn from "./components/Feed/FeedColumn.vue";
 import { IFeedDBData } from "./interfaces/FeedInterfaces";
 import IntroMessage from "./components/Intro/IntroMessage.vue";
+import SidebarButton from "./components/Navbar/SidebarButton.vue";
 
 
     export default defineComponent({
         name:'Sidebar',
         components:{
             FeedButton,
+            SidebarButton,
             FeedColumn,
             FeedEditModal,
             PostFocusModal,
