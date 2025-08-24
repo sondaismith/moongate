@@ -103,7 +103,7 @@ export function CreateIFeedDescription(feedName:string,feedId:string,newPosts:nu
     return{
         feedId:feedId,
         userId:1,
-        feedSourceDID:`testSourceDID_${feedId}`,
+        feedSourceDID:`did:plc:${feedId}`,
         feedTags:'',
         feedName:feedName,
         feedHandle:feedHandle.trim() != '' ? feedHandle : feedName.toLowerCase().replace(/ /g,'_'),

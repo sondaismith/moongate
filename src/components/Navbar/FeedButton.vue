@@ -1,5 +1,5 @@
 <template>
-    <div class="relative cursor-pointer" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
+    <div :data-testid="`feedButton-${feedId}`" class="relative cursor-pointer" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
     @click="highlightFeed" @contextmenu="showFeedOptionsMenu">
         <a class="group relative flex justify-center items-center
             rounded-xl drop-shadow-md bg-feedBtn border border-outline transition-[border]

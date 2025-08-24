@@ -3,7 +3,7 @@ import App from './App.vue';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { GenerateUniqueId } from './state/FeedList.vue';
 import { GenerateCID } from './helpers/generators';
-import { CreateFeed, CreateFeedViewPost, CreateIFeedDescription, CreateRandomFeedListCollection } from './fake-data/DataFactory';
+import { CreateFeed, CreateFeedViewPost, CreateIFeedDescription } from './fake-data/DataFactory';
 
 /**
  * Test Feed data. Used to define the starting Feed displayed
@@ -226,8 +226,8 @@ function createNewPostObjectShallow(savedFakePost:IFakeThreadPost|undefined):Thr
     return newPost;
 }
 
-describe.skip('Creating a new Post updates relevant elements', () => {
-    before(() => {
+describe('Sidebar Tests', () => {
+    beforeEach(() => {
         //Simulate API call and return matching Post/Reply from test data (testPostThreadView)
         cy.intercept('POST','**/xrpc/com.atproto.repo.createRecord*', async (req) => {
             //DEBUG
@@ -357,190 +357,171 @@ describe.skip('Creating a new Post updates relevant elements', () => {
             });
             console.log(req);
         }).as('getAuthorFeedTest');
-
-        cy.mount(App,{
-            global:{
-                stubs:{transition:false, 'transition-group': false},
-            }
-        })
-        .then(async ({ wrapper, component }) => {
-            var sidebarComponent = wrapper.getComponent(Sidebar);
-            sidebarComponent.vm.$data.AppState.isCreatingNewPost = true; //Show "create post" modal
-            sidebarComponent.vm.$data.FeedState.FeedList = [
-                {
-                    description: {
-                        "feedId": "0cf299da9c",
-                        "userId": 1,
-                        "feedHandle": "dummyplug.bsky.social",
-                        "feedName": "dummyplug",
-                        "feedType": "user",
-                        "feedIcon": "art",
-                        "newPosts": 10,
-                        "totalPosts": 30,
-                        "feedColumnSettings": {
-                            "width": 288
-                        },
-                        "feedSourceDID": "did:plc:test-session",
-                        "feedTags": ""
-                    },
-                    data: testFeedData.feed,
-                    "cursor": "2025-04-29T14:50:22.837Z",
-                    "seenAt": "",
-                    "isAwaitingFeedData": false
-                }
-            ]
-            console.log(sidebarComponent.vm.$data);//Check after changes
-        })
     })
 
-    it('creates new post, replies to post, and relevent elements update', () => {
-        //---CREATE NEW POST---
-        //Enter Post text
-        cy.get('#post-textarea').type('hhhgreg!');
-        //Click to create Post
-        cy.get('[data-test="create-post-button"]').click();
-        //Click login button after being prompted
-        cy.get('[data-test="loginModal-login-button"]').click();
-        //Wait for stubbed API login & getAuthorFeed() response to resolve
-        cy.wait(['@createSessionTest','@getAuthorFeedTest']);
-        //Click to create Post again
-        cy.get('[data-test="create-post-button"]').click();
-        //Wait for stubbed createRecord() & getPostThread() to resolve
-        cy.wait(['@createRecordTest','@getPostThreadTest']);
-        cy.wait(200);//FeedColumn is updated slighly after API call response is receieved
-        //Check that Post was added to `FeedColumn`
-        cy.get('[data-test="feedColumn-post"]').then($posts =>{
-            const postCount = $posts.length;
-            cy.get('[data-test="focusFeedPost-text"').then($postText => {
-                const newPostText = $postText
-                expect(postCount).to.eq(2);
-                expect(newPostText[1].textContent).to.contain('hhhgreg!');
+    describe.skip('Creating a new Post updates relevant elements', () => {
+        it('creates new post, replies to post, and relevent elements update', () => {
+            //---MOUNT COMPONENT---
+            cy.mount(App,{
+                global:{
+                    stubs:{transition:false, 'transition-group': false},
+                }
             })
-        });
+            .then(async ({ wrapper }) => {
+                var sidebarComponent = wrapper.getComponent(Sidebar);
+                sidebarComponent.vm.$data.AppState.isCreatingNewPost = true; //Show "create post" modal
+                sidebarComponent.vm.$data.FeedState.FeedList = [
+                    {
+                        description: {
+                            "feedId": "0cf299da9c",
+                            "userId": 1,
+                            "feedHandle": "dummyplug.bsky.social",
+                            "feedName": "dummyplug",
+                            "feedType": "user",
+                            "feedIcon": "art",
+                            "newPosts": 10,
+                            "totalPosts": 30,
+                            "feedColumnSettings": {
+                                "width": 288
+                            },
+                            "feedSourceDID": "did:plc:test-session",
+                            "feedTags": ""
+                        },
+                        data: testFeedData.feed,
+                        "cursor": "2025-04-29T14:50:22.837Z",
+                        "seenAt": "",
+                        "isAwaitingFeedData": false
+                    }
+                ]
+                console.log(sidebarComponent.vm.$data);//Check after changes
+            })
+            //---CREATE NEW POST---
+            //Enter Post text
+            cy.get('#post-textarea').type('hhhgreg!');
+            //Click to create Post
+            cy.get('[data-test="create-post-button"]').click();
+            //Click login button after being prompted
+            cy.get('[data-test="loginModal-login-button"]').click();
+            //Wait for stubbed API login & getAuthorFeed() response to resolve
+            cy.wait(['@createSessionTest','@getAuthorFeedTest']);
+            //Click to create Post again
+            cy.get('[data-test="create-post-button"]').click();
+            //Wait for stubbed createRecord() & getPostThread() to resolve
+            cy.wait(['@createRecordTest','@getPostThreadTest']);
+            cy.wait(200);//FeedColumn is updated slighly after API call response is receieved
+            //Check that Post was added to `FeedColumn`
+            cy.get('[data-test="feedColumn-post"]').then($posts =>{
+                const postCount = $posts.length;
+                cy.get('[data-test="focusFeedPost-text"').then($postText => {
+                    const newPostText = $postText
+                    expect(postCount).to.eq(2);
+                    expect(newPostText[1].textContent).to.contain('hhhgreg!');
+                })
+            });
 
-        //---REPLY TO NEW POST---
-        //Click to add reply to new Post
-        cy.get('[data-test="postInteraction-reply-button"]').eq(1).click()
-        //Enter reply text
-        cy.get('#post-textarea').type('$99');
-        //Post reply
-        cy.get('[data-test="create-post-button"]').click();
-        //Wait for stubbed createRecord() & getPostThread() to resolve
-        cy.wait(['@createRecordTest','@getPostThreadTest']);
-        cy.wait(200);//Reply count is updated slighly after API call response is receieved
-        //Check that the reply count for the 1st Post we created has increased
-        cy.get('[data-test="postInteraction-reply-button"]').eq(1).then($item => {
-            const replyCount = $item.text()
-            console.log(replyCount)
-            expect(replyCount).to.eq('1');
-        })
-
-        //---REPLY TO REPLY VIA POSTFOCUSMODAL---
-        //View the Post Thread
-        cy.get('[data-test="focusFeedPost-timestamp-button"]').eq(1).click();
-        //Reply to latest reply
-        cy.get('[data-test="post-focus-modal"]').within($focusModal => {
-            cy.get('[data-test="postInteraction-reply-button"]').eq(1).click();
-        })
-        //Enter reply text
-        cy.get('#post-textarea').type('dvd player');
-        //Post reply
-        cy.get('[data-test="create-post-button"]').click();
-        //Wait for stubbed createRecord() & getPostThread() to resolve
-        cy.wait(['@createRecordTest','@getPostThreadTest']);
-        cy.wait(200);//Reply count is updated slighly after API call response is receieved
-        //Check that reply count increased
-        cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+            //---REPLY TO NEW POST---
+            //Click to add reply to new Post
+            cy.get('[data-test="postInteraction-reply-button"]').eq(1).click()
+            //Enter reply text
+            cy.get('#post-textarea').type('$99');
+            //Post reply
+            cy.get('[data-test="create-post-button"]').click();
+            //Wait for stubbed createRecord() & getPostThread() to resolve
+            cy.wait(['@createRecordTest','@getPostThreadTest']);
+            cy.wait(200);//Reply count is updated slighly after API call response is receieved
+            //Check that the reply count for the 1st Post we created has increased
             cy.get('[data-test="postInteraction-reply-button"]').eq(1).then($item => {
                 const replyCount = $item.text()
                 console.log(replyCount)
                 expect(replyCount).to.eq('1');
             })
-        });
 
-        //---REPLY TO FIRST POST VIA POSTFOCUSMODAL---
-        //Reply to parent Post
-        cy.get('[data-test="post-focus-modal"]').within($focusModal => {
-            cy.get('[data-test="postInteraction-reply-button"]').eq(0).click();
-        });
-        //Enter reply text
-        cy.get('#post-textarea').type('...huh?');
-        //Post reply
-        cy.get('[data-test="create-post-button"]').click();
-        //Wait for stubbed createRecord() & getPostThread() to resolve
-        cy.wait(['@createRecordTest','@getPostThreadTest']);
-        cy.wait(200);//Reply count is updated slighly after API call response is receieved
-        //Check that reply count increased
-        cy.get('[data-test="post-focus-modal"]').within($focusModal => {
-            cy.get('[data-test="postInteraction-reply-button"]').eq(0).then($item => {
+            //---REPLY TO REPLY VIA POSTFOCUSMODAL---
+            //View the Post Thread
+            cy.get('[data-test="focusFeedPost-timestamp-button"]').eq(1).click();
+            //Reply to latest reply
+            cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+                cy.get('[data-test="postInteraction-reply-button"]').eq(1).click();
+            })
+            //Enter reply text
+            cy.get('#post-textarea').type('dvd player');
+            //Post reply
+            cy.get('[data-test="create-post-button"]').click();
+            //Wait for stubbed createRecord() & getPostThread() to resolve
+            cy.wait(['@createRecordTest','@getPostThreadTest']);
+            cy.wait(200);//Reply count is updated slighly after API call response is receieved
+            //Check that reply count increased
+            cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+                cy.get('[data-test="postInteraction-reply-button"]').eq(1).then($item => {
+                    const replyCount = $item.text()
+                    console.log(replyCount)
+                    expect(replyCount).to.eq('1');
+                })
+            });
+
+            //---REPLY TO FIRST POST VIA POSTFOCUSMODAL---
+            //Reply to parent Post
+            cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+                cy.get('[data-test="postInteraction-reply-button"]').eq(0).click();
+            });
+            //Enter reply text
+            cy.get('#post-textarea').type('...huh?');
+            //Post reply
+            cy.get('[data-test="create-post-button"]').click();
+            //Wait for stubbed createRecord() & getPostThread() to resolve
+            cy.wait(['@createRecordTest','@getPostThreadTest']);
+            cy.wait(200);//Reply count is updated slighly after API call response is receieved
+            //Check that reply count increased
+            cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+                cy.get('[data-test="postInteraction-reply-button"]').eq(0).then($item => {
+                    const replyCount = $item.text()
+                    console.log(replyCount)
+                    expect(replyCount).to.eq('2');
+                })
+            });
+
+            //---ENSURE POST COUNT IN FEEDCOLUMN HAS UPDATE CORRECTLY AS WELL---
+            //Close PostFocusModal
+            cy.get('[data-test="postFocusModal-close-button"]').click();
+            //Check that reply count increased
+            cy.get('[data-test="postInteraction-reply-button"]').eq(1).then($item => {
                 const replyCount = $item.text()
                 console.log(replyCount)
                 expect(replyCount).to.eq('2');
-            })
-        });
-
-        //---ENSURE POST COUNT IN FEEDCOLUMN HAS UPDATE CORRECTLY AS WELL---
-        //Close PostFocusModal
-        cy.get('[data-test="postFocusModal-close-button"]').click();
-        //Check that reply count increased
-        cy.get('[data-test="postInteraction-reply-button"]').eq(1).then($item => {
-            const replyCount = $item.text()
-            console.log(replyCount)
-            expect(replyCount).to.eq('2');
-        });
-    })
-})
-
-describe('Tests that tabbing between controls moves as expected', () => {
-    it('Tabs from FeedButton to EmbedExternal', () => {
-        cy.mount(App,{
-            global:{
-                stubs:{transition:false, 'transition-group': false},
-            }
+            });
         })
-        .then(async ({ wrapper, component }) => {
-            var sidebarComponent = wrapper.getComponent(Sidebar);
-            // sidebarComponent.vm.$data.FeedState.FeedList = [
-            //     {
-            //         description: {
-            //             "feedId": "0cf299da9c",
-            //             "userId": 1,
-            //             "feedHandle": "dummyplug.bsky.social",
-            //             "feedName": "dummyplug",
-            //             "feedType": "user",
-            //             "feedIcon": "art",
-            //             "newPosts": 10,
-            //             "totalPosts": 30,
-            //             "feedColumnSettings": {
-            //                 "width": 288
-            //             },
-            //             "feedSourceDID": "did:plc:test-session",
-            //             "feedTags": ""
-            //         },
-            //         data: testFeedData.feed,
-            //         "cursor": "2025-04-29T14:50:22.837Z",
-            //         "seenAt": "",
-            //         "isAwaitingFeedData": false
-            //     }
-            // ]
-            //Creating collection of Feeds and Posts
-            let feedCID1 = '';
-            let feedCID2 = '';
-            GenerateCID('My First Feed').then(res => {
-                feedCID1 = res.toString()
-            })
-            GenerateCID('Mr Repost').then(res => {
-                feedCID2 = res.toString()
-            })
-            let post1 = CreateFeedViewPost('bob_the_poster','I love my car shop!',true);
-            let post2 = CreateFeedViewPost('cargo_haul', 'Delivery delivery delivery delivery');
-            let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2);
-            let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3);
-            let feed1 = CreateFeed([post1,post2],feedDesc1);
-            let feed2 = CreateFeed([post2,post2,post1],feedDesc2);
+    })
 
-            sidebarComponent.vm.$data.FeedState.FeedList = [feed1,feed2];
-            console.log(sidebarComponent.vm.$data);//Check after changes
+    describe('Tests that tabbing between controls moves as expected', () => {
+        it('Tabs from FeedButton to EmbedExternal', () => {
+            cy.mount(App,{
+                global:{
+                    stubs:{transition:false, 'transition-group': false},
+                }
+            })
+            .then(async ({ wrapper }) => {
+                var sidebarComponent = wrapper.getComponent(Sidebar);
+                //Creating collection of Feeds and Posts
+                let feedCID1 = '';
+                let feedCID2 = '';
+                await GenerateCID('My First Feed').then(res => {
+                    feedCID1 = res.toString()
+                })
+                await GenerateCID('Mr Repost').then(res => {
+                    feedCID2 = res.toString()
+                })
+                let post1 = CreateFeedViewPost('bob_the_poster','I love my car shop!',true);
+                let post2 = CreateFeedViewPost('cargo_haul', 'Delivery delivery delivery delivery');
+                let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2);
+                let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3);
+                let feed1 = CreateFeed([post1,post2],feedDesc1);
+                let feed2 = CreateFeed([post2,post2,post1],feedDesc2);
+
+                sidebarComponent.vm.$data.FeedState.FeedList = [feed1,feed2];
+                cy.get('[data-testid^=feedButton-]').should('have.length',2);
+                //Tab to 1st FeedButton
+                cy.press(Cypress.Keyboard.Keys.TAB);
+            })
         })
     })
 })
