@@ -359,7 +359,7 @@ describe('Sidebar Tests', () => {
         }).as('getAuthorFeedTest');
     })
 
-    describe.skip('Creating a new Post updates relevant elements', () => {
+    describe('Creating a new Post updates relevant elements', () => {
         it('creates new post, replies to post, and relevent elements update', () => {
             //---MOUNT COMPONENT---
             cy.mount(App,{
@@ -520,7 +520,15 @@ describe('Sidebar Tests', () => {
                 sidebarComponent.vm.$data.FeedState.FeedList = [feed1,feed2];
                 //Tab to 1st FeedButton
                 cy.press(Cypress.Keyboard.Keys.TAB);
-                cy.get('[data-testid^=feedButton-]').should('have.length',2).eq(0).should('have.focus');
+                cy.press(Cypress.Keyboard.Keys.TAB);//This 2nd tab is required if this test is run after another
+                cy.get('[data-testid^=feedButton-] button').should('have.length',2).eq(0).should('have.focus');
+                //Tab off of Sidebar onto 1st EmbedExternal
+                cy.press(Cypress.Keyboard.Keys.TAB);
+                cy.press(Cypress.Keyboard.Keys.TAB);
+                cy.press(Cypress.Keyboard.Keys.TAB);
+                cy.press(Cypress.Keyboard.Keys.TAB);
+                cy.press(Cypress.Keyboard.Keys.TAB);
+                cy.get('[data-testid^=embed-external] > *').should('have.length',2).eq(0).should('have.focus');
             })
         })
     })

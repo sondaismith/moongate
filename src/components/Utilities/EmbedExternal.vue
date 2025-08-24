@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div data-testid="embed-external">
         {{ void "External link in Web App and Desktop App" }}
         <a v-if="!isTenorGIF && !isTauri()" tabindex="0"
         :href="embed.external.uri" target="_blank"
