@@ -35,7 +35,7 @@
                     </div>
                 </div>
                 {{ void "login form" }}
-                <form class="flex flex-col gap-2">
+                <div class="flex flex-col gap-2">
                     <div>
                         <div class="text-3xl text-loginBtn font-extrabold ">Login</div>
                         <div class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">Enter your username and password</div>
@@ -47,24 +47,47 @@
                         <div class="group-heading">Account</div>
                         <div class="flex">
                             <InLaInput v-model="enteredUsername" class="rounded-r-none" textLabel="Handle" :fillContainer="true"/>
-                            <InLaInput v-model="hostProvider" class="rounded-l-none border-l-0" textLabel="Host" :isDisabled="true" :fillContainer="true"/>
+                            <!-- <InLaInput v-model="hostProvider" class="rounded-l-none border-l-0" textLabel="Host" :isDisabled="true" :fillContainer="true"/> -->
+                            <div class="relative flex flex-col group w-full cursor-pointer">
+                                <!-- <input data-testid="inlainput-input"
+                                    class="peer bg-searchbarBG leading-8 px-2 pt-3 h-11
+                                    border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight rounded-md
+                                    disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none
+                                    w-full"/> -->
+                                <button class="group relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
+                                rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-blue-100
+                                focus-visible:bg-blue-100">
+                                    <div class="flex w-full h-full border-2 rounded-md transition-[border] border-transparent
+                                    group-focus-visible:border-feedtypeBtnFocusHighlight">
+                                        <div class="pt-[0.625rem] pl-1 text-searchbarBorderDisabled">bsky.social</div>
+                                        <i-mdi:edit-box-outline class="self-center text-2xl ml-auto"/>
+                                    </div>
+                                    <!-- <div class="absolute flex w-full h-full px-2 bg-pink-500">
+                                        <div class="pt-[0.625rem] text-searchbarBorderDisabled">bsky.social</div>
+                                        <i-mdi:edit-box-outline class="self-center text-2xl ml-auto"/>
+                                    </div> -->
+                                </button>
+                                <div class="absolute top-[-2px] left-2 select-none text-feedTimestamp text-secondary">
+                                    Hosting Provider
+                                </div>
+                            </div>
                         </div>
                         <InLaInput v-model="enteredPassword" textLabel="Password"
                             :isPasswordInput="true" :fillContainer="true"/>
                     </div>
-                    <div class="flex flex-col md:float-end" :class="{ disabled: attemptingLogin}">
-                        <a data-test="loginModal-login-button" @click="loginAccount" tabindex="0" class="relative flex md:self-end rounded cursor-pointer
-                            bg-loginBtn justify-center md:w-40 px-3 py-2 font-semibold
-                            transition-colors hover:bg-loginBtnHover text-primary
-                            select-none">Login</a>
-                    </div>
-                </form>
+                    <SquareButton @click="loginAccount" :is-disabled="isLoginDisabled"
+                    :is-awaiting-response="attemptingLogin"
+                    class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
+                    text-primary md:self-end md:w-40">Login</SquareButton>
+                </div>
                 <div class="h-[1px] bg-slate-500 my-2"></div>
                 {{ void "browse without account" }}
                 <div class="relative flex flex-col items-start">
-                    <div data-testid="browse-as-guest-button" @click="browseAsGuest" tabindex="0" class="text-blue-400 hover:text-blue-500 cursor-pointer">
+                    <button data-testid="browse-as-guest-button" @click="browseAsGuest"
+                    class="text-blue-400 hover:text-blue-500 border-none shadow-none cursor-pointer
+                    focus-visible:outline outline-2 active:bg-transparent">
                         Or Browse without an account
-                    </div>
+                    </button>
                     <div class="text-feedPostName leading-4">Note: Some content is unable to be viewed without an account due to
                         Post visibility settings specified by the author.
                     </div>
@@ -83,8 +106,13 @@ import { HandleAPIError } from '../../helpers/errors';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
+import SquareButton from '../Utilities/SquareButton.vue';
 
 export default defineComponent({
+    components:{
+        InLaInput: InLaInput,
+        SquareButton,
+    },
     data(){
         return{
             enteredUsername: "",
@@ -97,6 +125,8 @@ export default defineComponent({
     },
     methods:{
         async loginAccount(){
+            /**Indicates whether or not the Login attemot was successful. */
+            let loginError = false;
             this.attemptingLogin = true;
             toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
             var handleAddress = `${this.enteredUsername}.${this.hostProvider}`;
@@ -115,13 +145,21 @@ export default defineComponent({
                 this.refreshFeeds();//Refresh feeds so we can get likes, blocks etc.
                 toast.add({summary:"Login Success", detail:``,severity:'success',group:'tr',life:3000});
             })
-            .catch(err => toast.add(HandleAPIError(err, 'Error logging in')));
-            //Get User's PFP
-            await GetBrowsingAgent().getProfile({actor:accountDID})
-            .then(res => {
-                AppState.currentPFP = res.data.avatar ? res.data.avatar : '';
-                AppState.currentUsername = res.data.displayName ? res.data.displayName : res.data.handle;
-            })
+            .catch(err => {
+                toast.add(HandleAPIError(err, 'Error logging in'));
+                loginError=true;//Cancel rest of actions
+            });
+            if(!loginError){
+                //Get User's PFP
+                await GetBrowsingAgent().getProfile({actor:accountDID})
+                .then(res => {
+                    AppState.currentPFP = res.data.avatar ? res.data.avatar : '';
+                    AppState.currentUsername = res.data.displayName ? res.data.displayName : res.data.handle;
+                })
+                .catch(err => {
+                    toast.add(HandleAPIError(err, 'Error getting profile info'));
+                })
+            }
             this.attemptingLogin = false;
         },
         browseAsGuest(){
@@ -147,11 +185,14 @@ export default defineComponent({
             console.log("Refreshed Feeds.");
         }
     },
-    components:{
-        InLaInput: InLaInput,
+    computed:{
+        isLoginDisabled(){
+            return this.enteredUsername.trim() == "" || this.enteredPassword.trim() == "";
+        }
     },
-    setup () {
-        return {}
+    mounted(){
+        console.log('login modal mounted')
+        this.$el.focus();
     }
 })
 </script>
