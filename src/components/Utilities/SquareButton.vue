@@ -4,7 +4,6 @@
     :class="[$attrs.class ? $attrs.class : 'bg-sky-500 hover:bg-sky-700 hover:border-sky-700',
         isDisabled || isAwaitingResponse ? '!bg-disabledBG !text-disabled pointer-events-nones select-none !cursor-not-allowed' : ''
     ]"
-    :title="titleMessage"
     :disabled="isDisabled || isAwaitingResponse">
         <div class="flex border-2 border-transparent group-focus-visible:border-feedtypeBtnFocusHighlight
         justify-center w-full"
@@ -39,18 +38,6 @@ export default defineComponent({
             default:'2'
         }
     },
-    computed:{
-        /**
-         * Determines the `title` attribute value that is needed depending on
-         * the current button state.
-         */
-        titleMessage(){
-            let message = 'Login';
-            if(this.isDisabled) message = 'Please provide a Username AND Password';
-            else if(this.isAwaitingResponse) message = 'Attempting to Login...'
-            return message;
-        }
-    }
 })
 </script>
 

@@ -28,6 +28,7 @@ declare module 'vue' {
     ImageContainer: typeof import('./src/components/Utilities/ImageContainer.vue')['default']
     'IMdi:accounts': typeof import('~icons/mdi/accounts')['default']
     'IMdi:block': typeof import('~icons/mdi/block')['default']
+    'IMdi:cancelBox': typeof import('~icons/mdi/cancel-box')['default']
     'IMdi:check': typeof import('~icons/mdi/check')['default']
     'IMdi:dotsHorizontal': typeof import('~icons/mdi/dots-horizontal')['default']
     'IMdi:editBoxOutline': typeof import('~icons/mdi/edit-box-outline')['default']

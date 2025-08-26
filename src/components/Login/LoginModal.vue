@@ -55,7 +55,8 @@
                                     border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight rounded-md
                                     disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none
                                     w-full"/> -->
-                                <button class="group relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
+                                <button v-if="isUsingDefaultHost" @click="toggleAccountProvider" title="Change Hosting Provider"
+                                class="group relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
                                 rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-blue-100
                                 focus-visible:bg-blue-100">
                                     <div class="flex w-full h-full border-2 rounded-md transition-[border] border-transparent
@@ -68,6 +69,23 @@
                                         <i-mdi:edit-box-outline class="self-center text-2xl ml-auto"/>
                                     </div> -->
                                 </button>
+                                <div v-else
+                                class="relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
+                                rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-blue-100
+                                focus-visible:bg-blue-100">
+                                    <div class="flex w-full h-full border-2 rounded-md transition-[border] border-transparent
+                                    group-focus-visible:border-feedtypeBtnFocusHighlight">
+                                        <div class="pt-[0.625rem] pl-1 text-searchbarBorderDisabled">https://</div>
+                                        <input data-testid="login-custom-host-input" v-model="customHostProvider"
+                                        class="w-full pt-[0.625rem] rounded-none text-primary bg-transparent shadow-none"/>
+                                        <button @click="toggleAccountProvider" title="Switch Back to Default Provider"
+                                        class="group/cancel shadow-none text-red-400 hover:border-transparent
+                                        active:bg-transparent active:border-transparent focus-visible:outline focus-visible:outline-feedtypeBtnFocusHighlight">
+                                            <i-mdi:cancel-box class="shrink-0 self-center text-2xl ml-auto transition-transform
+                                            group-hover/cancel:scale-110 group-focus-visible/cancel:scale-110"/>
+                                        </button>
+                                    </div>
+                                </div>
                                 <div class="absolute top-[-2px] left-2 select-none text-feedTimestamp text-secondary">
                                     Hosting Provider
                                 </div>
@@ -76,8 +94,9 @@
                         <InLaInput data-testid="login-password-input" v-model="enteredPassword" textLabel="Password"
                             :isPasswordInput="true" :fillContainer="true"/>
                     </div>
+                    <div class="text-sm text-red-500 whitespace-pre-line">{{ validationErrorMessage }}</div>
                     <SquareButton @click="loginAccount" :is-disabled="isLoginDisabled"
-                    :is-awaiting-response="attemptingLogin"
+                    :is-awaiting-response="attemptingLogin" :title="titleMessage"
                     class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
                     text-primary md:self-end md:w-40">Login</SquareButton>
                 </div>
@@ -118,7 +137,10 @@ export default defineComponent({
         return{
             enteredUsername: "",
             enteredPassword: "",
-            hostProvider: "bsky.social",
+            defaultHostProvider: "bsky.social",
+            /**Is the User using the default Host Provider or a custom Account Provider? */
+            customHostProvider: "",
+            isUsingDefaultHost: true,
             attemptingLogin: false,
             AppState,
             AccountPeekState,
@@ -131,7 +153,7 @@ export default defineComponent({
             let loginError = false;
             this.attemptingLogin = true;
             toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
-            var handleAddress = `${this.enteredUsername}.${this.hostProvider}`;
+            var handleAddress = `${this.enteredUsername}.${this.defaultHostProvider}`;
             var accountDID = '';
             await LoginBskyAccount(handleAddress, this.enteredPassword)
             .then(res => {
@@ -185,11 +207,48 @@ export default defineComponent({
                 RefreshFeed(feed.description.feedId,new Date(),10);
             });
             console.log("Refreshed Feeds.");
+        },
+        /**
+         * Switches between using the default Bluesky Account Provider or
+         * a custom user-provided one.
+         */
+        toggleAccountProvider(){
+            this.isUsingDefaultHost = !this.isUsingDefaultHost;
         }
     },
     computed:{
+        /**
+         * Checks if the Login button should currently be disabled.
+         */
         isLoginDisabled(){
-            return this.enteredUsername.trim() == "" || this.enteredPassword.trim() == "";
+            return this.enteredUsername.trim() == "" || this.enteredPassword.trim() == "" ||
+            !this.isUsingDefaultHost;
+        },
+        /**
+         * Determines the Login button `title` attribute value that is needed depending on
+         * the current login form validation state.
+         */
+        titleMessage(){
+            let message = 'Login';
+            if(this.isLoginDisabled) message = 'Please provide a Username AND Password. Also, Custom Hosting Providers are not yet supported.';
+            else if(this.attemptingLogin) message = 'Attempting to Login...'
+            return message;
+        },
+        /**
+         * Error message displayed when login form contents fail
+         * validation check.
+         */
+        validationErrorMessage(){
+            let msg = ''
+            if(!this.isUsingDefaultHost) msg += "A Hosting Provider other than the default is not supported at the moment.😞\n";
+            if(this.enteredUsername.trim() == ""){
+                if(this.enteredPassword.trim() == "") msg += "Please provide a Username and Password."
+                else msg += "Please provide a Username."
+            }
+            else if(this.enteredPassword.trim() == ""){
+                msg += "Please provide a Password."
+            }
+            return msg;
         }
     },
     mounted(){
