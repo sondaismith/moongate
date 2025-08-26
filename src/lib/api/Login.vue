@@ -11,6 +11,9 @@ export async function LoginBskyAccount(handle:string, password:string):Promise<C
     await LoginAgent(handle,password)
     .then(res => {
         result = res
+    }).catch(err => {
+        console.log(err);
+        throw err;
     })
     // console.log(result.message);//DEBUG
     // if(result.success){

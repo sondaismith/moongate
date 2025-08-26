@@ -40,8 +40,10 @@
                             <i-mingcute:user-add-fill v-if="!result.avatar"/>
                         </div>
                         <div class="flex w-full overflow-hidden flex-col items-start sm:flex-row sm:gap-1 sm:items-center">
-                            <div class="whitespace-nowrap overflow-hidden text-ellipsis">{{ result.displayName }}</div>
-                            <VerifiedBadge v-if="isUserVerified(result)" class="size-4"/>
+                            <div class="flex gap-1 items-center w-full sm:w-auto overflow-hidden">
+                                <div class="whitespace-nowrap overflow-hidden text-ellipsis">{{ result.displayName }}</div>
+                                <VerifiedBadge v-if="isUserVerified(result)" class="size-4"/>
+                            </div>
                             <div class="text-xs text-searchbarHandle">@{{ result.handle }}</div>
                         </div>
                     </div>

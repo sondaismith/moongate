@@ -113,7 +113,7 @@
                     <SquareButton data-testid="feedEditModal-next-page-button"
                     v-if="canGoToNextPage"
                     @click="forwardOnePage"
-                    tabindex="0">Next</SquareButton>
+                    class="bg-btn hover:bg-btnHover" tabindex="0">Next</SquareButton>
                     <SquareButton data-testid="feedEditModal-create-button" @click="createFeed()"
                     v-if="(feedTypeSelected && feedSpecificationsSet && currentPage == totalPages-1)"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
