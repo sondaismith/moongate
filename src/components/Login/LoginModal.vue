@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute z-50 flex
+    <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-50 flex
         flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm">
         <div class="flex flex-col w-4/5 md:w-2/3 lg:max-w-[700px]
             h-2/3 md:h-auto bg-focusBG text-primary p-4 mx-auto my-auto rounded-md">
@@ -28,11 +28,12 @@
             <div class="hiddens">
                 {{ void "close button" }}
                 <div class="relative top-1">
-                    <div v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full
+                    <button v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full
                     border-red-500 size-7 text-sm text-red-500 hover:text-red-700 hover:border-red-700
+                    focus-visible:outline focus-visible:outline-feedtypeBtnFocusHighlight active:bg-red-200
                     justify-center items-center cursor-pointer">
                         <i-mingcute:close-fill/>
-                    </div>
+                    </button>
                 </div>
                 {{ void "login form" }}
                 <div class="flex flex-col gap-2">
@@ -46,7 +47,7 @@
                         <div>bsky.social</div> -->
                         <div class="group-heading">Account</div>
                         <div class="flex">
-                            <InLaInput v-model="enteredUsername" class="rounded-r-none" textLabel="Handle" :fillContainer="true"/>
+                            <InLaInput data-testid="login-username-input" v-model="enteredUsername" class="rounded-r-none" textLabel="Handle" :fillContainer="true"/>
                             <!-- <InLaInput v-model="hostProvider" class="rounded-l-none border-l-0" textLabel="Host" :isDisabled="true" :fillContainer="true"/> -->
                             <div class="relative flex flex-col group w-full cursor-pointer">
                                 <!-- <input data-testid="inlainput-input"
@@ -59,7 +60,7 @@
                                 focus-visible:bg-blue-100">
                                     <div class="flex w-full h-full border-2 rounded-md transition-[border] border-transparent
                                     group-focus-visible:border-feedtypeBtnFocusHighlight">
-                                        <div class="pt-[0.625rem] pl-1 text-searchbarBorderDisabled">bsky.social</div>
+                                        <div class="pt-[0.625rem] pl-1 text-searchbarBorderDisabled">Bluesky Social</div>
                                         <i-mdi:edit-box-outline class="self-center text-2xl ml-auto"/>
                                     </div>
                                     <!-- <div class="absolute flex w-full h-full px-2 bg-pink-500">
@@ -72,7 +73,7 @@
                                 </div>
                             </div>
                         </div>
-                        <InLaInput v-model="enteredPassword" textLabel="Password"
+                        <InLaInput data-testid="login-password-input" v-model="enteredPassword" textLabel="Password"
                             :isPasswordInput="true" :fillContainer="true"/>
                     </div>
                     <SquareButton @click="loginAccount" :is-disabled="isLoginDisabled"
@@ -100,7 +101,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import InLaInput from '../Utilities/InLaInput.vue';
-import { AppState, toast } from '../../state/AppState.vue';
+import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { LoginBskyAccount } from '../../lib/api/Login.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
@@ -121,6 +122,7 @@ export default defineComponent({
             attemptingLogin: false,
             AppState,
             AccountPeekState,
+            TrapFocus,
         }
     },
     methods:{
@@ -191,8 +193,8 @@ export default defineComponent({
         }
     },
     mounted(){
-        console.log('login modal mounted')
-        this.$el.focus();
+        //Focus username input
+        ((this.$el as HTMLElement).querySelector('[data-testid="login-username-input"] > input') as HTMLElement).focus()
     }
 })
 </script>
