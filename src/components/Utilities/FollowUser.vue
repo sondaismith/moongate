@@ -1,5 +1,5 @@
 <template>
-    <div class="flex relative ml-auto">
+    <div class="flex relative h-full ml-auto">
         <Transition :name="isFollowing ? 'slide-left' : 'slide-right'">
             <div v-if="!isFollowing" @[!awaitingFollowRequest&&'click']="toggleAccountFollow" class="flex rounded-full px-2 py-1 text-nowrap
                 cursor-pointer select-none transition-colors bg-blue-500 hover:bg-blue-400"

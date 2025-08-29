@@ -84,12 +84,13 @@
                                         </div>
                                         <div class="text-xs">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '@'+UserFocusModalState.GetCurrentHistoryData().ProfileData.handle : '@handle'}}</div>
                                     </div>
-                                    <div class="relative flex items-center mt-1 gap-2 h-8">
+                                    <div class="relative flex items-center mt-1 gap-2 h-9">
                                         <Transition name="smooth">
                                             <FollowUser v-if="!awaitingProfileData" class="px-4" :is-user-followed="isUserFollowed"
                                             :user-did="UserFocusModalState.GetCurrentHistoryData().ProfileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
                                         </Transition>
-                                        <PillButton class="aspect-square size-10">...</PillButton>
+                                        <PillButton @click="showUserOptionsMenu($event,UserFocusModalState.GetCurrentHistoryData().ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
+                                        focus-visible:bg-btnHover">...</PillButton>
                                     </div>
                                 </div>
                                 <div class="flex mt-2">
@@ -273,6 +274,9 @@
 </template>
 
 <script lang="ts">
+//Option Menu icons
+import MingcuteLinkLine from '~icons/mingcute/link-line';
+
 import { defineComponent } from 'vue'
 import PillButton from '../Utilities/PillButton.vue';
 import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
@@ -288,7 +292,7 @@ import { HandleAPIError } from '../../helpers/errors';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
-import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
+import { convertToLongTimestamp, convertToShortTimestamp, CreateBskyWeblink } from '../../helpers/converters';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
@@ -304,6 +308,17 @@ import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { getAuthorFeed, getAuthorLikes, getAuthorPostsOnly, getAuthorRepliesOnly } from '../../lib/api/Feed.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
+import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
+import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+
+/**
+ * Used to create a HTTP URL link To the currently view User's profile.
+ * @param handle The handle of the User associated with the link.
+ */
+function CopyPostLink(handle:string){
+    if(handle.trim()!='') navigator.clipboard.writeText(`https://bsky.app/profile/${handle}`);
+    toast.add({summary:'Link to User Profile copied',severity:'success', group:'bc', life:1000});
+}
 
 export default defineComponent({
     data(){
@@ -662,7 +677,18 @@ export default defineComponent({
         onMouseShortcutEntered(e:MouseEvent){
             if(e.button == 3) this.goToPreviousNavHistory();
             else if (e.button == 4) this.goToNextNavHistory();
-        }
+        },
+        /**
+         * Shows Options Menu allowing user to perform different actions
+         * relating to the selected User Profile being viewed.
+         */
+        showUserOptionsMenu(e:MouseEvent, postURI:string, handle:string=""){
+            e.preventDefault();
+            OptionsMenuState.currentMenuItems = [
+                {Icon:MingcuteLinkLine,Label:'Copy link to Profile Page',Action:function(){CopyPostLink(postURI, handle)}},
+            ] as IOptionMenuItem[]
+            OptionsMenuState.showOptionMenu(e);
+        },
     },
     computed:{
         /**
