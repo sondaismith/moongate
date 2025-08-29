@@ -6,6 +6,7 @@ export default {
       colors:{
         // primary: s"var(--color-primary-text) / <alpha-value>",
         primary: "oklch(from var(--color-primary-text) l c h / <alpha-value>)",
+        primaryInverted: "oklch(from var(--color-primary-text-inverted) l c h / <alpha-value>)",
         secondary: "oklch(from var(--color-secondary-text) l c h / <alpha-value>)",
         secondaryHover: "oklch(from var(--color-secondary-text-hover) l c h / <alpha-value>)",
         hover: "oklch(from var(--color-hover) l c h / <alpha-value>)",
@@ -52,6 +53,9 @@ export default {
         scrollbarTrack: "oklch(from var(--color-scrollbar-track) l c h / <alpha-value>)",
         scrollbarThumb: "oklch(from var(--color-scrollbar-thumb) l c h / <alpha-value>)",
         scrollbarThumbHover: "oklch(from var(--color-scrollbar-thumb-hover) l c h / <alpha-value>)",
+        navbarBtn: "oklch(from var(--color-navbar-btn) l c h / <alpha-value>)",
+        navbarBtnHover: "oklch(from var(--color-navbar-btn-hover) l c h / <alpha-value>)",
+        navbarBtnText: "oklch(from var(--color-navbar-btn-text) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

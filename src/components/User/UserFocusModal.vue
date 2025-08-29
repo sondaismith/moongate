@@ -1,20 +1,31 @@
 <template>
     <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
-        <div class="relative z-20 flex flex-col max-w-[40rem] w-full sm:w-2/3s h-4/5
+        <div class="relative z-20 flex flex-col max-w-[40rem] w-full sm:w-2/3s h-[95%] sm:h-4/5
         mx-2 sm:mx-auto my-auto rounded bg-focusBG text-primary drop-shadow-lg overflow-hidden">
             {{ void "Control Bar" }}
-            <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8 w-full self-start
-            border-b border-outlineLighter *:h-full *:cursor-pointer *:w-12">
-                <i-mingcute:arrow-left-fill @click="goToPreviousNavHistory"
-                class="hover:bg-outline" :class="[{'text-disabled' : !hasPrevNavRecords}]"/>
-                <i-mingcute:arrow-right-fill @click="goToNextNavHistory"
-                class="hover:bg-outline" :class="[{'text-disabled' : !hasNextNavRecords}]"/>
-                <div @click="closeModal" class="flex ml-auto bg-blue-300 w-10
-                    justify-center text-2xl cursor-pointer"
-                    title="Close Window">
-                    <i-mingcute:close-fill/>
-                </div>
+            <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8 shrink-0 w-full self-start
+            border-b border-outlineLighter *:w-12 *:shadow-none *:rounded-none *:border-none">
+                <SquareButton :is-disabled="!hasPrevNavRecords"
+                title="Go to previous User Feed page" @click="goToPreviousNavHistory"
+                class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
+                focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
+                    <i-mingcute:arrow-left-fill
+                    class="text-2xl"
+                    :class="[{'text-disabled' : !hasPrevNavRecords}]"/>
+                </SquareButton>
+                <SquareButton :is-disabled="!hasNextNavRecords"
+                title="Go to next User Feed page" @click="goToNextNavHistory(true)"
+                class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
+                focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
+                    <i-mingcute:arrow-right-fill
+                    class="text-2xl"
+                    :class="[{'text-disabled' : !hasNextNavRecords}]"/>
+                </SquareButton>
+                <SquareButton @click="closeModal" title="Close User Feed Modal"
+                class="ml-auto bg-btn hover:bg-red-600 focus-visible:bg-red-600">
+                    <i-mingcute:close-fill class="text-2xl"/>
+                </SquareButton>
             </div>
             {{ void "Main Container" }}
             <div id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="0">
@@ -98,7 +109,7 @@
                             </div>
                         </div>
                         <div id="user-focus-bio" class="flex flex-col py-2 px-4 mb-2s w-full border-y border-outlineLighter shrink grow-0 self-start">
-                            <div class="text-xs text-hover">Bio</div>
+                            <div class="text-xs text-secondary">Bio</div>
                             <div v-if="awaitingProfileData" class="flex flex-col gap-1 animate-pulse">
                                 <div class="bg-slate-500 rounded h-4 w-4/5"></div>
                                 <div class="bg-slate-500 rounded h-4 w-2/3"></div>
@@ -109,27 +120,27 @@
                         </div>
                         <div id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
                         :style="{'top':userSummaryBottomPos+'px'}">
-                            <div @click="viewFeed" class="w-full hover:bg-hover cursor-pointer"
+                            <div @click="viewFeed" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View User's Feed (Posts, Retweets)">
                                 <div class="pt-2 pb-1">Feed</div>
                                 <div v-if="isViewingFeed" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div @click="viewPosts" class="w-full hover:bg-hover cursor-pointer"
+                            <div @click="viewPosts" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View Posts only by current User">
                                 <div class="pt-2 pb-1">Posts</div>
                                 <div v-if="isViewingPosts" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div @click="viewReplies" class="w-full hover:bg-hover cursor-pointer"
+                            <div @click="viewReplies" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View User's Replies">
                                 <div class="pt-2 pb-1">Replies</div>
                                 <div v-if="isViewingReplies" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div @click="viewMedia" class="w-full hover:bg-hover cursor-pointer"
+                            <div @click="viewMedia" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View Posts User has made containing Images/Video">
                                 <div class="pt-2 pb-1">Media</div>
                                 <div v-if="isViewingMedia" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div v-if="isThisCurrentUserAccount" @click="viewLikes" class="w-full hover:bg-hover cursor-pointer"
+                            <div v-if="isThisCurrentUserAccount" @click="viewLikes" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View Your Liked Posts">
                                 <div class="pt-2 pb-1">Likes</div>
                                 <div v-if="isViewingLikes" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
@@ -189,15 +200,18 @@
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
-                            <div v-else-if="!awaitingProfileData && UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
+                            <SquareButton v-else-if="!awaitingProfileData && UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
                             @click="loadOlderPosts"
-                            class="flex justify-center rounded p-1 gap-1 w-full items-center cursor-pointer
+                            focus-padding="[1px]"
+                            class="rounded h-8 p-1 mt-4s w-full items-center cursor-pointer
                             border border-outline bg-btn hover:bg-btnHover"
                             :title="isViewingLikes ? 'NOTE: Currently loading likes is broken - cannot currently identify end of stream' : 'Click to load older posts'">
-                                <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
-                                <i-mingcute:plus-fill v-else/>
-                                <div>Load more</div>
-                            </div>
+                                <div class="flex items-center gap-1">
+                                    <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
+                                    <i-mingcute:plus-fill v-else/>
+                                    <div>Load more</div>
+                                </div>
+                            </SquareButton>
                         </div>
                         {{ void "Media Posts" }}
                         <div v-if="isViewingMedia" class="py-4 w-full">
@@ -238,13 +252,17 @@
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
-                            <div v-else-if="UserFocusModalState.GetCurrentHistoryData().FeedData.cursor && !isAwaitingTabSwitchData" @click="loadOlderPosts"
-                            class="flex justify-center rounded p-1 gap-1 mt-4 mx-4 w-fulls items-center cursor-pointer
+                            <SquareButton v-else-if="UserFocusModalState.GetCurrentHistoryData().FeedData.cursor &&
+                            !isAwaitingTabSwitchData" @click="loadOlderPosts"
+                            focus-padding="[1px]"
+                            class="rounded h-8 p-1 mt-4 mx-4 w-full items-center cursor-pointer
                             border border-outline bg-btn hover:bg-btnHover">
-                                <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
-                                <i-mingcute:plus-fill v-else/>
-                                <div>Load more</div>
-                            </div>
+                                <div class="flex items-center gap-1">
+                                    <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
+                                    <i-mingcute:plus-fill v-else/>
+                                    <div>Load more</div>
+                                </div>
+                            </SquareButton>
                         </div>
                     </div>
                 </div>
@@ -285,6 +303,7 @@ import { MediaType } from '../../enums/PostEnums';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { getAuthorFeed, getAuthorLikes, getAuthorPostsOnly, getAuthorRepliesOnly } from '../../lib/api/Feed.vue';
+import SquareButton from '../Utilities/SquareButton.vue';
 
 export default defineComponent({
     data(){
@@ -334,6 +353,7 @@ export default defineComponent({
         FollowUser,
         VerifiedBadge,
         ToContainerTop,
+        SquareButton,
     },
     methods:{
         /**Prepares and displays data when the "Posts" tab is clicked. */

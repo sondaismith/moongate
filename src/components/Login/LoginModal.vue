@@ -98,7 +98,7 @@
                     <SquareButton @click="loginAccount" :is-disabled="isLoginDisabled"
                     :is-awaiting-response="attemptingLogin" :title="titleMessage"
                     class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
-                    text-primary md:self-end md:w-40">Login</SquareButton>
+                    text-primary md:self-end md:w-40 h-10">Login</SquareButton>
                 </div>
                 <div class="h-[1px] bg-slate-500 my-2"></div>
                 {{ void "browse without account" }}
