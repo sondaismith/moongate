@@ -4,7 +4,7 @@
         <div class="relative z-20 flex flex-col max-w-[40rem] w-full md:w-2/3s h-full max-h-[30rem]
         m-4 my-auto sm:m-auto rounded bg-focusBG text-primary border border-sidebar drop-shadow-lg
         overflow-hidden">
-            <div class="flex gap-1 px-2 py-1 border-b border-outline items-center text-3xl font-light select-none">
+            <div class="flex gap-1 px-2 py-1 border-b border-outline items-center text-2xl font-light select-none">
                 <i-mingcute:settings-2-line/>
                 <div>Application Settings</div>
                 <div @click="closeModal" class="rounded overflow-hidden borders border-outline text-2xl
@@ -13,8 +13,8 @@
                     <i-mingcute:close-fill/>
                 </div>
             </div>
-            <div class="flex grow overflow-hidden">
-                <div class="flex flex-col gap-1 bg-postBG text-primary p-2 drop-shadow min-w-36">
+            <div class="flex flex-col sm:flex-row grow overflow-hidden">
+                <div class="flex sm:flex-col text-nowrap overflow-x-auto gap-1 bg-postBG text-primary p-2 drop-shadow min-w-36">
                     <SettingsCategory v-for="(category, index) in SetttingData.Options" :index="index"
                     :selected="index == selectedCategoryIndex" @category-clicked="switchCategory">
                         {{ category.name }}

@@ -45,8 +45,7 @@
                                     :class="[item.value == selectedFeedType ? '!border-feedtypeBtnSelected' : '',
                                         !AppState.isAuthBrowsing && item.value == FeedEnums.Types.Notifications ? 'bg-disabled' : 'hover:bg-feedTypeBtnHover'
                                     ]">
-                                        <div class="border-2 border-transparent group-focus:border-feedtypeBtnFocusHighlight rounded-full px-3 py-1s">{{ item.name }}</div>
-                                        <!-- {{ item.name }} -->
+                                        <div class="border-2 border-transparent group-focus-visible:border-feedtypeBtnFocusHighlight rounded-full px-3 py-1s">{{ item.name }}</div>
                                     </button>
                                 </div>
                             </div>

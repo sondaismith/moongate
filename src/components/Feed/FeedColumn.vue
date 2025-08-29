@@ -1,6 +1,6 @@
 <template>
     <div data-test="feed-column" :id="feedData?.description.feedId"
-    class="flex flex-col relative w-72 pr-1 bg-banner
+    class="flex flex-col shrink-0 relative w-72 pr-1 bg-banner
     overflow-hidden max-w-[600px] origin-top-left"
     :style="`width:${feedData?.description.feedColumnSettings.width}px`">
         {{ void "feed title" }}

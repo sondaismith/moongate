@@ -50,11 +50,6 @@
                             <InLaInput data-testid="login-username-input" v-model="enteredUsername" class="rounded-r-none" textLabel="Handle" :fillContainer="true"/>
                             <!-- <InLaInput v-model="hostProvider" class="rounded-l-none border-l-0" textLabel="Host" :isDisabled="true" :fillContainer="true"/> -->
                             <div class="relative flex flex-col group w-full cursor-pointer">
-                                <!-- <input data-testid="inlainput-input"
-                                    class="peer bg-searchbarBG leading-8 px-2 pt-3 h-11
-                                    border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight rounded-md
-                                    disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none
-                                    w-full"/> -->
                                 <button v-if="isUsingDefaultHost" @click="toggleAccountProvider" title="Change Hosting Provider"
                                 class="group relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
                                 rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-blue-100
