@@ -38,7 +38,7 @@
                         hover:border-transparent shadow-none">
                             <i-mingcute:settings-6-fill/>
                         </button>
-                        <div v-if="!isOnMobileTouchscreen()" title="Reorder"
+                        <div v-if="!onMobileTouchscreen" title="Reorder"
                         class="flex text-2xl cursor-grab hover:text-cyan-400 w-[30.8px]"
                         @pointerdown="handleFeedColumnMouseDown($event,listIndex)">
                             <i-mingcute:menu-line class="pointer-events-none h-full m-auto"/>
@@ -558,6 +558,11 @@ export default defineComponent({
             // (currentDraggedColumn as HTMLElement).style.left = `${x-FeedState.dragColumnStartingX-FeedState.dragColumnClickXPos+scrollPos}px`;//will drag from clicked area
             (currentDraggedColumn as HTMLElement).style.left = `${x-FeedState.dragColumnStartingX-currentDraggedColumn.clientWidth/2+scrollPos}px`;//will drag from center of column
         },
+    },
+    computed:{
+        onMobileTouchscreen(){
+            return isOnMobileTouchscreen();
+        }
     },
     mounted(){
         this.isMounted = true;

@@ -24,7 +24,7 @@
                                 @dragstart="handleDragstart($event,index)" @dragover.prevent="handleDragover(index)"
                                 @drop="handleDrop" @dragend="handleDragend"/> -->
 
-                                <FeedButton v-if="!isOnMobileTouchscreen()" v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
+                                <FeedButton v-if="!onMobileTouchscreen" v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
                                 :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
                                 :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
                                 :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
@@ -525,6 +525,11 @@ import { isOnMobileTouchscreen } from "./helpers/states";
                 FeedState.newFeedColumnIndex = FeedState.oldFeedColumnIndex;
                 (e.currentTarget as HTMLElement).querySelectorAll("[data-test='feedColumn-highlight']")[0].classList.remove('feed-dropzone-highlight');
             },
+        },
+        computed:{
+            onMobileTouchscreen(){
+                return isOnMobileTouchscreen();
+            }
         },
         created(){
             this.appStartupProcedure();
