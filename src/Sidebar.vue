@@ -24,7 +24,7 @@
                                 @dragstart="handleDragstart($event,index)" @dragover.prevent="handleDragover(index)"
                                 @drop="handleDrop" @dragend="handleDragend"/> -->
 
-                                <FeedButton v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
+                                <FeedButton v-if="!isOnMobileTouchscreen()" v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
                                 :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
                                 :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
                                 :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
@@ -32,6 +32,11 @@
                                 @pointerdown="handleFeedButtonLongpress($event,index)" @pointerup="handleFeedButtonMouseup"
                                 @pointerover="handleFeedButtonMouseover($event,index)" @pointerleave="handleFeedButtonMouseLeave"
                                 class="draggable"/>
+                                <FeedButton v-else v-for="(feed) in FeedState.FeedList" :key="feed.description.feedId"
+                                :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
+                                :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
+                                :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
+                                :button-being-dragged="isDraggingButton"/>
                             </TransitionGroup>
                         </div>
                     </div>
@@ -173,6 +178,7 @@ import FeedColumn from "./components/Feed/FeedColumn.vue";
 import { IFeedDBData } from "./interfaces/FeedInterfaces";
 import IntroMessage from "./components/Intro/IntroMessage.vue";
 import SidebarButton from "./components/Navbar/SidebarButton.vue";
+import { isOnMobileTouchscreen } from "./helpers/states";
 
 
     export default defineComponent({
@@ -214,6 +220,7 @@ import SidebarButton from "./components/Navbar/SidebarButton.vue";
                 isDraggingButton:false,
                 /**Used to correctly position `FeedButton` when it is being dragged. */
                 dragButtonStartingY:0,
+                isOnMobileTouchscreen,
             }
         },
         methods: {

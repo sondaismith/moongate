@@ -38,7 +38,7 @@
                         hover:border-transparent shadow-none">
                             <i-mingcute:settings-6-fill/>
                         </button>
-                        <div title="Reorder"
+                        <div v-if="!isOnMobileTouchscreen()" title="Reorder"
                         class="flex text-2xl cursor-grab hover:text-cyan-400 w-[30.8px]"
                         @pointerdown="handleFeedColumnMouseDown($event,listIndex)">
                             <i-mingcute:menu-line class="pointer-events-none h-full m-auto"/>
@@ -229,6 +229,7 @@ import NotificationRecord from './NotificationRecord.vue';
 import { AppState } from '../../state/AppState.vue';
 import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 import TrendingTopic from './TrendingTopic.vue';
+import { isOnMobileTouchscreen } from '../../helpers/states';
 
 var colElement;
 
@@ -282,6 +283,7 @@ export default defineComponent({
             FeedEnums,
             FeedState,
             convertToShortTimestamp,
+            isOnMobileTouchscreen,
         }
     },
     props: {
