@@ -120,6 +120,9 @@
             <PostFocusModal v-if="postDetails.isFocusVisible" :initial-thread-uri="postDetails.uriOfPostToShow" :clicked-media-index="postDetails.clickedMediaIndex"/>
         </Transition>
         <Transition name="modal">
+            <FeedOrderModal v-if="AppState.isUpdatingFeedPosition" :feed-id-to-update="FeedState.selectedFeed"/>
+        </Transition>
+        <Transition name="modal">
             <FeedEditModal v-if="AppState.isCreatingFeed || AppState.isUpdatingFeed"/>
         </Transition>
         <Transition>
@@ -179,6 +182,7 @@ import { IFeedDBData } from "./interfaces/FeedInterfaces";
 import IntroMessage from "./components/Intro/IntroMessage.vue";
 import SidebarButton from "./components/Navbar/SidebarButton.vue";
 import { isOnMobileTouchscreen } from "./helpers/states";
+import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
 
 
     export default defineComponent({
@@ -188,6 +192,7 @@ import { isOnMobileTouchscreen } from "./helpers/states";
             SidebarButton,
             FeedColumn,
             FeedEditModal,
+            FeedOrderModal,
             PostFocusModal,
             UserFocusModal,
             CreatePost,

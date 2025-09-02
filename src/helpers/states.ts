@@ -4,7 +4,7 @@
  * the means to reorder `FeedButton` and `FeedColumn` components.
  */
 export function isOnMobileTouchscreen(){
-    console.log('beeb')
+    // console.log('debug');
     return (('ontouchstart' in window) &&
     (navigator.maxTouchPoints > 0));
 }

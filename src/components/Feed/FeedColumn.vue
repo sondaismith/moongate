@@ -43,6 +43,11 @@
                         @pointerdown="handleFeedColumnMouseDown($event,listIndex)">
                             <i-mingcute:menu-line class="pointer-events-none h-full m-auto"/>
                         </div>
+                        <div v-else title="Reorder"
+                        class="flex text-2xl cursor-pointer hover:text-cyan-400 w-[30.8px]"
+                        @click="openFeedOrderModal">
+                            <i-mingcute:menu-line class="pointer-events-none h-full m-auto"/>
+                        </div>
                 </div>
             </div>
         </div>
@@ -216,7 +221,7 @@ import { defineComponent, PropType } from 'vue';
 import { DebugFlags } from '../../state/Debug.vue';
 import { IFeedListing } from '../../interfaces/FeedInterfaces';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
-import { ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
+import { ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, updateFeedColumnSettings, UpdateSelectedFeed } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { debounce } from '../../helpers/debouncer';
@@ -558,6 +563,17 @@ export default defineComponent({
             // (currentDraggedColumn as HTMLElement).style.left = `${x-FeedState.dragColumnStartingX-FeedState.dragColumnClickXPos+scrollPos}px`;//will drag from clicked area
             (currentDraggedColumn as HTMLElement).style.left = `${x-FeedState.dragColumnStartingX-currentDraggedColumn.clientWidth/2+scrollPos}px`;//will drag from center of column
         },
+        /**
+         * Method used to open the {@link FeedOrderModal}
+         * modal to update the position of the current `FeedColumn` in the
+         * Feed list.
+         */
+        openFeedOrderModal(){
+            if(this.feedData){
+                UpdateSelectedFeed(this.feedData.description.feedId);
+                AppState.showFeedOrderModal();
+            }
+        }
     },
     computed:{
         onMobileTouchscreen(){
