@@ -21,9 +21,9 @@
                 <div class="text-2xl">Update Feed Position</div>
                 <div class="w-10s">
                     <!-- <input type="range" min="0" :max="totalFeedCount" step="1" v-model="newFeedPos" class="w-full shadow-none"/> -->
-                    <input type="range" min="0" :max="totalFeedCount" step="1" v-model="FeedState.newFeedColumnIndex" class="w-full shadow-none"/>
+                    <input type="range" min="1" :max="totalFeedCount" step="1" v-model="FeedState.newFeedColumnIndex" class="w-full shadow-none"/>
                     <div class="flex justify-between">
-                        <div>0</div>
+                        <div>1</div>
                         <div>{{ totalFeedCount }}</div>
                     </div>
                 </div>
@@ -77,9 +77,9 @@ export default defineComponent({
         updateFeedPosition(){
             if(FeedState.newFeedColumnIndex != FeedState.oldFeedColumnIndex){
                 // remove element from its oldIndex
-                const elRemoved = FeedState.FeedList.splice(FeedState.oldFeedColumnIndex, 1)[0];
+                const elRemoved = FeedState.FeedList.splice(FeedState.oldFeedColumnIndex-1, 1)[0];
                 // insert it at its new index
-                FeedState.FeedList.splice(FeedState.newFeedColumnIndex, 0, elRemoved);
+                FeedState.FeedList.splice(FeedState.newFeedColumnIndex-1, 0, elRemoved);
                 AppState.hideFeedOrderModal();
             }
         }
@@ -89,14 +89,12 @@ export default defineComponent({
             return FeedState.FeedList.length>0;
         },
         totalFeedCount():number{
-            return FeedState.FeedList.length-1;
+            return FeedState.FeedList.length;
         },
         doesFeedExist():boolean{
-            // return this.originalFeedPos > -1;
             return FeedState.oldFeedColumnIndex > -1;
         },
         willPositionChange(){
-            // return this.originalFeedPos != this.newFeedPos;
             return FeedState.oldFeedColumnIndex != FeedState.newFeedColumnIndex;
         }
     },
@@ -105,7 +103,7 @@ export default defineComponent({
             let index = FeedState.FeedList.findIndex(x => x.description.feedId == this.feedIdToUpdate);
             if(index != -1){
                 // this.originalFeedPos = this.newFeedPos = index;
-                FeedState.oldFeedColumnIndex = FeedState.newFeedColumnIndex = index;
+                FeedState.oldFeedColumnIndex = FeedState.newFeedColumnIndex = index+1;
             }
         }
     }

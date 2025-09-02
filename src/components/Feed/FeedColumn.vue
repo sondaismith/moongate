@@ -509,7 +509,7 @@ export default defineComponent({
             grabbedColumn.classList.add('drag-column-start','dragging');
             //update `FeedColumn` related variables in State
             FeedState.isGrabbingColumn = true;
-            FeedState.oldFeedColumnIndex = oldIndex;
+            FeedState.oldFeedColumnIndex = oldIndex+1;
             FeedState.dragColumnStartingX = grabbedColumn.offsetLeft;
             FeedState.dragColumnClickXPos = e.layerX;
             //Update grab position when initially dragged
@@ -536,9 +536,9 @@ export default defineComponent({
                 //If position is new
                 if(FeedState.newFeedColumnIndex != FeedState.oldFeedColumnIndex){
                     // remove element from its oldIndex
-                    const elRemoved = FeedState.FeedList.splice(FeedState.oldFeedColumnIndex, 1)[0];
+                    const elRemoved = FeedState.FeedList.splice(FeedState.oldFeedColumnIndex-1, 1)[0];
                     // insert it at its new index
-                    FeedState.FeedList.splice(FeedState.newFeedColumnIndex, 0, elRemoved);
+                    FeedState.FeedList.splice(FeedState.newFeedColumnIndex-1, 0, elRemoved);
                 }
                 columnBeingDropped.style.removeProperty('left');
                 columnBeingDropped.style.removeProperty('transition');

@@ -64,7 +64,7 @@
                     <!-- <FeedColumn v-for="feed in feedListing.feedList" :key="feed" :feedData="feed"/> -->
                     <FeedColumn v-for="(feed, index) in FeedState.FeedList" :list-index="index"
                     :key="feed.description.feedId" :feedData="feed"
-                    @pointerover="handleFeedColumnMouseover($event,index)"
+                    @pointerover="handleFeedColumnMouseover($event,index+1)"
                     @pointerleave="handleFeedColumnMouseLeave"
                     class="draggable"/>
                 </TransitionGroup>
