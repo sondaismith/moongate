@@ -3,17 +3,21 @@
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         <div class="z-20 flex flex-col gap-2 w-4/5 md:w-2/3 lg:max-w-[700px]
             h-2/3 md:h-auto bg-focusBG text-primary p-4 mx-auto my-auto rounded-md">
-            <div v-if="false">
+            <div v-if="true">
                 <div>Do any Feeds exist?: {{ totalFeedCount>0 }}</div>
                 <div>FeedId: {{ feedIdToUpdate }}</div>
                 <div>Feed found: {{ doesFeedExist }}</div>
                 <div>New Pos different from Orig?: {{ willPositionChange }}</div>
             </div>
-            <div v-if="totalFeedCount<1" class="flex gap-1 items-center text-2xl bg-green-400">
+            <div v-if="!hasFeedIdBeenProvided" data-testid="feedOrderModal-no-feedId" class="flex gap-1 items-center text-2xl bg-green-400">
+                <i-mdi:sms-failed-outline class="shrink-0"/>
+                <div class="text-2xl">No FeedId provided...</div>
+            </div>
+            <div v-else-if="totalFeedCount<1" data-testid="feedOrderModal-no-feeds" class="flex gap-1 items-center text-2xl bg-green-400">
                 <i-mdi:sms-failed-outline class="shrink-0"/>
                 <div class="text-2xl">No Feeds exist to reorder...</div>
             </div>
-            <div v-else-if="!doesFeedExist" class="flex gap-1 items-center text-2xl bg-green-400">
+            <div v-else-if="!doesFeedExist" data-testid="feedOrderModal-feed-not-found" class="flex gap-1 items-center text-2xl bg-green-400">
                 <i-mdi:sms-failed-outline class="shrink-0"/>
                 <div>Matching Feed could not be found...</div>
             </div>
@@ -38,10 +42,13 @@
                 disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none" v-model="FeedState.newFeedColumnIndex">
                 </div>
             </div>
+            <div>{{ FeedState.FeedList.length }}</div>
+            <div>{{ $data.FeedState.FeedList.length }}</div>
             <div class="flex justify-between mt-auto">
                 <SquareButton @click="closeModal">Cancel</SquareButton>
                 <SquareButton @click="updateFeedPosition" :is-disabled="!willPositionChange">Update</SquareButton>
             </div>
+            <button @click="getFeedToUpdatePositionOf" class="bg-yellow-500 rounded cursor-pointer">TEST-Look for match</button>
         </div>
     </div>
 </template>
@@ -75,37 +82,61 @@ export default defineComponent({
             AppState.hideFeedOrderModal();
         },
         updateFeedPosition(){
-            if(FeedState.newFeedColumnIndex != FeedState.oldFeedColumnIndex){
+            if(this.FeedState.newFeedColumnIndex != this.FeedState.oldFeedColumnIndex){
                 // remove element from its oldIndex
-                const elRemoved = FeedState.FeedList.splice(FeedState.oldFeedColumnIndex-1, 1)[0];
+                const elRemoved = this.FeedState.FeedList.splice(this.FeedState.oldFeedColumnIndex-1, 1)[0];
                 // insert it at its new index
-                FeedState.FeedList.splice(FeedState.newFeedColumnIndex-1, 0, elRemoved);
+                this.FeedState.FeedList.splice(this.FeedState.newFeedColumnIndex-1, 0, elRemoved);
                 AppState.hideFeedOrderModal();
+            }
+        },
+        getFeedToUpdatePositionOf(){
+            if(this.feedIdToUpdate && this.feedIdToUpdate.trim() != ''){
+                // let index = FeedState.FeedList.findIndex(x => x.description.feedId == this.feedIdToUpdate);
+                let index = this.FeedState.FeedList.findIndex(x => x.description.feedId == this.feedIdToUpdate);
+                if(index != -1){
+                    // this.originalFeedPos = this.newFeedPos = index;
+                    this.FeedState.oldFeedColumnIndex = this.FeedState.newFeedColumnIndex = index+1;
+                }
             }
         }
     },
+    // watch:{
+    //     feedIdToUpdate(newId){
+    //         if(newId && newId.trim() != ''){
+    //             let index = FeedState.FeedList.findIndex(x => x.description.feedId == this.feedIdToUpdate);
+    //             if(index != -1){
+    //                 // this.originalFeedPos = this.newFeedPos = index;
+    //                 FeedState.oldFeedColumnIndex = FeedState.newFeedColumnIndex = index+1;
+    //             }
+    //         }
+    //     }
+    // },
     computed:{
+        hasFeedIdBeenProvided():boolean{
+            return this.feedIdToUpdate != undefined && this.feedIdToUpdate.trim() != '';
+        },
         doFeedsExist():boolean{
-            return FeedState.FeedList.length>0;
+            return this.FeedState.FeedList.length>0;
         },
         totalFeedCount():number{
-            return FeedState.FeedList.length;
+            return this.FeedState.FeedList.length;
         },
         doesFeedExist():boolean{
-            return FeedState.oldFeedColumnIndex > -1;
+            return this.FeedState.oldFeedColumnIndex > -1;
         },
         willPositionChange(){
-            return FeedState.oldFeedColumnIndex != FeedState.newFeedColumnIndex;
+            return this.FeedState.oldFeedColumnIndex != this.FeedState.newFeedColumnIndex;
         }
     },
     mounted(){
-        if(this.feedIdToUpdate.trim() != ''){
-            let index = FeedState.FeedList.findIndex(x => x.description.feedId == this.feedIdToUpdate);
+        if(this.feedIdToUpdate && this.feedIdToUpdate.trim() != ''){
+            let index = this.FeedState.FeedList.findIndex(x => x.description.feedId == this.feedIdToUpdate);
             if(index != -1){
                 // this.originalFeedPos = this.newFeedPos = index;
-                FeedState.oldFeedColumnIndex = FeedState.newFeedColumnIndex = index+1;
+                this.FeedState.oldFeedColumnIndex = this.FeedState.newFeedColumnIndex = index+1;
             }
         }
-    }
+    },
 })
 </script>

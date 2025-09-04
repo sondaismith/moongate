@@ -23,28 +23,26 @@
                     </div>
                     <div class="text-feedTimestamp leading-4 text-nowrap content-end text-secondary">Updated: {{ getTimeStampFormat() }}</div>
                 </div>
-                <div class="flex ml-auto">
+                <div class="flex items-center ml-auto">
                         <!-- <div title="Add - DEBUG" @click="addNewPost" class="cursor-pointer hover:text-cyan-400"><i-mingcute:plus-fill/></div> -->
-                        <button title="Refresh" @click="refreshFeed(feedData?.description.feedId)"
-                        class="text-2xl cursor-pointer hover:text-cyan-400 bg-[auto_0] bg-gradient-to-t from-slate-400 to-slate-800
-                        focus-visible:outline focus-visible:outline-searchbarFocusHightlight focus-visible:text-cyan-400
-                        hover:border-transparent shadow-none"
+                        <SquareButton title="Refresh" @click="refreshFeed(feedData?.description.feedId)" button-padding="0" focus-padding="0"
+                        class="text-2xl cursor-pointer bg-transparent text-primary hover:text-cyan-400 bg-[auto_0] bg-gradient-to-t from-slate-400 to-slate-800
+                        focus-visible:text-cyan-400 hover:border-transparent shadow-none"
                         :class="{'!cursor-not-allowed text-slate-400 hover:text-slate-400 refresh-timeout' : isAwaitingRefreshTimeout}">
                             <i-mingcute:refresh-3-fill/>
-                        </button>
-                        <button title="Options" @click="toggleFeedColumnOptionsMenu()"
-                        class="text-2xl cursor-pointer hover:text-cyan-400 focus-visible:outline
-                        focus-visible:outline-searchbarFocusHightlight focus-visible:text-cyan-400
+                        </SquareButton>
+                        <SquareButton title="Options" @click="toggleFeedColumnOptionsMenu()" button-padding="0" focus-padding="0"
+                        class="text-2xl cursor-pointer bg-transparent text-primary hover:text-cyan-400  focus-visible:text-cyan-400
                         hover:border-transparent shadow-none">
                             <i-mingcute:settings-6-fill/>
-                        </button>
+                        </SquareButton>
                         <div v-if="!onMobileTouchscreen" title="Reorder"
-                        class="flex text-2xl cursor-grab hover:text-cyan-400 w-[30.8px]"
+                        class="flex text-2xl cursor-grab hover:text-cyan-400 w-[34.8px]"
                         @pointerdown="handleFeedColumnMouseDown($event,listIndex)">
                             <i-mingcute:menu-line class="pointer-events-none h-full m-auto"/>
                         </div>
                         <div v-else title="Reorder"
-                        class="flex text-2xl cursor-pointer hover:text-cyan-400 w-[30.8px]"
+                        class="flex text-2xl cursor-pointer hover:text-cyan-400 w-[34.8px]"
                         @click="openFeedOrderModal">
                             <i-mingcute:menu-line class="pointer-events-none h-full m-auto"/>
                         </div>
@@ -235,6 +233,7 @@ import { AppState } from '../../state/AppState.vue';
 import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 import TrendingTopic from './TrendingTopic.vue';
 import { isOnMobileTouchscreen } from '../../helpers/states';
+import SquareButton from '../Utilities/SquareButton.vue';
 
 var colElement;
 
@@ -249,6 +248,7 @@ export default defineComponent({
         FocusFeedPost,
         NotificationRecord,
         TrendingTopic,
+        SquareButton,
     },
     data(){
         return{

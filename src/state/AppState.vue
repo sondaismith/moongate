@@ -394,7 +394,7 @@ export const AppState = reactive({
      * Value used to indicate if the "Feed Order Change" modal
      * is currently visible.
      */
-    isUpdatingFeedPosition:true,
+    isUpdatingFeedPosition:false,
     /**Method that causes the "Feed Order Change" modal to be displayed. */
     showFeedOrderModal(){ this.isUpdatingFeedPosition = true; },
     /**Method that causes the "Feed Order Change" modal to be hidden. */

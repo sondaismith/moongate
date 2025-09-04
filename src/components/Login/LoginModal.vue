@@ -29,7 +29,7 @@
                 {{ void "close button" }}
                 <div class="relative top-1">
                     <button v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full
-                    border-red-500 size-7 text-sm text-red-500 hover:text-red-700 hover:border-red-700
+                    bg-transparent border-red-500 size-7 p-0 text-sm text-red-500 hover:text-red-700 hover:border-red-700
                     focus-visible:outline focus-visible:outline-feedtypeBtnFocusHighlight active:bg-red-200
                     justify-center items-center cursor-pointer">
                         <i-mingcute:close-fill/>
@@ -99,8 +99,8 @@
                 {{ void "browse without account" }}
                 <div class="relative flex flex-col items-start">
                     <button data-testid="browse-as-guest-button" @click="browseAsGuest"
-                    class="text-blue-400 hover:text-blue-500 border-none shadow-none cursor-pointer
-                    focus-visible:outline outline-2 active:bg-transparent">
+                    class="rounded bg-transparent font-normal text-blue-400 hover:text-blue-500 border-none shadow-none cursor-pointer
+                    focus-visible:outline outline-2 active:bg-transparent p-0">
                         Or Browse without an account
                     </button>
                     <div class="text-feedPostName leading-4">Note: Some content is unable to be viewed without an account due to
