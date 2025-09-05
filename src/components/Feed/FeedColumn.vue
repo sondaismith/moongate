@@ -1,5 +1,5 @@
 <template>
-    <div data-test="feed-column" :id="feedData?.description.feedId"
+    <div data-testid="feed-column" :id="feedData?.description.feedId"
     class="flex flex-col shrink-0 relative w-72 pr-1 bg-banner
     overflow-hidden max-w-[600px] origin-top-left"
     :style="`width:${feedData?.description.feedColumnSettings.width}px`">
@@ -36,12 +36,13 @@
                         hover:border-transparent shadow-none">
                             <i-mingcute:settings-6-fill/>
                         </SquareButton>
-                        <div v-if="!onMobileTouchscreen" title="Reorder"
+                        <div v-if="!AppState.isAppOnMobileTouchscreenDevice" data-testid="feedcolumn-reorder-handle"
+                        title="Reorder"
                         class="flex text-2xl cursor-grab hover:text-cyan-400 w-[34.8px]"
                         @pointerdown="handleFeedColumnMouseDown($event,listIndex)">
                             <i-mingcute:menu-line class="pointer-events-none h-full m-auto"/>
                         </div>
-                        <div v-else title="Reorder"
+                        <div data-testid="feedcolumn-reorder-button" v-else title="Reorder"
                         class="flex text-2xl cursor-pointer hover:text-cyan-400 w-[34.8px]"
                         @click="openFeedOrderModal">
                             <i-mingcute:menu-line class="pointer-events-none h-full m-auto"/>

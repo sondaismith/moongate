@@ -399,5 +399,7 @@ export const AppState = reactive({
     showFeedOrderModal(){ this.isUpdatingFeedPosition = true; },
     /**Method that causes the "Feed Order Change" modal to be hidden. */
     hideFeedOrderModal(){ this.isUpdatingFeedPosition = false; },
+    /**Value used to indicate if App is currently running on a device with touchscreen support. */
+    isAppOnMobileTouchscreenDevice:false,
 })
 </script>

@@ -1,4 +1,3 @@
-import { nextTick } from 'vue'
 import FeedOrderModal from './FeedOrderModal.vue';
 import App from '../../App.vue';
 import Sidebar from '../../Sidebar.vue';
@@ -62,7 +61,7 @@ describe('Test Suite for FeedOrderModal', () => {
             console.log(req);
         }).as('getProfileTest');
     })
-    it.skip('comfirms "Feed not found" message is shown if no FeedId has been provided', () => {
+    it('comfirms "Feed not found" message is shown if no FeedId has been provided', () => {
         cy.mount(FeedOrderModal,{
             global:{
                 stubs:{transition:false, 'transition-group': false},
@@ -70,7 +69,7 @@ describe('Test Suite for FeedOrderModal', () => {
         })
         cy.get('[data-testid="feedOrderModal-no-feedId"').should('exist');
     })
-    it.skip('comfirms "No Feeds" message is shown if no Feed has been created', () => {
+    it('comfirms "No Feeds" message is shown if no Feed has been created', () => {
         // var sidebarComponent = wrapper.getComponent(FeedOrderModal);
 
         // sidebarComponent.vm.$data.FeedState.FeedList = [feed1,feed2];
@@ -96,30 +95,57 @@ describe('Test Suite for FeedOrderModal', () => {
         // })
         cy.get('[data-testid="feedOrderModal-no-feeds"').should('exist');
     })
-    it.skip('comfirms "No Feeds" message is shown if no Feed has been created', () => {
-        // var sidebarComponent = wrapper.getComponent(FeedOrderModal);
-
-        // sidebarComponent.vm.$data.FeedState.FeedList = [feed1,feed2];
+    it('comfirms "No Matching Feed found" message is shown if no Feed with a matching FeedId can be found', () => {
         cy.mount(FeedOrderModal,{
             global:{
                 stubs:{transition:false, 'transition-group': false},
             },
             props:{
-                // feedIdToUpdate: '0cf299da9c',
-                feedIdToUpdate: feed1.description.feedId,
+                feedIdToUpdate: 'this-feedId-does-not-exist',
             },
-            // data(){
-            //     return{
-            //         FeedState:{
-            //             FeedList:[feed1,feed2],
-            //         }
-            //     }
-            // }
+            data(){
+                return{
+                    FeedState:{
+                        FeedList:[feed1,feed2],
+                    }
+                }
+            }
         })
-        // .then( async({ wrapper }) => {
-        //     // var sidebarComponent = wrapper.getComponent(Sidebar);
-        //     var sidebarComponent = wrapper.getComponent(FeedOrderModal);
-        // })
-        cy.get('[data-testid="feedOrderModal-no-feeds"').should('exist');
+        cy.get('[data-testid="feedOrderModal-feed-not-found"').should('exist');
+    })
+    it('selects the 2nd feed, makes no change, ensures submit cannot be clicked', () => {
+        cy.mount(Sidebar,{
+            global:{
+                stubs:{transition:false, 'transition-group': false},
+            },
+        })
+        .then(({wrapper}) => {
+            console.log(wrapper.vm.$data);
+            wrapper.vm.$data.FeedState.FeedList = [feed1,feed2];
+            wrapper.vm.$data.AppState.isAppOnMobileTouchscreenDevice = true; //spoof that this is a mobile touchscreen device
+        })
+        cy.get('[data-testid="feedcolumn-reorder-button"').eq(1).click();
+        cy.get('[data-testid="feedOrderModal-original-position-label"').should('contain',2);
+        cy.get('[data-testid="feedOrderModal-update-button"').should('be.disabled');
+    })
+    it('selects the 2nd feed, moves it to 1st position', () => {
+        cy.mount(Sidebar,{
+            global:{
+                stubs:{transition:false, 'transition-group': false},
+            },
+        })
+        .then(({wrapper}) => {
+            console.log(wrapper.vm.$data);
+            wrapper.vm.$data.FeedState.FeedList = [feed1,feed2];
+            wrapper.vm.$data.AppState.isUpdatingFeedPosition = false; //modal seems to stay open from prev test, this makes sure it's closed
+            wrapper.vm.$data.AppState.isAppOnMobileTouchscreenDevice = true; //spoof that this is a mobile touchscreen device
+        })
+        cy.get('[data-testid="feedcolumn-reorder-button"').eq(1).click();
+        cy.wait(200);
+        cy.get('[data-testid="feedOrderModal-original-position-label"').should('contain',2);
+        cy.get('[data-testid="feedOrderModal-order-position-range"').should('exist').invoke('val',1).trigger('input');
+        // cy.get('[data-testid="feedOrderModal-new-position-input"').should('exist').invoke('val',1).trigger('input');
+        cy.get('[data-testid="feedOrderModal-update-button"').trigger('click');
+        cy.get('[data-testid="feed-column"').eq(0).should('have.id', feed2.description.feedId);
     })
 })

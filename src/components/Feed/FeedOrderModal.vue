@@ -1,9 +1,10 @@
 <template>
-    <div class="absolute z-10 flex w-full h-full text-primary bg-slate-900/80 backdrop-blur-sm focus-visible:outline-none">
+    <div data-testid="feedOrderModal" class="absolute z-10 flex w-full h-full text-primary bg-slate-900/80 backdrop-blur-sm focus-visible:outline-none">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         <div class="z-20 flex flex-col gap-2 w-4/5 md:w-2/3 lg:max-w-[700px]
             h-2/3 md:h-auto bg-focusBG text-primary p-4 mx-auto my-auto rounded-md">
             <div v-if="true">
+                <div>isUpdatingFeedPosition value:{{ AppState.isUpdatingFeedPosition }}</div>
                 <div>Do any Feeds exist?: {{ totalFeedCount>0 }}</div>
                 <div>FeedId: {{ feedIdToUpdate }}</div>
                 <div>Feed found: {{ doesFeedExist }}</div>
@@ -25,7 +26,7 @@
                 <div class="text-2xl">Update Feed Position</div>
                 <div class="w-10s">
                     <!-- <input type="range" min="0" :max="totalFeedCount" step="1" v-model="newFeedPos" class="w-full shadow-none"/> -->
-                    <input type="range" min="1" :max="totalFeedCount" step="1" v-model="FeedState.newFeedColumnIndex" class="w-full shadow-none"/>
+                    <input data-testid="feedOrderModal-order-position-range" type="range" min="1" :max="totalFeedCount" step="1" v-model="FeedState.newFeedColumnIndex" class="w-full shadow-none"/>
                     <div class="flex justify-between">
                         <div>1</div>
                         <div>{{ totalFeedCount }}</div>
@@ -33,20 +34,19 @@
                 </div>
                 <div class="flex gap-1">
                     <div>Original Position:</div>
-                    <div>{{ FeedState.oldFeedColumnIndex }}</div>
+                    <div data-testid="feedOrderModal-original-position-label">{{ FeedState.oldFeedColumnIndex }}</div>
                 </div>
                 <div class="flex items-center gap-1">
                     <div>New Position:</div>
-                    <input class="bg-searchbarBG leading-8 px-2 h-8 w-12
+                    <input data-testid="feedOrderModal-new-position-input" class="bg-searchbarBG leading-8 px-2 h-8 w-12
                 border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight rounded-md
                 disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none" v-model="FeedState.newFeedColumnIndex">
                 </div>
             </div>
             <div>{{ FeedState.FeedList.length }}</div>
-            <div>{{ $data.FeedState.FeedList.length }}</div>
             <div class="flex justify-between mt-auto">
-                <SquareButton @click="closeModal">Cancel</SquareButton>
-                <SquareButton @click="updateFeedPosition" :is-disabled="!willPositionChange">Update</SquareButton>
+                <SquareButton data-testid="feedOrderModal-close-button" @click="closeModal">Cancel</SquareButton>
+                <SquareButton data-testid="feedOrderModal-update-button" @click="updateFeedPosition" :is-disabled="!willPositionChange">Update</SquareButton>
             </div>
             <button @click="getFeedToUpdatePositionOf" class="bg-yellow-500 rounded cursor-pointer">TEST-Look for match</button>
         </div>

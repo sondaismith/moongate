@@ -24,7 +24,7 @@
                                 @dragstart="handleDragstart($event,index)" @dragover.prevent="handleDragover(index)"
                                 @drop="handleDrop" @dragend="handleDragend"/> -->
 
-                                <FeedButton v-if="!onMobileTouchscreen" v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
+                                <FeedButton v-if="!AppState.isAppOnMobileTouchscreenDevice" v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
                                 :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
                                 :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
                                 :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
@@ -538,6 +538,7 @@ import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
         },
         created(){
             this.appStartupProcedure();
+            AppState.isAppOnMobileTouchscreenDevice = isOnMobileTouchscreen();
         },
         mounted(){
             this.getFeedDisplayViewWidth();
