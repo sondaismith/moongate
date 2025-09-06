@@ -3,7 +3,7 @@
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         <div class="z-20 flex flex-col gap-2 w-4/5 md:w-2/3 lg:max-w-[700px]
             h-2/3 md:h-auto bg-focusBG text-primary p-4 mx-auto my-auto rounded-md">
-            <div v-if="true">
+            <div v-if="false">
                 <div>isUpdatingFeedPosition value:{{ AppState.isUpdatingFeedPosition }}</div>
                 <div>Do any Feeds exist?: {{ totalFeedCount>0 }}</div>
                 <div>FeedId: {{ feedIdToUpdate }}</div>
@@ -38,17 +38,19 @@
                 </div>
                 <div class="flex items-center gap-1">
                     <div>New Position:</div>
-                    <input data-testid="feedOrderModal-new-position-input" class="bg-searchbarBG leading-8 px-2 h-8 w-12
+                    <input data-testid="feedOrderModal-new-position-input" min="1" :max="totalFeedCount" type="number"
+                    @blur="validateNewFeedColumnIndex" class="bg-searchbarBG leading-8 px-2 h-8 w-12
                 border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight rounded-md
-                disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none" v-model="FeedState.newFeedColumnIndex">
+                disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none
+                invalid:!border-red-500"
+                v-model="FeedState.newFeedColumnIndex">
                 </div>
             </div>
-            <div>{{ FeedState.FeedList.length }}</div>
             <div class="flex justify-between mt-auto">
                 <SquareButton data-testid="feedOrderModal-close-button" @click="closeModal">Cancel</SquareButton>
-                <SquareButton data-testid="feedOrderModal-update-button" @click="updateFeedPosition" :is-disabled="!willPositionChange">Update</SquareButton>
+                <SquareButton data-testid="feedOrderModal-update-button" @click="updateFeedPosition" :is-disabled="!isPositionValid || !willPositionChange">Update</SquareButton>
             </div>
-            <button @click="getFeedToUpdatePositionOf" class="bg-yellow-500 rounded cursor-pointer">TEST-Look for match</button>
+            <button v-if="false" @click="getFeedToUpdatePositionOf" class="bg-yellow-500 rounded cursor-pointer">TEST-Look for match</button>
         </div>
     </div>
 </template>
@@ -99,6 +101,15 @@ export default defineComponent({
                     this.FeedState.oldFeedColumnIndex = this.FeedState.newFeedColumnIndex = index+1;
                 }
             }
+        },
+        /**
+         * Method used to ensure the value of the new Feed position entered
+         * is greater than zero and less than or equal to the total number of Feeds.
+         */
+        validateNewFeedColumnIndex(){
+            let validVal = FeedState.newFeedColumnIndex;
+            if(validVal<1) FeedState.newFeedColumnIndex = 1;
+            else if(validVal > this.totalFeedCount) FeedState.newFeedColumnIndex = this.totalFeedCount;
         }
     },
     // watch:{
@@ -125,6 +136,9 @@ export default defineComponent({
         doesFeedExist():boolean{
             return this.FeedState.oldFeedColumnIndex > -1;
         },
+        isPositionValid(){
+            return this.FeedState.newFeedColumnIndex > 0 && this.FeedState.newFeedColumnIndex <= this.totalFeedCount;
+        },
         willPositionChange(){
             return this.FeedState.oldFeedColumnIndex != this.FeedState.newFeedColumnIndex;
         }
@@ -140,3 +154,16 @@ export default defineComponent({
     },
 })
 </script>
+<style scoped>
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+</style>
