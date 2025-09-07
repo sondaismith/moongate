@@ -22,7 +22,7 @@ let feed1 = CreateFeed([post1,post2],feedDesc1);
 let feed2 = CreateFeed([post2,post2,post1],feedDesc2);
 
 describe('Test Suite for FeedOrderModal', () => {
-    before(() => {
+    beforeEach(() => {
         cy.intercept('GET','**/app.bsky.actor.getProfile*', (req) => {
             //DEBUG
             // console.log(req);
@@ -147,5 +147,32 @@ describe('Test Suite for FeedOrderModal', () => {
         // cy.get('[data-testid="feedOrderModal-new-position-input"').should('exist').invoke('val',1).trigger('input');
         cy.get('[data-testid="feedOrderModal-update-button"').trigger('click');
         cy.get('[data-testid="feed-column"').eq(0).should('have.id', feed2.description.feedId);
+    })
+    it('selects the 2nd feed, attempts to put high and negative invalid position into input, input validation sets value back to valid value both times', () => {
+        cy.mount(Sidebar,{
+            global:{
+                stubs:{transition:false, 'transition-group': false},
+            },
+        })
+        .then(({wrapper}) => {
+            console.log(wrapper.vm.$data);
+            wrapper.vm.$data.FeedState.FeedList = [feed1,feed2];
+            wrapper.vm.$data.AppState.isUpdatingFeedPosition = false; //modal seems to stay open from prev test, this makes sure it's closed
+            wrapper.vm.$data.AppState.isAppOnMobileTouchscreenDevice = true; //spoof that this is a mobile touchscreen device
+        })
+        cy.get('[data-testid="feedcolumn-reorder-button"').eq(1).click();
+        cy.wait(200);
+        cy.get('[data-testid="feedOrderModal-original-position-label"').should('contain',2);
+        cy.press(Cypress.Keyboard.Keys.TAB);
+        cy.get('[data-testid="feedOrderModal-new-position-input"').should('exist').click().type('{backspace}11');//type positive invalid value
+        cy.get('[data-testid="feedOrderModal-new-position-input"').should('have.value',11);
+        cy.press(Cypress.Keyboard.Keys.TAB);
+        cy.get('[data-testid="feedOrderModal-new-position-input"').should('have.value',2);//input losing focus triggers validation
+        cy.get('[data-testid="feedOrderModal-update-button"').should('be.disabled');
+        cy.get('[data-testid="feedOrderModal-new-position-input"').should('exist').click().type('{backspace}-1');//type negative invalid value
+        cy.get('[data-testid="feedOrderModal-new-position-input"').should('have.value',-1);
+        cy.press(Cypress.Keyboard.Keys.TAB);
+        cy.get('[data-testid="feedOrderModal-new-position-input"').should('have.value',1);//input losing focus triggers validation
+        cy.get('[data-testid="feedOrderModal-update-button"').should('be.enabled');
     })
 })
