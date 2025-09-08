@@ -2,7 +2,7 @@
     <div data-testid="feedOrderModal" class="absolute z-10 flex w-full h-full text-primary bg-slate-900/80 backdrop-blur-sm focus-visible:outline-none">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         <div class="z-20 flex flex-col gap-2 w-4/5 md:w-2/3 lg:max-w-[700px]
-            h-2/3 md:h-auto bg-focusBG text-primary p-4 mx-auto my-auto rounded-md">
+            bg-focusBG text-primary p-4 mx-auto my-auto rounded-md">
             <div v-if="false">
                 <div>isUpdatingFeedPosition value:{{ AppState.isUpdatingFeedPosition }}</div>
                 <div>Do any Feeds exist?: {{ totalFeedCount>0 }}</div>
@@ -47,8 +47,14 @@
                 </div>
             </div>
             <div class="flex justify-between mt-auto">
-                <SquareButton data-testid="feedOrderModal-close-button" @click="closeModal">Cancel</SquareButton>
-                <SquareButton data-testid="feedOrderModal-update-button" @click="updateFeedPosition" :is-disabled="!isPositionValid || !willPositionChange">Update</SquareButton>
+                <SquareButton data-testid="feedOrderModal-close-button" @click="closeModal" class="bg-btn hover:bg-btnHover">Cancel</SquareButton>
+                <SquareButton data-testid="feedOrderModal-update-button" @click="updateFeedPosition"
+                :is-disabled="!isPositionValid || !willPositionChange || awaitingFeedPositionUpdate">
+                    <div class="flex gap-1 items-center">
+                        <i-mingcute:loading-fill v-if="awaitingFeedPositionUpdate" class="spinner max-w-0 transition-[max-width]" :class="{'max-w-16' : awaitingFeedPositionUpdate}"/>
+                        <div>Update</div>
+                    </div>
+                </SquareButton>
             </div>
             <button v-if="false" @click="getFeedToUpdatePositionOf" class="bg-yellow-500 rounded cursor-pointer">TEST-Look for match</button>
         </div>
@@ -57,9 +63,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { FeedState } from '../../state/FeedList.vue'
+import { FeedState, SaveFeedChanges } from '../../state/FeedList.vue'
 import SquareButton from '../Utilities/SquareButton.vue';
-import { AppState } from '../../state/AppState.vue';
+import { AppState, toast } from '../../state/AppState.vue';
+import { HandleAPIError } from '../../helpers/errors';
 
 export default defineComponent({
     components:{
@@ -77,21 +84,43 @@ export default defineComponent({
             FeedState,
             originalFeedPos:-1,
             newFeedPos:-1,
+            /**Indicates if we are still waiting for the updated Feed position to be saved to disk. */
+            awaitingFeedPositionUpdate:false,
         }
     },
     methods:{
+        /**
+         * Closes the `FeedOrderModal`.
+         */
         closeModal(){
             AppState.hideFeedOrderModal();
         },
-        updateFeedPosition(){
+        /**
+         * Updates the selected Feed's position in the "Feed List".
+         * Will only perform action if the new position is different than the old.
+         */
+        async updateFeedPosition(){
             if(this.FeedState.newFeedColumnIndex != this.FeedState.oldFeedColumnIndex){
                 // remove element from its oldIndex
                 const elRemoved = this.FeedState.FeedList.splice(this.FeedState.oldFeedColumnIndex-1, 1)[0];
                 // insert it at its new index
                 this.FeedState.FeedList.splice(this.FeedState.newFeedColumnIndex-1, 0, elRemoved);
-                AppState.hideFeedOrderModal();
+                this.awaitingFeedPositionUpdate = true;
+                SaveFeedChanges().then(() => {
+                    AppState.hideFeedOrderModal();
+                })
+                .catch(err => {
+                    toast.add(HandleAPIError(err, 'Error updating Feed position'));
+                    this.awaitingFeedPositionUpdate = false;
+                })
             }
         },
+        /**
+         * TEST/DEBUG Method - This method gets the initial values needed to update the
+         * Feed associated with the provided `feedId` value. Simulates the actions that
+         * occur when displaying the `FeedOrderModal` normally (getting the original
+         * position of the Feed on mount).
+         */
         getFeedToUpdatePositionOf(){
             if(this.feedIdToUpdate && this.feedIdToUpdate.trim() != ''){
                 // let index = FeedState.FeedList.findIndex(x => x.description.feedId == this.feedIdToUpdate);
