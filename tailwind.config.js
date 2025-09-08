@@ -56,6 +56,10 @@ export default {
         navbarBtn: "oklch(from var(--color-navbar-btn) l c h / <alpha-value>)",
         navbarBtnHover: "oklch(from var(--color-navbar-btn-hover) l c h / <alpha-value>)",
         navbarBtnText: "oklch(from var(--color-navbar-btn-text) l c h / <alpha-value>)",
+        feedColumnSettingsBG: "oklch(from var(--color-feedcolumn-settings-bg) l c h / <alpha-value>)",
+        feedColumnSettingsBtnHover: "oklch(from var(--color-feedcolumn-settings-btn-hover) l c h / <alpha-value>)",
+        feedColumnSettingsBtnSelected: "oklch(from var(--color-feedcolumn-settings-btn-selected) l c h / <alpha-value>)",
+        feedColumnSettingsBtnSelectedHover: "oklch(from var(--color-feedcolumn-settings-btn-selected-hover) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

@@ -56,6 +56,10 @@
         --color-navbar-btn:theme(colors.slate.500);
         --color-navbar-btn-hover:theme(colors.slate.300);
         --color-navbar-btn-text:theme(colors.slate.900);
+        --color-feedcolumn-settings-bg:theme(colors.slate.950);
+        --color-feedcolumn-settings-btn-hover:theme(colors.gray.400);
+        --color-feedcolumn-settings-btn-selected:theme(colors.slate.800);
+        --color-feedcolumn-settings-btn-selected-hover:theme(colors.slate.600);
     }
 }
 
@@ -111,4 +115,8 @@
     --color-navbar-btn:theme(colors.slate.500);
     --color-navbar-btn-hover:theme(colors.slate.600);
     --color-navbar-btn-text:theme(colors.white);
+    --color-feedcolumn-settings-bg:theme(colors.slate.300);
+    --color-feedcolumn-settings-btn-hover:theme(colors.gray.800);
+    --color-feedcolumn-settings-btn-selected:theme(colors.blue.300);
+    --color-feedcolumn-settings-btn-selected-hover:theme(colors.blue.200);
 }

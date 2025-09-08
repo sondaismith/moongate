@@ -50,7 +50,7 @@
                 </div>
             </div>
         </div>
-        <div data-test="feedcolumn-options-menu" v-if="feedOptionsShown" class="flex flex-col px-2 py-1 bg-slate-800 feedOptions">
+        <div data-test="feedcolumn-options-menu" v-if="feedOptionsShown" class="flex flex-col px-2 py-1 bg-feedColumnSettingsBG text-primary border-b-2 border-primary feedOptions">
             <div v-if="false">
                 <div @click="toggleFeedColumnContentCategory"
                 :class="[{'show' : feedOptionContentSettingsShown}]"
@@ -78,9 +78,9 @@
                 </div>
             </div>
             <button @click="toggleFeedColumnPreferencesCategory"
-            class="max-h-6 overflow-hidden select-none feedOptionCategory
+            class="rounded max-h-6 overflow-hidden select-none feedOptionCategory
             focus-visible:outline focus-visible:outline-searchbarFocusHightlight
-            hover:border-transparent shadow-none">
+            hover:bg-btnHover hover:border-transparent shadow-none">
                 <div class="flex h-6 justify-between items-centers cursor-pointer">
                     <div class="flex items-center">
                         <i-mdi:gear-box/>
@@ -94,31 +94,31 @@
                     <div class="h-6 font-bold text-xs leading-6">Column Width Size</div>
                     <div class="flex space-x-2">
                         <button @click="setSmallColumnWidth"
-                        :class="[{'bg-blue-700' : selectedWidthSetting === 0},
-                            {'hover:bg-blue-500' : selectedWidthSetting === 0}
+                        :class="[{'bg-feedColumnSettingsBtnSelected' : selectedWidthSetting === 0},
+                            {'hover:!bg-feedColumnSettingsBtnSelectedHover' : selectedWidthSetting === 0}
                         ]"
-                        class="border border-slate-700 rounded-md p-1 cursor-pointer
-                        hover:bg-slate-600/20 hover:border-slate-700 focus-visible:outline
+                        class="border border-outline rounded-md p-1 cursor-pointer
+                        hover:bg-feedColumnSettingsBtnHover/10 hover:border-embedHoverBorder focus-visible:outline
                         focus-visible:outline-searchbarFocusHightlight shadow-none">
                             <div class="text-sm">Small</div>
                             <div>S</div>
                         </button>
                         <button @click="setMediumColumnWidth"
-                        :class="[{'bg-blue-700' : selectedWidthSetting === 1},
-                            {'hover:bg-blue-500' : selectedWidthSetting === 1}
+                        :class="[{'bg-feedColumnSettingsBtnSelected' : selectedWidthSetting === 1},
+                            {'hover:!bg-feedColumnSettingsBtnSelectedHover' : selectedWidthSetting === 1}
                         ]"
-                        class="border border-slate-700 rounded-md p-1 cursor-pointer
-                        hover:bg-slate-600/20 hover:border-slate-700 focus-visible:outline
+                        class="border border-outline rounded-md p-1 cursor-pointer
+                        hover:bg-feedColumnSettingsBtnHover/10 hover:border-embedHoverBorder focus-visible:outline
                         focus-visible:outline-searchbarFocusHightlight shadow-none">
                             <div class="text-sm">Medium</div>
                             <div>M</div>
                         </button>
                         <button @click="setLargeColumnWidth"
-                        :class="[{'bg-blue-700' : selectedWidthSetting === 2},
-                                {'hover:bg-blue-500' : selectedWidthSetting === 2}
+                        :class="[{'bg-feedColumnSettingsBtnSelected' : selectedWidthSetting === 2},
+                                {'hover:!bg-feedColumnSettingsBtnSelectedHover' : selectedWidthSetting === 2}
                             ]"
-                        class="border border-slate-700 rounded-md p-1 cursor-pointer
-                        hover:bg-slate-600/20 hover:border-slate-700 focus-visible:outline
+                        class="border border-outline rounded-md p-1 cursor-pointer
+                        hover:bg-feedColumnSettingsBtnHover/10 hover:border-embedHoverBorder focus-visible:outline
                         focus-visible:outline-searchbarFocusHightlight shadow-none">
                             <div class="text-sm">Large</div>
                             <div>L</div>
