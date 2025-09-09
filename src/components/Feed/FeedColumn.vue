@@ -220,7 +220,7 @@ import { defineComponent, PropType } from 'vue';
 import { DebugFlags } from '../../state/Debug.vue';
 import { IFeedListing } from '../../interfaces/FeedInterfaces';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
-import { ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, updateFeedColumnSettings, UpdateSelectedFeed } from '../../state/FeedList.vue';
+import { ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, SaveFeedChanges, updateFeedColumnSettings, UpdateSelectedFeed } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { debounce } from '../../helpers/debouncer';
@@ -230,11 +230,12 @@ import FeedPost from './FeedPost.vue';
 import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
 import { convertToShortTimestamp } from '../../helpers/converters';
 import NotificationRecord from './NotificationRecord.vue';
-import { AppState } from '../../state/AppState.vue';
+import { AppState, toast } from '../../state/AppState.vue';
 import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 import TrendingTopic from './TrendingTopic.vue';
 import { isOnMobileTouchscreen } from '../../helpers/states';
 import SquareButton from '../Utilities/SquareButton.vue';
+import { HandleAPIError } from '../../helpers/errors';
 
 var colElement;
 
@@ -540,6 +541,10 @@ export default defineComponent({
                     const elRemoved = FeedState.FeedList.splice(FeedState.oldFeedColumnIndex-1, 1)[0];
                     // insert it at its new index
                     FeedState.FeedList.splice(FeedState.newFeedColumnIndex-1, 0, elRemoved);
+                    SaveFeedChanges()//Save changes to disk.
+                    .catch(err => {
+                        toast.add(HandleAPIError(err, 'Error updating Feed position'));
+                    })
                 }
                 columnBeingDropped.style.removeProperty('left');
                 columnBeingDropped.style.removeProperty('transition');
