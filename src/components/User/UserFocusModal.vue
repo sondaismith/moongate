@@ -1,6 +1,17 @@
 <template>
     <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
+        {{ void "Fullscreen Image" }}
+        <TransitionGroup>
+            <div v-if="isPFPFullscreen" @click="hidePFPFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
+            bg-black/90 sm:bg-black/70 bg-contain bg-center bg-no-repeat z-30">
+                <img :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar" class="max-h-full max-w-full"/>
+            </div>
+            <div v-else-if="isBannerFullscreen" @click="hideBannerFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
+            bg-black/90 sm:bg-black/70 bg-contain bg-center bg-no-repeat z-30">
+                <img :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.banner" class="max-h-full max-w-full"/>
+            </div>
+        </TransitionGroup>
         <div class="relative z-20 flex flex-col max-w-[40rem] w-full sm:w-2/3s h-[95%] sm:h-4/5
         mx-2 sm:mx-auto my-auto rounded bg-focusBG text-primary drop-shadow-lg overflow-hidden">
             {{ void "Control Bar" }}
@@ -39,11 +50,14 @@
                             shrink-0 border-2 border-slate-800 user-pfp"></div>
                         </div>
                         <div v-else class="relative w-full user-banner">
-                            <div class="bg-red-400 w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-no-repeat bg-center bg-cover"
+                            <div @click="hasProfileBanner && showBannerFullscreen()" class="bg-red-400 w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-no-repeat bg-center bg-cover"
+                            :class="{'cursor-pointer' : hasProfileBanner}"
                             :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.banner+')'"/>
-                            <div class="absolute z-[3] flex bg-sky-400 rounded-full aspect-square size-24 top-[4.5rem]s top-28s left-4
-                            items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp"
-                            :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar+')'">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '' : 'PFP'}}</div>
+                            <div @click="showPFPFullscreen" class="absolute z-[3] flex bg-sky-400 rounded-full aspect-square size-24 left-4
+                            items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
+                            cursor-pointer transition-colors hover:border-hover"
+                            :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar+')'">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '' : 'PFP'}}
+                            </div>
                         </div>
                         {{ void "User Details Content" }}
                         <div id="user-summary" class="flex flex-col z-[2] w-full sticky top-0 mt-10 py-2 px-4 bg-focusBG">
@@ -351,7 +365,11 @@ export default defineComponent({
             isNavigatingHistory:false,
             currentUserProfile:{} as ProfileViewDetailed,
             currentUserAccountTimelineData:{data:[],cursor:''} as IFeedReturnedPostResults,
-            userSummaryBottomPos:0
+            userSummaryBottomPos:0,
+            /**Is the User's PFP being shown fullscreen? */
+            isPFPFullscreen:false,
+            /**Is the User's Profile Banner being shown fullscreen? */
+            isBannerFullscreen:false,
         }
     },
     components:{
@@ -689,6 +707,18 @@ export default defineComponent({
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },
+        showPFPFullscreen(){
+            this.isPFPFullscreen = true;
+        },
+        hidePFPFullscreen(){
+            this.isPFPFullscreen = false;
+        },
+        showBannerFullscreen(){
+            this.isBannerFullscreen = true;
+        },
+        hideBannerFullscreen(){
+            this.isBannerFullscreen = false;
+        },
     },
     computed:{
         /**
@@ -726,6 +756,10 @@ export default defineComponent({
             if(UserFocusModalState.currentNavIndex < UserFocusModalState.navigationHistory.length-1) return true;
             return false;
         },
+        /**Does this User Profile have a Banner image? */
+        hasProfileBanner(){
+            return UserFocusModalState.GetCurrentHistoryData().ProfileData.banner != undefined;
+        }
     },
     async created() {
         await this.updateDisplayedData();
