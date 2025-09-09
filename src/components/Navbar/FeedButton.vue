@@ -1,6 +1,6 @@
 <template>
     <div :data-testid="`feedButton-${feedId}`" class="relative cursor-pointer" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
-    @click="highlightFeed" @contextmenu="showFeedOptionsMenu">
+    @click="highlightFeed" @contextmenu="(e) => showFeedOptionsMenu(e,userDid ? userDid : '')">
         <button class="group relative flex justify-center items-center
             rounded-xl drop-shadow-md bg-feedBtn border border-outline transition-[border]
             hover:border-secondary button-size !w-full p-0.5 overflow-hidden">
@@ -18,6 +18,7 @@
 </template>
 
 <script lang="ts">
+import MingcuteProfileFill from '~icons/mingcute/profile-fill';
 import MingcuteEdit4Line from '~icons/mingcute/edit-4-line';
 import SolarTrashBinTrashBold from '~icons/solar/trash-bin-trash-bold';
 
@@ -58,6 +59,14 @@ function DeleteFeed(){
     RemoveFeed(FeedState.selectedFeed);
     // FeedState.isFeedOptionMenuVisible = false;
     OptionsMenuState.hideOptionMenu();
+}
+/**
+ * Displays specified User Profile in `UserFocusModal`.
+ * @param userDid DID of the User Profile to display.
+ */
+function ShowUserProfile(userDid:string){
+    if(userDid.trim() != '')
+        AppState.ShowUserFocusModal(userDid);
 }
 
 export default defineComponent({
@@ -217,14 +226,19 @@ export default defineComponent({
          * existing Feed. Current options are Edit and Delete.
          * @param e The MouseEvent fired after context clicking the FeedButton.
          */
-        showFeedOptionsMenu(e:MouseEvent){
+        showFeedOptionsMenu(e:MouseEvent, userDid:string){
             e.preventDefault();
             if(this.feedId){
                 UpdateSelectedFeed(this.feedId);
-                OptionsMenuState.currentMenuItems = [
+                let menuOptions = [] as IOptionMenuItem[];
+                if(this.userDid && this.userDid.trim() != ''){
+                    menuOptions.push({Icon:MingcuteProfileFill,Label:'View Profile',Action:function(){ShowUserProfile(userDid)}})
+                }
+                menuOptions = [...menuOptions,
                     {Icon:MingcuteEdit4Line,Label:'Edit Feed',Action:function(){UpdateFeed()}},
                     {Icon:SolarTrashBinTrashBold,Label:'Delete Feed',Action:function(){DeleteFeed()}},
                 ] as IOptionMenuItem[]
+                OptionsMenuState.currentMenuItems = menuOptions;
                 OptionsMenuState.showOptionMenu(e);
             }
         },
