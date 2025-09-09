@@ -60,6 +60,7 @@ export default {
         feedColumnSettingsBtnHover: "oklch(from var(--color-feedcolumn-settings-btn-hover) l c h / <alpha-value>)",
         feedColumnSettingsBtnSelected: "oklch(from var(--color-feedcolumn-settings-btn-selected) l c h / <alpha-value>)",
         feedColumnSettingsBtnSelectedHover: "oklch(from var(--color-feedcolumn-settings-btn-selected-hover) l c h / <alpha-value>)",
+        userFocusModalBannerBG: "oklch(from var(--color-userfocusmodal-banner-bg) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',
