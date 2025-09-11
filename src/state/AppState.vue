@@ -389,6 +389,17 @@ export const AppState = reactive({
             //there's no modal/overlay open, focus whatever is useful in the
             //main application window
         }
-    }
+    },
+    /**
+     * Value used to indicate if the "Feed Order Change" modal
+     * is currently visible.
+     */
+    isUpdatingFeedPosition:false,
+    /**Method that causes the "Feed Order Change" modal to be displayed. */
+    showFeedOrderModal(){ this.isUpdatingFeedPosition = true; },
+    /**Method that causes the "Feed Order Change" modal to be hidden. */
+    hideFeedOrderModal(){ this.isUpdatingFeedPosition = false; },
+    /**Value used to indicate if App is currently running on a device with touchscreen support. */
+    isAppOnMobileTouchscreenDevice:false,
 })
 </script>

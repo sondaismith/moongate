@@ -1,6 +1,6 @@
 <template>
     <SquareButton @click="$emit('buttonClicked')"
-    class="text-2xl  text-primary bg-btn opacity-30 hover:opacity-100 focus:opacity-100
+    class="text-2xl  text-primary bg-btn opacity-30 hover:opacity-100 focus-visible:opacity-100
     transition-opacity rounded-none h-10 w-10"
     :class="[{'rounded-l rounded-r-sm' : arrowDirection == 'Left'},
         {'rounded-r rounded-l-sm ' : arrowDirection == 'Right'}]"

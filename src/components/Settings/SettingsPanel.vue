@@ -4,7 +4,7 @@
         <div class="relative z-20 flex flex-col max-w-[40rem] w-full md:w-2/3s h-full max-h-[30rem]
         m-4 my-auto sm:m-auto rounded bg-focusBG text-primary border border-sidebar drop-shadow-lg
         overflow-hidden">
-            <div class="flex gap-1 px-2 py-1 border-b border-outline items-center text-3xl font-light select-none">
+            <div class="flex gap-1 px-2 py-1 border-b border-outline items-center text-2xl font-light select-none">
                 <i-mingcute:settings-2-line/>
                 <div>Application Settings</div>
                 <div @click="closeModal" class="rounded overflow-hidden borders border-outline text-2xl
@@ -13,12 +13,14 @@
                     <i-mingcute:close-fill/>
                 </div>
             </div>
-            <div class="flex grow overflow-hidden">
-                <div class="flex flex-col gap-1 bg-postBG text-primary p-2 drop-shadow min-w-36">
-                    <SettingsCategory v-for="(category, index) in SetttingData.Options" :index="index"
-                    :selected="index == selectedCategoryIndex" @category-clicked="switchCategory">
-                        {{ category.name }}
-                    </SettingsCategory>
+            <div class="flex flex-col sm:flex-row grow overflow-hidden">
+                <div class="flex sm:flex-col text-nowrap overflow-x-auto gap-1 bg-postBG text-primary p-2 drop-shadow min-w-36">
+                    <template v-for="(category, index) in SetttingData.Options">
+                        <SettingsCategory v-if="!category.devOnly || isInDevEnvironment == category.devOnly" :index="index"
+                        :selected="index == selectedCategoryIndex" @category-clicked="switchCategory">
+                            {{ category.name }}
+                        </SettingsCategory>
+                </template>
                 </div>
                 <div class="relative grow p-2 w-full h-full overflow-hidden">
                     <div class="relative p-2 rounded border border-outline w-full h-full overflow-hidden">
@@ -45,9 +47,6 @@
                                 <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[1]"
                                 class="relative flex flex-col gap-2 w-full h-full overflow-auto">
                                     <div class="font-thin text-2xl">Language Selection</div>
-                                    <CheckBox :model-value="AppSettingsState.Settings.isDarkMode" @value-toggled="toggleTheme">
-                                        Dark Mode?
-                                    </CheckBox>
                                     <CheckBox :model-value="AppSettingsState.Settings.isAcceptingAllLanguages" @value-toggled="toggleAcceptAllLanguages">
                                         Accept Posts in All Languages
                                     </CheckBox>
@@ -92,10 +91,10 @@
                                     </div>
                                     <!-- <InLaInput text-label="Tag Blacklist" :model-value="SetttingData.Options.PostFilters.data.tagBlacklist"/> -->
                                 </div>
-                                <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[2]">
+                                <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SetttingData.Options)[2]">
                                     <div class="italic">Account Settings are still not supported. Check back later!</div>
                                 </div>
-                                <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[3]"
+                                <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SetttingData.Options)[3]"
                                 class="relative flex flex-col w-full h-full overflow-y-auto pr-2">
                                     <div class="italic">Devloper testing commands - Be careful!</div>
                                     <div v-if="!isTauri()" class="flex flex-col gap-1 border border-outline rounded p-2">
@@ -195,7 +194,9 @@ export default defineComponent({
                         name:'General',
                         data:{
                             isDarkMode:AppState.isDarkMode
-                        }
+                        },
+                        /**Indicates if the option should only be available in Dev mode. */
+                        devOnly:false,
                     },
                     PostFilters:{
                         name:'Post Filters',
@@ -204,13 +205,17 @@ export default defineComponent({
                             languageWhitelist:'',
                             languageBlacklist:[],
                             tagBlacklist:'',
-                        }
+                        },
+                        /**Indicates if the option should only be available in Dev mode. */
+                        devOnly:false,
                     },
                     Account:{
                         name:'Account',
                         data:{
                             TBA:true
-                        }
+                        },
+                        /**Indicates if the option should only be available in Dev mode. */
+                        devOnly:true,
                     },
                     Developer:{
                         name:'Dev Options',
@@ -228,11 +233,15 @@ export default defineComponent({
                              * data. Used to display "no records" message.
                              */
                             hasIndexedDBDataBeenRequested: false
-                        }
+                        },
+                        /**Indicates if the option should only be available in Dev mode. */
+                        devOnly:true,
                     }
                 }
             },
             selectedCategoryIndex:'General',
+            /**Variable the indicates if the application is currently running in dev mode. */
+            isInDevEnvironment:false,
         }
     },
     components:{
@@ -343,6 +352,10 @@ export default defineComponent({
                 this.SetttingData.Options.Developer.data.savedFeeds.length<1) return true;
             return false;
         }
+    },
+    mounted(){
+        //Finds out if the application is currently running in a dev environment.
+        this.isInDevEnvironment = import.meta.env.DEV;
     },
     async beforeUnmount(){
         //Save application settings when

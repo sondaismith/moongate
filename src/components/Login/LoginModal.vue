@@ -29,7 +29,7 @@
                 {{ void "close button" }}
                 <div class="relative top-1">
                     <button v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full
-                    border-red-500 size-7 text-sm text-red-500 hover:text-red-700 hover:border-red-700
+                    bg-transparent border-red-500 size-7 p-0 text-sm text-red-500 hover:text-red-700 hover:border-red-700
                     focus-visible:outline focus-visible:outline-feedtypeBtnFocusHighlight active:bg-red-200
                     justify-center items-center cursor-pointer">
                         <i-mingcute:close-fill/>
@@ -50,11 +50,6 @@
                             <InLaInput data-testid="login-username-input" v-model="enteredUsername" class="rounded-r-none" textLabel="Handle" :fillContainer="true"/>
                             <!-- <InLaInput v-model="hostProvider" class="rounded-l-none border-l-0" textLabel="Host" :isDisabled="true" :fillContainer="true"/> -->
                             <div class="relative flex flex-col group w-full cursor-pointer">
-                                <!-- <input data-testid="inlainput-input"
-                                    class="peer bg-searchbarBG leading-8 px-2 pt-3 h-11
-                                    border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight rounded-md
-                                    disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none
-                                    w-full"/> -->
                                 <button v-if="isUsingDefaultHost" @click="toggleAccountProvider" title="Change Hosting Provider"
                                 class="group relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
                                 rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-blue-100
@@ -98,14 +93,14 @@
                     <SquareButton @click="loginAccount" :is-disabled="isLoginDisabled"
                     :is-awaiting-response="attemptingLogin" :title="titleMessage"
                     class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
-                    text-primary md:self-end md:w-40">Login</SquareButton>
+                    text-primary md:self-end md:w-40 h-10">Login</SquareButton>
                 </div>
                 <div class="h-[1px] bg-slate-500 my-2"></div>
                 {{ void "browse without account" }}
                 <div class="relative flex flex-col items-start">
                     <button data-testid="browse-as-guest-button" @click="browseAsGuest"
-                    class="text-blue-400 hover:text-blue-500 border-none shadow-none cursor-pointer
-                    focus-visible:outline outline-2 active:bg-transparent">
+                    class="rounded bg-transparent font-normal text-blue-400 hover:text-blue-500 border-none shadow-none cursor-pointer
+                    focus-visible:outline outline-2 active:bg-transparent p-0">
                         Or Browse without an account
                     </button>
                     <div class="text-feedPostName leading-4">Note: Some content is unable to be viewed without an account due to

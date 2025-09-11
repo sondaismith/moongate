@@ -155,7 +155,6 @@ export default defineComponent({
                 e.preventDefault();
                 OptionsMenuState.currentMenuItems = [
                     {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,author,postText)}},
-                    {Icon:MdiImageOutline,Label:'Save Image',Action:()=>void 0},
                 ] as IOptionMenuItem[];
                 if(!isTauri()) OptionsMenuState.currentMenuItems.push({Icon:MdiOpenInNew,Label:'Open Image in New Tab',Action:function(){OpenImageInNewTab(image)}})
                 OptionsMenuState.showOptionMenu(e);

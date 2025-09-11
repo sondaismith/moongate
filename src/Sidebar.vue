@@ -24,7 +24,7 @@
                                 @dragstart="handleDragstart($event,index)" @dragover.prevent="handleDragover(index)"
                                 @drop="handleDrop" @dragend="handleDragend"/> -->
 
-                                <FeedButton v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
+                                <FeedButton v-if="!AppState.isAppOnMobileTouchscreenDevice" v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
                                 :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
                                 :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
                                 :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
@@ -32,6 +32,11 @@
                                 @pointerdown="handleFeedButtonLongpress($event,index)" @pointerup="handleFeedButtonMouseup"
                                 @pointerover="handleFeedButtonMouseover($event,index)" @pointerleave="handleFeedButtonMouseLeave"
                                 class="draggable"/>
+                                <FeedButton v-else v-for="(feed) in FeedState.FeedList" :key="feed.description.feedId"
+                                :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
+                                :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
+                                :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
+                                :button-being-dragged="isDraggingButton"/>
                             </TransitionGroup>
                         </div>
                     </div>
@@ -59,7 +64,7 @@
                     <!-- <FeedColumn v-for="feed in feedListing.feedList" :key="feed" :feedData="feed"/> -->
                     <FeedColumn v-for="(feed, index) in FeedState.FeedList" :list-index="index"
                     :key="feed.description.feedId" :feedData="feed"
-                    @pointerover="handleFeedColumnMouseover($event,index)"
+                    @pointerover="handleFeedColumnMouseover($event,index+1)"
                     @pointerleave="handleFeedColumnMouseLeave"
                     class="draggable"/>
                 </TransitionGroup>
@@ -113,6 +118,9 @@
         </Transition>
         <Transition>
             <PostFocusModal v-if="postDetails.isFocusVisible" :initial-thread-uri="postDetails.uriOfPostToShow" :clicked-media-index="postDetails.clickedMediaIndex"/>
+        </Transition>
+        <Transition name="modal">
+            <FeedOrderModal v-if="AppState.isUpdatingFeedPosition" :feed-id-to-update="FeedState.selectedFeed"/>
         </Transition>
         <Transition name="modal">
             <FeedEditModal v-if="AppState.isCreatingFeed || AppState.isUpdatingFeed"/>
@@ -173,6 +181,8 @@ import FeedColumn from "./components/Feed/FeedColumn.vue";
 import { IFeedDBData } from "./interfaces/FeedInterfaces";
 import IntroMessage from "./components/Intro/IntroMessage.vue";
 import SidebarButton from "./components/Navbar/SidebarButton.vue";
+import { isOnMobileTouchscreen } from "./helpers/states";
+import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
 
 
     export default defineComponent({
@@ -182,6 +192,7 @@ import SidebarButton from "./components/Navbar/SidebarButton.vue";
             SidebarButton,
             FeedColumn,
             FeedEditModal,
+            FeedOrderModal,
             PostFocusModal,
             UserFocusModal,
             CreatePost,
@@ -214,6 +225,7 @@ import SidebarButton from "./components/Navbar/SidebarButton.vue";
                 isDraggingButton:false,
                 /**Used to correctly position `FeedButton` when it is being dragged. */
                 dragButtonStartingY:0,
+                isOnMobileTouchscreen,
             }
         },
         methods: {
@@ -519,8 +531,14 @@ import SidebarButton from "./components/Navbar/SidebarButton.vue";
                 (e.currentTarget as HTMLElement).querySelectorAll("[data-test='feedColumn-highlight']")[0].classList.remove('feed-dropzone-highlight');
             },
         },
+        computed:{
+            onMobileTouchscreen(){
+                return isOnMobileTouchscreen();
+            }
+        },
         created(){
             this.appStartupProcedure();
+            AppState.isAppOnMobileTouchscreenDevice = isOnMobileTouchscreen();
         },
         mounted(){
             this.getFeedDisplayViewWidth();

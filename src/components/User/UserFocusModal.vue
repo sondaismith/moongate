@@ -1,20 +1,42 @@
 <template>
     <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
-        <div class="relative z-20 flex flex-col max-w-[40rem] w-full sm:w-2/3s h-4/5
+        {{ void "Fullscreen Image" }}
+        <TransitionGroup>
+            <div v-if="isPFPFullscreen" @click="hidePFPFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
+            bg-black/90 sm:bg-black/70 bg-contain bg-center bg-no-repeat z-30">
+                <img :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar" class="max-h-full max-w-full"/>
+            </div>
+            <div v-else-if="isBannerFullscreen" @click="hideBannerFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
+            bg-black/90 sm:bg-black/70 bg-contain bg-center bg-no-repeat z-30">
+                <img :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.banner" class="max-h-full max-w-full"/>
+            </div>
+        </TransitionGroup>
+        <div class="relative z-20 flex flex-col max-w-[40rem] w-full sm:w-2/3s h-[95%] sm:h-4/5
         mx-2 sm:mx-auto my-auto rounded bg-focusBG text-primary drop-shadow-lg overflow-hidden">
             {{ void "Control Bar" }}
-            <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8 w-full self-start
-            border-b border-outlineLighter *:h-full *:cursor-pointer *:w-12">
-                <i-mingcute:arrow-left-fill @click="goToPreviousNavHistory"
-                class="hover:bg-outline" :class="[{'text-disabled' : !hasPrevNavRecords}]"/>
-                <i-mingcute:arrow-right-fill @click="goToNextNavHistory"
-                class="hover:bg-outline" :class="[{'text-disabled' : !hasNextNavRecords}]"/>
-                <div @click="closeModal" class="flex ml-auto bg-blue-300 w-10
-                    justify-center text-2xl cursor-pointer"
-                    title="Close Window">
-                    <i-mingcute:close-fill/>
-                </div>
+            <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8 shrink-0 w-full self-start
+            border-b border-outlineLighter *:w-12 *:shadow-none *:rounded-none *:border-none">
+                <SquareButton :is-disabled="!hasPrevNavRecords"
+                title="Go to previous User Feed page" @click="goToPreviousNavHistory"
+                class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
+                focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
+                    <i-mingcute:arrow-left-fill
+                    class="text-2xl"
+                    :class="[{'text-disabled' : !hasPrevNavRecords}]"/>
+                </SquareButton>
+                <SquareButton :is-disabled="!hasNextNavRecords"
+                title="Go to next User Feed page" @click="goToNextNavHistory(true)"
+                class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
+                focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
+                    <i-mingcute:arrow-right-fill
+                    class="text-2xl"
+                    :class="[{'text-disabled' : !hasNextNavRecords}]"/>
+                </SquareButton>
+                <SquareButton @click="closeModal" title="Close User Feed Modal"
+                class="ml-auto bg-btn hover:bg-red-600 focus-visible:bg-red-600">
+                    <i-mingcute:close-fill class="text-2xl"/>
+                </SquareButton>
             </div>
             {{ void "Main Container" }}
             <div id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="0">
@@ -28,11 +50,17 @@
                             shrink-0 border-2 border-slate-800 user-pfp"></div>
                         </div>
                         <div v-else class="relative w-full user-banner">
-                            <div class="bg-red-400 w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-no-repeat bg-center bg-cover"
+                            <div v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-no-repeat bg-center bg-cover"
+                            :class="{'cursor-pointer' : hasProfileBanner}"
                             :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.banner+')'"/>
-                            <div class="absolute z-[3] flex bg-sky-400 rounded-full aspect-square size-24 top-[4.5rem]s top-28s left-4
-                            items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp"
-                            :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar+')'">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '' : 'PFP'}}</div>
+                            <div v-else class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
+                            :style="'mask: url(src/assets/placeholder/no_banner_pattern.svg)'">
+                            </div>
+                            <div @click="showPFPFullscreen" class="absolute z-[3] flex bg-sky-400 rounded-full aspect-square size-24 left-4
+                            items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
+                            cursor-pointer transition-colors hover:border-hover"
+                            :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar+')'">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '' : 'PFP'}}
+                            </div>
                         </div>
                         {{ void "User Details Content" }}
                         <div id="user-summary" class="flex flex-col z-[2] w-full sticky top-0 mt-10 py-2 px-4 bg-focusBG">
@@ -73,12 +101,13 @@
                                         </div>
                                         <div class="text-xs">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '@'+UserFocusModalState.GetCurrentHistoryData().ProfileData.handle : '@handle'}}</div>
                                     </div>
-                                    <div class="relative flex items-center mt-1 gap-2 h-8">
+                                    <div class="relative flex items-center mt-1 gap-2 h-9">
                                         <Transition name="smooth">
                                             <FollowUser v-if="!awaitingProfileData" class="px-4" :is-user-followed="isUserFollowed"
                                             :user-did="UserFocusModalState.GetCurrentHistoryData().ProfileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
                                         </Transition>
-                                        <PillButton class="aspect-square size-10">...</PillButton>
+                                        <PillButton @click="showUserOptionsMenu($event,UserFocusModalState.GetCurrentHistoryData().ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
+                                        focus-visible:bg-btnHover">...</PillButton>
                                     </div>
                                 </div>
                                 <div class="flex mt-2">
@@ -98,7 +127,7 @@
                             </div>
                         </div>
                         <div id="user-focus-bio" class="flex flex-col py-2 px-4 mb-2s w-full border-y border-outlineLighter shrink grow-0 self-start">
-                            <div class="text-xs text-hover">Bio</div>
+                            <div class="text-xs text-secondary">Bio</div>
                             <div v-if="awaitingProfileData" class="flex flex-col gap-1 animate-pulse">
                                 <div class="bg-slate-500 rounded h-4 w-4/5"></div>
                                 <div class="bg-slate-500 rounded h-4 w-2/3"></div>
@@ -109,27 +138,27 @@
                         </div>
                         <div id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
                         :style="{'top':userSummaryBottomPos+'px'}">
-                            <div @click="viewFeed" class="w-full hover:bg-hover cursor-pointer"
+                            <div @click="viewFeed" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View User's Feed (Posts, Retweets)">
                                 <div class="pt-2 pb-1">Feed</div>
                                 <div v-if="isViewingFeed" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div @click="viewPosts" class="w-full hover:bg-hover cursor-pointer"
+                            <div @click="viewPosts" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View Posts only by current User">
                                 <div class="pt-2 pb-1">Posts</div>
                                 <div v-if="isViewingPosts" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div @click="viewReplies" class="w-full hover:bg-hover cursor-pointer"
+                            <div @click="viewReplies" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View User's Replies">
                                 <div class="pt-2 pb-1">Replies</div>
                                 <div v-if="isViewingReplies" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div @click="viewMedia" class="w-full hover:bg-hover cursor-pointer"
+                            <div @click="viewMedia" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View Posts User has made containing Images/Video">
                                 <div class="pt-2 pb-1">Media</div>
                                 <div v-if="isViewingMedia" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
-                            <div v-if="isThisCurrentUserAccount" @click="viewLikes" class="w-full hover:bg-hover cursor-pointer"
+                            <div v-if="isThisCurrentUserAccount" @click="viewLikes" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View Your Liked Posts">
                                 <div class="pt-2 pb-1">Likes</div>
                                 <div v-if="isViewingLikes" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
@@ -189,15 +218,18 @@
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
-                            <div v-else-if="!awaitingProfileData && UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
+                            <SquareButton v-else-if="!awaitingProfileData && UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
                             @click="loadOlderPosts"
-                            class="flex justify-center rounded p-1 gap-1 w-full items-center cursor-pointer
+                            focus-padding="[1px]"
+                            class="rounded h-8 p-1 mt-4s w-full items-center cursor-pointer
                             border border-outline bg-btn hover:bg-btnHover"
                             :title="isViewingLikes ? 'NOTE: Currently loading likes is broken - cannot currently identify end of stream' : 'Click to load older posts'">
-                                <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
-                                <i-mingcute:plus-fill v-else/>
-                                <div>Load more</div>
-                            </div>
+                                <div class="flex items-center gap-1">
+                                    <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
+                                    <i-mingcute:plus-fill v-else/>
+                                    <div>Load more</div>
+                                </div>
+                            </SquareButton>
                         </div>
                         {{ void "Media Posts" }}
                         <div v-if="isViewingMedia" class="py-4 w-full">
@@ -238,13 +270,17 @@
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
-                            <div v-else-if="UserFocusModalState.GetCurrentHistoryData().FeedData.cursor && !isAwaitingTabSwitchData" @click="loadOlderPosts"
-                            class="flex justify-center rounded p-1 gap-1 mt-4 mx-4 w-fulls items-center cursor-pointer
+                            <SquareButton v-else-if="UserFocusModalState.GetCurrentHistoryData().FeedData.cursor &&
+                            !isAwaitingTabSwitchData" @click="loadOlderPosts"
+                            focus-padding="[1px]"
+                            class="rounded h-8 p-1 mt-4 mx-4 w-full items-center cursor-pointer
                             border border-outline bg-btn hover:bg-btnHover">
-                                <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
-                                <i-mingcute:plus-fill v-else/>
-                                <div>Load more</div>
-                            </div>
+                                <div class="flex items-center gap-1">
+                                    <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
+                                    <i-mingcute:plus-fill v-else/>
+                                    <div>Load more</div>
+                                </div>
+                            </SquareButton>
                         </div>
                     </div>
                 </div>
@@ -255,6 +291,9 @@
 </template>
 
 <script lang="ts">
+//Option Menu icons
+import MingcuteLinkLine from '~icons/mingcute/link-line';
+
 import { defineComponent } from 'vue'
 import PillButton from '../Utilities/PillButton.vue';
 import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
@@ -270,7 +309,7 @@ import { HandleAPIError } from '../../helpers/errors';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
-import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
+import { convertToLongTimestamp, convertToShortTimestamp, CreateBskyWeblink } from '../../helpers/converters';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
@@ -285,6 +324,18 @@ import { MediaType } from '../../enums/PostEnums';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { getAuthorFeed, getAuthorLikes, getAuthorPostsOnly, getAuthorRepliesOnly } from '../../lib/api/Feed.vue';
+import SquareButton from '../Utilities/SquareButton.vue';
+import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
+import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+
+/**
+ * Used to create a HTTP URL link To the currently view User's profile.
+ * @param handle The handle of the User associated with the link.
+ */
+function CopyPostLink(handle:string){
+    if(handle.trim()!='') navigator.clipboard.writeText(`https://bsky.app/profile/${handle}`);
+    toast.add({summary:'Link to User Profile copied',severity:'success', group:'bc', life:1000});
+}
 
 export default defineComponent({
     data(){
@@ -317,7 +368,11 @@ export default defineComponent({
             isNavigatingHistory:false,
             currentUserProfile:{} as ProfileViewDetailed,
             currentUserAccountTimelineData:{data:[],cursor:''} as IFeedReturnedPostResults,
-            userSummaryBottomPos:0
+            userSummaryBottomPos:0,
+            /**Is the User's PFP being shown fullscreen? */
+            isPFPFullscreen:false,
+            /**Is the User's Profile Banner being shown fullscreen? */
+            isBannerFullscreen:false,
         }
     },
     components:{
@@ -334,6 +389,7 @@ export default defineComponent({
         FollowUser,
         VerifiedBadge,
         ToContainerTop,
+        SquareButton,
     },
     methods:{
         /**Prepares and displays data when the "Posts" tab is clicked. */
@@ -642,7 +698,30 @@ export default defineComponent({
         onMouseShortcutEntered(e:MouseEvent){
             if(e.button == 3) this.goToPreviousNavHistory();
             else if (e.button == 4) this.goToNextNavHistory();
-        }
+        },
+        /**
+         * Shows Options Menu allowing user to perform different actions
+         * relating to the selected User Profile being viewed.
+         */
+        showUserOptionsMenu(e:MouseEvent, postURI:string, handle:string=""){
+            e.preventDefault();
+            OptionsMenuState.currentMenuItems = [
+                {Icon:MingcuteLinkLine,Label:'Copy link to Profile Page',Action:function(){CopyPostLink(postURI, handle)}},
+            ] as IOptionMenuItem[]
+            OptionsMenuState.showOptionMenu(e);
+        },
+        showPFPFullscreen(){
+            this.isPFPFullscreen = true;
+        },
+        hidePFPFullscreen(){
+            this.isPFPFullscreen = false;
+        },
+        showBannerFullscreen(){
+            this.isBannerFullscreen = true;
+        },
+        hideBannerFullscreen(){
+            this.isBannerFullscreen = false;
+        },
     },
     computed:{
         /**
@@ -680,6 +759,10 @@ export default defineComponent({
             if(UserFocusModalState.currentNavIndex < UserFocusModalState.navigationHistory.length-1) return true;
             return false;
         },
+        /**Does this User Profile have a Banner image? */
+        hasProfileBanner(){
+            return UserFocusModalState.GetCurrentHistoryData().ProfileData.banner != undefined;
+        }
     },
     async created() {
         await this.updateDisplayedData();

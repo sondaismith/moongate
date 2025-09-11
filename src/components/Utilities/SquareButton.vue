@@ -1,17 +1,17 @@
 <template>
-    <button class="group !border-transparent flex rounded cursor-pointer
+    <button class="relative group !border-transparent flex rounded cursor-pointer
     justify-center items-center gap-1 transition-colors"
-    :class="[$attrs.class ? $attrs.class : 'bg-sky-500 hover:bg-sky-700 hover:border-sky-700',
-        isDisabled || isAwaitingResponse ? '!bg-disabledBG !text-disabled pointer-events-nones select-none !cursor-not-allowed' : ''
+    :class="[$attrs.class ? $attrs.class : 'bg-sky-500 hover:bg-sky-700 hover:border-sky-700 h-10',
+        isDisabled || isAwaitingResponse ? '!bg-disabledBG !text-disabled pointer-events-nones select-none !cursor-not-allowed' : '',
+        `p-${focusPadding}`
     ]"
     :disabled="isDisabled || isAwaitingResponse">
-        <div class="flex border-2 border-transparent group-focus-visible:border-feedtypeBtnFocusHighlight
-        justify-center w-full"
-        :class="`p-${buttonPadding}`"
-        style="border-radius: inherit;">
-            <slot v-if="!isAwaitingResponse"></slot>
-            <i-mingcute:loading-fill v-else class="spinner"/>
+        <div v-if="!isAwaitingResponse" class="flex items-center justify-center w-full h-full rounded border-2 border-transparent
+        group-focus-visible:border-feedtypeBtnFocusHighlight"
+        :class="`p-${buttonPadding}`">
+            <slot></slot>
         </div>
+        <i-mingcute:loading-fill v-else class="spinner"/>
     </button>
 </template>
 
@@ -31,11 +31,23 @@ export default defineComponent({
             default:false
         },
         /**
-         * The padding to use around the button content. Default is 2 (applies 'p-2').
+         * The padding to use between the `focus-visible:` highlight and the button content.
+         * Default is 1 (applies 'p-1').
+         * Note that a padding of 0.5(0.125rem, 2px) is already applied for the focus-visible:
+         * highlight by default, but that can be changed using `focusPadding`. There is also a
+         * default border width of 2px to keep in mind, but that can be changed via CSS.
          */
         buttonPadding:{
             type:String,
-            default:'2'
+            default:'1'
+        },
+        /**
+         * The padding to use between the edge of the button and the focus-visible: highlight.
+         * Default is 0.5 (applies 'p-0.5').
+         */
+        focusPadding:{
+            type:String,
+            default:'0.5'
         }
     },
 })

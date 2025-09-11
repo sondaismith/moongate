@@ -1,8 +1,8 @@
 <template>
-    <div data-test="feed-column" :id="feedData?.description.feedId"
-    class="flex flex-col relative w-72 pr-1 bg-banner
+    <div data-testid="feed-column" :id="feedData?.description.feedId"
+    class="flex flex-col shrink-0 relative w-72 pr-1 bg-banner
     overflow-hidden max-w-[600px] origin-top-left"
-    :style="`min-width:${feedData?.description.feedColumnSettings.width}px`">
+    :style="`width:${feedData?.description.feedColumnSettings.width}px`">
         {{ void "feed title" }}
         <div class="flex w-full shrink-0 border-b-2 border-outline bg-banner pl-2 pr-1 pt-2 pb-1 text-primary">
             <div class="flex w-full items-center">
@@ -23,50 +23,64 @@
                     </div>
                     <div class="text-feedTimestamp leading-4 text-nowrap content-end text-secondary">Updated: {{ getTimeStampFormat() }}</div>
                 </div>
-                <div class="flex self-center ml-auto">
+                <div class="flex items-center ml-auto">
                         <!-- <div title="Add - DEBUG" @click="addNewPost" class="cursor-pointer hover:text-cyan-400"><i-mingcute:plus-fill/></div> -->
-                        <div title="Refresh" @click="refreshFeed(feedData?.description.feedId)"
-                        class="text-2xl cursor-pointer hover:text-cyan-400 size-7 bg-[auto_0] bg-gradient-to-t from-slate-400 to-slate-800"
+                        <SquareButton title="Refresh" @click="refreshFeed(feedData?.description.feedId)" button-padding="0" focus-padding="0"
+                        class="text-2xl cursor-pointer bg-transparent text-primary hover:text-cyan-400 bg-[auto_0] bg-gradient-to-t from-slate-400 to-slate-800
+                        focus-visible:text-cyan-400 hover:border-transparent shadow-none"
                         :class="{'!cursor-not-allowed text-slate-400 hover:text-slate-400 refresh-timeout' : isAwaitingRefreshTimeout}">
                             <i-mingcute:refresh-3-fill/>
-                        </div>
-                        <div title="Options" @click="toggleFeedColumnOptionsMenu()" class="text-2xl cursor-pointer hover:text-cyan-400"><i-mingcute:settings-6-fill/></div>
-                        <div title="Reorder"
-                        class="text-2xl cursor-grab hover:text-cyan-400"
+                        </SquareButton>
+                        <SquareButton title="Options" @click="toggleFeedColumnOptionsMenu()" button-padding="0" focus-padding="0"
+                        class="text-2xl cursor-pointer bg-transparent text-primary hover:text-cyan-400  focus-visible:text-cyan-400
+                        hover:border-transparent shadow-none">
+                            <i-mingcute:settings-6-fill/>
+                        </SquareButton>
+                        <div v-if="!AppState.isAppOnMobileTouchscreenDevice" data-testid="feedcolumn-reorder-handle"
+                        title="Reorder"
+                        class="flex text-2xl cursor-grab hover:text-cyan-400 w-[34.8px]"
                         @pointerdown="handleFeedColumnMouseDown($event,listIndex)">
-                            <i-mingcute:menu-line class="pointer-events-none"/>
+                            <i-mingcute:menu-line class="pointer-events-none h-full m-auto"/>
+                        </div>
+                        <div data-testid="feedcolumn-reorder-button" v-else title="Reorder"
+                        class="flex text-2xl cursor-pointer hover:text-cyan-400 w-[34.8px]"
+                        @click="openFeedOrderModal">
+                            <i-mingcute:menu-line class="pointer-events-none h-full m-auto"/>
                         </div>
                 </div>
             </div>
         </div>
-        <div data-test="feedcolumn-options-menu" :class="[{'hide' : !feedOptionsShown}]" class="flex flex-col px-2 py-1 bg-slate-800 feedOptions">
-            <div @click="toggleFeedColumnContentCategory"
-            :class="[{'show' : feedOptionContentSettingsShown}]"
-            class="max-h-6 overflow-hidden select-none feedOptionCategory">
-                <div class="flex h-6 justify-between items-centers cursor-pointer">
-                    <div class="flex items-center">
-                        <i-mdi:magnify-scan/>
-                        <div class="pl-1">Feed Content</div>
+        <div data-test="feedcolumn-options-menu" v-if="feedOptionsShown" class="flex flex-col px-2 py-1 bg-feedColumnSettingsBG text-primary border-b-2 border-primary feedOptions">
+            <div v-if="false">
+                <div @click="toggleFeedColumnContentCategory"
+                :class="[{'show' : feedOptionContentSettingsShown}]"
+                class="max-h-6 overflow-hidden select-none feedOptionCategory">
+                    <div class="flex h-6 justify-between items-centers cursor-pointer">
+                        <div class="flex items-center">
+                            <i-mdi:magnify-scan/>
+                            <div class="pl-1">Feed Content</div>
+                        </div>
+                        <i-mdi:expand-more/>
                     </div>
-                    <i-mdi:expand-more/>
+                    <div class="h-6 bg-red-500">TBA</div>
                 </div>
-                <div class="h-6 bg-red-500">TBA</div>
-            </div>
-            <div @click="toggleFeedColumnAuthorsCategory"
-            :class="[{'show' : feedOptionAuthorSettingsShown}]"
-            class="max-h-6 overflow-hidden select-none feedOptionCategory">
-                <div class="flex h-6 justify-between items-centers cursor-pointer">
-                    <div class="flex items-center">
-                        <i-mingcute:user-add-fill/>
-                        <div class="pl-1">Feed Authors</div>
+                <div @click="toggleFeedColumnAuthorsCategory"
+                :class="[{'show' : feedOptionAuthorSettingsShown}]"
+                class="max-h-6 overflow-hidden select-none feedOptionCategory">
+                    <div class="flex h-6 justify-between items-centers cursor-pointer">
+                        <div class="flex items-center">
+                            <i-mingcute:user-add-fill/>
+                            <div class="pl-1">Feed Authors</div>
+                        </div>
+                        <i-mdi:expand-more/>
                     </div>
-                    <i-mdi:expand-more/>
+                    <div class="h-6 bg-red-500">TBA</div>
                 </div>
-                <div class="h-6 bg-red-500">TBA</div>
             </div>
-            <div @click="toggleFeedColumnPreferencesCategory"
-            :class="[{'show' : feedOptionPreferencesShown}]"
-            class="max-h-6 overflow-hidden select-none feedOptionCategory">
+            <button @click="toggleFeedColumnPreferencesCategory"
+            class="rounded max-h-6 overflow-hidden select-none feedOptionCategory
+            focus-visible:outline focus-visible:outline-searchbarFocusHightlight
+            hover:bg-btnHover hover:border-transparent shadow-none">
                 <div class="flex h-6 justify-between items-centers cursor-pointer">
                     <div class="flex items-center">
                         <i-mdi:gear-box/>
@@ -74,34 +88,41 @@
                     </div>
                     <i-mdi:expand-more/>
                 </div>
-                <div class="h-6 font-bold text-xs leading-6">Column Width Size</div>
-                <div class="flex space-x-2">
-                    <div @click="setSmallColumnWidth"
-                        :class="[{'bg-blue-700' : selectedWidthSetting === 0},
-                            {'hover:bg-blue-500' : selectedWidthSetting === 0}
+            </button>
+            <div v-if="feedOptionPreferencesShown">
+                <div class="flex flex-col items-center">
+                    <div class="h-6 font-bold text-xs leading-6">Column Width Size</div>
+                    <div class="flex space-x-2">
+                        <button @click="setSmallColumnWidth"
+                        :class="[{'bg-feedColumnSettingsBtnSelected' : selectedWidthSetting === 0},
+                            {'hover:!bg-feedColumnSettingsBtnSelectedHover' : selectedWidthSetting === 0}
                         ]"
-                        class="border border-slate-700 rounded-md p-1 cursor-pointer
-                            hover:bg-slate-600/20">
-                        <div class="text-sm">Small</div>
-                        <div>S</div>
-                    </div>
-                    <div @click="setMediumColumnWidth"
-                        :class="[{'bg-blue-700' : selectedWidthSetting === 1},
-                            {'hover:bg-blue-500' : selectedWidthSetting === 1}
+                        class="border border-outline rounded-md p-1 cursor-pointer
+                        hover:bg-feedColumnSettingsBtnHover/10 hover:border-embedHoverBorder focus-visible:outline
+                        focus-visible:outline-searchbarFocusHightlight shadow-none">
+                            <div class="text-sm">Small</div>
+                            <div>S</div>
+                        </button>
+                        <button @click="setMediumColumnWidth"
+                        :class="[{'bg-feedColumnSettingsBtnSelected' : selectedWidthSetting === 1},
+                            {'hover:!bg-feedColumnSettingsBtnSelectedHover' : selectedWidthSetting === 1}
                         ]"
-                        class="border border-slate-700 rounded-md p-1 cursor-pointer
-                            hover:bg-slate-600/20">
-                        <div class="text-sm">Medium</div>
-                        <div>M</div>
-                    </div>
-                    <div @click="setLargeColumnWidth"
-                        :class="[{'bg-blue-700' : selectedWidthSetting === 2},
-                                {'hover:bg-blue-500' : selectedWidthSetting === 2}
+                        class="border border-outline rounded-md p-1 cursor-pointer
+                        hover:bg-feedColumnSettingsBtnHover/10 hover:border-embedHoverBorder focus-visible:outline
+                        focus-visible:outline-searchbarFocusHightlight shadow-none">
+                            <div class="text-sm">Medium</div>
+                            <div>M</div>
+                        </button>
+                        <button @click="setLargeColumnWidth"
+                        :class="[{'bg-feedColumnSettingsBtnSelected' : selectedWidthSetting === 2},
+                                {'hover:!bg-feedColumnSettingsBtnSelectedHover' : selectedWidthSetting === 2}
                             ]"
-                        class="border border-slate-700 rounded-md p-1 cursor-pointer
-                            hover:bg-slate-600/20">
-                        <div class="text-sm">Large</div>
-                        <div>L</div>
+                        class="border border-outline rounded-md p-1 cursor-pointer
+                        hover:bg-feedColumnSettingsBtnHover/10 hover:border-embedHoverBorder focus-visible:outline
+                        focus-visible:outline-searchbarFocusHightlight shadow-none">
+                            <div class="text-sm">Large</div>
+                            <div>L</div>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -137,7 +158,7 @@
                 class="flex flex-col gap-2">
                     <div v-for="n in feedData?.data" data-test="feedColumn-post" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">
-                        <FocusFeedPost class="border-0" :post-data="(n as FeedViewPost).post"
+                        <FocusFeedPost tabindex="-1" class="border-0" :post-data="(n as FeedViewPost).post"
                         :post-reason="(n as FeedViewPost).reason" :reply="(n as FeedViewPost).reply"
                         :is-feed-post-style="true"/>
                     </div>
@@ -164,17 +185,19 @@
                 class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
                     Login to view Notifications
                 </div>
-                <div v-else-if="feedData.description.feedType != FeedEnums.Types.Tag &&
+                <button v-else-if="feedData.description.feedType != FeedEnums.Types.Tag &&
                 feedData.description.feedType != FeedEnums.Types.Notifications &&
                 feedData?.description.feedType != FeedEnums.Types.Trending &&
                 !feedData.isAwaitingFeedData" @click="loadMorePosts(feedData.description.feedId)"
                 class="flex rounded border border-outline justify-center items-center p-1 gap-1 bg-postMsg text-btnText
-                cursor-pointer hover:bg-hover hover:text-slate-200 transition-colors select-none"
+                cursor-pointer hover:bg-hover hover:text-slate-200 transition-colors select-none
+                hover:border-transparent active:border-transparent focus-visible:outline
+                focus-visible:outline-searchbarFocusHightlight"
                 :class="{'!bg-outline hover:bg-hover text-hover hover:text-hover pointer-events-none' : isAwaitingLoadMore}">
                     <i-mingcute:loading-fill v-if="isAwaitingLoadMore" class="spinner"/>
                     <i-mingcute:plus-fill/>
                     <div>Load more</div>
-                </div>
+                </button>
             </TransitionGroup>
             <div v-if="DebugFlags.showFeedColumnCenter" class="relative h-full w-0.5 left-1/2 bg-blue-900/60"></div>
             <div v-if="DebugFlags.showFeedColumnDragResizeStats" class="absolute left-0 top-16 px-2 py-1 bg-orange-500/80 content-center">
@@ -197,7 +220,7 @@ import { defineComponent, PropType } from 'vue';
 import { DebugFlags } from '../../state/Debug.vue';
 import { IFeedListing } from '../../interfaces/FeedInterfaces';
 import { IPostDetails } from '../../interfaces/PostInterfaces';
-import { ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, updateFeedColumnSettings } from '../../state/FeedList.vue';
+import { ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, SaveFeedChanges, updateFeedColumnSettings, UpdateSelectedFeed } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { debounce } from '../../helpers/debouncer';
@@ -207,9 +230,12 @@ import FeedPost from './FeedPost.vue';
 import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
 import { convertToShortTimestamp } from '../../helpers/converters';
 import NotificationRecord from './NotificationRecord.vue';
-import { AppState } from '../../state/AppState.vue';
+import { AppState, toast } from '../../state/AppState.vue';
 import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 import TrendingTopic from './TrendingTopic.vue';
+import { isOnMobileTouchscreen } from '../../helpers/states';
+import SquareButton from '../Utilities/SquareButton.vue';
+import { HandleAPIError } from '../../helpers/errors';
 
 var colElement;
 
@@ -224,6 +250,7 @@ export default defineComponent({
         FocusFeedPost,
         NotificationRecord,
         TrendingTopic,
+        SquareButton,
     },
     data(){
         return{
@@ -263,6 +290,7 @@ export default defineComponent({
             FeedEnums,
             FeedState,
             convertToShortTimestamp,
+            isOnMobileTouchscreen,
         }
     },
     props: {
@@ -483,7 +511,7 @@ export default defineComponent({
             grabbedColumn.classList.add('drag-column-start','dragging');
             //update `FeedColumn` related variables in State
             FeedState.isGrabbingColumn = true;
-            FeedState.oldFeedColumnIndex = oldIndex;
+            FeedState.oldFeedColumnIndex = oldIndex+1;
             FeedState.dragColumnStartingX = grabbedColumn.offsetLeft;
             FeedState.dragColumnClickXPos = e.layerX;
             //Update grab position when initially dragged
@@ -510,9 +538,13 @@ export default defineComponent({
                 //If position is new
                 if(FeedState.newFeedColumnIndex != FeedState.oldFeedColumnIndex){
                     // remove element from its oldIndex
-                    const elRemoved = FeedState.FeedList.splice(FeedState.oldFeedColumnIndex, 1)[0];
+                    const elRemoved = FeedState.FeedList.splice(FeedState.oldFeedColumnIndex-1, 1)[0];
                     // insert it at its new index
-                    FeedState.FeedList.splice(FeedState.newFeedColumnIndex, 0, elRemoved);
+                    FeedState.FeedList.splice(FeedState.newFeedColumnIndex-1, 0, elRemoved);
+                    SaveFeedChanges()//Save changes to disk.
+                    .catch(err => {
+                        toast.add(HandleAPIError(err, 'Error updating Feed position'));
+                    })
                 }
                 columnBeingDropped.style.removeProperty('left');
                 columnBeingDropped.style.removeProperty('transition');
@@ -537,6 +569,22 @@ export default defineComponent({
             // (currentDraggedColumn as HTMLElement).style.left = `${x-FeedState.dragColumnStartingX-FeedState.dragColumnClickXPos+scrollPos}px`;//will drag from clicked area
             (currentDraggedColumn as HTMLElement).style.left = `${x-FeedState.dragColumnStartingX-currentDraggedColumn.clientWidth/2+scrollPos}px`;//will drag from center of column
         },
+        /**
+         * Method used to open the {@link FeedOrderModal}
+         * modal to update the position of the current `FeedColumn` in the
+         * Feed list.
+         */
+        openFeedOrderModal(){
+            if(this.feedData){
+                UpdateSelectedFeed(this.feedData.description.feedId);
+                AppState.showFeedOrderModal();
+            }
+        }
+    },
+    computed:{
+        onMobileTouchscreen(){
+            return isOnMobileTouchscreen();
+        }
     },
     mounted(){
         this.isMounted = true;

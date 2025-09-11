@@ -51,9 +51,9 @@ export const FeedState = reactive({
     isFeedOptionMenuVisible: false,
     /**Value indicating if application is waiting for an API response related to Feed data.*/
     isAwaitingFeedData:false,
-    /**The old index (position) of the FeedColumn that is being dragged.*/
+    /**The old index (position) of the FeedColumn that is being dragged. Is NOT zero-based - subtract 1 to get correct index.*/
     oldFeedColumnIndex:-100,
-    /**The new index (position) the FeedColumn that is being dragged will be placed.*/
+    /**The new index (position) the FeedColumn that is being dragged will be placed. Is NOT zero-based - subtract 1 to get correct index.*/
     newFeedColumnIndex:-100,
     /**Indicates that one of the `FeedColumn` components is being dragged. */
     isGrabbingColumn:false,

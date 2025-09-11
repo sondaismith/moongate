@@ -1,0 +1,10 @@
+/**
+ * Checks to see if app is currently being run on a mobile device with
+ * touch controls. Used to decide what technique to use when giving the User
+ * the means to reorder `FeedButton` and `FeedColumn` components.
+ */
+export function isOnMobileTouchscreen(){
+    // console.log('debug');
+    return (('ontouchstart' in window) &&
+    (navigator.maxTouchPoints > 0));
+}
