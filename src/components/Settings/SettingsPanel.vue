@@ -172,7 +172,7 @@ import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import ToggleButton from '../Utilities/ToggleButton.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { getCurrentWindow, PhysicalSize } from '@tauri-apps/api/window';
-import { LangCode } from '../../interfaces/SettingsInterfaces';
+import { IAppSettings, LangCode } from '../../interfaces/SettingsInterfaces';
 import CheckBox from '../Utilities/CheckBox.vue';
 import { loadSavedFeedsRecords, SavedFeeds, stringToJSON } from '../../lib/db/local_db';
 import { IFeedDBData } from '../../interfaces/FeedInterfaces';
@@ -239,6 +239,11 @@ export default defineComponent({
                     }
                 }
             },
+            /**
+             * Holds state of settings when `SettingsPanel` was first displayed. Used
+             * to check for changes when modal is being closed.
+             */
+            originalSettingsState: {} as IAppSettings,
             selectedCategoryIndex:'General',
             /**Variable the indicates if the application is currently running in dev mode. */
             isInDevEnvironment:false,
@@ -356,12 +361,16 @@ export default defineComponent({
     mounted(){
         //Finds out if the application is currently running in a dev environment.
         this.isInDevEnvironment = import.meta.env.DEV;
+        this.originalSettingsState = AppSettingsState.getCurrentSettingsState();
     },
     async beforeUnmount(){
-        //Save application settings when
-        await AppSettingsState.saveSettingsToStore()
-        .then(res => toast.add({summary:'Settings Saved', severity:'success', group:'bc', life:3000}))
-        .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
+        //Save application settings if changes have been made
+        let currentSettingsState = AppSettingsState.getCurrentSettingsState();
+        if(JSON.stringify(this.originalSettingsState) !== JSON.stringify(currentSettingsState)){
+            await AppSettingsState.saveSettingsToStore()
+            .then(res => toast.add({summary:'Settings Saved', severity:'success', group:'bc', life:3000}))
+            .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
+        }
     }
 })
 </script>

@@ -92,6 +92,13 @@ export const AppSettingsState = reactive({
         await settingsStore.save();//save initialization to file
     },
     /**
+     * Returns copy of values held inside the `AppSettingsState.Setting` object at
+     * the current moment. Intended to be used to check if changes have been made.
+     */
+    getCurrentSettingsState():IAppSettings{
+        return {...this.Settings};
+    },
+    /**
      * Method used to load the application settings from the Store.
      * Checks to see if Store file exists and is initialized - if it is not
      * will call [initializeAppSettingsStore()]({@link AppSettingsState.initializeAppSettingsStore})
