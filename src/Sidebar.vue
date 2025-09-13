@@ -142,7 +142,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { FeedState, AddFeedToList, createFeedDescription, AddSavedFeed, LoadFeedPostsAsync } from "./state/FeedList.vue";
+import { FeedState, AddFeedToList, createFeedDescription, AddSavedFeed, LoadFeedPostsAsync, SaveFeedChanges } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState, toast } from "./state/AppState.vue";
@@ -405,10 +405,14 @@ import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
                                 await AddSavedFeed(loadedFeeds[i]);
                             }
                             for (let i = 0; i < FeedState.FeedList.length; i++) {
-                                LoadFeedPostsAsync(FeedState.FeedList[i].description); //add await if you want these done sequentially
-                                await new Promise((resolve) => setTimeout(resolve,200)) //use if you want to add a small delay between each API call
+                                await LoadFeedPostsAsync(FeedState.FeedList[i].description); //add await if you want these done sequentially
+                                // await new Promise((resolve) => setTimeout(resolve,200)) //use if you want to add a small delay between each API call
                             }
                             //Set AppState "loading feeds" to false
+                            //Update FeedDescription.latestPostDate value after Posts have been loaded
+                            SaveFeedChanges(true).catch(err => {
+                                toast.add(HandleAPIError(err, 'Error updating Feed position'));
+                            })
                         }
                         else{console.log('No saved Feeds to restore.')}
                     }

@@ -472,7 +472,9 @@ export function stringifyFeedListData(data:IFeedListing[]):string{
     var t:IFeedDBData[]= [];
     // FeedState.FeedList.forEach(e => {
     data.forEach(e => {
-        t.push({id:e.description.feedId,userId:e.description.userId,did:e.description.feedSourceDID,tags:e.description.feedTags,type:e.description.feedType,icon:e.description.feedIcon,settings:e.description.feedColumnSettings});
+        t.push({id:e.description.feedId,userId:e.description.userId,did:e.description.feedSourceDID,
+            tags:e.description.feedTags,type:e.description.feedType,icon:e.description.feedIcon,settings:e.description.feedColumnSettings,
+            latestPostDate:e.description.latestPostDate,latestPostCID:e.description.latestPostCID});
     });
     // console.log(JSON.stringify(t));
     return JSON.stringify(t);

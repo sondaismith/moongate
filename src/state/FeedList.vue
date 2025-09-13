@@ -2,7 +2,7 @@
 import { reactive } from 'vue';
 import {FeedEnums} from '../enums/FeedEnums';
 import { IFeedColumnSettings, IFeedDescription, IFeedListing, IFeedDBData, IFeedReturnedPostResults } from '../interfaces/FeedInterfaces';
-import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { getAuthorFeed, getTagPosts } from '../lib/api/Feed.vue';
 import { HandleAPIError, IsError } from '../helpers/errors';
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
@@ -165,6 +165,8 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
     var usedFeedId:string = '';
     if(AppState.isUpdatingFeed) usedFeedId = FeedState.selectedFeed;
     else usedFeedId = GenerateUniqueId(10);
+    /**Latest post from returned Feed data. */
+    let latestPost = GetLatestNonPinnedPost(feedResult.data as FeedViewPost[]);
     //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
     /**Starting template for IFeedDescription used to create Feed. */
     var desc:IFeedDescription = {
@@ -174,10 +176,12 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
         feedName:tags.replace(' ',','),
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
-        newPosts:10,totalPosts:30,
+        newPosts:0,totalPosts:30,
         feedColumnSettings:defaultAppearance,
         feedSourceDID:'',
-        feedTags:''
+        feedTags:'',
+        latestPostDate:latestPost ? GetPostsFeedTimestamp(latestPost) : '',
+        latestPostCID:latestPost ? latestPost.post.cid : ''
     }
     //Select correct returned Object value based on Feed Type
     switch (feedType) {
@@ -210,6 +214,36 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
 
     AppState.isCreatingFeed = false;
     return {description:desc, data:feedResult.data, cursor:feedResult.cursor, isAwaitingFeedData:false};
+}
+
+/**
+ * Method used to return the latest (most recent) Post held in a Feed. Ignores
+ * pinned Posts in Feed.
+ * @param data The array of Feed posts. Assumes they are in order of Most Recent -> Oldest.
+ */
+function GetLatestNonPinnedPost(data : FeedViewPost[]):FeedViewPost|undefined{
+    let latestPost:FeedViewPost|undefined = undefined;
+    //Sort array
+
+    for (let i = 0; i < data.length; i++) {
+        if(!isReasonPin(data[i].reason)){
+            latestPost = data[i]
+            i = data.length;
+        }
+    }
+    return latestPost;
+}
+
+/**
+ * Method that returns the "Feed" timestamp for a given Post. The "Feed" timestamp
+ * being the time the Post would have been added to the Feed, not when it was
+ * created (i.e. Reposts).
+ * @param post The Post to get the "Feed" timestamp for.
+ */
+function GetPostsFeedTimestamp(post:FeedViewPost):string{
+    let ts = post.post.indexedAt;
+    if(isReasonRepost(post.reason)) ts = post.reason.indexedAt;
+    return ts;
 }
 
 /**
@@ -358,10 +392,12 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
         feedName:savedFeed.tags,
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
-        newPosts:10,totalPosts:30,
+        newPosts:0,totalPosts:30,
         feedColumnSettings:{width:savedFeed.settings.width},
         feedSourceDID:'',
-        feedTags:''
+        feedTags:'',
+        latestPostDate:savedFeed.latestPostDate,
+        latestPostCID:savedFeed.latestPostCID
     }
 
     //Select correct returned Object value based on Feed Type
@@ -441,6 +477,15 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
                 feed.data = res.data.slice()
                 feed.cursor = res.cursor
                 feed.isAwaitingFeedData = false;
+                //Update newPost value
+                let newPosts = feedDesc.latestPostDate && feedDesc.latestPostDate.trim() != '' ?
+                    res.data.filter(post => new Date(GetPostsFeedTimestamp(post as FeedViewPost)) >= new Date(feedDesc.latestPostDate)
+                    && (post as FeedViewPost).post.cid != feedDesc.latestPostCID) : [];
+                feed.description.newPosts = newPosts.length;
+                /**Latest post from returned Feed data. */
+                let latestPost = GetLatestNonPinnedPost(feed.data as FeedViewPost[]);
+                feed.description.latestPostDate = latestPost ? GetPostsFeedTimestamp(latestPost) : '';
+                feed.description.latestPostCID = latestPost ? latestPost.post.cid : '';
             }
         })
         .catch(err => toast.add(HandleAPIError(err, 'Error getting posts for Saved Feed')));
@@ -548,11 +593,13 @@ export async function UpdateFeedDetails(feedId:string, description:IFeedDescript
  * Method that saves the application's updated saved Feed list to the relevant
  * database. Handles determining the method to used based on the current
  * platform.
+ * @param silentSave Indicates whether or not the User will be informed that the save
+ * is happening. Default value is false.
  */
-export async function SaveFeedChanges(){
+export async function SaveFeedChanges(silentSave:boolean=false){
     if(isTauri()){
         await updateSavedFeedsTable({data:stringifyFeedListData(FeedState.FeedList)})
-        .then(res => toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:3000}))
+        .then(res => {if(!silentSave) toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:3000})})
         .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
     }
     //Add options for platforms other than Tauri desktop
@@ -561,7 +608,7 @@ export async function SaveFeedChanges(){
         // toast.add({summary:"Using Platform other than Desktop", detail:`Will not be able to save feeds to disk`,severity:'info',group:'tr',life:2000});
         console.log(`Saving FeedList changes w/ Dexie.js...`);
         web_db.savedFeeds.put({id:1, data:stringifyFeedListData(FeedState.FeedList)})
-        .then(res => toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:3000}))
+        .then(res => {if(!silentSave)toast.add({summary:'Saving Data',detail:`Feed List Updated`,severity:'success', group:'bc', life:3000})})
         .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
     }
 }
@@ -594,16 +641,21 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
         await new Promise(res => setTimeout(res,500));
         await GetFeedDataForFeedType(feed.description.feedType,feed.description.feedSourceDID,feed.description.feedTags,'',postsToGet)
         .then(res => {
-            if(feed && feed.description.feedType == FeedEnums.Types.User ||
-                feed?.description.feedType == FeedEnums.Types.Tag ||
-                feed?.description.feedType == FeedEnums.Types.FeedGenerator){
+            if(feed && (feed.description.feedType == FeedEnums.Types.User ||
+                feed.description.feedType == FeedEnums.Types.Tag ||
+                feed.description.feedType == FeedEnums.Types.FeedGenerator)){
                 //User and Tag Feed data should be in the shape of a FeedViewPost
                 // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
-                let newPosts = res.data.filter(post => new Date((post as FeedViewPost).post.indexedAt) >= lastUpdate)
+                let latestDate = feed ? new Date(feed.description.latestPostDate) : lastUpdate;
+                let newPosts = res.data.filter(post => new Date(GetPostsFeedTimestamp(post as FeedViewPost)) >= latestDate && (post as FeedViewPost).post.cid != feed?.description.latestPostCID)
+                /**Latest post from returned Feed data. */
+                let latestPost = GetLatestNonPinnedPost(res.data as FeedViewPost[]);
                 //Update only if there are new posts
                 // if(newPosts.length > 0) feed.data = [...pinned, ...newPosts, ...feed.data.slice(pinned.length)];
                 feed.data = res.data.slice();
                 feed.description.newPosts = newPosts.length;
+                feed.description.latestPostDate = latestPost ? GetPostsFeedTimestamp(latestPost) : '';
+                feed.description.latestPostCID = latestPost ? latestPost.post.cid : '';
                 feed.isAwaitingFeedData = false;
             }
             else if(feed && feed.description.feedType == FeedEnums.Types.Notifications){

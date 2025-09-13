@@ -49,6 +49,14 @@ interface IFeedDescription{
     feedIcon: FeedEnums.Icons,
     /**Number of unread posts. */
     newPosts: number,
+    /**
+     * Value marking the most recent Post displayed in Feed. Used to determine how
+     * many "new posts" have been retrieved when refreshing or loading up the
+     * application again.
+     */
+    latestPostDate: string,,
+    /**Unique identifier of the most Recent Post loaded into Feed. */
+    latestPostCID:string
     /**The total number of posts that are part of the feed. */
     totalPosts: number,
     /**
@@ -124,7 +132,11 @@ interface IFeedDBData{
     /**The icon used by this Feed. */
     icon:FeedEnums.Icons,
     /**Settings used by the `FeedColumn` component that displays this Feed. */
-    settings:IFeedColumnSettings
+    settings:IFeedColumnSettings,
+    /**Date string of the most recent Post loaded into Feed. */
+    latestPostDate:string,
+    /**Unique identifier of the most Recent Post loaded into Feed. */
+    latestPostCID:string
 }
 
 interface IFeedIconTypes{
