@@ -180,8 +180,8 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
         feedColumnSettings:defaultAppearance,
         feedSourceDID:'',
         feedTags:'',
-        latestPostDate:latestPost ? GetPostsFeedTimestamp(latestPost) : '',
-        latestPostCID:latestPost ? latestPost.post.cid : ''
+        latestPostDate:latestPost ? GetRecordsFeedTimestamp(latestPost) : '',
+        latestPostCID:latestPost ? GetRecordsUniqueID(latestPost) : ''
     }
     //Select correct returned Object value based on Feed Type
     switch (feedType) {
@@ -221,29 +221,67 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
  * pinned Posts in Feed.
  * @param data The array of Feed posts. Assumes they are in order of Most Recent -> Oldest.
  */
-function GetLatestNonPinnedPost(data : FeedViewPost[]):FeedViewPost|undefined{
-    let latestPost:FeedViewPost|undefined = undefined;
-    //Sort array
-
-    for (let i = 0; i < data.length; i++) {
-        if(!isReasonPin(data[i].reason)){
-            latestPost = data[i]
-            i = data.length;
+function GetLatestNonPinnedPost(data : FeedViewPost[] | Notification[] | TrendView[]):FeedViewPost|Notification|TrendView|undefined{
+    let latestPost:FeedViewPost|Notification|TrendView|undefined = undefined;
+    //Notification, 1st element is the latest.
+    if(data.length>0 && (data[0] as Notification).isRead){
+        latestPost = data[0];
+    }
+    //Trending Topic, search for latest Trend
+    else if(data.length>0 &&(data[0] as TrendView).topic){
+        let sortedTrends = (data as TrendView[]).sort((a,b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+        latestPost = sortedTrends[0];
+    }
+    else{
+        for (let i = 0; i < data.length; i++) {
+            if(!isReasonPin((data[i] as FeedViewPost).reason)){
+                latestPost = data[i]
+                i = data.length;
+            }
         }
     }
     return latestPost;
 }
 
 /**
- * Method that returns the "Feed" timestamp for a given Post. The "Feed" timestamp
- * being the time the Post would have been added to the Feed, not when it was
+ * Method that returns the "Feed" timestamp for a given Record. The "Feed" timestamp
+ * being the time the Record would have been added to the Feed, not when it was
  * created (i.e. Reposts).
- * @param post The Post to get the "Feed" timestamp for.
+ * @param record The Record to get the "Feed" timestamp for.
  */
-function GetPostsFeedTimestamp(post:FeedViewPost):string{
-    let ts = post.post.indexedAt;
-    if(isReasonRepost(post.reason)) ts = post.reason.indexedAt;
+function GetRecordsFeedTimestamp(record:FeedViewPost | Notification | TrendView):string{
+    let ts = '';
+    if((record as FeedViewPost).post){
+        let fvPost = (record as FeedViewPost);
+        ts = fvPost.post.indexedAt;
+        if(isReasonRepost(fvPost.reason)) ts = fvPost.reason.indexedAt;
+    }
+    else if((record as Notification).isRead){
+        ts = (record as Notification).indexedAt;
+    }
+    else if((record as TrendView).topic){
+        ts = (record as TrendView).startedAt;
+    }
     return ts;
+}
+
+/**
+ * Returns the unique identifier carried by the passed in Record. Used to
+ * identify newer Records when loading a Feed.
+ * @param record The Record to search for its unique identifier.
+ */
+function GetRecordsUniqueID(record:FeedViewPost | Notification | TrendView):string{
+    let uniqueID = '';
+    if((record as FeedViewPost).post){
+        uniqueID = (record as FeedViewPost).post.cid;
+    }
+    else if((record as Notification).isRead){
+        uniqueID = (record as Notification).cid;
+    }
+    else if((record as TrendView).topic){
+        uniqueID = (record as TrendView).link;
+    }
+    return uniqueID;
 }
 
 /**
@@ -479,13 +517,14 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
                 feed.isAwaitingFeedData = false;
                 //Update newPost value
                 let newPosts = feedDesc.latestPostDate && feedDesc.latestPostDate.trim() != '' ?
-                    res.data.filter(post => new Date(GetPostsFeedTimestamp(post as FeedViewPost)) >= new Date(feedDesc.latestPostDate)
-                    && (post as FeedViewPost).post.cid != feedDesc.latestPostCID) : [];
+                    res.data.filter(post => new Date(GetRecordsFeedTimestamp(post)) >= new Date(feedDesc.latestPostDate)
+                    && GetRecordsUniqueID(post) != feedDesc.latestPostCID) : [];
                 feed.description.newPosts = newPosts.length;
                 /**Latest post from returned Feed data. */
                 let latestPost = GetLatestNonPinnedPost(feed.data as FeedViewPost[]);
-                feed.description.latestPostDate = latestPost ? GetPostsFeedTimestamp(latestPost) : '';
-                feed.description.latestPostCID = latestPost ? latestPost.post.cid : '';
+                //Update variables used to identify newer Records
+                feed.description.latestPostDate = latestPost ? GetRecordsFeedTimestamp(latestPost) : '';
+                feed.description.latestPostCID = latestPost ? GetRecordsUniqueID(latestPost) : '';
             }
         })
         .catch(err => toast.add(HandleAPIError(err, 'Error getting posts for Saved Feed')));
@@ -647,15 +686,15 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
                 //User and Tag Feed data should be in the shape of a FeedViewPost
                 // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
                 let latestDate = feed ? new Date(feed.description.latestPostDate) : lastUpdate;
-                let newPosts = res.data.filter(post => new Date(GetPostsFeedTimestamp(post as FeedViewPost)) >= latestDate && (post as FeedViewPost).post.cid != feed?.description.latestPostCID)
+                let newPosts = res.data.filter(post => new Date(GetRecordsFeedTimestamp(post)) >= latestDate && GetRecordsUniqueID(post) != feed?.description.latestPostCID);
                 /**Latest post from returned Feed data. */
-                let latestPost = GetLatestNonPinnedPost(res.data as FeedViewPost[]);
+                let latestPost = GetLatestNonPinnedPost(res.data);
                 //Update only if there are new posts
                 // if(newPosts.length > 0) feed.data = [...pinned, ...newPosts, ...feed.data.slice(pinned.length)];
                 feed.data = res.data.slice();
                 feed.description.newPosts = newPosts.length;
-                feed.description.latestPostDate = latestPost ? GetPostsFeedTimestamp(latestPost) : '';
-                feed.description.latestPostCID = latestPost ? latestPost.post.cid : '';
+                feed.description.latestPostDate = latestPost ? GetRecordsFeedTimestamp(latestPost) : '';
+                feed.description.latestPostCID = latestPost ? GetRecordsUniqueID(latestPost) : '';
                 feed.isAwaitingFeedData = false;
             }
             else if(feed && feed.description.feedType == FeedEnums.Types.Notifications){
@@ -669,10 +708,12 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
                 feed.isAwaitingFeedData = false;
             }
             else if(feed && feed.description.feedType == FeedEnums.Types.Trending){
-                //Notification Feed data should be in the shape of a Notification
+                //Trending Topic Feed data should be in the shape of a Notification
                 //Update only if there are new posts
                 feed.data = res.data.slice();
-                feed.description.newPosts = res.data.length;
+                let latestDate = feed ? new Date(feed.description.latestPostDate) : lastUpdate;
+                let newPosts = res.data.filter(post => new Date(GetRecordsFeedTimestamp(post)) >= latestDate && GetRecordsUniqueID(post) != feed?.description.latestPostCID);
+                feed.description.newPosts = newPosts.length;
                 feed.isAwaitingFeedData = false;
             }
         })
