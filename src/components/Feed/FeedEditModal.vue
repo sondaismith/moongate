@@ -318,7 +318,7 @@ export default defineComponent({
                 feedHandle:'loading_tag',
                 feedType:FeedEnums.Types.User,
                 feedIcon:FeedEnums.Icons.Art,
-                newPosts:10,totalPosts:30,
+                newPosts:0,totalPosts:30,
                 feedColumnSettings:defaultAppearance,
                 feedSourceDID:'',
                 feedTags:''

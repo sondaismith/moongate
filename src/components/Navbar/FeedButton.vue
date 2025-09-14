@@ -13,7 +13,7 @@
             <div v-if="userPfp" class="absolute button-size bg-contain bg-centers scale-[1.15] bg-no-repeat pointer-events-none"
             :style="{'background-image': 'url('+userPfp+')'}"></div>
         </button>
-        <UnreadMsgCount :unreadCount="newPosts" class="select-none"/>
+        <UnreadMsgCount :unreadCount="newPosts" :isAwaitingData="isAwaitingNewPostData" class="select-none"/>
     </div>
 </template>
 
@@ -83,6 +83,11 @@ export default defineComponent({
         icon: String,
         userDid:String,
         newPosts: Number,
+        /**Is the data for the associated Feed still be loaded? */
+        isAwaitingNewPostData:{
+            type:Boolean,
+            required:true
+        },
         /**
          * Indicates if any `FeedButton` is being dragged when this one was "clicked".
          * Used to prevent click when button is being dropped.

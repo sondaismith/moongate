@@ -122,7 +122,7 @@ export default defineComponent({
                     feedName:'[loading name]',
                     feedType:FeedEnums.Types.FeedGenerator,
                     feedIcon:FeedEnums.Icons.Trending,
-                    newPosts:10,totalPosts:30,
+                    newPosts:0,totalPosts:30,
                     feedColumnSettings:defaultAppearance,
                     feedSourceDID:'',
                     feedTags:''
