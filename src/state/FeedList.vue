@@ -105,57 +105,16 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
 export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSearchResult={did:'',name:'',handle:''},tags:string=''):Promise<IFeedListing>{
     /**Object that will hold the returned Feed data. */
     var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
-    /**The object that will be added to the FeedList. */
-    var feedPosts;
-    /**Object containing profile data on User. Used when creating User-type Feeds. */
-    var profile:ProfileView = {did:'', handle:''};
-    //Perform required API call based on Feed Type
-    switch (feedType) {
-        case FeedEnums.Types.User:
-            var did:string = '';
-            //check if we have a DID
-            if(userData.did.trim() != ''){
-                did = userData.did
-            }
-            //if no DID check for handle, then get DID
-            else if(userData.handle.trim() != ''){
-                await GetBrowsingAgent().resolveHandle(
-                    {
-                        handle:userData.handle
-                    }
-                ).then(res => userData.did = did = res.data.did)
-                .catch(_ => did = '');
-            }
-            //If we do not have a profile name
-            if(userData.name.trim() == ''){
-                await GetBrowsingAgent().getProfile({actor:did})
-                .then(res => profile = res.data);
-                userData.name = profile.displayName ? profile.displayName : '';
-            }
-
-            await getAuthorFeed(did).then(res => {
-                feedResult.data = res.data.feed
-                if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
-            })
-            break;
-        case FeedEnums.Types.Tag:
-            await getTagPosts(tags).then(res => {
-                if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
-                //Place Posts in a "Feed" shaped Object
-                res.data.posts.forEach(p => {
-                    (feedResult.data as FeedViewPost[]).push({post:p});
-                })
-            })
-            break;
-        default:
-            break;
-    }
+    await GetFeedDataForFeedType(feedType,userData.did,tags)
+    .then(res => {
+        feedResult.data = res.data;
+    })
     //Check if API call created Error
-    if(IsError(feedResult)){
-        toast.add(HandleAPIError(feedResult as Error));
-        //this.attemptingToCreateFeed = false;
-        return; //Stop further actions
-    }
+    // if(IsError(feedResult)){
+    //     toast.add(HandleAPIError(feedResult as Error));
+    //     //this.attemptingToCreateFeed = false;
+    //     return; //Stop further actions
+    // }
     console.log(feedResult);//DEBUG
 
     var defaultAppearance:IFeedColumnSettings = {
@@ -165,52 +124,26 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
     var usedFeedId:string = '';
     if(AppState.isUpdatingFeed) usedFeedId = FeedState.selectedFeed;
     else usedFeedId = GenerateUniqueId(10);
-    /**Latest post from returned Feed data. */
-    let latestPost = GetLatestNonPinnedPost(feedResult.data as FeedViewPost[]);
-    //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
     /**Starting template for IFeedDescription used to create Feed. */
     var desc:IFeedDescription = {
         feedId: usedFeedId,
         userId:1,
-        feedHandle:'hashtag',
-        feedName:tags.replace(' ',','),
+        feedHandle:'loading_handle',
+        feedName:'',
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
-        newPosts:0,totalPosts:30,
+        newPosts:0,totalPosts:0,
         feedColumnSettings:defaultAppearance,
         feedSourceDID:'',
         feedTags:'',
-        latestPostDate:latestPost ? GetRecordsFeedTimestamp(latestPost) : '',
-        latestPostCID:latestPost ? GetRecordsUniqueID(latestPost) : ''
+        latestPostDate:'',
+        latestPostCID:''
     }
-    //Select correct returned Object value based on Feed Type
-    switch (feedType) {
-        case FeedEnums.Types.User:
-            // feedPosts = feedResult.data.feed;
-            //Generate Feed Description based on selected options
-            desc = {...desc,
-                feedHandle:userData.handle,
-                feedName:userData.name,
-                feedSourceDID:userData.did
-            }
-            break;
-        case FeedEnums.Types.Tag:
-            // var posts = [];
-            // //Place Posts in a "Feed" shaped Object
-            // feedResult.data.posts.forEach(p => {
-            //     posts.push({post:p})
-            // });
-            // feedPosts = posts;
-            //Generate Feed Description based on selected options
-            desc = {...desc,
-                feedType:FeedEnums.Types.Tag,
-                feedIcon:FeedEnums.Icons.Hashtag,
-                feedTags:tags
-            }
-            break;
-        default:
-            break;
-    }
+    await GenerateFeedDescription(usedFeedId,1,feedType,userData.did,feedResult.data,
+    undefined,tags)
+    .then(res => {
+        desc = res;
+    })
 
     AppState.isCreatingFeed = false;
     return {description:desc, data:feedResult.data, cursor:feedResult.cursor, isAwaitingFeedData:false};
@@ -298,7 +231,7 @@ function GetRecordsUniqueID(record:FeedViewPost | Notification | TrendView):stri
  * @param feedColumnSettings Settings that determine the appearance of the `FeedColumn`.
  * @param sourceDid The "source" DID used to get Feed content. Used by User-type Feeds.
  */
-export function createFeedDescription(userId:number,handle:string,name:string,type:FeedEnums.Types,
+export function OLDcreateFeedDescription(userId:number,handle:string,name:string,type:FeedEnums.Types,
     icon:FeedEnums.Icons,newPosts:number,totalPosts:number,feedColumnSettings:IFeedColumnSettings,
     sourceDid:string = '',feedTags:string = ''){
     var desc : IFeedDescription = {
@@ -313,6 +246,118 @@ export function createFeedDescription(userId:number,handle:string,name:string,ty
         newPosts: newPosts,
         totalPosts: totalPosts,
         feedColumnSettings: feedColumnSettings,
+    }
+    return desc;
+}
+
+/**
+ * Interface intended to be used to add visibility to what variables are
+ * being set/used when calling `GenerateFeedDescription()`. Not used at
+ * the moment.
+ */
+interface IFeedDescriptionInput{
+    feedId:string;
+    userId:number;
+    feedType:FeedEnums.Types;
+    sourceDID:string;
+    feedData:FeedViewPost[] | Notification[] | TrendView[];
+    columnSettings?:IFeedColumnSettings;
+    tags?:string;
+    latestPostDate?:string;
+    latestPostCID?:string;
+}
+
+/**
+ * Method used to generate an IFeedDescription object that describes a Feed.
+ * Intended to be used anywhere an object that is needed, during Feed creation
+ * or updating (`PrepareFeedData`, `AddSavedFeed`, etc).
+ * @param feedId The ID to use for this Feed.
+ * @param userId The ID of the User stored in the `user_accounts` table this feed is associated with.
+ * @param feedType The type of Feed this is. Used for categorization, changes icon used.
+ * @param sourceDID The DID used to populate the Feed. Currently used by User and FeedGenerator type Feeds.
+ * @param feedData The data associated with this Feed. Used to determine the most recent Post.
+ * @param columnSettings The width setting that will be used by this Feed when added to column display.
+ * @param tags Tags used to populate this Feed - ignored if not Tag-type Feed.
+ */
+async function GenerateFeedDescription(feedId:string,userId:number,feedType:FeedEnums.Types,
+sourceDID:string,feedData:FeedViewPost[] | Notification[] | TrendView[],
+columnSettings:IFeedColumnSettings={width:FeedEnums.Widths.Small},tags:string='',
+latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
+    /**Latest post from returned Feed data. */
+    let latestPost = GetLatestNonPinnedPost(feedData);
+    /**Starting template for IFeedDescription used to create Feed. */
+    var desc:IFeedDescription = {
+        feedId:feedId,
+        userId:userId,
+        feedHandle:'loading_handle',
+        feedName:tags.replace(' ',','),
+        feedType:FeedEnums.Types.User,
+        feedIcon:FeedEnums.Icons.Art,
+        newPosts:0,totalPosts:30,
+        feedColumnSettings:columnSettings,
+        feedSourceDID:'',
+        feedTags:'',
+        latestPostDate:latestPost ? GetRecordsFeedTimestamp(latestPost) : latestPostDate,
+        latestPostCID:latestPost ? GetRecordsUniqueID(latestPost) : latestPostCID
+    }
+
+    //Update IFeedDescription Object values based on Feed Type
+    switch(feedType) {
+        case FeedEnums.Types.User:
+            desc = {...desc,
+                feedName:'[Fetching Displayname...]',
+                feedSourceDID:sourceDID
+            }
+            let userHandle = '';
+            let userName = '';
+            //Get profile name
+            await GetBrowsingAgent().getProfile({actor:sourceDID})
+            .then(res => {
+                userHandle = res.data.handle;
+                userName = res.data.displayName ? res.data.displayName : '';
+            });
+            //Update required values of `IFeedDescription` template
+            desc = {...desc,
+                feedName:userName,
+                feedHandle:userHandle
+            }
+            break;
+        case FeedEnums.Types.Tag:
+            //Update required values of `IFeedDescription` template
+            desc = {...desc,
+                feedType:FeedEnums.Types.Tag,
+                feedIcon:FeedEnums.Icons.Hashtag,
+                feedHandle:'hashtag',
+                feedTags:tags
+            }
+            break;
+        case FeedEnums.Types.Notifications:
+            desc = {...desc,
+                feedType:FeedEnums.Types.Notifications,
+                feedIcon:FeedEnums.Icons.Notifications,
+                feedHandle:'notifs',
+                feedName:'Notifications'
+            }
+            break;
+        case FeedEnums.Types.Trending:
+            desc = {...desc,
+                feedType:FeedEnums.Types.Trending,
+                feedIcon:FeedEnums.Icons.Trending,
+                feedHandle:'trending',
+                feedName:'Trending'
+            }
+            break;
+        case FeedEnums.Types.FeedGenerator:
+            desc = {...desc,
+                feedType:FeedEnums.Types.FeedGenerator,
+                feedIcon:FeedEnums.Icons.Trending,
+                feedHandle:'trending.bsky.app',
+                feedName:tags,
+                feedSourceDID:sourceDID
+            }
+            break;
+        default:
+            break;
     }
     return desc;
 }
@@ -410,18 +455,6 @@ export function addDummyPostToFeed(feedId:String){
  * @param savedFeed Summary Feed info used to restore Feed in app.
  */
 export async function AddSavedFeed(savedFeed:IFeedDBData){
-    /**The object that will be added to the FeedList. */
-    // var feedResult:FeedViewPost[] = [];
-    // var feedResult:IFeedReturnedPostResults = {data:[],cursor:''};
-    // await GetFeedDataForFeedType(savedFeed.type,savedFeed.did,savedFeed.tags,'',10)
-    // .then(res => feedResult = res)
-    // .catch(err => toast.add(HandleAPIError(err, 'Error getting posts for Saved Feed')));
-    // console.log(feedResult);//DEBUG
-
-    /**Default FeedColumn settings */
-    var defaultAppearance:IFeedColumnSettings = {
-        width: FeedEnums.Widths.Small,
-    }
     /**Starting template for IFeedDescription used to create Feed. */
     var desc:IFeedDescription = {
         feedId:savedFeed.id,
@@ -438,53 +471,25 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
         latestPostCID:savedFeed.latestPostCID
     }
 
-    //Select correct returned Object value based on Feed Type
-    switch(savedFeed.type) {
-        case FeedEnums.Types.User:
-            //Update required values of starting `IFeedDescription` template
-            desc = {...desc,
-                feedName:'[Fetching Displayname...]',
-                feedSourceDID:savedFeed.did
-            }
-            break;
-        case FeedEnums.Types.Tag:
-            //Update required values of starting `IFeedDescription` template
-            desc = {...desc,
-                feedType:FeedEnums.Types.Tag,
-                feedIcon:FeedEnums.Icons.Hashtag,
-                feedHandle:'hashtag',
-                feedTags:savedFeed.tags
-            }
-            break;
-        case FeedEnums.Types.Notifications:
-            desc = {...desc,
-                feedType:FeedEnums.Types.Notifications,
-                feedIcon:FeedEnums.Icons.Notifications,
-                feedHandle:'notifs',
-                feedName:'Notifications'
-            }
-            break;
-        case FeedEnums.Types.Trending:
-            desc = {...desc,
-                feedType:FeedEnums.Types.Trending,
-                feedIcon:FeedEnums.Icons.Trending,
-                feedHandle:'trending',
-                feedName:'Trending'
-            }
-            break;
-        case FeedEnums.Types.FeedGenerator:
-            desc = {...desc,
-                feedType:FeedEnums.Types.FeedGenerator,
-                feedIcon:FeedEnums.Icons.Trending,
-                feedHandle:'trending.bsky.app',
-                feedName:savedFeed.tags,
-                feedSourceDID:savedFeed.did
-            }
-            break;
-        default:
-            break;
+    //Not used atm, but intended to be a more readable way of
+    //passing in the variables used by `GenerateFeedDescription()`.
+    const feedDescInput:IFeedDescriptionInput = {
+        feedId:savedFeed.id,
+        userId:savedFeed.userId,
+        feedType:savedFeed.type,
+        sourceDID:savedFeed.did,
+        feedData:[],
+        columnSettings:savedFeed.settings,
+        tags:savedFeed.tags,
+        latestPostDate:savedFeed.latestPostDate,
+        latestPostCID:savedFeed.latestPostCID
     }
-    // AddFeedToList(desc,feedResult.data,feedResult.cursor);
+
+    await GenerateFeedDescription(savedFeed.id,savedFeed.userId,savedFeed.type,savedFeed.did,[],
+    savedFeed.settings,savedFeed.tags,savedFeed.latestPostDate,savedFeed.latestPostCID)
+    .then(res => {
+        desc = res;
+    })
     AddFeedToList(desc,[]);
 }
 

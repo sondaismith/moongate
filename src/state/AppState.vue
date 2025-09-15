@@ -159,7 +159,7 @@ export const AppState = reactive({
     currentUsername: "Login Here",
     currentPFP: '',
     /**Is the user currently trying to create a new Feed to add to the
-     * view.
+     * view (is `FeedEditModal` open?).
      */
     isCreatingFeed: false,
     /**Is the user currently editing an existing Feed. */

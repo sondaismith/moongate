@@ -142,7 +142,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { FeedState, AddFeedToList, createFeedDescription, AddSavedFeed, LoadFeedPostsAsync, SaveFeedChanges } from "./state/FeedList.vue";
+import { FeedState, AddFeedToList, OLDcreateFeedDescription, AddSavedFeed, LoadFeedPostsAsync, SaveFeedChanges } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState, toast } from "./state/AppState.vue";
@@ -333,7 +333,7 @@ import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
                 .then(res => {
                     homeFeed = res.data.feed
                     //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
-                    var feedDesc = createFeedDescription(1,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444}, homeFeed[0].post.author.did);
+                    var feedDesc = OLDcreateFeedDescription(1,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444}, homeFeed[0].post.author.did);
                     AddFeedToList(feedDesc, homeFeed);
                 })
                 .catch(err => toast.add(HandleAPIError(err, 'Error getting Home timeline posts')));
