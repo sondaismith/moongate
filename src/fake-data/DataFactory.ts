@@ -4,6 +4,7 @@ import { FeedEnums } from "../enums/FeedEnums";
 import { View } from "@atproto/api/dist/client/types/app/bsky/embed/external";
 import { $Typed } from "@atproto/api/dist/client/util";
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
+import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 
 /**
  * Method used to create a dummy `FeedViewPost` object for testing purposes.
@@ -138,6 +139,48 @@ export function CreateNotification(handle:string, reason:'like'
             break;
     }
     return post;
+}
+
+/**
+ * Method used to create a dummy `TrendView` object for testing purposes.
+ * @param topic The "Topic" of the Trending Topic.
+ * @param category The category of the Trending Topic.
+ * @param displayName The displayed name used for the Trending Topic. Usually the same/similar to the topic.
+ * @param postCount The number of Posts related to the Trending Topic.
+ * @param trendCreated When the Trending Topic started/was created.
+ * @returns The created `TrendView` object.
+ */
+export function CreateTrendView(topic:string,category:string,displayName:string="",postCount:number=1337,trendCreated:Date=new Date()):TrendView{
+    let startedTime = trendCreated.toISOString();
+    let cid = `author_${topic.replace(' ','_')}_${1}`;
+    let subjectCID = `subject_${topic.replace(' ','_')}_${1}`;
+    let record:TrendView = {
+        topic: topic,
+        displayName: displayName.trim() != "" ? displayName : (topic[0].toUpperCase()+topic.slice(1)).replace(/_/g,' '),
+        link: "/profile/trending.bsky.app/feed/not_real",
+        startedAt: startedTime,
+        postCount: postCount,
+        category: category,
+        actors: [
+            {
+                did: "did:plc:trend_actor1",
+                handle: "post_treend",
+                displayName: "Trend Actor 1",
+                avatar: "src/assets/test-media/posts/image02.png",
+                labels: [],
+                createdAt: "2025-08-18T16:20:06.768Z"
+            },
+            {
+                did: "did:plc:trend_actor2",
+                handle: "trendy_questionmark",
+                displayName: "Trend Actor 2",
+                avatar: "src/assets/test-media/posts/image08.png",
+                labels: [],
+                createdAt: "2025-06-08T13:37:28.361Z"
+            },
+        ]
+    }
+    return record;
 }
 
 /**
