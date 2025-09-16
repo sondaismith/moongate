@@ -154,7 +154,7 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
  * pinned Posts in Feed.
  * @param data The array of Feed posts. Assumes they are in order of Most Recent -> Oldest.
  */
-function GetLatestNonPinnedPost(data : FeedViewPost[] | Notification[] | TrendView[]):FeedViewPost|Notification|TrendView|undefined{
+export function GetLatestNonPinnedPost(data : FeedViewPost[] | Notification[] | TrendView[]):FeedViewPost|Notification|TrendView|undefined{
     let latestPost:FeedViewPost|Notification|TrendView|undefined = undefined;
     //Notification, 1st element is the latest.
     if(data.length>0 && (data[0] as Notification).isRead){

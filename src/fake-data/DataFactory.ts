@@ -3,6 +3,7 @@ import { IFeedDescription, IFeedListing } from "../interfaces/FeedInterfaces";
 import { FeedEnums } from "../enums/FeedEnums";
 import { View } from "@atproto/api/dist/client/types/app/bsky/embed/external";
 import { $Typed } from "@atproto/api/dist/client/util";
+import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
 
 /**
  * Method used to create a dummy `FeedViewPost` object for testing purposes.
@@ -12,10 +13,13 @@ import { $Typed } from "@atproto/api/dist/client/util";
  * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
  * @returns The created `FeedViewPost` object.
  */
-export function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false, displayName:string=''):FeedViewPost{
-    let currentTime = new Date();
-    currentTime.setTime(currentTime.getTime()-(1*60*1000));
-    let postTime = currentTime.toISOString();
+export function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
+    displayName:string='',postTime:Date=new Date(),isPinned:boolean=false):FeedViewPost{
+    // let currentTime = new Date();
+    // currentTime.setTime(currentTime.getTime()-(1*60*1000));
+    // postTime.setTime(postTime.getTime()-(1*60*1000));
+    // let indexTime = currentTime.toISOString();
+    let indexTime = postTime.toISOString();
     let cid = `author_${handle}_${1}`;
     // await GenerateCID(`author${i+1}`).then(res => {
     //     cid = res.toString();
@@ -28,10 +32,10 @@ export function CreateFeedViewPost(handle:string, postText:string='', includeEmb
                 displayName:displayName.trim() != '' ? displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' ')
             },
             cid:cid,
-            indexedAt:postTime,
+            indexedAt:indexTime,
             record: {
                 $type: "app.bsky.feed.post",
-                createdAt: postTime,
+                createdAt: indexTime,
                 langs: [
                     "en-US"
                 ],
@@ -40,6 +44,98 @@ export function CreateFeedViewPost(handle:string, postText:string='', includeEmb
             uri:'nowhere',
             embed:includeEmbedLink ? CreateEmbed() : undefined
         },
+    }
+    if(isPinned){
+        post = {...post,
+            reason: {
+                $type: "app.bsky.feed.defs#reasonPin"
+            }
+        }
+    }
+    return post;
+}
+
+/**
+ * Method used to create a dummy `Notification` object for testing purposes.
+ * @param handle The handle of the User who made the Post.
+ * @param reason The reason for the Notification.
+ * @param displayName The display name of the User who made the Post.
+ * @param postTime The time at which the Notification was made.
+ * @returns The created `Notification` object.
+ */
+export function CreateNotification(handle:string, reason:'like'
+    | 'repost'
+    | 'follow'
+    | 'mention'
+    | 'reply'
+    | 'quote'
+    | 'starterpack-joined'
+    | 'verified'
+    | 'unverified', displayName:string='',postTime:Date=new Date()):Notification{
+    let indexTime = postTime.toISOString();
+    let cid = `author_${handle}_${1}`;
+    let subjectCID = `subject_${handle}_${1}`;
+    // await GenerateCID(`author${i+1}`).then(res => {
+    //     cid = res.toString();
+    // })
+    let post:Notification = {
+        uri: "nowhere",
+        cid: cid,
+        author: {
+            did: `did_fake${1}`,
+            handle: handle,
+            displayName: displayName,
+            createdAt: "2025-02-04T13:02:19.244Z",
+            description: "I'm a generated notification author!",
+            indexedAt: "2025-09-01T12:45:32.297Z"
+        },
+        reason: reason,
+        reasonSubject: "at://did:plc:link_to_subject",
+        record: {
+            $type: "app.bsky.feed.like",
+            createdAt: "2025-07-09T03:02:23.589054+00:00",
+            subject: {
+                $type: "com.atproto.repo.strongRef",
+                cid: subjectCID,
+                uri: "at://did:plc:link_to_subject"
+            }
+        },
+        isRead: true,
+        indexedAt: indexTime,
+    }
+
+    switch (reason) {
+        case "like":
+            //code above handles this
+            break;
+        case "repost":
+            post = {...post,
+                record: {
+                    $type: "app.bsky.feed.repost",
+                    createdAt: "2025-07-09T03:02:23.589054+00:00",
+                    subject: {
+                        $type: "com.atproto.repo.strongRef",
+                        cid: subjectCID,
+                        uri: "at://did:plc:link_to_subject"
+                    }
+                },
+            }
+            break;
+        case "mention":
+            post = {...post,
+                record: {
+                    $type: "app.bsky.feed.mention",
+                    createdAt: "2025-07-09T03:02:23.589054+00:00",
+                    subject: {
+                        $type: "com.atproto.repo.strongRef",
+                        cid: subjectCID,
+                        uri: "at://did:plc:link_to_subject"
+                    }
+                },
+            }
+            break;
+        default:
+            break;
     }
     return post;
 }
