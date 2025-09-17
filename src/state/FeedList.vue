@@ -182,7 +182,7 @@ export function GetLatestNonPinnedPost(data : FeedViewPost[] | Notification[] | 
  * created (i.e. Reposts).
  * @param record The Record to get the "Feed" timestamp for.
  */
-function GetRecordsFeedTimestamp(record:FeedViewPost | Notification | TrendView):string{
+export function GetRecordsFeedTimestamp(record:FeedViewPost | Notification | TrendView):string{
     let ts = '';
     if((record as FeedViewPost).post){
         let fvPost = (record as FeedViewPost);
