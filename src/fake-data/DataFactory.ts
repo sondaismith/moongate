@@ -143,7 +143,7 @@ export function CreateNotification(handle:string, reason:'like'
 
 /**
  * Method used to create a dummy `TrendView` object for testing purposes.
- * @param topic The "Topic" of the Trending Topic.
+ * @param topic The "Topic" of the Trending Topic. DO NOT USE NON URL-SAFE CHARACTERS
  * @param category The category of the Trending Topic.
  * @param displayName The displayed name used for the Trending Topic. Usually the same/similar to the topic.
  * @param postCount The number of Posts related to the Trending Topic.
@@ -157,7 +157,7 @@ export function CreateTrendView(topic:string,category:string,displayName:string=
     let record:TrendView = {
         topic: topic,
         displayName: displayName.trim() != "" ? displayName : (topic[0].toUpperCase()+topic.slice(1)).replace(/_/g,' '),
-        link: "/profile/trending.bsky.app/feed/not_real",
+        link: `/profile/trending.bsky.app/feed/${topic.replace(/ /g,'_')}`,
         startedAt: startedTime,
         postCount: postCount,
         category: category,

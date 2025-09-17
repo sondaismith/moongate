@@ -1,7 +1,7 @@
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { describe } from "vitest";
 import { CreateFeedViewPost, CreateIFeedDescription, CreateNotification, CreateTrendView } from "../fake-data/DataFactory";
-import { GetLatestNonPinnedPost, GetRecordsFeedTimestamp } from "./FeedList.vue"
+import { GetLatestNonPinnedPost, GetRecordsFeedTimestamp, GetRecordsUniqueID } from "./FeedList.vue"
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 
@@ -189,5 +189,92 @@ describe("Test suite for GetRecordsFeedTimestamp()", () => {
         }
         let ts = GetRecordsFeedTimestamp(record);
         expect(ts).to.equal(startedTime);
+    })
+})
+
+describe("Test suite for GetRecordsUniqueID()", () => {
+    it("should return correct identifier from FeedViewPost.post.cid", () => {
+        let fvp:FeedViewPost = {
+            post:{
+                author:{
+                    did:`did_fake_${1}`,
+                    handle:'',
+                    displayName:''
+                },
+                cid:'aTestCIDForFVP',
+                indexedAt:'2025-07-26T16:30:00.000Z',
+                record: {
+                    $type: "app.bsky.feed.post",
+                    createdAt: '',
+                    langs: [
+                        "en-US"
+                    ],
+                    text: 'dummy text'
+                },
+                uri:'nowhere',
+            },
+            reason:{
+                $type:'app.bsky.feed.defs#reasonRepost',
+                indexedAt:'2025-10-02T06:32:00.000Z'
+            }
+        }
+        expect(GetRecordsUniqueID(fvp)).to.equal('aTestCIDForFVP');
+    })
+    it("should return correct identifier from Notification.cid", () => {
+        let notif:Notification = {
+            uri: "nowhere",
+            cid: 'notifCid123456',
+            author: {
+                did: `did_fake${1}`,
+                handle: '',
+                displayName: '',
+                createdAt: "2025-02-04T13:02:19.244Z",
+                description: "I'm a generated notification author!",
+                indexedAt: "2025-09-01T12:45:32.297Z"
+            },
+            reason: 'like',
+            reasonSubject: "at://did:plc:link_to_subject",
+            record: {
+                $type: "app.bsky.feed.like",
+                createdAt: "2025-07-09T03:02:23.589054+00:00",
+                subject: {
+                    $type: "com.atproto.repo.strongRef",
+                    cid: '',
+                    uri: "at://did:plc:link_to_subject"
+                }
+            },
+            isRead: true,
+            indexedAt: '2025-03-16T17:23:00.000Z',
+        }
+        expect(GetRecordsUniqueID(notif)).to.equal('notifCid123456');
+    })
+    it("should return correct identifier from TrendView.link", () => {
+        let trend:TrendView = {
+            topic: 'fake trend',
+            displayName: 'Not a Real Trend',
+            link: "/profile/trending.bsky.app/feed/the_new_hotness",
+            startedAt: '2025-11-26T11:43:00.000Z',
+            postCount: 1234,
+            category: 'test',
+            actors: [
+                {
+                    did: "did:plc:trend_actor1",
+                    handle: "post_treend",
+                    displayName: "Trend Actor 1",
+                    avatar: "src/assets/test-media/posts/image02.png",
+                    labels: [],
+                    createdAt: "2025-08-18T16:20:06.768Z"
+                },
+                {
+                    did: "did:plc:trend_actor2",
+                    handle: "trendy_questionmark",
+                    displayName: "Trend Actor 2",
+                    avatar: "src/assets/test-media/posts/image08.png",
+                    labels: [],
+                    createdAt: "2025-06-08T13:37:28.361Z"
+                },
+            ]
+        }
+        expect(GetRecordsUniqueID(trend)).to.equal("/profile/trending.bsky.app/feed/the_new_hotness");
     })
 })

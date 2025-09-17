@@ -203,7 +203,7 @@ export function GetRecordsFeedTimestamp(record:FeedViewPost | Notification | Tre
  * identify newer Records when loading a Feed.
  * @param record The Record to search for its unique identifier.
  */
-function GetRecordsUniqueID(record:FeedViewPost | Notification | TrendView):string{
+export function GetRecordsUniqueID(record:FeedViewPost | Notification | TrendView):string{
     let uniqueID = '';
     if((record as FeedViewPost).post){
         uniqueID = (record as FeedViewPost).post.cid;
