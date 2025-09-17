@@ -279,7 +279,7 @@ interface IFeedDescriptionInput{
  * @param columnSettings The width setting that will be used by this Feed when added to column display.
  * @param tags Tags used to populate this Feed - ignored if not Tag-type Feed.
  */
-async function GenerateFeedDescription(feedId:string,userId:number,feedType:FeedEnums.Types,
+export async function GenerateFeedDescription(feedId:string,userId:number,feedType:FeedEnums.Types,
 sourceDID:string,feedData:FeedViewPost[] | Notification[] | TrendView[],
 columnSettings:IFeedColumnSettings={width:FeedEnums.Widths.Small},tags:string='',
 latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{

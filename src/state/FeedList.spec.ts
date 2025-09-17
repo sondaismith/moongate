@@ -1,9 +1,13 @@
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { describe } from "vitest";
 import { CreateFeedViewPost, CreateIFeedDescription, CreateNotification, CreateTrendView } from "../fake-data/DataFactory";
-import { GetLatestNonPinnedPost, GetRecordsFeedTimestamp, GetRecordsUniqueID } from "./FeedList.vue"
+import { GetLatestNonPinnedPost, GetRecordsFeedTimestamp, GetRecordsUniqueID,
+    GenerateFeedDescription
+ } from "./FeedList.vue"
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
+import { FeedEnums } from "../enums/FeedEnums";
+import { IFeedDescription } from "../interfaces/FeedInterfaces";
 
 //Creating collection of Feeds and Posts
 let feedCID1 = 'testFeed1';
@@ -276,5 +280,21 @@ describe("Test suite for GetRecordsUniqueID()", () => {
             ]
         }
         expect(GetRecordsUniqueID(trend)).to.equal("/profile/trending.bsky.app/feed/the_new_hotness");
+    })
+})
+
+describe.skip("Test suite for GenerateFeedDescription()", () => {
+    it("should", async () => {
+        let feed:FeedViewPost[] = [post1,post2,post3]
+        let feedDesc = undefined;
+        //below method makes an actual call to API - cannot test in current state
+        //would need to add Mock Servce Worker (MSW) library to test
+        //--> https://vitest.dev/guide/mocking.html#requests
+        await GenerateFeedDescription("feedId",1,FeedEnums.Types.User,"sourceDID",feed)
+        .then(res => {
+            console.log(res)
+        })
+        // console.log(feedDesc);
+        expect(feedDesc.feedId).to.equal("feedDId");
     })
 })
