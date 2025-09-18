@@ -1,4 +1,11 @@
-import { CreateFeedViewPost, CreateIFeedDescription, CreateNotification, CreateTrendView } from "../../fake-data/DataFactory";
+import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { CreateFeed, CreateFeedViewPost, CreateIFeedDescription, CreateNotification, CreateTrendView } from "../../fake-data/DataFactory";
+import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
+import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
+import { IFeedDescription } from "../../interfaces/FeedInterfaces";
+import Sidebar from '../../Sidebar.vue';
+import { DeleteIndexedDBSavedFeeds } from "../../lib/db/local_db";
+import { emptyPostView } from "../../fake-data/dumPostData";
 
 
 //Creating collection of Feeds and Posts
@@ -14,12 +21,14 @@ let post1Timestamp = new Date(2025,8,16,13,30);
 let notif1Timestamp = new Date(2025,8,16,13,30);
 let trend1Timestamp = new Date(2025,2,27,15,41);
 
-let post1 = CreateFeedViewPost('bob_the_poster','I love my car shop!',true,undefined,post1Timestamp);
-let post2 = CreateFeedViewPost('cargo_haul', 'Delivery delivery delivery delivery',false,undefined,new Date(2025,8,16,13,21));
-let post3 = CreateFeedViewPost('cargo_haul', 'the box is in place',undefined,undefined,new Date(2025,8,16,13,10));
-let pinPost1 = CreateFeedViewPost('bob_the_poster','Cars all day, every day!',true,undefined,new Date(2025,8,16,13,30),true);
-let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2);
-let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3);
+let post1:FeedViewPost = {post:emptyPostView};
+let post2:FeedViewPost = {post:emptyPostView};
+await CreateFeedViewPost('bobtheposter.social','I love my car shop!',true,undefined,post1Timestamp).then(res => post1 = res);
+await CreateFeedViewPost('cargo.haul', 'Delivery delivery delivery delivery',false,undefined,new Date(2025,8,16,13,21)).then(res => post2 = res);
+// let post3 = CreateFeedViewPost('cargo.haul', 'the box is in place',undefined,undefined,new Date(2025,8,16,13,10));
+let pinPost1 = CreateFeedViewPost('bobtheposter.social','Cars all day, every day!',true,undefined,new Date(2025,8,16,13,30),true);
+let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2,post1.post.cid,post1.post.indexedAt);
+let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3,post2.post.cid,post2.post.indexedAt);
 
 let notif1 = CreateNotification('post_liker',"like",undefined,notif1Timestamp);
 let notif2 = CreateNotification('u_will_be_mentioned',"mention","the mentioner",new Date(2025,8,16,9,3));
@@ -29,12 +38,38 @@ let trend2 = CreateTrendView('House Ownership','Lifestyle',undefined,79,new Date
 let trend3 = CreateTrendView('Naps','Lifestyle',undefined,133200,new Date(2025,4,9,8,11));
 let trend4 = CreateTrendView('F1','Sport',undefined,11766,new Date(2025,4,12,14,20));
 
+let feed1 = CreateFeed([post1,post2],feedDesc1);
+let feed2 = CreateFeed([post2,post2,post1],feedDesc2);
+
 /**
  * Test Feed data. Used to define the starting Feed displayed
  * during testing.
  */
-var testFeedData = {
-    feed: [post1,post2],
+// var testFeedData = {
+//     feed: [post1,post2],
+// }
+
+interface IFakeBackend{
+    feed:FeedViewPost[]|Notification[]|TrendView[],
+    feedDesciption:IFeedDescription
+}
+
+var fakeBackend:IFakeBackend[] = [
+    {
+        feed:feed1.data,
+        feedDesciption:feed1.description
+    },
+    {
+        feed:feed2.data,
+        feedDesciption:feed2.description
+    },
+]
+
+function getFakeAuthorFeed(feedID:string):FeedViewPost[]|Notification[]|TrendView[]{
+    let result:FeedViewPost[]|Notification[]|TrendView[] = [];
+    let fakeAPIResult = fakeBackend.find(f => f.feedDesciption.feedId == feedID);
+    if(fakeAPIResult) result = fakeAPIResult.feed;
+    return result;
 }
 
 describe("Test Suite for `UnreadMsgCount`", () => {
@@ -80,8 +115,9 @@ describe("Test Suite for `UnreadMsgCount`", () => {
         cy.intercept('GET','**/app.bsky.feed.getAuthorFeed*', (req) => {
             //DEBUG
             // console.log(req);
+            let apiResult = getFakeAuthorFeed(req.query.actor);
             req.reply({
-                body:testFeedData,
+                body:{feed:apiResult},
                 statusCode: 200
             });
             console.log(req);
@@ -89,11 +125,31 @@ describe("Test Suite for `UnreadMsgCount`", () => {
     })
 
     it('comfirms "Feed not found" message is shown if no FeedId has been provided', () => {
-        // cy.mount(FeedOrderModal,{
-        //     global:{
-        //         stubs:{transition:false, 'transition-group': false},
-        //     },
-        // })
-        // cy.get('[data-testid="feedOrderModal-no-feedId"').should('exist');
+        cy.mount(Sidebar,{
+            global:{
+                stubs:{transition:false, 'transition-group': false},
+            },
+        })
+        .then(({wrapper}) => {
+            console.log(wrapper.vm.$data);
+            wrapper.vm.$data.FeedState.FeedList = [feed1,feed2];
+            // wrapper.vm.$data.AppState.isUpdatingFeedPosition = false; //modal seems to stay open from prev test, this makes sure it's closed
+            // wrapper.vm.$data.AppState.isAppOnMobileTouchscreenDevice = true; //spoof that this is a mobile touchscreen device
+        })
+        // DeleteIndexedDBSavedFeeds();
+        // cy.get('[data-testid="feedcolumn-reorder-button"').eq(1).click();
+        // cy.wait(200);
+        // cy.get('[data-testid="feedOrderModal-original-position-label"').should('contain',2);
+        // cy.press(Cypress.Keyboard.Keys.TAB);
+        // cy.get('[data-testid="feedOrderModal-new-position-input"').should('exist').click().type('{backspace}11');//type positive invalid value
+        // cy.get('[data-testid="feedOrderModal-new-position-input"').should('have.value',11);
+        // cy.press(Cypress.Keyboard.Keys.TAB);
+        // cy.get('[data-testid="feedOrderModal-new-position-input"').should('have.value',2);//input losing focus triggers validation
+        // cy.get('[data-testid="feedOrderModal-update-button"').should('be.disabled');
+        // cy.get('[data-testid="feedOrderModal-new-position-input"').should('exist').click().type('{backspace}-1');//type negative invalid value
+        // cy.get('[data-testid="feedOrderModal-new-position-input"').should('have.value',-1);
+        // cy.press(Cypress.Keyboard.Keys.TAB);
+        // cy.get('[data-testid="feedOrderModal-new-position-input"').should('have.value',1);//input losing focus triggers validation
+        // cy.get('[data-testid="feedOrderModal-update-button"').should('be.enabled');
     })
 })

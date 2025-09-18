@@ -5,30 +5,33 @@ import { View } from "@atproto/api/dist/client/types/app/bsky/embed/external";
 import { $Typed } from "@atproto/api/dist/client/util";
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
+import { GenerateCID } from "../helpers/generators";
 
 /**
  * Method used to create a dummy `FeedViewPost` object for testing purposes.
+ * MUST AWAIT IN ORDER FOR CID TO BE GENERATED.
  * @param handle The handle of the User who made the Post.
  * @param postText The text content of the Post.
  * @param includeEmbedLink Should this post contain an external link embed?
  * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
  * @returns The created `FeedViewPost` object.
  */
-export function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
-    displayName:string='',postTime:Date=new Date(),isPinned:boolean=false):FeedViewPost{
+export async function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
+    displayName:string='',postTime:Date=new Date(),isPinned:boolean=false):Promise<FeedViewPost>{
     // let currentTime = new Date();
     // currentTime.setTime(currentTime.getTime()-(1*60*1000));
     // postTime.setTime(postTime.getTime()-(1*60*1000));
     // let indexTime = currentTime.toISOString();
     let indexTime = postTime.toISOString();
     let cid = `author_${handle}_${1}`;
-    // await GenerateCID(`author${i+1}`).then(res => {
-    //     cid = res.toString();
-    // })
+    // cid = "bafyreifzelycxgfy7niauhzchi34z6avvb6fczinbcyj3y6465szpf5f7a";
+    await GenerateCID(`author_${handle}_${1}`).then(res => {
+        cid = res.toString();
+    })
     let post:FeedViewPost = {
         post:{
             author:{
-                did:`did_fake_${1}`,
+                did:`did:plc:fake_${1}`,
                 handle:handle,
                 displayName:displayName.trim() != '' ? displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' ')
             },
@@ -42,7 +45,7 @@ export function CreateFeedViewPost(handle:string, postText:string='', includeEmb
                 ],
                 text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
             },
-            uri:'nowhere',
+            uri:'at://did:plc:nowhere',
             embed:includeEmbedLink ? CreateEmbed() : undefined
         },
     }
@@ -240,7 +243,7 @@ export function CreateFeedViewPostArray(numOfPosts:number, handle:string, includ
  */
 export function CreateIFeedDescription(feedName:string,feedId:string,newPosts:number,totalPosts:number,latestPostCID:string,latestPostDate:string,feedHandle:string=''):IFeedDescription{
     return{
-        feedId:feedId,
+        feedId:`did:plc:${feedId}`,
         userId:1,
         feedSourceDID:`did:plc:${feedId}`,
         feedTags:'',
@@ -322,7 +325,10 @@ export function CreateEmbed():$Typed<View>{
             uri: "https://www.google.com/",
             title: "Component Test shows link to nowhere",
             description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-            thumb: "src/assets/test-media/posts/image08.png"
+            thumb: `http://localhost:1420${import.meta.env.BASE_URL.replace('src','iframes/src')}assets/test-media/posts/image08.png`
+            //above URI will only work when testing with Cypress...not sure how to check for the testing environment
+            //"src/assets/test-media/posts/image08.png"
+            //'https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg'
         }
     }
     return emb;
