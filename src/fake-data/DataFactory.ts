@@ -238,7 +238,7 @@ export function CreateFeedViewPostArray(numOfPosts:number, handle:string, includ
  * @param feedHandle The handle of the Feed being created. If none is provided, the display name will be used.
  * @returns The created IFeedDescription object.
  */
-export function CreateIFeedDescription(feedName:string,feedId:string,newPosts:number,totalPosts:number,feedHandle:string=''){
+export function CreateIFeedDescription(feedName:string,feedId:string,newPosts:number,totalPosts:number,latestPostCID:string,latestPostDate:string,feedHandle:string=''):IFeedDescription{
     return{
         feedId:feedId,
         userId:1,
@@ -250,7 +250,9 @@ export function CreateIFeedDescription(feedName:string,feedId:string,newPosts:nu
         feedIcon:FeedEnums.Icons.Art,
         newPosts:newPosts,
         totalPosts:totalPosts,
-        feedColumnSettings:{width:FeedEnums.Widths.Small}
+        feedColumnSettings:{width:FeedEnums.Widths.Small},
+        latestPostCID:latestPostCID,
+        latestPostDate:latestPostCID
     }
 }
 

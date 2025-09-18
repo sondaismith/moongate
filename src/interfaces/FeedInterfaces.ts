@@ -54,7 +54,7 @@ interface IFeedDescription{
      * many "new posts" have been retrieved when refreshing or loading up the
      * application again.
      */
-    latestPostDate: string,,
+    latestPostDate: string,
     /**Unique identifier of the most Recent Post loaded into Feed. */
     latestPostCID:string
     /**The total number of posts that are part of the feed. */

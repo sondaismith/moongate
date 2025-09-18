@@ -446,6 +446,22 @@ export async function loadSavedFeedsRecords():Promise<SavedFeeds[]|Error>{
 }
 
 /**
+ * Method that clears the `savedFeeds` table held in the `web_db` IndexedDB
+ * database.
+ */
+export async function DeleteIndexedDBSavedFeeds(){
+    console.log('Clearing savedFeed in IndexedDB - current value:');
+    await web_db.savedFeeds.toArray().then(res => {
+        console.log(res);
+    })
+    await web_db.savedFeeds.clear();
+    console.log('Cleared savedFeed in IndexedDB - current value:');
+    await web_db.savedFeeds.toArray().then(res => {
+        console.log(res);
+    })
+}
+
+/**
  * DO NOT USE - use {@link AppSettingsState.loadSettingsFromStore()}.
  * Method the returns all the records currently held in the `app_settings` table.
  * @returns Result of trying to grab all the records held in the `app_settings` table.

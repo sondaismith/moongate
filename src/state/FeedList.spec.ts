@@ -26,8 +26,8 @@ let post1 = CreateFeedViewPost('bob_the_poster','I love my car shop!',true,undef
 let post2 = CreateFeedViewPost('cargo_haul', 'Delivery delivery delivery delivery',false,undefined,new Date(2025,8,16,13,21));
 let post3 = CreateFeedViewPost('cargo_haul', 'the box is in place',undefined,undefined,new Date(2025,8,16,13,10));
 let pinPost1 = CreateFeedViewPost('bob_the_poster','Cars all day, every day!',true,undefined,new Date(2025,8,16,13,30),true);
-let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2);
-let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3);
+// let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2);
+// let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3);
 
 let notif1 = CreateNotification('post_liker',"like",undefined,notif1Timestamp);
 let notif2 = CreateNotification('u_will_be_mentioned',"mention","the mentioner",new Date(2025,8,16,9,3));
