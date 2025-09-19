@@ -13,7 +13,7 @@
             <div v-if="userPfp" class="absolute button-size bg-contain bg-centers scale-[1.15] bg-no-repeat pointer-events-none"
             :style="{'background-image': 'url('+userPfp+')'}"></div>
         </button>
-        <UnreadMsgCount :unreadCount="newPosts" :isAwaitingData="isAwaitingNewPostData" class="select-none"/>
+        <UnreadMsgCount :data-testid="`unreadMsgCount-${feedId}`" :unreadCount="newPosts" :isAwaitingData="isAwaitingNewPostData" class="select-none"/>
     </div>
 </template>
 
