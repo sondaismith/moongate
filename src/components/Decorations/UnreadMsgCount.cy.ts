@@ -24,12 +24,14 @@ let trend1Timestamp = new Date(2025,2,27,15,41);
 
 let post1:FeedViewPost = {post:emptyPostView};
 let post2:FeedViewPost = {post:emptyPostView};
+let post3:FeedViewPost = {post:emptyPostView};
 await CreateFeedViewPost('bobtheposter.social','I love my car shop!',true,undefined,post1Timestamp).then(res => post1 = res);
-await CreateFeedViewPost('cargo.haul', 'Delivery delivery delivery delivery',false,undefined,new Date(2025,8,16,13,21)).then(res => post2 = res);
+await CreateFeedViewPost('cargo.haul', 'Delivery delivery delivery delivery',false,undefined,new Date(2025,8,12,13,21)).then(res => post2 = res);
+await CreateFeedViewPost('cargo.haul', 'Who put the box there? Me!',true,undefined,new Date(2025,7,25,17,11)).then(res => post3 = res);
 // let post3 = CreateFeedViewPost('cargo.haul', 'the box is in place',undefined,undefined,new Date(2025,8,16,13,10));
 let pinPost1 = CreateFeedViewPost('bobtheposter.social','Cars all day, every day!',true,undefined,new Date(2025,8,16,13,30),true);
-let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,0,2,post1.post.cid,post1.post.indexedAt);
-let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,0,3,post2.post.cid,post2.post.indexedAt);
+let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,0,2,post2.post.cid,post2.post.indexedAt);
+let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,0,3,post3.post.cid,post3.post.indexedAt);
 
 let notif1 = CreateNotification('post_liker',"like",undefined,notif1Timestamp);
 let notif2 = CreateNotification('u_will_be_mentioned',"mention","the mentioner",new Date(2025,8,16,9,3));
@@ -40,7 +42,7 @@ let trend3 = CreateTrendView('Naps','Lifestyle',undefined,133200,new Date(2025,4
 let trend4 = CreateTrendView('F1','Sport',undefined,11766,new Date(2025,4,12,14,20));
 
 let feed1 = CreateFeed([post1,post2],feedDesc1);
-let feed2 = CreateFeed([post2,post2,post1],feedDesc2);
+let feed2 = CreateFeed([post1,post2,post3],feedDesc2);
 
 /**
  * Test Feed data. Used to define the starting Feed displayed
@@ -120,7 +122,7 @@ describe("Test Suite for `UnreadMsgCount`", () => {
             req.reply({
                 body:{feed:apiResult},
                 statusCode: 200,
-                delay:1000,
+                delay:500,
             });
             console.log(req);
         }).as('getAuthorFeedTest');
@@ -144,7 +146,11 @@ describe("Test Suite for `UnreadMsgCount`", () => {
         })
         // DeleteIndexedDBSavedFeeds();
         cy.get('[data-testid^="unreadMsgCount"').should('have.length',2);
-        cy.get('[data-testid^="unreadMsgCount"').eq(0).should('exist');
-        cy.get('[data-testid^="unreadMsgCount"').eq(1).should('exist');
+        //Loading spinner should be displayed
+        cy.get('[data-testid^="unreadMsgCount"').eq(0).children('svg').should('exist');
+        cy.get('[data-testid^="unreadMsgCount"').eq(1).children('svg').should('exist');
+        //Correct number of new posts should be displayed
+        cy.get('[data-testid^="unreadMsgCount"').eq(0).should('contain', 1);
+        cy.get('[data-testid^="unreadMsgCount"').eq(1).should('contain', 2);
     })
 })

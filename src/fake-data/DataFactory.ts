@@ -255,7 +255,7 @@ export function CreateIFeedDescription(feedName:string,feedId:string,newPosts:nu
         totalPosts:totalPosts,
         feedColumnSettings:{width:FeedEnums.Widths.Small},
         latestPostCID:latestPostCID,
-        latestPostDate:latestPostCID
+        latestPostDate:latestPostDate
     }
 }
 
