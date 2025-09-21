@@ -3,10 +3,12 @@ import { CreateFeed, CreateFeedViewPost, CreateIFeedDescription, CreateNotificat
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 import { IFeedDescription } from "../../interfaces/FeedInterfaces";
+import { AppBskyActorSearchActors } from "@atproto/api/dist/client";
 import Sidebar from '../../Sidebar.vue';
 import { DeleteIndexedDBSavedFeeds, stringifyFeedListData } from "../../lib/db/local_db";
 import { emptyPostView } from "../../fake-data/dumPostData";
 import { web_db } from "../../lib/db/web_db";
+import { ProfileView } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 
 
 //Creating collection of Feeds and Posts
@@ -54,17 +56,31 @@ let feed2 = CreateFeed([post1,post2,post3],feedDesc2);
 
 interface IFakeBackend{
     feed:FeedViewPost[]|Notification[]|TrendView[],
-    feedDesciption:IFeedDescription
+    feedDesciption:IFeedDescription,
+    /**The User details of the owner of the "User Feed". */
+    user:ProfileView,
 }
 
 var fakeBackend:IFakeBackend[] = [
     {
         feed:feed1.data,
-        feedDesciption:feed1.description
+        feedDesciption:feed1.description,
+        user:{
+            did:feed1.description.feedSourceDID,
+            handle:'bobtheposter.social',
+            displayName:'Bob the Poster',
+            avatar:`http://localhost:1420${import.meta.env.BASE_URL.replace('src','iframes/src')}assets/test-media/posts/image08.png`
+        }
     },
     {
         feed:feed2.data,
-        feedDesciption:feed2.description
+        feedDesciption:feed2.description,
+        user:{
+            did:feed1.description.feedSourceDID,
+            handle:'cargo.haul',
+            displayName:'cargo.haul',
+            avatar:`http://localhost:1420${import.meta.env.BASE_URL.replace('src','iframes/src')}assets/test-media/posts/image02.png`
+        }
     },
 ]
 
@@ -73,6 +89,27 @@ function getFakeAuthorFeed(feedID:string):FeedViewPost[]|Notification[]|TrendVie
     let fakeAPIResult = fakeBackend.find(f => f.feedDesciption.feedId == feedID);
     if(fakeAPIResult) result = fakeAPIResult.feed;
     return result;
+}
+
+/**
+ * Mock method used to simulate the act of calling `searchActors` on Bluesky's API.
+ * Used during testing.
+ * @param searchName The name of the User being searched.
+ * @returns A collection of Users matching the searched name.
+ */
+function getFakeSearchActors(searchName:string):AppBskyActorSearchActors.Response{
+    let response:AppBskyActorSearchActors.Response = {data:{actors:[]},headers:{status:'200'},success:true};
+    let fakeAPIResult = fakeBackend.filter(f => f.user.handle.includes(searchName));
+    if(fakeAPIResult){
+        response = {
+            data:{
+                actors:fakeAPIResult.map(f => f.user)
+            },
+            headers:{status:'200'},
+            success:true
+        }
+    }
+    return response;
 }
 
 describe("Test Suite for `UnreadMsgCount`", () => {
@@ -126,9 +163,20 @@ describe("Test Suite for `UnreadMsgCount`", () => {
             });
             console.log(req);
         }).as('getAuthorFeedTest');
+        //Intercept searchActors request and return test data
+        cy.intercept('GET','**/app.bsky.actor.searchActors*', (req) => {
+            //DEBUG
+            let apiResult = getFakeSearchActors(req.query.q).data;
+            req.reply({
+                body:apiResult,
+                statusCode: 200,
+                delay:200,
+            });
+            console.log(req);
+        }).as('searchActorsTest');
     })
 
-    it('loads 2 saved Feeds from IndexedDB, `UnreadMsgCount` displays on both `FeedButton` elements', () => {
+    it('loads 2 saved Feeds from IndexedDB, `UnreadMsgCount` displays on both `FeedButton` elements, correct "new posts" value should be shown for both', () => {
         cy.mount(Sidebar,{
             global:{
                 stubs:{transition:false, 'transition-group': false},
@@ -138,8 +186,9 @@ describe("Test Suite for `UnreadMsgCount`", () => {
             console.log(wrapper.vm.$data);
             // wrapper.vm.$data.FeedState.FeedList = [feed1,feed2];
             // wrapper.vm.$data.AppState.isUpdatingFeedPosition = false; //modal seems to stay open from prev test, this makes sure it's closed
-            // wrapper.vm.$data.AppState.isAppOnMobileTouchscreenDevice = true; //spoof that this is a mobile touchscreen device
-            // web_db.savedFeeds.put({id:1, data:stringifyFeedListData(wrapper.vm.$data.FeedState.FeedList)})
+            // wrapper.vm.$data.AppState.isUpdatingFeedPosition = false; //modal seems to stay open from prev test, this makes sure it's closed
+            wrapper.vm.$data.AppState.canBrowse = true; //Setting User to guest browsing
+            wrapper.vm.$data.AppState.isGuestBrowsing = true;
             web_db.savedFeeds.put({id:1, data:stringifyFeedListData([feed1,feed2])})
             .then(res => console.log(res))
             .catch(err => console.log(err));
