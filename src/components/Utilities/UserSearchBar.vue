@@ -30,7 +30,7 @@
         border-inherit border-outline rounded-b flex bg-feedColumnBG overflow-auto"
         :class="[filteredUsers.length<1 ? 'border-none' : 'border']">
             <div data-testid="userSearchBar-returned-users-container" class="relative flex flex-col w-full">
-                <button @click="selectUser(result)" class="group flex items-center hover:bg-searchbarResultHover p-2s
+                <button @click="selectUser(result)" data-testid="user-search-bar-result" class="group flex items-center hover:bg-searchbarResultHover p-2s
                     cursor-pointer rounded-none"
                     v-for="result, index in filteredUsers" :key="index" tabindex="0">
                     <div class="flex gap-1 w-full border-2 p-2 border-transparent

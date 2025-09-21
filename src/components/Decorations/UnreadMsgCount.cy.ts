@@ -113,7 +113,7 @@ function getFakeSearchActors(searchName:string):AppBskyActorSearchActors.Respons
 }
 
 describe("Test Suite for `UnreadMsgCount`", () => {
-    before(() => {
+    beforeEach(() => {
         cy.intercept('GET','**/app.bsky.actor.getProfile*', (req) => {
             //DEBUG
             // console.log(req);
@@ -176,7 +176,7 @@ describe("Test Suite for `UnreadMsgCount`", () => {
         }).as('searchActorsTest');
     })
 
-    it('loads 2 saved Feeds from IndexedDB, `UnreadMsgCount` displays on both `FeedButton` elements, correct "new posts" value should be shown for both', () => {
+    it('starts with no saved Feeds, adds 1 new User Feed, no unreadMsgCount should display, refresh Feed, loading spinner should display', () => {
         cy.mount(Sidebar,{
             global:{
                 stubs:{transition:false, 'transition-group': false},
@@ -189,6 +189,35 @@ describe("Test Suite for `UnreadMsgCount`", () => {
             // wrapper.vm.$data.AppState.isUpdatingFeedPosition = false; //modal seems to stay open from prev test, this makes sure it's closed
             wrapper.vm.$data.AppState.canBrowse = true; //Setting User to guest browsing
             wrapper.vm.$data.AppState.isGuestBrowsing = true;
+            web_db.savedFeeds.put({id:1, data:stringifyFeedListData([])})//make sure saved Feeds are empty
+            .then(res => console.log(res))
+            .catch(err => console.log(err));
+        })
+        // DeleteIndexedDBSavedFeeds();
+        cy.get('[data-testid^="feedButton-"').should('have.length',0); //No FeedButtons should display
+        cy.get('[data-testid^="add-feed-button"').click(); //Move to create new User Feed
+        cy.get('[data-testid="feedEditModal-user-feed-button"').click();
+        cy.get('[data-testid="feedEditModal-next-page-button"').click();
+        cy.get('[data-testid="inlainput-input"').type('bob{enter}'); //Search for User
+        cy.get('[data-testid="user-search-bar-result"').should('have.length',1);
+        cy.get('[data-testid="user-search-bar-result"').eq(0).click(); //Select User
+        cy.get('[data-testid="feedEditModal-create-button"').click(); //Finalize Feed creation
+        cy.get('[data-testid^="unreadMsgCount"').should('have.length',0); //No UnreadMsgCount should display
+        cy.get('[data-testid^="feedColumn-refresh-button"').click(); //Refresh Feed
+        cy.get('[data-testid^="unreadMsgCount"').eq(0).children('svg').should('exist'); //Loading spinner should display
+    })
+
+    it('loads 2 saved Feeds from IndexedDB, `UnreadMsgCount` displays on both `FeedButton` elements, correct "new posts" value should be shown for both', () => {
+        cy.mount(Sidebar,{
+            global:{
+                stubs:{transition:false, 'transition-group': false},
+            },
+        })
+        .then(({wrapper}) => {
+            console.log(wrapper.vm.$data);
+            wrapper.vm.$data.AppState.canBrowse = true; //Setting User to guest browsing
+            wrapper.vm.$data.AppState.isGuestBrowsing = true;
+            wrapper.vm.$data.FeedState.FeedList = []; //Make sure any Feeds added in an earlier test are cleared
             web_db.savedFeeds.put({id:1, data:stringifyFeedListData([feed1,feed2])})
             .then(res => console.log(res))
             .catch(err => console.log(err));
