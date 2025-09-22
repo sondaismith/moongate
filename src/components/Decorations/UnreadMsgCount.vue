@@ -5,7 +5,7 @@
         group-hover:text-white select-none">
         {{ unreadCount }}
     </span>
-    <span v-else-if="true" class="absolute flex -left-2 -top-2 items-center justify-center
+    <span v-else-if="isAwaitingData" class="absolute flex -left-2 -top-2 items-center justify-center
         bg-gray-300 rounded-full size-5 p-1 text-center
         group-hover:text-white select-none">
         <i-mingcute:loading-fill class="spinner text-black"/>
