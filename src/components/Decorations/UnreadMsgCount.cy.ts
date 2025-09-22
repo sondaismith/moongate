@@ -32,6 +32,7 @@ await CreateFeedViewPost('cargo.haul', 'Delivery delivery delivery delivery',fal
 await CreateFeedViewPost('cargo.haul', 'Who put the box there? Me!',true,undefined,new Date(2025,7,25,17,11)).then(res => post3 = res);
 // let post3 = CreateFeedViewPost('cargo.haul', 'the box is in place',undefined,undefined,new Date(2025,8,16,13,10));
 let pinPost1 = CreateFeedViewPost('bobtheposter.social','Cars all day, every day!',true,undefined,new Date(2025,8,16,13,30),true);
+//Take not of the Post CID and indexedAt used - determines how many "new" Posts will be displayed when refreshing
 let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,0,2,post2.post.cid,post2.post.indexedAt);
 let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,0,3,post3.post.cid,post3.post.indexedAt);
 
@@ -230,5 +231,34 @@ describe("Test Suite for `UnreadMsgCount`", () => {
         //Correct number of new posts should be displayed
         cy.get('[data-testid^="unreadMsgCount"').eq(0).should('contain', 1);
         cy.get('[data-testid^="unreadMsgCount"').eq(1).should('contain', 2);
+    })
+
+    it('has 1 Feed loaded (not from IndexedDB), that Feed is refreshed, loading spinner should show, correct "new posts" value should be shown, feed is refreshed a 2nd time, loading spinner should display again', () => {
+        cy.mount(Sidebar,{
+            global:{
+                stubs:{transition:false, 'transition-group': false},
+            },
+        })
+        .then(({wrapper}) => {
+            console.log(wrapper.vm.$data);
+            wrapper.vm.$data.AppState.canBrowse = true; //Setting User to guest browsing
+            wrapper.vm.$data.AppState.isGuestBrowsing = true;
+            web_db.savedFeeds.put({id:1, data:'{}'})
+            .then(res => console.log('Emptied IndexedDB as part of testing'))
+            .catch(err => console.log('Error: Was unable to empty IndexedDB during test'));
+            // wrapper.vm.$data.FeedState.FeedList = []; //Make sure any Feeds added in an earlier test are cleared
+            wrapper.vm.$data.FeedState.FeedList = [feed1];
+        })
+        cy.get('[data-testid^="feedButton-"').should('have.length',1);
+        cy.wait(400);
+        cy.get('[data-testid^="feedColumn-refresh-button"').click(); //Refresh Feed
+        cy.get('[data-testid^="unreadMsgCount"').eq(0).children('svg').should('exist'); //Loading spinner should be displayed
+        cy.get('[data-testid^="unreadMsgCount"').eq(0).should('contain', 1); //Correct number of new posts should be displayed
+        cy.get('[data-testid^="feedColumn-refresh-button"').should('be.enabled'); //wait till refresh can be clicked again
+        cy.get('[data-testid^="feedColumn-refresh-button"').click(); //Refresh Feed again
+        cy.get('[data-testid^="unreadMsgCount"').eq(0).children('svg').should('exist'); //Loading spinner should be displayed
+        cy.get('[data-testid^="feedColumn-refresh-button"').should('be.enabled'); //wait till refresh can be clicked again
+        cy.get('[data-testid^="feedColumn-refresh-button"').click(); //Refresh Feed one more time
+        cy.get('[data-testid^="unreadMsgCount"').eq(0).children('svg').should('exist'); //Loading spinner should be displayed
     })
 })

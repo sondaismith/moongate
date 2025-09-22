@@ -1,6 +1,6 @@
 <template>
     <!-- Maybe add ability to customize color? -->
-    <span v-if="unreadCount && unreadCount > 0" class="absolute -left-2 -top-2
+    <span v-if="unreadCount && unreadCount > 0 && !isAwaitingData" class="absolute -left-2 -top-2
         bg-red-500 rounded-full size-5 text-sm text-center
         group-hover:text-white select-none">
         {{ unreadCount }}
