@@ -174,9 +174,8 @@ import SquareButton from '../Utilities/SquareButton.vue';
 import { getCurrentWindow, PhysicalSize } from '@tauri-apps/api/window';
 import { IAppSettings, LangCode } from '../../interfaces/SettingsInterfaces';
 import CheckBox from '../Utilities/CheckBox.vue';
-import { loadSavedFeedsRecords, SavedFeeds, stringToJSON } from '../../lib/db/local_db';
+import { DeleteIndexedDBSavedFeeds, loadSavedFeedsRecords, SavedFeeds, stringToJSON } from '../../lib/db/local_db';
 import { IFeedDBData } from '../../interfaces/FeedInterfaces';
-import { DeleteIndexedDBSavedFeeds } from '../../state/FeedList.vue';
 import { isTauri } from '@tauri-apps/api/core';
 
 

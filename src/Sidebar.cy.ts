@@ -512,8 +512,8 @@ describe('Sidebar Tests', () => {
                 })
                 let post1 = CreateFeedViewPost('bob_the_poster','I love my car shop!',true);
                 let post2 = CreateFeedViewPost('cargo_haul', 'Delivery delivery delivery delivery');
-                let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2);
-                let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3);
+                let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2,post1.post.cid,post1.post.indexedAt);
+                let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3,post2.post.cid,post2.post.indexedAt);
                 let feed1 = CreateFeed([post1,post2],feedDesc1);
                 let feed2 = CreateFeed([post2,post2,post1],feedDesc2);
 

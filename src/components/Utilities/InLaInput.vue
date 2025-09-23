@@ -2,7 +2,7 @@
     <div class="relative flex flex-col group" :class="fillContainer ? 'w-full' : ''">
         <input data-testid="inlainput-input" @keyup.enter="emitValue" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"
             class="peer bg-searchbarBG leading-8 px-2 pt-3 h-11
-            border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight rounded-md
+            border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight rounded-md focus-visible:!outline focus-visible:!outline-transparent
             disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none
             w-full" :class="$attrs.class" :type="isPasswordInput ? 'password' : 'text'"
             :disabled="isDisabled ? true : false"/>

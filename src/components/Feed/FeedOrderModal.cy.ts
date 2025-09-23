@@ -1,9 +1,13 @@
+// import "fake-indexeddb/auto";
 import FeedOrderModal from './FeedOrderModal.vue';
 import App from '../../App.vue';
 import Sidebar from '../../Sidebar.vue';
 import { mount } from '@vue/test-utils'
 import { GenerateCID } from '../../helpers/generators';
 import { CreateFeed, CreateFeedViewPost, CreateIFeedDescription } from '../../fake-data/DataFactory';
+import { DeleteIndexedDBSavedFeeds } from '../../lib/db/local_db';
+import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { emptyPostView } from '../../fake-data/dumPostData';
 
 //Creating collection of Feeds and Posts
 let feedCID1 = 'testFeed1';
@@ -14,12 +18,22 @@ let feedCID2 = 'testFeed2';
 // await GenerateCID('Mr Repost').then(res => {
 //     feedCID2 = res.toString()
 // })
-let post1 = CreateFeedViewPost('bob_the_poster','I love my car shop!',true);
-let post2 = CreateFeedViewPost('cargo_haul', 'Delivery delivery delivery delivery');
-let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2);
-let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3);
+let post1:FeedViewPost = {post:emptyPostView};
+let post2:FeedViewPost = {post:emptyPostView};
+await CreateFeedViewPost('bob_the_poster','I love my car shop!',true).then(res => post1 = res);
+await CreateFeedViewPost('cargo_haul', 'Delivery delivery delivery delivery').then(res => post2 = res);
+let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2,post1.post.cid,post1.post.indexedAt);
+let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3,post2.post.cid,post2.post.indexedAt);
 let feed1 = CreateFeed([post1,post2],feedDesc1);
 let feed2 = CreateFeed([post2,post2,post1],feedDesc2);
+
+/**
+ * Test Feed data. Used to define the starting Feed displayed
+ * during testing.
+ */
+var testFeedData = {
+    feed: [post1,post2],
+}
 
 describe('Test Suite for FeedOrderModal', () => {
     beforeEach(() => {
@@ -60,6 +74,16 @@ describe('Test Suite for FeedOrderModal', () => {
             });
             console.log(req);
         }).as('getProfileTest');
+        //Intercept getAuthorFeed request and return test data
+        cy.intercept('GET','**/app.bsky.feed.getAuthorFeed*', (req) => {
+            //DEBUG
+            // console.log(req);
+            req.reply({
+                body:[],//testFeedData,
+                statusCode: 200
+            });
+            console.log(req);
+        }).as('getAuthorFeedTest');
     })
     it('comfirms "Feed not found" message is shown if no FeedId has been provided', () => {
         cy.mount(FeedOrderModal,{
@@ -112,6 +136,7 @@ describe('Test Suite for FeedOrderModal', () => {
             }
         })
         cy.get('[data-testid="feedOrderModal-feed-not-found"').should('exist');
+        DeleteIndexedDBSavedFeeds();
     })
     it('selects the 2nd feed, makes no change, ensures submit cannot be clicked', () => {
         cy.mount(Sidebar,{
@@ -127,6 +152,7 @@ describe('Test Suite for FeedOrderModal', () => {
         cy.get('[data-testid="feedcolumn-reorder-button"').eq(1).click();
         cy.get('[data-testid="feedOrderModal-original-position-label"').should('contain',2);
         cy.get('[data-testid="feedOrderModal-update-button"').should('be.disabled');
+        DeleteIndexedDBSavedFeeds();
     })
     it('selects the 2nd feed, moves it to 1st position', () => {
         cy.mount(Sidebar,{
@@ -147,6 +173,7 @@ describe('Test Suite for FeedOrderModal', () => {
         // cy.get('[data-testid="feedOrderModal-new-position-input"').should('exist').invoke('val',1).trigger('input');
         cy.get('[data-testid="feedOrderModal-update-button"').trigger('click');
         cy.get('[data-testid="feed-column"').eq(0).should('have.id', feed2.description.feedId);
+        DeleteIndexedDBSavedFeeds();
     })
     it('selects the 2nd feed, attempts to put high and negative invalid position into input, input validation sets value back to valid value both times', () => {
         cy.mount(Sidebar,{
@@ -160,6 +187,7 @@ describe('Test Suite for FeedOrderModal', () => {
             wrapper.vm.$data.AppState.isUpdatingFeedPosition = false; //modal seems to stay open from prev test, this makes sure it's closed
             wrapper.vm.$data.AppState.isAppOnMobileTouchscreenDevice = true; //spoof that this is a mobile touchscreen device
         })
+        DeleteIndexedDBSavedFeeds();
         cy.get('[data-testid="feedcolumn-reorder-button"').eq(1).click();
         cy.wait(200);
         cy.get('[data-testid="feedOrderModal-original-position-label"').should('contain',2);

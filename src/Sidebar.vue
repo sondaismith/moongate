@@ -26,15 +26,15 @@
 
                                 <FeedButton v-if="!AppState.isAppOnMobileTouchscreenDevice" v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
                                 :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
-                                :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
+                                :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts" :is-awaiting-new-post-data="feed.isAwaitingFeedData"
                                 :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
                                 :button-being-dragged="isDraggingButton"
                                 @pointerdown="handleFeedButtonLongpress($event,index)" @pointerup="handleFeedButtonMouseup"
                                 @pointerover="handleFeedButtonMouseover($event,index)" @pointerleave="handleFeedButtonMouseLeave"
                                 class="draggable"/>
-                                <FeedButton v-else v-for="(feed) in FeedState.FeedList" :key="feed.description.feedId"
+                                <FeedButton v-else v-for="(feed) in FeedState.FeedList" :key="feed.description.feedId+'_mobile'"
                                 :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
-                                :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
+                                :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts" :is-awaiting-new-post-data="feed.isAwaitingFeedData"
                                 :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
                                 :button-being-dragged="isDraggingButton"/>
                             </TransitionGroup>
@@ -142,7 +142,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { FeedState, AddFeedToList, createFeedDescription, AddSavedFeed, LoadFeedPostsAsync } from "./state/FeedList.vue";
+import { FeedState, AddFeedToList, OLDcreateFeedDescription, AddSavedFeed, LoadFeedPostsAsync, SaveFeedChanges } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState, toast } from "./state/AppState.vue";
@@ -333,7 +333,7 @@ import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
                 .then(res => {
                     homeFeed = res.data.feed
                     //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
-                    var feedDesc = createFeedDescription(1,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444}, homeFeed[0].post.author.did);
+                    var feedDesc = OLDcreateFeedDescription(1,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444}, homeFeed[0].post.author.did);
                     AddFeedToList(feedDesc, homeFeed);
                 })
                 .catch(err => toast.add(HandleAPIError(err, 'Error getting Home timeline posts')));
@@ -405,10 +405,14 @@ import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
                                 await AddSavedFeed(loadedFeeds[i]);
                             }
                             for (let i = 0; i < FeedState.FeedList.length; i++) {
-                                LoadFeedPostsAsync(FeedState.FeedList[i].description); //add await if you want these done sequentially
-                                await new Promise((resolve) => setTimeout(resolve,200)) //use if you want to add a small delay between each API call
+                                await LoadFeedPostsAsync(FeedState.FeedList[i].description); //add await if you want these done sequentially
+                                // await new Promise((resolve) => setTimeout(resolve,200)) //use if you want to add a small delay between each API call
                             }
                             //Set AppState "loading feeds" to false
+                            //Update FeedDescription.latestPostDate value after Posts have been loaded
+                            SaveFeedChanges(true).catch(err => {
+                                toast.add(HandleAPIError(err, 'Error updating Feed position'));
+                            })
                         }
                         else{console.log('No saved Feeds to restore.')}
                     }
