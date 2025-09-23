@@ -1,5 +1,5 @@
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
-import { describe } from "vitest";
+import { beforeAll, describe } from "vitest";
 import { CreateFeedViewPost, CreateIFeedDescription, CreateNotification, CreateTrendView } from "../fake-data/DataFactory";
 import { GetLatestNonPinnedPost, GetRecordsFeedTimestamp, GetRecordsUniqueID,
     GenerateFeedDescription
@@ -8,6 +8,7 @@ import { Notification } from "@atproto/api/dist/client/types/app/bsky/notificati
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 import { FeedEnums } from "../enums/FeedEnums";
 import { IFeedDescription } from "../interfaces/FeedInterfaces";
+import { emptyPostView } from "../fake-data/dumPostData";
 
 //Creating collection of Feeds and Posts
 let feedCID1 = 'testFeed1';
@@ -22,10 +23,11 @@ let post1Timestamp = new Date(2025,8,16,13,30);
 let notif1Timestamp = new Date(2025,8,16,13,30);
 let trend1Timestamp = new Date(2025,2,27,15,41);
 
-let post1 = CreateFeedViewPost('bob_the_poster','I love my car shop!',true,undefined,post1Timestamp);
-let post2 = CreateFeedViewPost('cargo_haul', 'Delivery delivery delivery delivery',false,undefined,new Date(2025,8,16,13,21));
-let post3 = CreateFeedViewPost('cargo_haul', 'the box is in place',undefined,undefined,new Date(2025,8,16,13,10));
-let pinPost1 = CreateFeedViewPost('bob_the_poster','Cars all day, every day!',true,undefined,new Date(2025,8,16,13,30),true);
+let post1:FeedViewPost = {post:emptyPostView};
+let post2:FeedViewPost = {post:emptyPostView};
+let post3:FeedViewPost = {post:emptyPostView};
+let pinPost1:FeedViewPost = {post:emptyPostView};
+
 // let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2);
 // let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3);
 
@@ -36,6 +38,13 @@ let trend1 = CreateTrendView('Testing','Software Dev',undefined,3421,trend1Times
 let trend2 = CreateTrendView('House Ownership','Lifestyle',undefined,79,new Date(2025,8,16,20,32));
 let trend3 = CreateTrendView('Naps','Lifestyle',undefined,133200,new Date(2025,4,9,8,11));
 let trend4 = CreateTrendView('F1','Sport',undefined,11766,new Date(2025,4,12,14,20));
+
+beforeAll(async () => {
+    await CreateFeedViewPost('bobtheposter.social','I love my car shop!',true,undefined,post1Timestamp).then(res => post1 = res);//.catch(err=>console.log(err));
+    await CreateFeedViewPost('cargo.haul', 'Delivery delivery delivery delivery',false,undefined,new Date(2025,8,16,13,21)).then(res => post2 = res);
+    await CreateFeedViewPost('cargo.haul', 'the box is in place',undefined,undefined,new Date(2025,8,16,13,10)).then(res => post3 = res);
+    await CreateFeedViewPost('bobtheposter.social','Cars all day, every day!',true,undefined,new Date(2025,8,16,13,30),true).then(res => pinPost1 = res);
+})
 
 describe("Test suite for GetLatestNonPinnedPost()", () => {
     it("should return 1st item in each FeedViewPost collection - no pinned", () => {
