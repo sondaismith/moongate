@@ -68,13 +68,17 @@
         </div>
         {{ void "Retweet Label" }}
         <div v-if="postReason && isReasonRepost(postReason) && !isViewRecord(postToShow)"
-        class="flex rounded p-1 bg-postMsg items-center text-sm">
-            <div class="flex grow-0 shrink-0 justify-end px-1">
+        class="flex rounded px-2 p-1 bg-postMsg items-center text-sm gap-1">
+            <div class="flex grow-0 shrink-0 justify-end">
                 <i-mdi:twitter-retweet/>
             </div>
             <div class="text-nowrap overflow-hidden text-ellipsis"
             :title="postReason.by.displayName">
                 Reposted by {{ postReason.by.displayName }}
+            </div>
+            <div class="ml-auto text-nowrap text-secondary text-[10px] leading-[14px]"
+            :title="convertToLongTimestamp(postReason.indexedAt)">
+                {{ convertToShortTimestamp(postReason.indexedAt) }}
             </div>
         </div>
         <div v-else-if="postToShow && isPostReply" @click="openFocusDetailsPost(reply?.parent as PostView)"
