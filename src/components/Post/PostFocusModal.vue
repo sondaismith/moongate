@@ -112,9 +112,9 @@
                     </div>
                 </div>
                 {{ void "Post Content - Text" }}
-                <div class="text-sm pt-2 text-primary break-words">
-                    {{ postDetails.currentThreadView ? postDetails.currentThreadView.post.record.text : "initial state - undefined" }}
-                </div>
+                <RichPostTextBsky data-test="postFocusModal-text" class="text-sm pt-2 text-primary"
+                :post-text="(postDetails.currentThreadView.post.record as Record).text"
+                :post-facets="(postDetails.currentThreadView.post.record as Record).facets"/>
                 {{ void "Post Metadata" }}
                 <div class="flex flex-col gap-2">
                     <div class="flex flex-wrap gap-1s leading-5 py-0.5 border-b-[1px] border-slate-600">
@@ -190,10 +190,13 @@ import ImageContainer from '../Utilities/ImageContainer.vue';
 import SlideshowArrow from '../Utilities/SlideshowArrow.vue';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import SquareButton from '../Utilities/SquareButton.vue';
+import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
+import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 
 export default defineComponent({
     components:{
         AvatarRound,
+        RichPostTextBsky,
         PostInteractionIcons,
         PostThreadView,
         ReplyBreadcrumb,
