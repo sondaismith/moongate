@@ -3,7 +3,8 @@
     class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
         {{ void "Fullscreen Image" }}
         <Transition>
-            <div v-if="isImageFullscreen" @click="hideImageFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto bg-black/95 bg-contain bg-center bg-no-repeat z-20"
+            <div v-if="isImageFullscreen" @click="hideImageFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto bg-black/95
+            bg-contain bg-center bg-no-repeat z-30"
             :style="{'background-image': 'url('+(fullscreenImage)+'s)'}">
                 <div v-if="!(fullscreenImage as ViewExternal).uri" @click="(e)=>{e.stopPropagation()}" class="absolute text-black bottom-0 left-0 px-2 bg-white/50 z-10">
                     {{`${(fullscreenImage as ViewImage).aspectRatio?.width}x${(fullscreenImage as ViewImage).aspectRatio?.height}px`}}
@@ -11,23 +12,32 @@
                 <img @contextmenu="(e) => {e.preventDefault()}" :src="(fullscreenImage as ViewExternal).uri ? (fullscreenImage as ViewExternal).uri : (fullscreenImage as ViewImage).fullsize" class="max-h-full max-w-full"/>
             </div>
         </Transition>
-        {{ void "Media Section" }}
-        <div class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
-            <div class="h-10 w-full shrink-0 bg-blacks">
-                {{ void "Close Button" }}
-                <SquareButton data-test="postFocusModal-close-button" @click="hideModal"
-                class="text-primary bg-btn !rounded-br aspect-square w-10 text-2xl
-                sm:ml-auto sm:!rounded-tl-none sm:!rounded-r-none"
-                button-padding="0">
-                    <i-mingcute:close-fill/>
-                </SquareButton>
+        <div class="sticky sm:absolute top-0 z-20 flex justify-center h-10 w-full sm:w-auto shrink-0 bg-postFocusBG sm:bg-transparent">
+            {{ void "Close Button" }}
+            <div class="self-center flex justify-between w-full px-4 sm:px-0">
+                <div @click="scrollToTopOfModal" class="flex rounded-lg cursor-pointer bg-btn items-center py-1 px-3 text-primary sm:hidden"><i-mdi:format-vertical-align-top/></div>
+                <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
+                class="flex rounded-lg cursor-pointer bg-btn items-center px-3 text-primary sm:hidden">View Image</div>
+                <div @click="hideModal" class="flex rounded-lg cursor-pointer bg-btn px-3 items-center text-primary sm:hidden"><i-mingcute:close-fill/></div>
             </div>
+            <SquareButton data-test="postFocusModal-close-button" @click="hideModal"
+            class="text-primary bg-btn !rounded-br aspect-square w-10 text-2xl
+            ml-auto sm:!rounded-tl-none sm:!rounded-r-none hidden sm:block"
+            button-padding="0">
+                <i-mingcute:close-fill/>
+            </SquareButton>
+        </div>
+        {{ void "Media Section" }}
+        <div v-if="hasImageMedia || hasEmbedGIFMedia || isVideoView(postDetails.currentThreadView.post.embed)"
+        class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
             {{ void "Media Container" }}
-            <div class="flex items-center h-full w-full justify-center overflow-hidden">
+            <div class="flex items-center h-full w-full justify-center overflow-hidden p-5 sm:pt-10">
                 <div class="flex h-full w-10 shrink-0 items-center mr-auto">
                     <SlideshowArrow v-if="canDecreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Left" @button-clicked="decreaseCurrentMediaIndex"/>
                 </div>
-                <div v-if="postDetails.isAwaitingFocusData" class="h-full w-2/3 rounded-sm border-0 bg-slate-500 animate-pulse mx-auto"></div>
+                <div v-if="postDetails.isAwaitingFocusData" class="h-full w-2/3">
+                    <div class="h-full w-full rounded-sm border-0 bg-slate-500 animate-pulse mx-auto"></div>
+                </div>
                 <!-- <div v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
                 class="rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
                 :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[currentMediaIndex] as ViewImage).fullsize+')'}">
@@ -45,11 +55,11 @@
                     <SlideshowArrow v-if="canIncreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Right" @button-clicked="increaseCurrentMediaIndex"/>
                 </div>
             </div>
-            <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 h-16 animate-pulse text-sm bg-slate-500/30"></div>
-            <div v-else-if="hasEmbededImagesWithAltText" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 text-sm bg-slate-500/20">
+            <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mb-8 p-2 h-16 animate-pulse text-sm bg-slate-500/30"></div>
+            <div v-else-if="hasEmbededImagesWithAltText" class="flex rounded-lg mx-8 mb-8 p-2 text-sm bg-slate-500/20">
                 <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ getEmbededImageAltText }}</div>
             </div>
-            <div v-else-if="hasEmbededVideoWithAltText" class="flex rounded-lg mx-8 mt-2 mb-8 p-2 text-sm bg-slate-500/20">
+            <div v-else-if="hasEmbededVideoWithAltText" class="flex rounded-lg mx-8 mb-8 p-2 text-sm bg-slate-500/20">
                 <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed?.alt }}</div>
             </div>
             <div v-else class="h-10 w-full shrink-0"></div>
@@ -61,9 +71,9 @@
             </div> -->
         </div>
         {{ void "Comments Section" }}
-        <div class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG">
+        <div class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow">
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
-            <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
+            <div v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
                 <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
                     <div class="flex gap-2 mb-1">
                         <div class="drop-shadow-md">
@@ -88,8 +98,8 @@
                     </div>
                 </div>
             </div>
-            {{ void "User Info/Actions" }}
-            <div v-if="!postDetails.isAwaitingFocusData" class="p-4 pb-1">
+            <div v-else class="p-4 pb-1 sticky top-8 sm:top-0 z-10 bg-postFocusBG border-b border-outline shadow-lg sm:shadow-none shadow-primary/10">
+                {{ void "User Info/Actions" }}
                 <div class="flex gap-1">
                     <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
                     :did="postDetails.currentThreadView.post.author.did"
@@ -114,7 +124,8 @@
                 {{ void "Post Content - Text" }}
                 <RichPostTextBsky data-test="postFocusModal-text" class="text-sm pt-2 text-primary"
                 :post-text="(postDetails.currentThreadView.post.record as Record).text"
-                :post-facets="(postDetails.currentThreadView.post.record as Record).facets"/>
+                :post-facets="(postDetails.currentThreadView.post.record as Record).facets"
+                :is-changing-thread-context="isChangingThreadContext"/>
                 {{ void "Post Metadata" }}
                 <div class="flex flex-col gap-2">
                     <div class="flex flex-wrap gap-1s leading-5 py-0.5 border-b-[1px] border-slate-600">
@@ -128,7 +139,7 @@
                 </div>
             </div>
             {{ void "post reply input" }}
-            <div class="px-4"><PostReplyInput/></div>
+            <div class="px-4 py-4"><PostReplyInput/></div>
             {{ void "Replies Loading Placeholder/Skeleton" }}
             <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s pt-4 px-4 w-full">
                 <div class="animate-pulse flex w-full overflow-hidden gap-2">
@@ -381,7 +392,7 @@ export default defineComponent({
                 postDetails.currentThreadView = this.threadNavHistory[this.threadNavIndex];
                 setTimeout(() => {
                     this.isChangingThreadContext = false;
-                }, 1);
+                }, 300);//timeout used to refresh `RichPostTextBsky` component with updated content
             }
         },
         /**
@@ -491,6 +502,13 @@ export default defineComponent({
                 this.currentBreadcrumb.unshift({userName:parentThread.post.author.displayName, postCID:parentThread?.post.cid});
                 this.discoverBreadcrumbs(parentThread?.post.record.reply.parent.cid,parentThread);
             }
+        },
+        /**
+         * Method used to scroll to top of `PostFocusModal`.
+         */
+        scrollToTopOfModal(){
+            let mainContainer = document.getElementById('post-focus-modal');
+            if(mainContainer) mainContainer.scrollBy({top:-mainContainer.scrollTop,behavior:'smooth'});
         }
     },
     computed:{
@@ -543,7 +561,7 @@ export default defineComponent({
          * Checks to see if the current post contains a video, and if
          * it has any descriptive ALT text.
          */
-         hasEmbededVideoWithAltText(){
+        hasEmbededVideoWithAltText(){
             if(postDetails.currentThreadView.post.embed &&
             isVideoView(postDetails.currentThreadView.post.embed) &&
             (postDetails.currentThreadView.post.embed as ViewVideo).alt &&
