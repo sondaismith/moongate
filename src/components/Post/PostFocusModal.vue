@@ -1,5 +1,5 @@
 <template>
-    <div data-test="post-focus-modal" id="post-focus-modal" tabindex="0"
+    <div data-test="post-focus-modal" id="post-focus-modal" tabindex="0" @scroll.passive="toggleScrollToTop"
     class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
         {{ void "Fullscreen Image" }}
         <Transition>
@@ -15,9 +15,10 @@
         <div class="sticky sm:absolute top-0 z-20 flex justify-center h-10 w-full sm:w-auto shrink-0 bg-postFocusBG sm:bg-transparent border-b border-outline">
             {{ void "Close Button" }}
             <div class="self-center flex justify-between w-full h-full px-4 py-2 sm:px-0">
-                <div @click="scrollToTopOfModal" class="flex rounded-lg cursor-pointer bg-btn items-center py-1 px-3 text-primary sm:hidden"><i-mdi:format-vertical-align-top/></div>
+                <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer bg-btn items-center py-1 px-3 text-primary sm:hidden transition-opacity"
+                :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%'}]"><i-mdi:format-vertical-align-top/></div>
                 <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
-                class="flex rounded-lg cursor-pointer bg-btn items-center px-3 text-primary sm:hidden">View Image</div>
+                class="flex rounded-lg cursor-pointer bg-btn items-center px-3 text-primary text-sm sm:hidden">View Image</div>
                 <div @click="hideModal" class="flex rounded-lg cursor-pointer bg-btn px-3 items-center text-primary sm:hidden"><i-mingcute:close-fill/></div>
             </div>
             <SquareButton data-test="postFocusModal-close-button" @click="hideModal"
@@ -70,6 +71,7 @@
                 <div>Share</div>
             </div> -->
         </div>
+        <div v-else @click="hideModal" class="w-full h-full"></div>
         {{ void "Comments Section" }}
         <div class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto">
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
@@ -203,6 +205,7 @@ import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/exte
 import SquareButton from '../Utilities/SquareButton.vue';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { debounce } from '../../helpers/debouncer';
 
 export default defineComponent({
     components:{
@@ -280,7 +283,9 @@ export default defineComponent({
             /**Is a Post image currently being shown at fullscreen size? */
             isImageFullscreen: false,
             /**Object representing image to display at fullscreen size. */
-            fullscreenImage : {} as ViewImage|ViewExternal
+            fullscreenImage : {} as ViewImage|ViewExternal,
+            /**Is the "scroll to top" button currently visible? */
+            isScrollToTopVisible:false,
         }
     },
     methods:{
@@ -509,7 +514,12 @@ export default defineComponent({
         scrollToTopOfModal(){
             let mainContainer = document.getElementById('post-focus-modal');
             if(mainContainer) mainContainer.scrollBy({top:-mainContainer.scrollTop,behavior:'smooth'});
-        }
+        },
+        /**
+         * Method used to scroll back to the top of a Feed list. Defined in the
+         * "created()" section.
+         */
+        toggleScrollToTop(e:Event){},
     },
     computed:{
         /**Checks to see if the current post contains any image media. */
@@ -652,6 +662,17 @@ export default defineComponent({
                 return true;
             return false;
         },
+    },
+    created(){
+        /**Defines actions for the `toggleScrollToTop` function */
+        this.toggleScrollToTop = debounce(e => {
+            if((e.target as HTMLElement).scrollTop<20){
+                this.isScrollToTopVisible = false;
+            }
+            else{
+                this.isScrollToTopVisible = true;
+            }
+        },200);
     },
     mounted(){
         //Add keyboard+mouse shortcut listener
