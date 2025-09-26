@@ -61,6 +61,7 @@
         --color-feedcolumn-settings-btn-selected:theme(colors.slate.800);
         --color-feedcolumn-settings-btn-selected-hover:theme(colors.slate.600);
         --color-userfocusmodal-banner-bg:theme(colors.slate.400);
+        --color-postfocusmodal-details-shadow:theme(colors.slate.800);
     }
 }
 
@@ -121,4 +122,5 @@
     --color-feedcolumn-settings-btn-selected:theme(colors.blue.300);
     --color-feedcolumn-settings-btn-selected-hover:theme(colors.blue.200);
     --color-userfocusmodal-banner-bg:theme(colors.slate.600);
+    --color-postfocusmodal-details-shadow:theme(colors.black);
 }
