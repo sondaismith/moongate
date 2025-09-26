@@ -1,6 +1,6 @@
 <template>
     <!-- <ReplyBreadcrumb class="px-4"/> -->
-    <div class="flex pl-4 sm:overflow-y-scroll bg-postFocusBG">
+    <div class="flex px-4 sm:overflow-y-scroll bg-postFocusBG">
         <div class="flex flex-col w-full text-xl text-primary">
             <!-- <div class="w-auto">No Replies</div> -->
             <div v-if="!isChangingThreadContext" class="flex flex-col bg-orange-400s preload-gutter divide-y border-slate-600 divide-inherit text-sm">
