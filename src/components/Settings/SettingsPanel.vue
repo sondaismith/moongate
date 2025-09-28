@@ -15,7 +15,7 @@
             </div>
             <div class="flex flex-col sm:flex-row grow overflow-hidden">
                 <div class="flex sm:flex-col text-nowrap overflow-x-auto gap-1 bg-postBG text-primary p-2 drop-shadow min-w-36">
-                    <template v-for="(category, index) in SetttingData.Options">
+                    <template v-for="(category, index) in SettingData.Options">
                         <SettingsCategory v-if="!category.devOnly || isInDevEnvironment == category.devOnly" :index="index"
                         :selected="index == selectedCategoryIndex" @category-clicked="switchCategory">
                             {{ category.name }}
@@ -26,16 +26,39 @@
                     <div class="relative p-2 rounded border border-outline w-full h-full overflow-hidden">
                         <div class="relative w-full h-full overflow-hidden">
                             <TransitionGroup>
-                                <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[0]">
-                                    <div class="flex flex-col gap-1">
+                                <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[0]" class="h-full">
+                                    <div class="flex flex-col gap-1 h-full">
+                                        <div class="text-xl font-medium">Appearance</div>
                                         <CheckBox :model-value="AppSettingsState.Settings.isDarkMode" @value-toggled="toggleTheme">
                                             Dark Mode?
                                         </CheckBox>
-                                        <CheckBox :model-value="AppSettingsState.Settings.isHidingMetrics" @value-toggled="toggleMetrics">
-                                            Hide Metrics?
-                                        </CheckBox>
+                                        <div class="text-xs">Toggle between Light and Dark application theme colors.</div>
+                                        <div class="text-xl font-medium">Hide Metrics</div>
+                                        <div class="text-xs">Hide Post Metrics (comments, shares, likes) and User Metrics (followers, following).</div>
+                                        <div class="flex gap-1 flex-wrap">
+                                            <CheckBox title="Hide Comment Count on Posts" :model-value="AppSettingsState.Settings.isHidingComments"
+                                            @value-toggled="togglePostCommentsCount">
+                                                Hide Comments
+                                            </CheckBox>
+                                            <CheckBox title="Hide Share Count on Posts" :model-value="AppSettingsState.Settings.isHidingShares"
+                                            @value-toggled="togglePostSharesCount">
+                                                Hide Shares
+                                            </CheckBox>
+                                            <CheckBox title="Hide Likes Count on Posts" :model-value="AppSettingsState.Settings.isHidingLikes"
+                                            @value-toggled="togglePostLikesCount">
+                                                Hide Likes
+                                            </CheckBox>
+                                            <CheckBox title="Hide Following Count on User Pages" :model-value="AppSettingsState.Settings.isHidingFollowing"
+                                            @value-toggled="toggleUserFollowingCount">
+                                                Hide Following
+                                            </CheckBox>
+                                            <CheckBox title="Hide Follower Count on User Pages" :model-value="AppSettingsState.Settings.isHidingFollowers"
+                                            @value-toggled="toggleUserFollowersCount">
+                                                Hide Followers
+                                            </CheckBox>
+                                        </div>
                                         <SquareButton :is-disabled="AppSettingsState.Settings.isShowingIntroMessage"
-                                        class="self-start bg-btn hover:bg-btnHover"
+                                        class="self-start bg-btn hover:bg-btnHover mt-1"
                                         title="Display Introductory Tutorial/Instructions"
                                         @click="AppSettingsState.Settings.isShowingIntroMessage = true">
                                             Show Intro Instructions
@@ -47,7 +70,7 @@
                                         </SquareButton>
                                     </div>
                                 </div>
-                                <div v-if="selectedCategoryIndex == Object.keys(SetttingData.Options)[1]"
+                                <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[1]"
                                 class="relative flex flex-col gap-2 w-full h-full overflow-auto">
                                     <div class="font-thin text-2xl">Language Selection</div>
                                     <CheckBox :model-value="AppSettingsState.Settings.isAcceptingAllLanguages" @value-toggled="toggleAcceptAllLanguages">
@@ -94,10 +117,10 @@
                                     </div>
                                     <!-- <InLaInput text-label="Tag Blacklist" :model-value="SetttingData.Options.PostFilters.data.tagBlacklist"/> -->
                                 </div>
-                                <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SetttingData.Options)[2]">
+                                <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SettingData.Options)[2]">
                                     <div class="italic">Account Settings are still not supported. Check back later!</div>
                                 </div>
-                                <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SetttingData.Options)[3]"
+                                <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SettingData.Options)[3]"
                                 class="relative flex flex-col w-full h-full overflow-y-auto pr-2">
                                     <div class="italic">Devloper testing commands - Be careful!</div>
                                     <div v-if="!isTauri()" class="flex flex-col gap-1 border border-outline rounded p-2">
@@ -110,22 +133,22 @@
                                         </SquareButton>
                                         <div v-if="isSavedFeedsLoaded" class="text-sm">
                                             <div>
-                                                {{ `There is/are ${SetttingData.Options.Developer.data.recordsFromDB.length}
+                                                {{ `There is/are ${SettingData.Options.Developer.data.recordsFromDB.length}
                                                 SavedFeed record(s) stored via IndexedDB.` }}
                                             </div>
-                                            <div>{{ `There is/are ${SetttingData.Options.Developer.data.savedFeeds.length}
+                                            <div>{{ `There is/are ${SettingData.Options.Developer.data.savedFeeds.length}
                                                 Feed(s) saved.` }}</div>
                                         </div>
                                         <div v-if="isSavedFeedsLoaded" class="flex flex-col rounded border border-outline
                                         p-1 overflow-auto">
                                             <table class="text-sm whitespace-nowrap border-separate">
                                                 <thead>
-                                                    <th v-for="col in Object.keys(SetttingData.Options.Developer.data.savedFeeds[0])">
+                                                    <th v-for="col in Object.keys(SettingData.Options.Developer.data.savedFeeds[0])">
                                                         {{ col }}
                                                     </th>
                                                 </thead>
                                                 <tbody>
-                                                    <tr v-for="(feed, index) in SetttingData.Options.Developer.data.savedFeeds"
+                                                    <tr v-for="(feed, index) in SettingData.Options.Developer.data.savedFeeds"
                                                     class="bg-btn border">
                                                         <td v-for="(col, colIndex) in Object.keys(feed)" class="borders text-center px-1"
                                                         :class="{'rounded-tl' : index == 0 && colIndex == 0, 'rounded-tr' : index == 0 && colIndex == 6}">
@@ -190,14 +213,19 @@ export default defineComponent({
             LocalesObject,
             stringToJSON,
             isTauri,
-            SetttingData: {
+            SettingData: {
                 Options:{
                     General:{
                         name:'General',
                         data:{
                             isDarkMode:AppState.isDarkMode,
                             /**Should details like Follower count, Post Likes count be hidden? */
-                            isHidingMetics:AppSettingsState.Settings.isHidingMetrics
+                            isHidingMetics:AppSettingsState.Settings.isHidingMetrics,
+                            isHidingComments: AppSettingsState.Settings.isHidingComments,
+                            isHidingShares: AppSettingsState.Settings.isHidingShares,
+                            isHidingLikes: AppSettingsState.Settings.isHidingLikes,
+                            isHidingFollowers: AppSettingsState.Settings.isHidingFollowers,
+                            isHidingFollowing: AppSettingsState.Settings.isHidingFollowing
                         },
                         /**Indicates if the option should only be available in Dev mode. */
                         devOnly:false,
@@ -271,6 +299,21 @@ export default defineComponent({
         toggleMetrics(){
             AppSettingsState.Settings.isHidingMetrics = !AppSettingsState.Settings.isHidingMetrics;
         },
+        togglePostCommentsCount(){
+            AppSettingsState.Settings.isHidingComments = !AppSettingsState.Settings.isHidingComments;
+        },
+        togglePostSharesCount(){
+            AppSettingsState.Settings.isHidingShares = !AppSettingsState.Settings.isHidingShares;
+        },
+        togglePostLikesCount(){
+            AppSettingsState.Settings.isHidingLikes = !AppSettingsState.Settings.isHidingLikes;
+        },
+        toggleUserFollowingCount(){
+            AppSettingsState.Settings.isHidingFollowing = !AppSettingsState.Settings.isHidingFollowing;
+        },
+        toggleUserFollowersCount(){
+            AppSettingsState.Settings.isHidingFollowers = !AppSettingsState.Settings.isHidingFollowers;
+        },
         /**Switch the currently viewed settings category. */
         switchCategory(category:string|undefined){
             if(category) this.selectedCategoryIndex = category;
@@ -317,11 +360,11 @@ export default defineComponent({
             .then(res => {
                 console.log(res);
                 let feedResult = res as SavedFeeds[];
-                this.SetttingData.Options.Developer.data.hasIndexedDBDataBeenRequested = true;
+                this.SettingData.Options.Developer.data.hasIndexedDBDataBeenRequested = true;
                 if(feedResult && feedResult.length>0){
                     let loadedFeeds:IFeedDBData[]|undefined = stringToJSON(feedResult[0].data);
-                    this.SetttingData.Options.Developer.data.savedFeeds = loadedFeeds;
-                    this.SetttingData.Options.Developer.data.recordsFromDB = feedResult;
+                    this.SettingData.Options.Developer.data.savedFeeds = loadedFeeds;
+                    this.SettingData.Options.Developer.data.recordsFromDB = feedResult;
                 }
             })
             .catch(err => {
@@ -341,9 +384,9 @@ export default defineComponent({
          */
         clearSavedFeeds(){
             DeleteIndexedDBSavedFeeds();
-            this.SetttingData.Options.Developer.data.savedFeeds = [];
-            this.SetttingData.Options.Developer.data.recordsFromDB = [];
-            this.SetttingData.Options.Developer.data.hasIndexedDBDataBeenRequested = false;
+            this.SettingData.Options.Developer.data.savedFeeds = [];
+            this.SettingData.Options.Developer.data.recordsFromDB = [];
+            this.SettingData.Options.Developer.data.hasIndexedDBDataBeenRequested = false;
         }
     },
     computed:{
@@ -352,7 +395,7 @@ export default defineComponent({
             return false;
         },
         isSavedFeedsLoaded(){
-            if(this.SetttingData.Options.Developer.data.savedFeeds.length>0) return true;
+            if(this.SettingData.Options.Developer.data.savedFeeds.length>0) return true;
             return false;
         },
         /**
@@ -360,8 +403,8 @@ export default defineComponent({
          * been attempted and no records were found.
          */
         noReturnedFeeds(){
-            if(this.SetttingData.Options.Developer.data.hasIndexedDBDataBeenRequested &&
-                this.SetttingData.Options.Developer.data.savedFeeds.length<1) return true;
+            if(this.SettingData.Options.Developer.data.hasIndexedDBDataBeenRequested &&
+                this.SettingData.Options.Developer.data.savedFeeds.length<1) return true;
             return false;
         }
     },

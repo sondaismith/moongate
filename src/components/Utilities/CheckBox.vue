@@ -26,7 +26,7 @@ export default defineComponent({
     },
     emits:{
         valueToggled:(value:boolean) => {
-            return value;
+            if(typeof value == 'boolean') return true;
         },
     },
     methods:{

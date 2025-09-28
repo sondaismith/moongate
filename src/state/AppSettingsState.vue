@@ -29,8 +29,11 @@ export const AppSettingsState = reactive({
         isBlacklist: false,
         selectedLanguages:[] as LangCode[],
         isShowingIntroMessage: true,
-        /**Should details like Follower count, Post Likes count be hidden? */
-        isHidingMetrics:false,
+        isHidingComments: false,
+        isHidingShares: false,
+        isHidingLikes: false,
+        isHidingFollowers: false,
+        isHidingFollowing: false,
     } as IAppSettings,
     AppStore:Store,
     /**
@@ -158,7 +161,11 @@ export const AppSettingsState = reactive({
                 appSettings.isWhitelist = loadedSettings.isWhitelist;
                 appSettings.selectedLanguages = JSON.parse(loadedSettings.selectedLanguages);
                 appSettings.isShowingIntroMessage = loadedSettings.isShowingIntroMessage;
-                appSettings.isHidingMetrics = loadedSettings.isHidingMetrics;
+                appSettings.isHidingComments = loadedSettings.isHidingComments;
+                appSettings.isHidingShares = loadedSettings.isHidingShares;
+                appSettings.isHidingLikes = loadedSettings.isHidingLikes;
+                appSettings.isHidingFollowers = loadedSettings.isHidingFollowers;
+                appSettings.isHidingFollowing = loadedSettings.isHidingFollowing;
             })
             .catch(err => {
                 console.log(err);
@@ -196,7 +203,11 @@ export const AppSettingsState = reactive({
                 isWhitelist:cs.isWhitelist,
                 selectedLanguages:JSON.stringify(cs.selectedLanguages),
                 isShowingIntroMessage:cs.isShowingIntroMessage,
-                isHidingMetrics:cs.isHidingMetrics,
+                isHidingComments: cs.isHidingComments,
+                isHidingShares: cs.isHidingShares,
+                isHidingLikes: cs.isHidingLikes,
+                isHidingFollowers: cs.isHidingFollowers,
+                isHidingFollowing: cs.isHidingFollowing,
             })
             // .then(res => {
             //     console.log(res);

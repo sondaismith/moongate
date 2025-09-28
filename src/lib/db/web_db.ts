@@ -18,7 +18,11 @@ interface AppSettings{ //extends IAppSettings{
   isBlacklist: boolean;
   selectedLanguages: string //have to convert from LangCode[] to string
   isShowingIntroMessage: boolean;
-  isHidingMetrics: boolean;
+  isHidingComments: boolean;
+  isHidingShares: boolean;
+  isHidingLikes: boolean;
+  isHidingFollowers: boolean;
+  isHidingFollowing: boolean;
 }
 
 /**IndexedDB database with `savedFeeds` store/table.*/
