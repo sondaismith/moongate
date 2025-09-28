@@ -5,14 +5,14 @@
         :class="canUserReply ? 'group cursor-pointer hover:bg-btnSubtle' : 'text-disabled select-none'"
         @click="canUserReply && replyToPost()" :title="postDetails.whoCanReply(postData)">
             <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-600"/>
-            <div class="pl-1" :title="postData.replyCount?.toString()">{{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}</div>
+            <div v-if="!AppSettingsState.Settings.isHidingComments" class="pl-1" :title="postData.replyCount?.toString()">{{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}</div>
         </div>
         <div class="group flex rounded-full items-center cursor-pointer gap-1 hover:bg-btnSubtle"
         title="Repost"
         @click="showRepostOptionsMenu($event, postData)">
             <i-mingcute:repeat-line
             :class="[isPostRepostedByUser ? 'text-blue-500' : 'group-hover:text-blue-500']"/>
-            <div v-if="!isAwaitingRepostUpdate" :title="postData.repostCount?.toString()">{{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}</div>
+            <div v-if="!isAwaitingRepostUpdate" :title="postData.repostCount?.toString()" :class="[{'hidden' : AppSettingsState.Settings.isHidingShares}]">{{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}</div>
             <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
         </div>
         <div @click="toggleLike" class="group flex rounded-full items-center cursor-pointer
@@ -20,7 +20,9 @@
         title="Like Post">
             <i-mingcute:heart-fill
             :class="[isPostLikedByUser ? 'text-red-500' : 'group-hover:text-red-500']"/>
-            <div v-if="!isAwaitingLikeUpdate":title="postData.likeCount?.toString()">{{ getCompactNumberValue(postData.likeCount ? postData.likeCount : 0) }}</div>
+            <div v-if="!isAwaitingLikeUpdate":title="postData.likeCount?.toString()" :class="[{'hidden' : AppSettingsState.Settings.isHidingLikes}]">
+                {{ getCompactNumberValue(postData.likeCount ? postData.likeCount : 0) }}
+            </div>
             <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
         </div>
         <!-- <div v-if="!noShareButton" class="group flex items-center cursor-pointer hover:text-slate-300"
@@ -56,6 +58,7 @@ import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
 import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
 import { AppBskyFeedThreadgate } from '@atproto/api';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 function CopyPostLink(postUri:string, handle:string=""){
     let link = CreateBskyWeblink(postUri, handle);
@@ -111,6 +114,7 @@ export default defineComponent({
     data(){
         return{
             AppState,
+            AppSettingsState,
             isPostMenuVisible: false,
             postDetails,
             getCompactNumberValue,

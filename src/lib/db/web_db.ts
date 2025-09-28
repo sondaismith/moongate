@@ -1,10 +1,15 @@
 import Dexie, {type EntityTable} from 'dexie';
+import { IAppSettings } from '../../interfaces/SettingsInterfaces';
 
 interface Feed{
     id: number;
     data: string;
 }
 
+/**
+ * Based on {@link IAppSettings}. Currently does not extend because
+ * of a "LangCode[] to string" conversion issue.
+ */
 interface AppSettings{ //extends IAppSettings{
   id: number;
   isDarkMode: boolean;
@@ -13,6 +18,11 @@ interface AppSettings{ //extends IAppSettings{
   isBlacklist: boolean;
   selectedLanguages: string //have to convert from LangCode[] to string
   isShowingIntroMessage: boolean;
+  isHidingComments: boolean;
+  isHidingShares: boolean;
+  isHidingLikes: boolean;
+  isHidingFollowers: boolean;
+  isHidingFollowing: boolean;
 }
 
 /**IndexedDB database with `savedFeeds` store/table.*/

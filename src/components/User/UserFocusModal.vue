@@ -111,11 +111,11 @@
                                     </div>
                                 </div>
                                 <div class="flex mt-2">
-                                    <div class="flex text-sm pr-2">
+                                    <div v-if="!AppSettingsState.Settings.isHidingFollowers" class="flex text-sm pr-2">
                                         <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.followersCount : '1'}}</div>
                                         <div class="text-secondary">followers</div>
                                     </div>
-                                    <div class="flex text-sm pr-2">
+                                    <div v-if="!AppSettingsState.Settings.isHidingFollowing" class="flex text-sm pr-2">
                                         <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.followsCount : '33'}}</div>
                                         <div class="text-secondary">following</div>
                                     </div>
@@ -327,6 +327,7 @@ import { getAuthorFeed, getAuthorLikes, getAuthorPostsOnly, getAuthorRepliesOnly
 import SquareButton from '../Utilities/SquareButton.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 /**
  * Used to create a HTTP URL link To the currently view User's profile.
@@ -341,6 +342,7 @@ export default defineComponent({
     data(){
         return{
             AppState,
+            AppSettingsState,
             UserFocusModalState,
             MediaType,
             isImage,

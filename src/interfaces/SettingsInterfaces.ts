@@ -17,6 +17,11 @@ export class AppSettingsClass {
     isBlacklist = false;
     selectedLanguages = [] as LangCode[];
     isShowingIntroMessage = true;
+    isHidingComments = false;
+    isHidingShares = false;
+    isHidingLikes = false;
+    isHidingFollowers = false;
+    isHidingFollowing = false;
 }
 export interface IAppSettings extends AppSettingsClass{}
 type AppSettingsPropsArray = Array<keyof IAppSettings>;

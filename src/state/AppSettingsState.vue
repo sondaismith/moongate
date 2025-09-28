@@ -19,6 +19,9 @@ export const AppSettingsState = reactive({
     ///only show certain elements if the required variable value has
     ///been loaded.
     isSettingsLoaded:false,
+    /**
+     * Based on {@link IAppSettings} derived from AppSettingsClass.
+     */
     Settings:{
         isDarkMode:false,
         isAcceptingAllLanguages: true,
@@ -26,6 +29,11 @@ export const AppSettingsState = reactive({
         isBlacklist: false,
         selectedLanguages:[] as LangCode[],
         isShowingIntroMessage: true,
+        isHidingComments: false,
+        isHidingShares: false,
+        isHidingLikes: false,
+        isHidingFollowers: false,
+        isHidingFollowing: false,
     } as IAppSettings,
     AppStore:Store,
     /**
@@ -153,6 +161,11 @@ export const AppSettingsState = reactive({
                 appSettings.isWhitelist = loadedSettings.isWhitelist;
                 appSettings.selectedLanguages = JSON.parse(loadedSettings.selectedLanguages);
                 appSettings.isShowingIntroMessage = loadedSettings.isShowingIntroMessage;
+                appSettings.isHidingComments = loadedSettings.isHidingComments;
+                appSettings.isHidingShares = loadedSettings.isHidingShares;
+                appSettings.isHidingLikes = loadedSettings.isHidingLikes;
+                appSettings.isHidingFollowers = loadedSettings.isHidingFollowers;
+                appSettings.isHidingFollowing = loadedSettings.isHidingFollowing;
             })
             .catch(err => {
                 console.log(err);
@@ -190,6 +203,11 @@ export const AppSettingsState = reactive({
                 isWhitelist:cs.isWhitelist,
                 selectedLanguages:JSON.stringify(cs.selectedLanguages),
                 isShowingIntroMessage:cs.isShowingIntroMessage,
+                isHidingComments: cs.isHidingComments,
+                isHidingShares: cs.isHidingShares,
+                isHidingLikes: cs.isHidingLikes,
+                isHidingFollowers: cs.isHidingFollowers,
+                isHidingFollowing: cs.isHidingFollowing,
             })
             // .then(res => {
             //     console.log(res);
