@@ -31,6 +31,9 @@
                                         <CheckBox :model-value="AppSettingsState.Settings.isDarkMode" @value-toggled="toggleTheme">
                                             Dark Mode?
                                         </CheckBox>
+                                        <CheckBox :model-value="AppSettingsState.Settings.isHidingMetrics" @value-toggled="toggleMetrics">
+                                            Hide Metrics?
+                                        </CheckBox>
                                         <SquareButton :is-disabled="AppSettingsState.Settings.isShowingIntroMessage"
                                         class="self-start bg-btn hover:bg-btnHover"
                                         title="Display Introductory Tutorial/Instructions"
@@ -192,7 +195,9 @@ export default defineComponent({
                     General:{
                         name:'General',
                         data:{
-                            isDarkMode:AppState.isDarkMode
+                            isDarkMode:AppState.isDarkMode,
+                            /**Should details like Follower count, Post Likes count be hidden? */
+                            isHidingMetics:AppSettingsState.Settings.isHidingMetrics
                         },
                         /**Indicates if the option should only be available in Dev mode. */
                         devOnly:false,
@@ -262,6 +267,9 @@ export default defineComponent({
         },
         toggleTheme(){
             AppSettingsState.Settings.isDarkMode = !AppSettingsState.Settings.isDarkMode;
+        },
+        toggleMetrics(){
+            AppSettingsState.Settings.isHidingMetrics = !AppSettingsState.Settings.isHidingMetrics;
         },
         /**Switch the currently viewed settings category. */
         switchCategory(category:string|undefined){
