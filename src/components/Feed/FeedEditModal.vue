@@ -94,8 +94,8 @@
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ validTags.join(', ') }}</div>
                         <div v-else-if="selectedFeedType == FeedEnums.Types.User"
                         class="flex flex-col overflow-auto divide-y divide-outline">
-                            <div class="flex flex-col gap-2 w-full p-2">
-                                <div class="flex rounded-full h-20 mx-auto aspect-square bg-sky-400 justify-center items-center bg-cover"
+                            <div v-if="!isAwaitingProfileData" class="flex flex-col gap-2 w-full p-2">
+                                <div class="flex rounded-full h-20 mx-auto aspect-square bg-sky-400 justify-center items-center bg-cover text-2xl"
                                 :style="{'background-image': 'url('+feedFilters.user.avatar+')'}">
                                     <i-mingcute:user-add-fill v-if="!feedFilters.user.avatar"/>
                                 </div>
@@ -106,9 +106,22 @@
                                     </div>
                                     <div class="text-xs text-searchbarHandle">@{{ feedFilters.user.handle }}</div>
                                 </div>
-                                <div class="w-full self-center text-secondary text-left
-                                overflow-hidden text-ellipsis text-xs">
-                                    {{feedFilters.user.description}}
+                                <div class="w-full text-secondary text-xs whitespace-pre-wrap">
+                                    {{feedFilters.user.description ? feedFilters.user.description : 'No Description'}}
+                                </div>
+                            </div>
+                            <div v-else class="animate-pulse flex flex-col gap-2 w-full p-2">
+                                <div class="flex rounded-full h-20 mx-auto aspect-square bg-slate-500 justify-center items-center bg-cover text-2xl">
+                                    <i-mingcute:user-add-fill/>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <div class="rounded-sm h-4 w-32 bg-slate-500"></div>
+                                    <div class="rounded-sm h-4 w-40 bg-slate-500"></div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <div class="rounded-sm h-4 w-full bg-slate-500"></div>
+                                    <div class="rounded-sm h-4 w-full bg-slate-500"></div>
+                                    <div class="rounded-sm h-4 w-1/3 bg-slate-500"></div>
                                 </div>
                             </div>
                         </div>
@@ -152,7 +165,7 @@ import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { AddFeedToList, FeedState, GenerateUniqueId, GetFeed, GetFeedDataForFeedType, UpdateFeedDetails } from '../../state/FeedList.vue';
 import { HandleAPIError } from '../../helpers/errors.ts';
 import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces.ts';
-import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { ProfileView, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import CheckBox from '../Utilities/CheckBox.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import { isUserVerified } from '../../helpers/states';
@@ -180,11 +193,13 @@ export default defineComponent({
                     did:'',
                     handle:'',
                     displayName:''
-                } as ProfileView,
+                } as ProfileViewDetailed,
                 notifications:{
                     justNotifs:false,
                 }
             },
+            /**Are we currently waiting for Profile Data request(s) from the API to complete?*/
+            isAwaitingProfileData:false,
             currentPage:0,
             totalPages:3,
             feedTypeOptions:[
@@ -259,7 +274,12 @@ export default defineComponent({
          * @param user Object representing the chosen user.
          */
         selectUser(user:ProfileView){
-            this.feedFilters.user = user;
+            // this.feedFilters.user = user;
+            this.feedFilters.user.avatar = user.avatar;
+            this.feedFilters.user.description = user.description;
+            this.feedFilters.user.did = user.did;
+            this.feedFilters.user.displayName = user.displayName;
+            this.feedFilters.user.handle = user.handle;
             this.forwardOnePage();
         },
         grabHashtags(){
@@ -474,6 +494,15 @@ export default defineComponent({
             //Update the modal state to hold the existing feed's data
             switch (existingFeed?.description.feedType) {
                 case FeedEnums.Types.User:
+                    this.isAwaitingProfileData = true;
+                    GetBrowsingAgent().getProfile({actor:existingFeed.description.feedSourceDID}).
+                    then(res => {
+                        this.feedFilters.user = res.data
+                        this.isAwaitingProfileData = false;
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    })
                     this.selectedFeedType = FeedEnums.Types.User;
                     this.feedFilters.user = {
                         did:existingFeed.description.feedSourceDID,
