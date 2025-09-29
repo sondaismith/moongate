@@ -33,18 +33,23 @@
                 <button @click="selectUser(result)" data-testid="user-search-bar-result" class="group flex items-center hover:bg-searchbarResultHover p-2s
                     cursor-pointer rounded-none"
                     v-for="result, index in filteredUsers" :key="index" tabindex="0">
-                    <div class="flex gap-1 w-full border-2 p-2 border-transparent
+                    <div class="flex gap-2 w-full border-2 p-2 border-transparent
                     group-focus:border-feedtypeBtnFocusHighlight">
                         <div class="flex rounded-full min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover"
                         :style="{'background-image': 'url('+result.avatar+')'}">
                             <i-mingcute:user-add-fill v-if="!result.avatar"/>
                         </div>
-                        <div class="flex w-full overflow-hidden flex-col items-start sm:flex-row sm:gap-1 sm:items-center">
-                            <div class="flex gap-1 items-center w-full sm:w-auto overflow-hidden">
+                        <div class="flex shrink-0 overflow-hidden flex-col items-start">
+                            <div class="flex gap-1 items-center w-full overflow-hidden">
                                 <div class="whitespace-nowrap overflow-hidden text-ellipsis">{{ result.displayName }}</div>
                                 <VerifiedBadge v-if="isUserVerified(result)" class="size-4"/>
                             </div>
                             <div class="text-xs text-searchbarHandle">@{{ result.handle }}</div>
+                        </div>
+                        <div class="w-full max-h-8 self-center text-secondary text-left line-clamp-2
+                        overflow-hidden text-ellipsis text-xs"
+                        :title="result.description">
+                            {{result.description}}
                         </div>
                     </div>
                 </button>
@@ -64,6 +69,7 @@ import { SearchForAccounts } from '../../lib/api/Feed.vue';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 import { toast } from '../../state/AppState.vue';
 import VerifiedBadge from './VerifiedBadge.vue';
+import { isUserVerified } from '../../helpers/states';
 
 export default defineComponent({
     name:'User Search Bar',
@@ -91,6 +97,7 @@ export default defineComponent({
     },
     data(){
         return{
+            isUserVerified,
             /**Realtime value of search term entered into input. */
             searchTerm:'',
             /**Debounced/delayed value of search term entered into input. */
@@ -181,14 +188,6 @@ export default defineComponent({
         /**Emits the DID of the user selected from the search results. */
         selectUser(user:ProfileView){
             this.$emit('userSelected',user);
-        },
-        /**
-         * Method used to see if the viewed User is verified.
-         */
-        isUserVerified(profile:ProfileView){
-            if(profile != undefined && profile.verification && profile.verification.verifiedStatus == 'valid')
-                return true;
-            return false;
         },
     },
     setup () {
