@@ -154,6 +154,7 @@
                                                         :class="{'rounded-tl' : index == 0 && colIndex == 0, 'rounded-tr' : index == 0 && colIndex == 6}">
                                                             {{ feed[col] }}
                                                         </td>
+                                                        <td><SquareButton @click="askAboutIndexedDBFeedDeletion(index)" class="h-6 bg-red-600 hover:bg-red-500" >Delete</SquareButton></td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -203,7 +204,16 @@ import CheckBox from '../Utilities/CheckBox.vue';
 import { DeleteIndexedDBSavedFeeds, loadSavedFeedsRecords, SavedFeeds, stringToJSON } from '../../lib/db/local_db';
 import { IFeedDBData } from '../../interfaces/FeedInterfaces';
 import { isTauri } from '@tauri-apps/api/core';
+import { RemoveFeedByIndex } from '../../state/FeedList.vue';
 
+/**
+ * Asks the User if they're sure they would like to delete the selected
+ * Feed record. If deletion is confirmed it will perform the passed Function.
+ * @param action The function to use to delete the Feed record.
+ */
+function ConfirmIndexedDBFeedDeletion(action:Function){
+    AppState.showConfirmModal('Are you sure you wish to delete this Saved Feed?', action);
+}
 
 export default defineComponent({
     data(){
@@ -220,7 +230,6 @@ export default defineComponent({
                         data:{
                             isDarkMode:AppState.isDarkMode,
                             /**Should details like Follower count, Post Likes count be hidden? */
-                            isHidingMetics:AppSettingsState.Settings.isHidingMetrics,
                             isHidingComments: AppSettingsState.Settings.isHidingComments,
                             isHidingShares: AppSettingsState.Settings.isHidingShares,
                             isHidingLikes: AppSettingsState.Settings.isHidingLikes,
@@ -264,7 +273,14 @@ export default defineComponent({
                              * Indicates that the User has requested to view the IndexedDB
                              * data. Used to display "no records" message.
                              */
-                            hasIndexedDBDataBeenRequested: false
+                            hasIndexedDBDataBeenRequested: false,
+                            /**
+                             * Used to know what record to remove when deleting a "saved feed"
+                             * record from IndexedDB using the Debug controls. Default/Unset
+                             * value is set to 100000 since it should be larger than the number
+                             * of Feeds a User has added, although it's not impossible...
+                             */
+                            indexToDelete:100000
                         },
                         /**Indicates if the option should only be available in Dev mode. */
                         devOnly:true,
@@ -295,9 +311,6 @@ export default defineComponent({
         },
         toggleTheme(){
             AppSettingsState.Settings.isDarkMode = !AppSettingsState.Settings.isDarkMode;
-        },
-        toggleMetrics(){
-            AppSettingsState.Settings.isHidingMetrics = !AppSettingsState.Settings.isHidingMetrics;
         },
         togglePostCommentsCount(){
             AppSettingsState.Settings.isHidingComments = !AppSettingsState.Settings.isHidingComments;
@@ -387,6 +400,33 @@ export default defineComponent({
             this.SettingData.Options.Developer.data.savedFeeds = [];
             this.SettingData.Options.Developer.data.recordsFromDB = [];
             this.SettingData.Options.Developer.data.hasIndexedDBDataBeenRequested = false;
+        },
+        /**
+         * Method prompts the User to confirm if they would like to delete the selected
+         * Feed. Passes the component `deleteIndexedDBFeed()` method to
+         * `ConfirmIndexedDBFeedDeletion()` which will only be performed
+         * if the User selects the "confirm" option.
+         * @param index The index of the Feed to remove from the IndexedDB "savedFeed" table.
+         */
+        askAboutIndexedDBFeedDeletion(index:number){
+            this.SettingData.Options.Developer.data.indexToDelete = index;
+            ConfirmIndexedDBFeedDeletion(this.deleteIndexedDBFeed)
+        },
+        /**
+         * Method that deletes Saved Feed a specified index. Should not be
+         * called directly - use `askAboutIndexedDBFeedDeletion()`.
+         */
+        deleteIndexedDBFeed(){
+            console.log(this.SettingData.Options.Developer.data.indexToDelete);
+            RemoveFeedByIndex(this.SettingData.Options.Developer.data.indexToDelete);
+            try{//Remove deleted Feed from displayed list
+                this.SettingData.Options.Developer.data.savedFeeds.splice(this.SettingData.Options.Developer.data.indexToDelete,1);
+                this.SettingData.Options.Developer.data.recordsFromDB.splice(this.SettingData.Options.Developer.data.indexToDelete,1);
+            }
+            catch(err){
+                toast.add({summary:'Error',detail:`Invalid Index: ${err}`,severity:'error', group:'bc', life:3000});
+            }
+            this.SettingData.Options.Developer.data.indexToDelete = 100000;//"unset" index
         }
     },
     computed:{
