@@ -94,7 +94,7 @@
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ validTags.join(', ') }}</div>
                         <div v-else-if="selectedFeedType == FeedEnums.Types.User"
                         class="flex flex-col overflow-auto divide-y divide-outline">
-                            <div v-if="!isAwaitingProfileData" class="flex flex-col gap-2 w-full p-2">
+                            <div v-if="!isAwaitingProfileData" class="flex flex-col gap-1 w-full p-2">
                                 <div class="flex rounded-full h-20 mx-auto aspect-square bg-sky-400 justify-center items-center bg-cover text-2xl"
                                 :style="{'background-image': 'url('+feedFilters.user.avatar+')'}">
                                     <i-mingcute:user-add-fill v-if="!feedFilters.user.avatar"/>
@@ -105,6 +105,11 @@
                                         <VerifiedBadge v-if="isUserVerified(feedFilters.user)" class="size-4"/>
                                     </div>
                                     <div class="text-xs text-searchbarHandle">@{{ feedFilters.user.handle }}</div>
+                                </div>
+                                <div class="flex gap-2 text-sm text-secondary">
+                                    <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followersCount) }}</div> <div>followers</div></div>
+                                    <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followsCount) }}</div> <div>following</div></div>
+                                    <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.postsCount) }}</div> <div>posts</div></div>
                                 </div>
                                 <div class="w-full text-secondary text-xs whitespace-pre-wrap">
                                     {{feedFilters.user.description ? feedFilters.user.description : 'No Description'}}
@@ -169,6 +174,7 @@ import { ProfileView, ProfileViewDetailed } from '@atproto/api/dist/client/types
 import CheckBox from '../Utilities/CheckBox.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import { isUserVerified } from '../../helpers/states';
+import { getCompactNumberValue } from '../../helpers/converters';
 
 export default defineComponent({
     components:{
@@ -223,7 +229,8 @@ export default defineComponent({
             attemptingToCreateFeed: false,
             FeedEnums,
             TrapFocus,
-            isUserVerified
+            isUserVerified,
+            getCompactNumberValue
         }
     },
     methods:{
@@ -274,13 +281,29 @@ export default defineComponent({
          * @param user Object representing the chosen user.
          */
         selectUser(user:ProfileView){
-            // this.feedFilters.user = user;
-            this.feedFilters.user.avatar = user.avatar;
-            this.feedFilters.user.description = user.description;
-            this.feedFilters.user.did = user.did;
-            this.feedFilters.user.displayName = user.displayName;
-            this.feedFilters.user.handle = user.handle;
+            this.getUserProfileViewDetailed(user.did)
+            .then(res => {
+                if(res != undefined) this.feedFilters.user = res
+            })
             this.forwardOnePage();
+        },
+        /**
+         * Method used to get detailed Bluesky profile information for a specific
+         * User.
+         * @param userDID The DID of the User to get the detailed Profile Details for.
+         */
+        async getUserProfileViewDetailed(userDID:string):Promise<ProfileViewDetailed|undefined>{
+            let ud:ProfileViewDetailed|undefined = undefined;
+            this.isAwaitingProfileData = true;
+            await GetBrowsingAgent().getProfile({actor:userDID}).
+            then(res => {
+                ud = res.data
+                this.isAwaitingProfileData = false;
+            })
+            .catch(err => {
+                console.log(err);
+            })
+            return ud;
         },
         grabHashtags(){
             var s = this.feedFilters.tag.split(',');
@@ -494,14 +517,9 @@ export default defineComponent({
             //Update the modal state to hold the existing feed's data
             switch (existingFeed?.description.feedType) {
                 case FeedEnums.Types.User:
-                    this.isAwaitingProfileData = true;
-                    GetBrowsingAgent().getProfile({actor:existingFeed.description.feedSourceDID}).
-                    then(res => {
-                        this.feedFilters.user = res.data
-                        this.isAwaitingProfileData = false;
-                    })
-                    .catch(err => {
-                        console.log(err);
+                    this.getUserProfileViewDetailed(existingFeed.description.feedSourceDID)
+                    .then(res => {
+                        if(res != undefined) this.feedFilters.user = res
                     })
                     this.selectedFeedType = FeedEnums.Types.User;
                     this.feedFilters.user = {
