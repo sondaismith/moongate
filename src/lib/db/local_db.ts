@@ -484,14 +484,23 @@ export async function loadAppSettingsRecords(){
  * saved to the `saved_feeds` table.
  * @param data List of Feeds to stringify.
  */
-export function stringifyFeedListData(data:IFeedListing[]):string{
+export function stringifyFeedListData(data:IFeedListing[]|IFeedDBData[]):string{
     var t:IFeedDBData[]= [];
     // FeedState.FeedList.forEach(e => {
-    data.forEach(e => {
-        t.push({id:e.description.feedId,userId:e.description.userId,did:e.description.feedSourceDID,
-            tags:e.description.feedTags,type:e.description.feedType,icon:e.description.feedIcon,settings:e.description.feedColumnSettings,
-            latestPostDate:e.description.latestPostDate,latestPostCID:e.description.latestPostCID});
-    });
+    if(data.length>0 && (data as IFeedListing[])[0].description != undefined){
+        (data as IFeedListing[]).forEach(e => {
+            t.push({id:e.description.feedId,userId:e.description.userId,did:e.description.feedSourceDID,
+                tags:e.description.feedTags,type:e.description.feedType,icon:e.description.feedIcon,settings:e.description.feedColumnSettings,
+                latestPostDate:e.description.latestPostDate,latestPostCID:e.description.latestPostCID});
+        });
+    }
+    else{
+        (data as IFeedDBData[]).forEach(e => {
+            t.push({id:e.id,userId:e.userId,did:e.did,
+                tags:e.tags,type:e.type,icon:e.icon,settings:e.settings,
+                latestPostDate:e.latestPostDate,latestPostCID:e.latestPostCID});
+        });
+    }
     // console.log(JSON.stringify(t));
     return JSON.stringify(t);
 }

@@ -673,6 +673,22 @@ export async function RemoveFeed(feedId:String){
 }
 
 /**
+ * Removes Feed at a specific index from {@link FeedState.FeedList}.
+ * @param index The array index of the Feed to remove.
+ */
+export async function RemoveFeedByIndex(index:number){
+    if(index<FeedState.FeedList.length){//Ensure valid index value is used
+        FeedState.FeedList.splice(index,1);
+        //Attempt to save FeedList to disk
+        await SaveFeedChanges();
+    }
+    else{
+        toast.add({summary:'Error',detail:`Invalid Index`,severity:'error', group:'bc', life:3000})
+    }
+
+}
+
+/**
  * Method used to refresh the data held in a currently displayed Feed.
  * @param feedId The ID of the loaded Feed that you want to refresh.
  */

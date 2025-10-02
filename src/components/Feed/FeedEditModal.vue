@@ -3,7 +3,7 @@
     class="absolute z-10 flex w-full h-full text-primary bg-slate-800/40 backdrop-blur-sm focus-visible:outline-none">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{void "Modal Control"}}
-        <div class="z-20 flex flex-col w-4/5 md:w-2/3 h-2/3 mx-auto my-auto rounded bg-feedColumnBG
+        <div class="z-20 flex flex-col gap-1 w-[95%] md:w-2/3 h-2/3 mx-auto my-auto rounded bg-feedColumnBG
             p-4 drop-shadow-lg">
             <div class="flex gap-2">
                 <div class="text-2xl">{{modalPages[currentPage].title}}</div>
@@ -11,14 +11,14 @@
                 <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div>
             </div>
             {{ void "Pages" }}
-            <div class="flex items-center my-1 w-full">
+            <div class="flex items-center w-full">
                 <template v-for="n in totalPages">
                     <div class="border border-primary rounded-full aspect-square p-1"
                         :class="{'bg-primary' : currentPage==n-1}"></div>
                     <div v-if="n != totalPages" class="h-[1px] bg-gray-500 w-full"></div>
                 </template>
             </div>
-            <div class="mb-2">{{ modalPages[currentPage].instruction }}</div>
+            <div>{{ modalPages[currentPage].instruction }}</div>
             <div class="flex flex-col relative grow overflow-hidden">
                 <Transition>
                     <div v-if="currentPage == 0" class="h-full w-full">
@@ -85,13 +85,50 @@
                             <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
                         </div>
                     </div>
-                    <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 2">
-                        <div>Feed Type: {{ selectedFeedType }}</div>
+                    <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 2"
+                    class="flex flex-col gap-1 h-full overflow-hidden">
+                        <div class="flex flex-col">
+                            <div class="text-xl font-extralight">Feed Type</div>
+                            <div class="leading-3 text-sm">{{ selectedFeedType[0].toUpperCase()+selectedFeedType.slice(1) }}</div>
+                        </div>
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ validTags.join(', ') }}</div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.User">
-                            <div>User DID: {{ feedFilters.user.did }}</div>
-                            <div>User: {{ feedFilters.user.name }}</div>
-                            <div>Handle: {{ feedFilters.user.handle }}</div>
+                        <div v-else-if="selectedFeedType == FeedEnums.Types.User"
+                        class="flex flex-col overflow-auto divide-y divide-outline">
+                            <div v-if="!isAwaitingProfileData" class="flex flex-col gap-1 w-full">
+                                <div class="flex rounded-full h-20 mx-auto aspect-square bg-sky-400 justify-center items-center bg-cover text-2xl"
+                                :style="{'background-image': 'url('+feedFilters.user.avatar+')'}">
+                                    <i-mingcute:user-add-fill v-if="!feedFilters.user.avatar"/>
+                                </div>
+                                <div class="flex w-full overflow-hidden flex-col items-start">
+                                    <div class="flex gap-1 items-center w-full overflow-hidden">
+                                        <div class="whitespace-nowrap overflow-hidden text-ellipsis">{{ feedFilters.user.displayName }}</div>
+                                        <VerifiedBadge v-if="isUserVerified(feedFilters.user)" class="size-4"/>
+                                    </div>
+                                    <div class="text-xs text-searchbarHandle">@{{ feedFilters.user.handle }}</div>
+                                </div>
+                                <div class="flex gap-2 text-sm text-secondary">
+                                    <div v-if="!AppSettingsState.Settings.isHidingFollowers" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followersCount) }}</div> <div>followers</div></div>
+                                    <div v-if="!AppSettingsState.Settings.isHidingFollowing" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followsCount) }}</div> <div>following</div></div>
+                                    <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.postsCount) }}</div> <div>posts</div></div>
+                                </div>
+                                <div class="w-full text-secondary text-xs whitespace-pre-wrap">
+                                    {{feedFilters.user.description ? feedFilters.user.description : 'No Description'}}
+                                </div>
+                            </div>
+                            <div v-else class="animate-pulse flex flex-col gap-2 w-full p-2">
+                                <div class="flex rounded-full h-20 mx-auto aspect-square bg-slate-500 justify-center items-center bg-cover text-2xl">
+                                    <i-mingcute:user-add-fill/>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <div class="rounded-sm h-4 w-32 bg-slate-500"></div>
+                                    <div class="rounded-sm h-4 w-40 bg-slate-500"></div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <div class="rounded-sm h-4 w-full bg-slate-500"></div>
+                                    <div class="rounded-sm h-4 w-full bg-slate-500"></div>
+                                    <div class="rounded-sm h-4 w-1/3 bg-slate-500"></div>
+                                </div>
+                            </div>
                         </div>
                         <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
                             <div>Mentions Only? {{ feedFilters.notifications.justNotifs }}</div>
@@ -133,9 +170,12 @@ import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { AddFeedToList, FeedState, GenerateUniqueId, GetFeed, GetFeedDataForFeedType, UpdateFeedDetails } from '../../state/FeedList.vue';
 import { HandleAPIError } from '../../helpers/errors.ts';
 import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces.ts';
-import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { ProfileView, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import CheckBox from '../Utilities/CheckBox.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
+import { isUserVerified } from '../../helpers/states';
+import { getCompactNumberValue } from '../../helpers/converters';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 export default defineComponent({
     components:{
@@ -148,6 +188,7 @@ export default defineComponent({
     data(){
         return{
             AppState,
+            AppSettingsState,
             userPromptText: 'What type of Feed do you want to add?',
             modalPages:[
                 { title:'What type of Feed is it?', instruction: 'Select Below:'},
@@ -159,12 +200,14 @@ export default defineComponent({
                 user:{
                     did:'',
                     handle:'',
-                    name:'',
-                },
+                    displayName:''
+                } as ProfileViewDetailed,
                 notifications:{
                     justNotifs:false,
                 }
             },
+            /**Are we currently waiting for Profile Data request(s) from the API to complete?*/
+            isAwaitingProfileData:false,
             currentPage:0,
             totalPages:3,
             feedTypeOptions:[
@@ -188,6 +231,8 @@ export default defineComponent({
             attemptingToCreateFeed: false,
             FeedEnums,
             TrapFocus,
+            isUserVerified,
+            getCompactNumberValue
         }
     },
     methods:{
@@ -238,10 +283,29 @@ export default defineComponent({
          * @param user Object representing the chosen user.
          */
         selectUser(user:ProfileView){
-            this.feedFilters.user.did = user.did;
-            this.feedFilters.user.handle = user.handle;
-            this.feedFilters.user.name = user.displayName ? user.displayName : '';
+            this.getUserProfileViewDetailed(user.did)
+            .then(res => {
+                if(res != undefined) this.feedFilters.user = res
+            })
             this.forwardOnePage();
+        },
+        /**
+         * Method used to get detailed Bluesky profile information for a specific
+         * User.
+         * @param userDID The DID of the User to get the detailed Profile Details for.
+         */
+        async getUserProfileViewDetailed(userDID:string):Promise<ProfileViewDetailed|undefined>{
+            let ud:ProfileViewDetailed|undefined = undefined;
+            this.isAwaitingProfileData = true;
+            await GetBrowsingAgent().getProfile({actor:userDID}).
+            then(res => {
+                ud = res.data
+                this.isAwaitingProfileData = false;
+            })
+            .catch(err => {
+                console.log(err);
+            })
+            return ud;
         },
         grabHashtags(){
             var s = this.feedFilters.tag.split(',');
@@ -330,7 +394,7 @@ export default defineComponent({
                     //Generate Feed Description based on selected options
                     desc = {...desc,
                         feedHandle:this.feedFilters.user.handle,
-                        feedName:this.feedFilters.user.name,
+                        feedName:this.feedFilters.user.displayName ? this.feedFilters.user.displayName : '',
                         feedSourceDID:this.feedFilters.user.did
                     }
                     break;
@@ -455,16 +519,23 @@ export default defineComponent({
             //Update the modal state to hold the existing feed's data
             switch (existingFeed?.description.feedType) {
                 case FeedEnums.Types.User:
+                    this.getUserProfileViewDetailed(existingFeed.description.feedSourceDID)
+                    .then(res => {
+                        if(res != undefined) this.feedFilters.user = res
+                    })
                     this.selectedFeedType = FeedEnums.Types.User;
                     this.feedFilters.user = {
                         did:existingFeed.description.feedSourceDID,
                         handle:existingFeed.description.feedHandle,
-                        name:existingFeed.description.feedName
+                        displayName:existingFeed.description.feedName
                     };
                     break;
                 case FeedEnums.Types.Tag:
                     this.selectedFeedType = FeedEnums.Types.Tag;
                     this.feedFilters.tag = existingFeed.description.feedTags;
+                    break;
+                case FeedEnums.Types.Trending:
+                    this.selectedFeedType = FeedEnums.Types.Trending;
                     break;
             }
         }
