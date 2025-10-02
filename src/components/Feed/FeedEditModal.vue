@@ -86,7 +86,7 @@
                         </div>
                     </div>
                     <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 2"
-                    class="flex flex-col h-full overflow-hidden">
+                    class="flex flex-col gap-1 h-full overflow-hidden">
                         <div class="flex flex-col">
                             <div class="text-xl font-extralight">Feed Type</div>
                             <div class="leading-3 text-sm">{{ selectedFeedType[0].toUpperCase()+selectedFeedType.slice(1) }}</div>
@@ -94,7 +94,7 @@
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ validTags.join(', ') }}</div>
                         <div v-else-if="selectedFeedType == FeedEnums.Types.User"
                         class="flex flex-col overflow-auto divide-y divide-outline">
-                            <div v-if="!isAwaitingProfileData" class="flex flex-col gap-1 w-full p-2">
+                            <div v-if="!isAwaitingProfileData" class="flex flex-col gap-1 w-full">
                                 <div class="flex rounded-full h-20 mx-auto aspect-square bg-sky-400 justify-center items-center bg-cover text-2xl"
                                 :style="{'background-image': 'url('+feedFilters.user.avatar+')'}">
                                     <i-mingcute:user-add-fill v-if="!feedFilters.user.avatar"/>
@@ -107,8 +107,8 @@
                                     <div class="text-xs text-searchbarHandle">@{{ feedFilters.user.handle }}</div>
                                 </div>
                                 <div class="flex gap-2 text-sm text-secondary">
-                                    <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followersCount) }}</div> <div>followers</div></div>
-                                    <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followsCount) }}</div> <div>following</div></div>
+                                    <div v-if="!AppSettingsState.Settings.isHidingFollowers" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followersCount) }}</div> <div>followers</div></div>
+                                    <div v-if="!AppSettingsState.Settings.isHidingFollowing" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followsCount) }}</div> <div>following</div></div>
                                     <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.postsCount) }}</div> <div>posts</div></div>
                                 </div>
                                 <div class="w-full text-secondary text-xs whitespace-pre-wrap">
@@ -175,6 +175,7 @@ import CheckBox from '../Utilities/CheckBox.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import { isUserVerified } from '../../helpers/states';
 import { getCompactNumberValue } from '../../helpers/converters';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 export default defineComponent({
     components:{
@@ -187,6 +188,7 @@ export default defineComponent({
     data(){
         return{
             AppState,
+            AppSettingsState,
             userPromptText: 'What type of Feed do you want to add?',
             modalPages:[
                 { title:'What type of Feed is it?', instruction: 'Select Below:'},
@@ -531,6 +533,9 @@ export default defineComponent({
                 case FeedEnums.Types.Tag:
                     this.selectedFeedType = FeedEnums.Types.Tag;
                     this.feedFilters.tag = existingFeed.description.feedTags;
+                    break;
+                case FeedEnums.Types.Trending:
+                    this.selectedFeedType = FeedEnums.Types.Trending;
                     break;
             }
         }
