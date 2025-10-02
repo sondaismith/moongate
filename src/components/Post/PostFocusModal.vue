@@ -71,7 +71,7 @@
                 <div>Share</div>
             </div> -->
         </div>
-        <div v-else @click="hideModal" class="w-full h-full"></div>
+        <div v-else @click="hideModal" class="w-full h-full hidden sm:block"></div>
         {{ void "Comments Section" }}
         <div class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto">
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
