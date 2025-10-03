@@ -45,7 +45,7 @@ export default defineComponent({
          */
         async GenerateTagLinkText(text:RichText|undefined, hashTagStyle:string|undefined = undefined,
         userLinkStyle:string|undefined = undefined){
-            this.markdown = '';
+            this.markdown = '<div>';
             if(text == undefined) return;
             // this.awaitingFacets = true;
             // await text.detectFacets(GetBrowsingAgent());
@@ -72,6 +72,7 @@ export default defineComponent({
                 }
             }
            this.markdown = this.markdown.replace(/\n/g,"<br/>");
+           this.markdown += "</div>"
            if(this.markdown.trim() == '') this.markdown = '<div class="text-slate-400">No Description</div>';
            return this.markdown;
         },
