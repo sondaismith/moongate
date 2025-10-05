@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AccountPeek: typeof import('./src/components/Utilities/AccountPeek.vue')['default']
+    AppLogo: typeof import('./src/components/SVG/AppLogo.vue')['default']
     AvatarRound: typeof import('./src/components/Utilities/AvatarRound.vue')['default']
     CheckBox: typeof import('./src/components/Utilities/CheckBox.vue')['default']
     ConfirmModal: typeof import('./src/components/Utilities/ConfirmModal.vue')['default']
