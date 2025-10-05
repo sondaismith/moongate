@@ -4,8 +4,8 @@
         {{ void "sidebar" }}
         <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar w-16 shrink-0 items-center">
             {{ void "App Logo" }}
-            <div class="w-full border-b border-gray-700 p-2 flex-none">
-                <UserButton tooltip="[logo here]"/>
+            <div class="flex w-full border-b border-outline p-1">
+                <AppLogo @click="showSettingsPanel"/>
             </div>
             <div class="w-full flex flex-col flex-shrink overflow-hidden">
                 {{ void "Feed List + Add btn" }}
@@ -183,6 +183,7 @@ import IntroMessage from "./components/Intro/IntroMessage.vue";
 import SidebarButton from "./components/Navbar/SidebarButton.vue";
 import { isOnMobileTouchscreen } from "./helpers/states";
 import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
+import AppLogo from "./components/SVG/AppLogo.vue";
 
 
     export default defineComponent({
@@ -198,6 +199,7 @@ import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
             CreatePost,
             SettingsPanel,
             IntroMessage,
+            AppLogo,
         },
         data(){
             return{
@@ -632,4 +634,4 @@ import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
 	outline: 2px dashed black;
 	background-color: rgba(100, 100, 100, 0.6); /* greyed out */
 }
-</style>FeedEnums,
+</style>
