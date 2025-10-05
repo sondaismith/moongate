@@ -4,8 +4,12 @@
         {{ void "sidebar" }}
         <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar w-16 shrink-0 items-center">
             {{ void "App Logo" }}
-            <div class="w-full border-b border-gray-700 p-2 flex-none">
-                <UserButton tooltip="[logo here]"/>
+            <div class="w-full border-b border-gray-700 p-1 flex-none">
+                <!-- <UserButton tooltip="[logo here]"/> -->
+                 <div class="group bg-sidebar cursor-pointer rounded-2xl">
+                    <!-- <img class="text-pink-400" src="../public/moongate_logo_v1.svg"/> -->
+                     <svg width="100%" height="100%" class="text-logoFill transition-transform scale-110 group-focus:scale-125 group-hover:scale-125 logo-shadow" viewBox="0 0 1232 1232" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;"><rect id="Workspace" x="0" y="0" width="1232" height="1232" style="fill:none;"/><path id="Outer-Gate-Curve-3" serif:id="Outer Gate Curve 3" d="M766.779,292.183c16.632,6.57 32.791,14.196 48.405,22.803l-87.494,151.545c-34.087,-16.491 -71.893,-25.666 -111.69,-25.666c-2.453,0 -4.899,0.035 -7.337,0.104l38.337,-49.969l119.779,-98.817Zm72.473,37.116c41.83,26.759 79.159,60.809 110.477,100.521l-130.127,109.295c-19.33,-23.336 -42.072,-43.328 -67.385,-59.067l87.035,-150.749Zm127.18,123.058c29.821,42.856 53.011,91.364 67.934,143.761l-173.439,9.089c-7,-15.355 -15.211,-29.957 -24.498,-43.659l130.003,-109.191Zm74.958,171.431c7.915,35.425 12.108,72.41 12.108,110.448c-0,0.084 -0,0.168 -0,0.252l-165.675,-23.182c-1.972,-27.442 -7.452,-53.826 -15.96,-78.633l169.527,-8.885Zm11.31,138.861c-2.486,44.245 -10.766,87.85 -24.56,129.528l-145.14,-86.177l-0.269,0.067c3.424,-19.175 5.608,-41.062 5.883,-66.377l164.086,22.959Zm-25.432,132.139c-5.397,16.006 -11.61,31.724 -18.623,47.079l-177.349,-6.352c13.148,-28.789 36.812,-60.444 49.232,-118.236l146.74,77.509Z" style="fill:currentColor;"/><path id="Longtail" d="M247,460c0,0 9.173,-4.297 47,-1c0,0 17.442,-20.105 67,5c0,0 94.5,31.596 115,-96c0,0 -12.369,-52.902 253,-96c0,0 13.665,24.73 -156,128c0,0 -13.915,69.989 -55,129c0,0 -51.183,50.496 421,316c0,0 -418.611,-240.44 -480.023,-224.991c-0,-0 -78.654,95.669 -119.977,122.991c0,0 -47.499,201.506 -112,241c0,0 -21.814,-256.107 34,-305c0,0 117.177,-97.035 86,-136c-31.177,-38.965 -60.901,-74.579 -100,-83Z" style="fill:currentColor;"/></svg>
+                </div>
             </div>
             <div class="w-full flex flex-col flex-shrink overflow-hidden">
                 {{ void "Feed List + Add btn" }}
@@ -632,4 +636,9 @@ import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
 	outline: 2px dashed black;
 	background-color: rgba(100, 100, 100, 0.6); /* greyed out */
 }
-</style>FeedEnums,
+
+.logo-shadow {
+  -webkit-filter: drop-shadow( 2px 2px 1px color-mix(in srgb, black 20%, transparent));
+  filter: drop-shadow( 2px 2px 1px color-mix(in srgb, var(--color-logo-fill) 20%, transparent));
+}
+</style>
