@@ -4,7 +4,7 @@
         <div class="relative flex flex-col bg-focusBG w-[94%] max-w-[50rem] max-h-[30rem]
         mx-auto my-auto rounded-lg overflow-hidden text-primary drop-shadow-md"
         :class="[hideBackdrop ? 'max-h-full' : 'max-h-[30rem]']">
-            <div class="flex flex-col gap-1 bg-aboutPageBanner">
+            <div class="flex flex-col bg-aboutPageBanner">
                 <div class="flex items-center text-white h-24">
                     <AppLogo class="h-28 text-white scale-100"/>
                     <div>
@@ -19,7 +19,7 @@
                     The goal is to create a lightweight, feature-filled app that is responsive and easy to use.</div>
             </div>
             <div class="px-4 text-xl font-semibold">Changelog:</div>
-            <div class="flex flex-col gap-1 h-full px-4 mb-4 overflow-y-scroll divide-outline divide-y">
+            <div class="flex flex-col gap-1 h-full px-4 overflow-y-scroll divide-outline divide-y">
                 <div class="font-semibold">October 7th 2025</div>
                 <ul class="list-disc list-inside h-full py-1 text-sm">
                     <li>Added "About" page.</li>
@@ -29,14 +29,37 @@
                     <a href="#" class="text-xs text-blue-500">See more</a>
                 </ul>
             </div>
+            <div class="flex gap-1 px-4 py-2 text-xs">
+                <div>Any issues? Report</div>
+                <a v-if="!isTauri()" target="_blank"
+                :href="issuesURL"
+                class="text-blue-500 hover:text-blue-300 cursor-pointer">here!</a>
+                <a v-else
+                @click="(e) => showOptionsMenu(e,issuesURL)"
+                class="text-blue-500 hover:text-blue-300 cursor-pointer">here!</a>
+            </div>
         </div>
     </div>
 </template>
 
 <script lang="ts">
+import MingcuteCopyLine from '~icons/mingcute/copy-line';
+import MingcuteWorld2Line from '~icons/mingcute/world-2-line';
+
 import { isTauri } from '@tauri-apps/api/core';
 import { defineComponent } from 'vue'
-import { AppState } from '../../state/AppState.vue';
+import { AppState, CopyTextToClipboard } from '../../state/AppState.vue';
+import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
+import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { openUrl } from '@tauri-apps/plugin-opener';
+
+/**
+ * Method used to open link in the system's default browser.
+ * @param url The URL to open in the default browser.
+ */
+async function OpenLink(url:string){
+    await openUrl(url);
+}
 
 export default defineComponent({
     props:{
@@ -47,7 +70,8 @@ export default defineComponent({
     },
     data(){
         return{
-            isTauri
+            isTauri,
+            issuesURL: "https://github.com/sondaismith/moongate-issues/",
         }
     },
     methods:{
@@ -62,7 +86,19 @@ export default defineComponent({
         },
         closeModal(){
             AppState.HideAboutAppModal();
-        }
+        },
+        /**
+         * Shows Options Menu allowing user to perform different actions
+         * relating to the selected link.
+         */
+        showOptionsMenu(e:MouseEvent, linkURL:string){
+            e.preventDefault();
+            OptionsMenuState.currentMenuItems = [
+                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)}},
+                {Icon:MingcuteCopyLine,Label:'Copy link to clipboard',Action:function(){CopyTextToClipboard(linkURL,'link')}},
+            ] as IOptionMenuItem[]
+            OptionsMenuState.showOptionMenu(e);
+        },
     }
 })
 </script>
