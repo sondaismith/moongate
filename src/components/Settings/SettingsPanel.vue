@@ -179,6 +179,10 @@
                                         <div class="text-sm">IndexedDB Options are not available in the Desktop version of the app.</div>
                                     </div>
                                 </div>
+                                <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[4]"
+                                class="relative p-1 w-full h-full">
+                                    <AboutAppModal :hide-backdrop="true"/>
+                                </div>
                             </TransitionGroup>
                         </div>
                     </div>
@@ -205,6 +209,7 @@ import { DeleteIndexedDBSavedFeeds, loadSavedFeedsRecords, SavedFeeds, stringToJ
 import { IFeedDBData } from '../../interfaces/FeedInterfaces';
 import { isTauri } from '@tauri-apps/api/core';
 import { RemoveFeedByIndex } from '../../state/FeedList.vue';
+import AboutAppModal from './AboutAppModal.vue';
 
 /**
  * Asks the User if they're sure they would like to delete the selected
@@ -284,6 +289,12 @@ export default defineComponent({
                         },
                         /**Indicates if the option should only be available in Dev mode. */
                         devOnly:true,
+                    },
+                    About:{
+                        name:'About',
+                        data:{},
+                        /**Indicates if the option should only be available in Dev mode. */
+                        devOnly:false,
                     }
                 }
             },
@@ -303,7 +314,8 @@ export default defineComponent({
         FilterSelect,
         CheckBox,
         ToggleButton,
-        SquareButton
+        SquareButton,
+        AboutAppModal
     },
     methods:{
         closeModal(){
