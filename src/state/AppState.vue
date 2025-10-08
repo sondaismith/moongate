@@ -401,5 +401,11 @@ export const AppState = reactive({
     hideFeedOrderModal(){ this.isUpdatingFeedPosition = false; },
     /**Value used to indicate if App is currently running on a device with touchscreen support. */
     isAppOnMobileTouchscreenDevice:false,
+    /**Variable that indicates if the "About App" modal is visible or not. */
+    isAboutAppModalVisible: false,
+    /**Method that causes the "About App" modal to be displayed. */
+    ShowAboutAppModal(){ this.isAboutAppModalVisible = true;},
+    /**Method that causes the "About App" modal to be hidden. */
+    HideAboutAppModal(){ this.isAboutAppModalVisible = false;},
 })
 </script>

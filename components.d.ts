@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AboutAppModal: typeof import('./src/components/Settings/AboutAppModal.vue')['default']
     AccountPeek: typeof import('./src/components/Utilities/AccountPeek.vue')['default']
     AppLogo: typeof import('./src/components/SVG/AppLogo.vue')['default']
     AvatarRound: typeof import('./src/components/Utilities/AvatarRound.vue')['default']
