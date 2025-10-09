@@ -6,7 +6,7 @@
         :class="[hideBackdrop ? 'max-h-full' : 'max-h-[30rem]']">
             <div class="flex flex-col bg-aboutPageBanner">
                 <div class="flex items-center text-white h-24">
-                    <AppLogo class="h-28 text-white scale-100"/>
+                    <AppLogo :is-button="false" class="h-28 text-white scale-100"/>
                     <div>
                         <div class="text-4xl font-thin">Moongate</div>
                         <div>Version: {{ getBuildNumber() }}<span class="align-super text-xs">{{isTauri() ? 'Tauri' : 'Web'}}</span></div>
@@ -26,7 +26,7 @@
                     <li>Added application logo.</li>
                     <li>Added ability to reorder tabs on mobile/touch-screen devices.</li>
                     <li>Updated UI for "Post Focus" modal. Viewing on mobile/small-width screens should now be more user-friendly.</li>
-                    <a href="#" class="text-xs text-blue-500">See more</a>
+                    <a href="#" class="text-xs text-blue-500 cursor-pointer">See more</a>
                 </ul>
             </div>
             <div class="flex gap-1 px-4 py-2 text-xs">
@@ -52,6 +52,7 @@ import { AppState, CopyTextToClipboard } from '../../state/AppState.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import AppLogo from '../SVG/AppLogo.vue';
 
 /**
  * Method used to open link in the system's default browser.
@@ -67,6 +68,9 @@ export default defineComponent({
             type:Boolean,
             default:false
         }
+    },
+    components:{
+        AppLogo
     },
     data(){
         return{

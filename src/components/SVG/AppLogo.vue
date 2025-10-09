@@ -1,10 +1,10 @@
 <template>
-    <button class="group relative cursor-pointer shadow-none border-none
-    outline-none active:bg-btnHover/40"
+    <button class="group relative flex h-full items-center shadow-none border-none
+    outline-none active:bg-btnHover/40 disabled:bg-transparent" :disabled="!isButton"
     title="Moongate Logo">
         <div class="absolute select-none w-full h-full z-[1] border-2 rounded-lg transition-[border] border-transparent
         group-focus-visible:border-feedtypeBtnFocusHighlight"></div>
-        <svg width="100%" height="100%" class="text-logoFill transition-transform scale-110 group-focus:scale-125 group-hover:scale-125 logo-shadow" :class="$attrs.class"
+        <svg width="100%" height="100%" class="text-logoFill transition-transform scale-110 logo-shadow" :class="[$attrs.class, isButton ? 'cursor-pointer group-focus:scale-125 group-hover:scale-125' : '']"
         viewBox="0 0 1232 1232" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/"
         style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
             <rect id="Workspace" x="0" y="0" width="1232" height="1232" style="fill:none;"/>
@@ -27,9 +27,10 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
     props:{
+        /**Indicates if component should have "button" styling applied. */
         isButton:{
             type:Boolean,
-            default:false
+            default:true
         }
     }
 })

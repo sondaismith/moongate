@@ -262,6 +262,7 @@ import AboutAppModal from "./components/Settings/AboutAppModal.vue";
             },
             showAboutAppModal(){
                 AppState.ShowAboutAppModal();
+                if(document.activeElement instanceof HTMLElement) document.activeElement.blur();
             },
             /**
              * DEBUG - Displays the current x-axis scroll pos of the Feed Display.
