@@ -26,7 +26,7 @@
                     <li>Added application logo.</li>
                     <li>Added ability to reorder tabs on mobile/touch-screen devices.</li>
                     <li>Updated UI for "Post Focus" modal. Viewing on mobile/small-width screens should now be more user-friendly.</li>
-                    <a href="#" class="text-xs text-blue-500 cursor-pointer">See more</a>
+                    <!-- <a href="#" class="text-xs text-blue-500 cursor-pointer">See more</a> -->
                 </ul>
             </div>
             <div class="flex gap-1 px-4 py-2 text-xs">
