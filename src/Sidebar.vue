@@ -5,7 +5,7 @@
         <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar w-16 shrink-0 items-center">
             {{ void "App Logo" }}
             <div class="flex w-full border-b border-outline p-1">
-                <AppLogo @click="showSettingsPanel"/>
+                <AppLogo @click="showAboutAppModal"/>
             </div>
             <div class="w-full flex flex-col flex-shrink overflow-hidden">
                 {{ void "Feed List + Add btn" }}
@@ -137,6 +137,9 @@
         <Transition name="modal">
             <SettingsPanel v-if="AppState.isSettingsPanelVisible"/>
         </Transition>
+        <Transition name="modal">
+            <AboutAppModal v-if="AppState.isAboutAppModalVisible"/>
+        </Transition>
     </div>
 </template>
 
@@ -184,6 +187,7 @@ import SidebarButton from "./components/Navbar/SidebarButton.vue";
 import { isOnMobileTouchscreen } from "./helpers/states";
 import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
 import AppLogo from "./components/SVG/AppLogo.vue";
+import AboutAppModal from "./components/Settings/AboutAppModal.vue";
 
 
     export default defineComponent({
@@ -200,6 +204,7 @@ import AppLogo from "./components/SVG/AppLogo.vue";
             SettingsPanel,
             IntroMessage,
             AppLogo,
+            AboutAppModal,
         },
         data(){
             return{
@@ -228,6 +233,7 @@ import AppLogo from "./components/SVG/AppLogo.vue";
                 /**Used to correctly position `FeedButton` when it is being dragged. */
                 dragButtonStartingY:0,
                 isOnMobileTouchscreen,
+                isTauri,
             }
         },
         methods: {
@@ -253,6 +259,10 @@ import AppLogo from "./components/SVG/AppLogo.vue";
             },
             showSettingsPanel(){
                 AppState.ShowSettingsPanel();
+            },
+            showAboutAppModal(){
+                AppState.ShowAboutAppModal();
+                if(document.activeElement instanceof HTMLElement) document.activeElement.blur();
             },
             /**
              * DEBUG - Displays the current x-axis scroll pos of the Feed Display.

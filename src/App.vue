@@ -11,6 +11,7 @@ import Sidebar from "./Sidebar.vue";
 
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  /* font-family: 'Open Sans'; */
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
@@ -177,5 +178,17 @@ button {
 100%{
     transform: rotate(360deg);
    }
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  src: url(./../public/fonts/OpenSans-VariableFont_wdth\,wght.ttf);
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  src: url(./../public/fonts/OpenSans-Italic-VariableFont_wdth\,wght.ttf);
+  font-style: italic;
 }
 </style>

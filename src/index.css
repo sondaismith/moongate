@@ -63,6 +63,7 @@
         --color-userfocusmodal-banner-bg:theme(colors.slate.400);
         --color-postfocusmodal-details-shadow:theme(colors.slate.800);
         --color-logo-fill:theme(colors.white);
+        --color-about-page-banner:theme(colors.slate.900);
     }
 }
 
@@ -125,4 +126,5 @@
     --color-userfocusmodal-banner-bg:theme(colors.slate.600);
     --color-postfocusmodal-details-shadow:theme(colors.black);
     --color-logo-fill:theme(colors.slate.600);
+    --color-about-page-banner:theme(colors.slate.400);
 }
