@@ -80,8 +80,13 @@ export const FeedState = reactive({
  * database.
  */
 export async function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true){
-    // let isFeedDuplicate = FeedState.FeedList.find(feed => feed.description.feedId == description.feedId) != undefined;
-    // if(isFeedDuplicate) return;
+    /**Used to prevent duplicate Feeds from being created during a hot reload (or any other situation) */
+    let isFeedDuplicate = FeedState.FeedList.find(feed => feed.description.feedId == description.feedId) != undefined;
+    if(isFeedDuplicate){
+        console.log(`${description.feedType.toString()} type Feed for ${description.feedName} with FeedId:${description.feedId} is already displayed in FeedList - probably from hotload-based Feed reload`);
+        toast.add({summary:"Feed Duplication", detail:`${description.feedType.toString()} type Feed for ${description.feedName} with FeedId:${description.feedId} is already displayed in FeedList`, severity:'info', group:'tr', life:3000});
+        return;
+    }
     FeedState.FeedList.push({
         description:description,
         data:feed,

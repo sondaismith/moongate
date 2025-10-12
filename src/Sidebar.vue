@@ -407,7 +407,7 @@ import AboutAppModal from "./components/Settings/AboutAppModal.vue";
                     let feedResult = res as SavedFeeds[];
                     if(feedResult && feedResult.length>0){
                         let loadedFeeds:IFeedDBData[]|undefined = stringToJSON(feedResult[0].data);
-                        console.log('Loaded Feeds:')
+                        console.log('Loaded Feeds:');
                         console.log(loadedFeeds);
                         //Ensure there is data to load before trying to display Feeds
                         if(loadedFeeds && loadedFeeds.length>0){
