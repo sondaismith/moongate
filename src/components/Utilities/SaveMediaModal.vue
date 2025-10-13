@@ -12,11 +12,11 @@
                 <div v-else class="self-start rounded size-32 bg-slate-500 overflow-hidden" @contextmenu.prevent>
                     <div class="h-full bg-contain bg-no-repeat bg-center" :style="`background-image: url(${AppState.saveMedia.uri})`"></div>
                 </div>
-                <div class="flex text-primary">
-                    <InLaInput v-if="isTauri()" class="h-10 text-[12px] rounded-r-none grow"
+                <div class="flex h-10 text-primary">
+                    <InLaInput v-if="isTauri()" class="h-full text-[12px] rounded-r-none grow"
                     text-label="Filename" :model-value="AppState.fileSaveDetails.full"
                     @update:model-value="updateFileName" title="Edit filename"/>
-                    <InLaInput v-else class="h-10 text-[12px] rounded-r-none grow" text-label="Click to Copy Filename"
+                    <InLaInput v-else class="h-full text-[12px] rounded-r-none grow" text-label="Click to Copy Filename"
                     :model-value="AppState.fileSaveDetails.full" @update:model-value="updateFileName"
                     :is-text-copy-control="true"/>
                     <div class="flex items-end rounded-r px-2 py-1
