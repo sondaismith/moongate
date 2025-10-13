@@ -44,7 +44,7 @@
                 :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[currentMediaIndex] as ViewImage).fullsize+')'}">
                 </div> -->
                 <ImageContainer v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
-                @image-clicked="showImageFullscreen" :show-fullsize="true"
+                @image-clicked="showImageFullscreen" :show-fullsize="true" :is-large-container-view="true"
                 :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postThread.post.author.handle"/>
                 <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
                 class="relative flex flex-col max-w-full h-full justify-center p-5"
