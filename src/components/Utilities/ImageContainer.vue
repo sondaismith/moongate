@@ -192,8 +192,15 @@ export default defineComponent({
             var component = (this.$refs.imageContainer as HTMLElement);
             // console.log("updating doesImageHeightSurpassContainer");//DEBUG
             if(component){
-                if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && this.imagesToDisplay[0].aspectRatio)
-                    this.doesImageHeightSurpassContainer = this.imagesToDisplay[0].aspectRatio.height >= component.clientHeight;
+                if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && this.imagesToDisplay[0].aspectRatio){
+                    let scale = component.clientWidth/this.imagesToDisplay[0].aspectRatio.width;
+                    //DEBUG
+                    // console.log(`image container height is:${component.clientHeight}`);
+                    // console.log(`image scale to fit container is:${scale}`);
+                    // console.log(`image container scaled height is:${(this.imagesToDisplay[0].aspectRatio.height * scale)}`);
+                    // console.log(`image larger than container:${(this.imagesToDisplay[0].aspectRatio.height * scale) >= component.clientHeight}`);
+                    this.doesImageHeightSurpassContainer = (this.imagesToDisplay[0].aspectRatio.height * scale) >= component.clientHeight;
+                }
             }
         }
     },
@@ -201,6 +208,7 @@ export default defineComponent({
         /**Returns if image to display is in portrait orientation (height greater than width). */
         isImagePortrait(){
             if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && this.imagesToDisplay[0].aspectRatio)
+                console.log(`image is portrait?:${this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width}`)
                 return this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width;
         },
         /**Determines which CSS classes need to be applied to the image displayed in the `PostFocusModal` view.*/
