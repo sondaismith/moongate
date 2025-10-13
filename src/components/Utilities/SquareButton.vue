@@ -1,5 +1,5 @@
 <template>
-    <button class="relative group !border-transparent flex rounded cursor-pointer
+    <button class="relative group !border-transparent outline-none flex rounded cursor-pointer
     justify-center items-center gap-1 transition-colors"
     :class="[$attrs.class ? $attrs.class : 'bg-sky-500 hover:bg-sky-700 hover:border-sky-700 h-10',
         isDisabled || isAwaitingResponse ? '!bg-disabledBG !text-disabled pointer-events-nones select-none !cursor-not-allowed' : '',
