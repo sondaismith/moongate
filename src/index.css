@@ -64,6 +64,7 @@
         --color-postfocusmodal-details-shadow:theme(colors.slate.800);
         --color-logo-fill:theme(colors.white);
         --color-about-page-banner:theme(colors.slate.900);
+        --color-spoiler-blackout-color:theme(colors.slate.700);
     }
 }
 
@@ -127,4 +128,5 @@
     --color-postfocusmodal-details-shadow:theme(colors.black);
     --color-logo-fill:theme(colors.slate.600);
     --color-about-page-banner:theme(colors.slate.400);
+    --color-spoiler-blackout-color:theme(colors.slate.800);
 }

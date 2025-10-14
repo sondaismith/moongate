@@ -1,6 +1,6 @@
 <template>
     <div ref="imageContainer" class="h-full w-full content-center">
-        <div v-if="Array.isArray(imagesToDisplay) && !isLargeContainerView" ref="imageContainer" class="@container relative grid border
+        <div v-if="Array.isArray(imagesToDisplay) && !isLargeContainerView" class="@container relative grid border
             border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 h-full w-full" :class="showFullsize ? 'min-w-0' : 'grid-cols-2 grid-flow-row grid-rows-2 gap-0.5'"
             :style="[
                 (imagesToDisplay?.length === 1 && !imagesToDisplay[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),
@@ -286,5 +286,15 @@ export default defineComponent({
     height: 100%;
     backdrop-filter: blur(12px);
     /* transition: opacity 0.2s ease; */
+}
+
+.image-container::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(16px);
+    /* z-index: 1; */
 }
 </style>
