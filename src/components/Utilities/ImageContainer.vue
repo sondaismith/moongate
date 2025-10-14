@@ -26,7 +26,8 @@
                 <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
             </div>
         </div>
-        <div v-else-if="Array.isArray(imagesToDisplay) && isLargeContainerView" class="flex h-full w-full overflow-hidden">
+        <div v-else-if="Array.isArray(imagesToDisplay) && isLargeContainerView"
+        @contextmenu="showOptionsMenu($event, imagesToDisplay[0], author, postText)" class="flex h-full w-full overflow-hidden">
             <div class="flex max-h-full max-w-full mx-auto" :class=imageContainerClasses>
                 <img @click="$emit('imageClicked', imagesToDisplay[0])"  :src="showFullsize ? imagesToDisplay[0].fullsize : imagesToDisplay[0].thumb"
                 class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
@@ -193,12 +194,18 @@ export default defineComponent({
             // console.log("updating doesImageHeightSurpassContainer");//DEBUG
             if(component){
                 if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && this.imagesToDisplay[0].aspectRatio){
-                    let scale = component.clientWidth/this.imagesToDisplay[0].aspectRatio.width;
+                    let isImageWiderThanContainer = (component.clientWidth - this.imagesToDisplay[0].aspectRatio.width) <= 0;
+                    let scale = 1;
+                    if(isImageWiderThanContainer) scale = component.clientWidth/this.imagesToDisplay[0].aspectRatio.width;
                     //DEBUG
+                    // console.log(`image container width is:${component.clientWidth}`);
+                    // console.log(`image width is:${this.imagesToDisplay[0].aspectRatio.width}`);
                     // console.log(`image container height is:${component.clientHeight}`);
+                    // console.log(`image height is:${this.imagesToDisplay[0].aspectRatio.height}`);
+                    // console.log(`does image need to be scaled: ${isImageWiderThanContainer}`);
                     // console.log(`image scale to fit container is:${scale}`);
                     // console.log(`image container scaled height is:${(this.imagesToDisplay[0].aspectRatio.height * scale)}`);
-                    // console.log(`image larger than container:${(this.imagesToDisplay[0].aspectRatio.height * scale) >= component.clientHeight}`);
+                    // console.log(`image height larger than container:${(this.imagesToDisplay[0].aspectRatio.height * scale) >= component.clientHeight}`);
                     this.doesImageHeightSurpassContainer = (this.imagesToDisplay[0].aspectRatio.height * scale) >= component.clientHeight;
                 }
             }
@@ -207,9 +214,10 @@ export default defineComponent({
     computed:{
         /**Returns if image to display is in portrait orientation (height greater than width). */
         isImagePortrait(){
-            if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && this.imagesToDisplay[0].aspectRatio)
+            if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && this.imagesToDisplay[0].aspectRatio){
                 console.log(`image is portrait?:${this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width}`)
                 return this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width;
+            }
         },
         /**Determines which CSS classes need to be applied to the image displayed in the `PostFocusModal` view.*/
         imageContainerClasses(){
