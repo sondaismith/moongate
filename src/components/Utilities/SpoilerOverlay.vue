@@ -1,7 +1,7 @@
 <template>
     <Transition>
         <div v-if="hasSensitiveContent && isSpoilered"
-        class="absolute z-[1] flex flex-col backdrop-blur-lg bg-slate-800/80 w-full h-full text-sm
+        class="absolute z-[1] flex flex-col backdrop-blur-lgs bg-spoilerBlackoutColor w-full h-full text-sm
         justify-center items-center text-center text-white">
                 <div :title="mediaType" class="absolute p-1 rounded *:w-full *:h-full
                 left-1 top-1 text-xl bg-yellow-500/80 text-black border border-slate-800">
@@ -62,6 +62,7 @@ export default defineComponent({
     },
     mounted(){
         // this.isSpoilered = this.hasSensitiveContent();
+        console.log(window.navigator.userAgent)
     }
 })
 </script>
@@ -75,5 +76,14 @@ export default defineComponent({
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
+}
+
+.image-container::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(16px);
 }
 </style>

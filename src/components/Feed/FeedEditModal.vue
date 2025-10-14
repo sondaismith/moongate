@@ -40,7 +40,7 @@
                                     @click="selectFeedType(item.value)"
                                     tabindex="0"
                                     :data-testid="`feedEditModal-${item.name.toLowerCase()}-feed-button`"
-                                    class="group cursor-pointer border-2 border-transparent rounded-full transition-colors
+                                    class="group cursor-pointer border-2 outline-none border-transparent rounded-full transition-colors
                                     bg-btn select-none p-[1px] overflow-hidden"
                                     :class="[item.value == selectedFeedType ? '!border-feedtypeBtnSelected' : '',
                                         !AppState.isAuthBrowsing && item.value == FeedEnums.Types.Notifications ? 'bg-disabled' : 'hover:bg-feedTypeBtnHover'

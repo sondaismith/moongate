@@ -1,7 +1,7 @@
 <template>
-    <div class="h-full content-center">
-        <div v-if="Array.isArray(imagesToDisplay)" ref="imageContainer" class="@container relative grid border
-            border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 max-h-full max-w-full" :class="showFullsize ? 'min-w-0' : 'grid-cols-2 grid-flow-row grid-rows-2 gap-0.5'"
+    <div ref="imageContainer" class="h-full w-full content-center">
+        <div v-if="Array.isArray(imagesToDisplay) && !isLargeContainerView" class="@container relative grid border
+            border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 h-full w-full" :class="showFullsize ? 'min-w-0' : 'grid-cols-2 grid-flow-row grid-rows-2 gap-0.5'"
             :style="[
                 (imagesToDisplay?.length === 1 && !imagesToDisplay[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),
                 (imagesToDisplay?.length === 1 && imagesToDisplay[0].aspectRatio && !showFullsize ? `aspect-ratio: ${imagesToDisplay[0].aspectRatio?.width} / ${imagesToDisplay[0].aspectRatio?.height}`:''),
@@ -18,20 +18,27 @@
                             showFullsize ? 'w-full' : 'cursor-pointer'
                         ]">
                 <!-- Hide image extension when in "fullsize/fullscreen" mode -->
-                <div v-if="!showFullsize" class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
+                <div v-if="!showFullsize" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
                 <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
                 :title="image.alt"
                 :class="(imagesToDisplay?.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
                     :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div>
-                <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full bg-contain mx-auto"/>
+                <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
             </div>
         </div>
-        <div v-else ref="imageContainer" class="@container relative w-full gap-0.5 border
+        <div v-else-if="Array.isArray(imagesToDisplay) && isLargeContainerView"
+        @contextmenu="showOptionsMenu($event, imagesToDisplay[0], author, postText)" class="flex h-full w-full overflow-hidden">
+            <div class="flex max-h-full max-w-full mx-auto" :class=imageContainerClasses>
+                <img @click="$emit('imageClicked', imagesToDisplay[0])"  :src="showFullsize ? imagesToDisplay[0].fullsize : imagesToDisplay[0].thumb"
+                class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
+            </div>
+        </div>
+        <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
-            <div v-if="imagesToDisplay" class="flex justify-center overflow-hidden cursor-pointer w-full h-full" @contextmenu="showOptionsMenu($event, imagesToDisplay, author, postText)">
+            <div v-if="imagesToDisplay" class="flex max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, imagesToDisplay, author, postText)">
                 <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div>
                 <!-- GIF -->
-                <img @click="handleExternalGIFCLick(imagesToDisplay)" :title="imagesToDisplay.title" :src="imagesToDisplay.uri"/>
+                <img @click="handleExternalGIFCLick(imagesToDisplay)" class="max-h-full max-w-full object-cover" :title="imagesToDisplay.title" :src="imagesToDisplay.uri"/>
             </div>
         </div>
     </div>
@@ -121,6 +128,11 @@ export default defineComponent({
         showFullsize: {
             type: Boolean,
             default: false
+        },
+        /**Is the container using the styling used in the `PostFocusModal` layout? */
+        isLargeContainerView:{
+            type: Boolean,
+            default: false
         }
     },
     methods:{
@@ -171,6 +183,55 @@ export default defineComponent({
                 this.$emit('imageClicked',image);
             else
                 this.showMediaFocusModal(0);
+        },
+        /**
+         * Method used to update the value of `doesImageHeightSurpassContainer` which
+         * is used to determine if certain styles need to be applied to the displayed
+         * image.
+         */
+        updateDoesImageHeightSurpassContainer(){
+            var component = (this.$refs.imageContainer as HTMLElement);
+            // console.log("updating doesImageHeightSurpassContainer");//DEBUG
+            if(component){
+                if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && this.imagesToDisplay[0].aspectRatio){
+                    let isImageWiderThanContainer = (component.clientWidth - this.imagesToDisplay[0].aspectRatio.width) <= 0;
+                    let scale = 1;
+                    if(isImageWiderThanContainer) scale = component.clientWidth/this.imagesToDisplay[0].aspectRatio.width;
+                    //DEBUG
+                    // console.log(`image container width is:${component.clientWidth}`);
+                    // console.log(`image width is:${this.imagesToDisplay[0].aspectRatio.width}`);
+                    // console.log(`image container height is:${component.clientHeight}`);
+                    // console.log(`image height is:${this.imagesToDisplay[0].aspectRatio.height}`);
+                    // console.log(`does image need to be scaled: ${isImageWiderThanContainer}`);
+                    // console.log(`image scale to fit container is:${scale}`);
+                    // console.log(`image container scaled height is:${(this.imagesToDisplay[0].aspectRatio.height * scale)}`);
+                    // console.log(`image height larger than container:${(this.imagesToDisplay[0].aspectRatio.height * scale) >= component.clientHeight}`);
+                    this.doesImageHeightSurpassContainer = (this.imagesToDisplay[0].aspectRatio.height * scale) >= component.clientHeight;
+                }
+            }
+        }
+    },
+    computed:{
+        /**Returns if image to display is in portrait orientation (height greater than width). */
+        isImagePortrait(){
+            if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && this.imagesToDisplay[0].aspectRatio){
+                console.log(`image is portrait?:${this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width}`)
+                return this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width;
+            }
+        },
+        /**Determines which CSS classes need to be applied to the image displayed in the `PostFocusModal` view.*/
+        imageContainerClasses(){
+            if(this.isImagePortrait || (!this.isImagePortrait && this.doesImageHeightSurpassContainer)){
+                return 'justify-center';
+            }
+            else{
+                return 'self-center';
+            }
+        }
+    },
+    watch:{
+        imagesToDisplay(){
+            this.updateDoesImageHeightSurpassContainer();
         }
     },
     emits:{
@@ -194,11 +255,15 @@ export default defineComponent({
         return{
             MediaType,
             postDetails,
+            doesImageHeightSurpassContainer: false,
         }
     },
     mounted(){
-        this.setImageContainerHeight();
+        // this.setImageContainerHeight();
         // if(this.imagesToDisplay) this.images = this.imagesToDisplay;
+        if(this.isLargeContainerView){
+            this.updateDoesImageHeightSurpassContainer();
+        }
     }
 })
 </script>
@@ -221,5 +286,15 @@ export default defineComponent({
     height: 100%;
     backdrop-filter: blur(12px);
     /* transition: opacity 0.2s ease; */
+}
+
+.image-container::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(16px);
+    /* z-index: 1; */
 }
 </style>

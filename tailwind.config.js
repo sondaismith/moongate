@@ -64,6 +64,7 @@ export default {
         postFocusModalDetailsShadow: "oklch(from var(--color-postfocusmodal-details-shadow) l c h / <alpha-value>)",
         logoFill: "oklch(from var(--color-logo-fill) l c h / <alpha-value>)",
         aboutPageBanner: "oklch(from var(--color-about-page-banner) l c h / <alpha-value>)",
+        spoilerBlackoutColor: "oklch(from var(--color-spoiler-blackout-color) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',
