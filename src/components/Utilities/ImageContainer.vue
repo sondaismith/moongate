@@ -33,12 +33,12 @@
                 class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
             </div>
         </div>
-        <div v-else class="@container relative w-full gap-0.5 border
+        <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
-            <div v-if="imagesToDisplay" class="flex justify-center overflow-hidden cursor-pointer w-full h-full" @contextmenu="showOptionsMenu($event, imagesToDisplay, author, postText)">
+            <div v-if="imagesToDisplay" class="flex max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, imagesToDisplay, author, postText)">
                 <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div>
                 <!-- GIF -->
-                <img @click="handleExternalGIFCLick(imagesToDisplay)" :title="imagesToDisplay.title" :src="imagesToDisplay.uri"/>
+                <img @click="handleExternalGIFCLick(imagesToDisplay)" class="max-h-full max-w-full object-cover" :title="imagesToDisplay.title" :src="imagesToDisplay.uri"/>
             </div>
         </div>
     </div>
