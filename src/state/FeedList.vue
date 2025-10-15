@@ -41,6 +41,9 @@ const toast = {
     removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
 };
 
+/**The default value of how many Posts to load when creating/restoring a Feed. */
+export const defaultNumOfPostsToLoad = 10;
+
 export default{
     name:"FeedState"
 }
@@ -110,9 +113,9 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
 export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSearchResult={did:'',name:'',handle:''},tags:string=''):Promise<IFeedListing>{
     /**Object that will hold the returned Feed data. */
     var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
-    await GetFeedDataForFeedType(feedType,userData.did,tags)
+    await GetFeedDataForFeedType(feedType,userData.did,tags,'',defaultNumOfPostsToLoad)
     .then(res => {
-        feedResult.data = res.data;
+        feedResult = res;
     })
     //Check if API call created Error
     // if(IsError(feedResult)){
@@ -518,7 +521,7 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
             }
         }
         //Get data for Feed
-        await GetFeedDataForFeedType(feedDesc.feedType,feedDesc.feedSourceDID,feedDesc.feedTags,'',10)
+        await GetFeedDataForFeedType(feedDesc.feedType,feedDesc.feedSourceDID,feedDesc.feedTags,'',defaultNumOfPostsToLoad)
         .then(res => {
             if(feed){
                 console.log(res);//DEBUG

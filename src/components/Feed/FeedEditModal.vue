@@ -167,7 +167,7 @@ import InLaInput from '../Utilities/InLaInput.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import UserSearchBar from '../Utilities/UserSearchBar.vue';
 import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
-import { AddFeedToList, FeedState, GenerateUniqueId, GetFeed, GetFeedDataForFeedType, UpdateFeedDetails } from '../../state/FeedList.vue';
+import { AddFeedToList, defaultNumOfPostsToLoad, FeedState, GenerateUniqueId, GetFeed, GetFeedDataForFeedType, UpdateFeedDetails } from '../../state/FeedList.vue';
 import { HandleAPIError } from '../../helpers/errors.ts';
 import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces.ts';
 import { ProfileView, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
@@ -360,7 +360,7 @@ export default defineComponent({
             var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
 
             //Perform required API call
-            await GetFeedDataForFeedType(this.selectedFeedType as FeedEnums.Types,this.feedFilters.user.did,this.feedFilters.tag)//(<any>FeedEnums.Types)[this.selectedFeedType]
+            await GetFeedDataForFeedType(this.selectedFeedType as FeedEnums.Types,this.feedFilters.user.did,this.feedFilters.tag,'',defaultNumOfPostsToLoad)//(<any>FeedEnums.Types)[this.selectedFeedType]
             .then(res => feedResult = res)
             .catch(err => {
                 console.log(err);
