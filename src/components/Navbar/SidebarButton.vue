@@ -1,7 +1,7 @@
 <template>
     <button :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
     class="group relative flex justify-center items-center
-            rounded-xl drop-shadow-md bg-feedBtn border border-outline transition-[border]
+            rounded-xl drop-shadow-md bg-feedBtn border border-outline outline-none transition-[border]
             hover:border-secondary focus-visible:border-embedHoverBorder !w-full h-10 p-0.5 overflow-hidden">
             <div class="w-full h-full border-2 rounded-lg transition-[border] border-transparent
             group-focus-visible:border-feedtypeBtnFocusHighlight"></div>
