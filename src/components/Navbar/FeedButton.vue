@@ -2,7 +2,7 @@
     <div :data-testid="`feedButton-${feedId}`" class="relative cursor-pointer" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
     @click="highlightFeed" @contextmenu="(e) => showFeedOptionsMenu(e,userDid ? userDid : '')">
         <button class="group relative flex justify-center items-center
-            rounded-xl drop-shadow-md bg-feedBtn border border-outline transition-[border]
+            rounded-xl drop-shadow-md bg-feedBtn border border-outline outline-none transition-[border]
             hover:border-secondary button-size !w-full p-0.5 overflow-hidden">
             <div class="w-full h-full z-[1] group-focus-visible:bg-black/60 border-2 rounded-lg transition-[border] border-transparent
             group-focus-visible:border-feedtypeBtnFocusHighlight"></div>
@@ -10,8 +10,7 @@
             class="absolute h-full text-2xl text-primary select-none pointer-events-none"/>
             <i-mingcute:loading-fill v-show="awaitingPFPRequest"
             class="absolute text-primary spinner self-center select-none pointer-events-none"/>
-            <div v-if="userPfp" class="absolute button-size bg-contain bg-centers scale-[1.15] bg-no-repeat pointer-events-none"
-            :style="{'background-image': 'url('+userPfp+')'}"></div>
+            <img :src="userPfp" class="absolute"/>
         </button>
         <UnreadMsgCount :data-testid="`unreadMsgCount-${feedId}`" :unreadCount="newPosts" :isAwaitingData="isAwaitingNewPostData" class="select-none"/>
     </div>
