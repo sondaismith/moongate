@@ -113,6 +113,11 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
 export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSearchResult={did:'',name:'',handle:''},tags:string=''):Promise<IFeedListing>{
     /**Object that will hold the returned Feed data. */
     var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
+    if(userData.did.trim() == '' && userData.handle.trim() != ''){
+        //get DID associated with handle
+        await GetBrowsingAgent().getProfile({actor: userData.handle})
+        .then(res => userData.did = res.data.did);
+    }
     await GetFeedDataForFeedType(feedType,userData.did,tags,'',defaultNumOfPostsToLoad)
     .then(res => {
         feedResult = res;
