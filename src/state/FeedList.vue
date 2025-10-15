@@ -153,7 +153,6 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
         desc = res;
     })
 
-    AppState.isCreatingFeed = false;
     return {description:desc, data:feedResult.data, cursor:feedResult.cursor, isAwaitingFeedData:false};
 }
 
@@ -565,7 +564,7 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
             });
             break;
         case FeedEnums.Types.Tag:
-            await getTagPosts(tags,cursor,postsToGet)
+            await getTagPosts(tags,cursor,25)
             .then(res => {
                 if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
                 //Place Posts in a "Feed" shaped Object
