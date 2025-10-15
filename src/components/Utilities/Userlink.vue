@@ -13,6 +13,7 @@
 import { defineComponent } from 'vue'
 import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
+import { toast } from '../../state/AppState.vue';
 
 export default defineComponent({
     props:{
@@ -28,9 +29,11 @@ export default defineComponent({
                 did:'',
                 handle:this.userlinkValue ? this.userlinkValue.slice(1) : '' ,
                 name:''
-            },
-            undefined)
-            .then(res => AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false));
+            })
+            .then(res => AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false))
+            .catch(err => {
+                toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+            });
         }
     }
 })

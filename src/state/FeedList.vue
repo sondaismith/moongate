@@ -41,6 +41,9 @@ const toast = {
     removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
 };
 
+/**The default value of how many Posts to load when creating/restoring a Feed. */
+export const defaultNumOfPostsToLoad = 10;
+
 export default{
     name:"FeedState"
 }
@@ -110,9 +113,14 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
 export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSearchResult={did:'',name:'',handle:''},tags:string=''):Promise<IFeedListing>{
     /**Object that will hold the returned Feed data. */
     var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
-    await GetFeedDataForFeedType(feedType,userData.did,tags)
+    if(userData.did.trim() == '' && userData.handle.trim() != ''){
+        //get DID associated with handle
+        await GetBrowsingAgent().getProfile({actor: userData.handle})
+        .then(res => userData.did = res.data.did);
+    }
+    await GetFeedDataForFeedType(feedType,userData.did,tags,'',defaultNumOfPostsToLoad)
     .then(res => {
-        feedResult.data = res.data;
+        feedResult = res;
     })
     //Check if API call created Error
     // if(IsError(feedResult)){
@@ -150,7 +158,6 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
         desc = res;
     })
 
-    AppState.isCreatingFeed = false;
     return {description:desc, data:feedResult.data, cursor:feedResult.cursor, isAwaitingFeedData:false};
 }
 
@@ -518,7 +525,7 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
             }
         }
         //Get data for Feed
-        await GetFeedDataForFeedType(feedDesc.feedType,feedDesc.feedSourceDID,feedDesc.feedTags,'',10)
+        await GetFeedDataForFeedType(feedDesc.feedType,feedDesc.feedSourceDID,feedDesc.feedTags,'',defaultNumOfPostsToLoad)
         .then(res => {
             if(feed){
                 console.log(res);//DEBUG
@@ -562,7 +569,7 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
             });
             break;
         case FeedEnums.Types.Tag:
-            await getTagPosts(tags,cursor,postsToGet)
+            await getTagPosts(tags,cursor,25)
             .then(res => {
                 if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
                 //Place Posts in a "Feed" shaped Object

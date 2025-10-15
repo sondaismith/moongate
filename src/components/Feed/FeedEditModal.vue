@@ -167,9 +167,7 @@ import InLaInput from '../Utilities/InLaInput.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import UserSearchBar from '../Utilities/UserSearchBar.vue';
 import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
-import { AddFeedToList, FeedState, GenerateUniqueId, GetFeed, GetFeedDataForFeedType, UpdateFeedDetails } from '../../state/FeedList.vue';
-import { HandleAPIError } from '../../helpers/errors.ts';
-import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces.ts';
+import { AddFeedToList, FeedState, GetFeed, PrepareFeedData, UpdateFeedDetails } from '../../state/FeedList.vue';
 import { ProfileView, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import CheckBox from '../Utilities/CheckBox.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
@@ -352,89 +350,34 @@ export default defineComponent({
         /**
          * Method that adds a new feed with specified options
          * to the App's `FeedList`.
-         * This should probably be in `FeedList`.
          */
         async createFeed(){
             this.attemptingToCreateFeed = true;
-            /**The object that will be added to the FeedList. */
-            var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
 
-            //Perform required API call
-            await GetFeedDataForFeedType(this.selectedFeedType as FeedEnums.Types,this.feedFilters.user.did,this.feedFilters.tag)//(<any>FeedEnums.Types)[this.selectedFeedType]
-            .then(res => feedResult = res)
+            PrepareFeedData(this.selectedFeedType as FeedEnums.Types,
+            {
+                did:this.feedFilters.user.did,
+                handle:this.feedFilters.user.handle,
+                name:''
+            },
+            this.feedFilters.tag)
+            .then(res => {
+                //Create the Feed
+                if(AppState.isCreatingFeed){
+                    AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false);
+                    this.closeModal();
+                }
+                else if(AppState.isUpdatingFeed){
+                    UpdateFeedDetails(FeedState.selectedFeed,res.description,res.data,res.cursor);
+                    this.closeModal();
+                }
+            })
             .catch(err => {
-                console.log(err);
-                toast.add(HandleAPIError(err, 'Error getting data for creating feed'))
+                toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+                setTimeout(() => {
+                    this.attemptingToCreateFeed = false;
+                }, 800);
             });
-            console.log(feedResult);//DEBUG
-            var defaultAppearance:IFeedColumnSettings = {
-                width: FeedEnums.Widths.Small,
-            }
-
-            var usedFeedId:string = '';
-            if(AppState.isCreatingFeed) usedFeedId = GenerateUniqueId(10);
-            else if(AppState.isUpdatingFeed) usedFeedId = FeedState.selectedFeed;
-            //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
-            /**Starting template for IFeedDescription used to create Feed. */
-            var desc:IFeedDescription = {
-                feedId: usedFeedId,
-                userId:1,
-                feedHandle:'loading_tag',
-                feedType:FeedEnums.Types.User,
-                feedIcon:FeedEnums.Icons.Art,
-                newPosts:0,totalPosts:30,
-                feedColumnSettings:defaultAppearance,
-                feedSourceDID:'',
-                feedTags:''
-            }
-            let concatTags = this.validTags.join(',');
-            //Select correct returned Object value based on Feed Type
-            switch (this.selectedFeedType) {
-                case FeedEnums.Types.User:
-                    //Generate Feed Description based on selected options
-                    desc = {...desc,
-                        feedHandle:this.feedFilters.user.handle,
-                        feedName:this.feedFilters.user.displayName ? this.feedFilters.user.displayName : '',
-                        feedSourceDID:this.feedFilters.user.did
-                    }
-                    break;
-                case FeedEnums.Types.Tag:
-                    //Generate Feed Description based on selected options
-                    desc = {...desc,
-                        feedType:FeedEnums.Types.Tag,
-                        feedIcon:FeedEnums.Icons.Hashtag,
-                        feedHandle:'hashtag',
-                        feedName:concatTags,
-                        feedTags:concatTags
-                    }
-                    break;
-                case FeedEnums.Types.Notifications:
-                    desc = {...desc,
-                        feedType:FeedEnums.Types.Notifications,
-                        feedIcon:FeedEnums.Icons.Notifications,
-                        feedHandle:'notifs',
-                        feedName:'Notifications'
-                    }
-                    break;
-                case FeedEnums.Types.Trending:
-                    desc = {...desc,
-                        feedType:FeedEnums.Types.Trending,
-                        feedIcon:FeedEnums.Icons.Trending,
-                        feedHandle:'trending',
-                        feedName:'Trending'
-                    }
-                    break;
-                default:
-                    break;
-            }
-            //Create the Feed
-            if(AppState.isCreatingFeed){
-                AddFeedToList(desc,feedResult.data, feedResult.cursor, feedResult.seenAt, false);
-            }
-            else if(AppState.isUpdatingFeed){
-                UpdateFeedDetails(FeedState.selectedFeed,desc,feedResult.data,feedResult.cursor);
-            }
-            this.closeModal();
         },
         closeModal(){
             // AppState.ToggleCreateFeedModal();
