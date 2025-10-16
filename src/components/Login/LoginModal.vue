@@ -2,7 +2,7 @@
     <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-50 flex
         flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm">
         <div class="flex flex-col w-4/5 md:w-2/3 lg:max-w-[700px]
-            h-2/3 md:h-auto bg-focusBG text-primary p-4 mx-auto my-auto rounded-md">
+            bg-focusBG text-primary p-4 mx-auto my-auto rounded-md overflow-hidden">
             <div class="hidden">
                 <div>Which account do you wish to use?</div>
                 <div>
@@ -25,90 +25,124 @@
                     </div>
                 </div>
             </div>
-            <div class="hiddens">
-                {{ void "close button" }}
-                <div class="relative top-1">
-                    <button v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full
-                    bg-transparent border-red-500 size-7 p-0 text-sm text-red-500 hover:text-red-700 hover:border-red-700
-                    focus-visible:outline focus-visible:outline-feedtypeBtnFocusHighlight active:bg-red-200
-                    justify-center items-center cursor-pointer">
-                        <i-mingcute:close-fill/>
-                    </button>
-                </div>
-                {{ void "login form" }}
-                <div class="flex flex-col gap-2">
+            <Transition>
+                <div v-if="currentPage == 0" class="flex flex-col gap-3">
                     <div>
-                        <div class="text-3xl text-loginBtn font-extrabold ">Login</div>
-                        <div class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">Enter your username and password</div>
+                        <div class="text-3xl text-loginBtn font-extrabold ">{{ modalPage[0].title }}</div>
+                        <div class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">{{ modalPage[0].description }}</div>
                     </div>
-                    <div class="h-[1px] bg-slate-500"></div>
-                    <div class="flex gap-1 flex-col">
-                        <!-- <div>Hosting Provider</div>
-                        <div>bsky.social</div> -->
-                        <div class="group-heading">Account</div>
-                        <div class="flex">
-                            <InLaInput data-testid="login-username-input" v-model="enteredUsername" class="rounded-r-none" textLabel="Handle" :fillContainer="true"/>
-                            <!-- <InLaInput v-model="hostProvider" class="rounded-l-none border-l-0" textLabel="Host" :isDisabled="true" :fillContainer="true"/> -->
-                            <div class="relative flex flex-col group w-full cursor-pointer">
-                                <button v-if="isUsingDefaultHost" @click="toggleAccountProvider" title="Change Hosting Provider"
-                                class="group relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
-                                rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-blue-100
-                                focus-visible:bg-blue-100">
-                                    <div class="flex w-full h-full border-2 rounded-md transition-[border] border-transparent
-                                    group-focus-visible:border-feedtypeBtnFocusHighlight">
-                                        <div class="pt-[0.625rem] pl-1 text-searchbarBorderDisabled">Bluesky Social</div>
-                                        <i-mdi:edit-box-outline class="self-center text-2xl ml-auto"/>
+                    <div class="flex flex-col gap-1">
+                        <div class="text-xs text-secondary">Note: Some content is unable to be viewed without an account due to Post visibility settings specified by the author.</div>
+                        <button @click="asGuestClicked"
+                        class="flex group items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover">
+                            <div class="flex gap-1.5 items-center justify-center w-full h-full px-1 rounded border-2 border-transparent
+                            group-focus-visible:border-feedtypeBtnFocusHighlight *:select-none">
+                                <div class="rounded-full aspect-square h-4 border border-primary/20" :class="[guestBrowseSelected ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
+                                <div class="text-xs md:text-base">Browse as guest</div>
+                                <i-mdi:spy/>
+                                <i-mdi:chevron-right class="ml-auto text-3xl"/>
+                            </div>
+                        </button>
+                        <button @click="loginToAccountClicked"
+                        class="flex group items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover">
+                            <div class="flex gap-1.5 items-center justify-center w-full h-full px-1 rounded border-2 border-transparent
+                            group-focus-visible:border-feedtypeBtnFocusHighlight *:select-none">
+                                <div class="rounded-full aspect-square h-4 border border-primary/20" :class="[authBrowseSelected ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
+                                <div class="text-xs md:text-base">Login to account</div>
+                                <i-mdi:login/>
+                                <div class="text-[10px] text-secondary ml-1">Accounts saved: {{ AppSettingsState.Settings.savedAccountState.accounts.length }}</div>
+                                <i-mdi:chevron-right class="ml-auto text-3xl"/>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                <div v-else>
+                    {{ void "close button" }}
+                    <div class="relative top-1">
+                        <button v-if="AppState.canBrowse" @click="closeModal" class="absolute right-0 flex border rounded-full
+                        bg-transparent border-red-500 size-7 p-0 text-sm text-red-500 hover:text-red-700 hover:border-red-700
+                        focus-visible:outline focus-visible:outline-feedtypeBtnFocusHighlight active:bg-red-200
+                        justify-center items-center cursor-pointer">
+                            <i-mingcute:close-fill/>
+                        </button>
+                    </div>
+                    {{ void "login form" }}
+                    <div class="flex flex-col gap-2">
+                        <div>
+                            <div class="text-3xl text-loginBtn font-extrabold ">Login</div>
+                            <div class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">Enter your username and password</div>
+                        </div>
+                        <div class="h-[1px] bg-slate-500"></div>
+                        <div class="flex gap-1 flex-col">
+                            <!-- <div>Hosting Provider</div>
+                            <div>bsky.social</div> -->
+                            <div class="group-heading">Account</div>
+                            <div class="flex">
+                                <InLaInput data-testid="login-username-input" v-model="enteredUsername" class="rounded-r-none" textLabel="Handle" :fillContainer="true"/>
+                                <!-- <InLaInput v-model="hostProvider" class="rounded-l-none border-l-0" textLabel="Host" :isDisabled="true" :fillContainer="true"/> -->
+                                <div class="relative flex flex-col group w-full cursor-pointer">
+                                    <button v-if="isUsingDefaultHost" @click="toggleAccountProvider" title="Change Hosting Provider"
+                                    class="group relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
+                                    rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-blue-100
+                                    focus-visible:bg-blue-100">
+                                        <div class="flex w-full h-full border-2 rounded-md transition-[border] border-transparent
+                                        group-focus-visible:border-feedtypeBtnFocusHighlight">
+                                            <div class="pt-[0.625rem] pl-1 text-searchbarBorderDisabled">Bluesky Social</div>
+                                            <i-mdi:edit-box-outline class="self-center text-2xl ml-auto"/>
+                                        </div>
+                                        <!-- <div class="absolute flex w-full h-full px-2 bg-pink-500">
+                                            <div class="pt-[0.625rem] text-searchbarBorderDisabled">bsky.social</div>
+                                            <i-mdi:edit-box-outline class="self-center text-2xl ml-auto"/>
+                                        </div> -->
+                                    </button>
+                                    <div v-else
+                                    class="relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
+                                    rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-blue-100
+                                    focus-visible:bg-blue-100">
+                                        <div class="flex w-full h-full border-2 rounded-md transition-[border] border-transparent
+                                        group-focus-visible:border-feedtypeBtnFocusHighlight">
+                                            <div class="pt-[0.625rem] pl-1 text-searchbarBorderDisabled">https://</div>
+                                            <input data-testid="login-custom-host-input" v-model="customHostProvider"
+                                            class="w-full pt-[0.625rem] rounded-none text-primary bg-transparent shadow-none"/>
+                                            <button @click="toggleAccountProvider" title="Switch Back to Default Provider"
+                                            class="group/cancel shadow-none text-red-400 hover:border-transparent
+                                            active:bg-transparent active:border-transparent focus-visible:outline focus-visible:outline-feedtypeBtnFocusHighlight">
+                                                <i-mdi:cancel-box class="shrink-0 self-center text-2xl ml-auto transition-transform
+                                                group-hover/cancel:scale-110 group-focus-visible/cancel:scale-110"/>
+                                            </button>
+                                        </div>
                                     </div>
-                                    <!-- <div class="absolute flex w-full h-full px-2 bg-pink-500">
-                                        <div class="pt-[0.625rem] text-searchbarBorderDisabled">bsky.social</div>
-                                        <i-mdi:edit-box-outline class="self-center text-2xl ml-auto"/>
-                                    </div> -->
-                                </button>
-                                <div v-else
-                                class="relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
-                                rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-blue-100
-                                focus-visible:bg-blue-100">
-                                    <div class="flex w-full h-full border-2 rounded-md transition-[border] border-transparent
-                                    group-focus-visible:border-feedtypeBtnFocusHighlight">
-                                        <div class="pt-[0.625rem] pl-1 text-searchbarBorderDisabled">https://</div>
-                                        <input data-testid="login-custom-host-input" v-model="customHostProvider"
-                                        class="w-full pt-[0.625rem] rounded-none text-primary bg-transparent shadow-none"/>
-                                        <button @click="toggleAccountProvider" title="Switch Back to Default Provider"
-                                        class="group/cancel shadow-none text-red-400 hover:border-transparent
-                                        active:bg-transparent active:border-transparent focus-visible:outline focus-visible:outline-feedtypeBtnFocusHighlight">
-                                            <i-mdi:cancel-box class="shrink-0 self-center text-2xl ml-auto transition-transform
-                                            group-hover/cancel:scale-110 group-focus-visible/cancel:scale-110"/>
-                                        </button>
+                                    <div class="absolute top-[-2px] left-2 select-none text-feedTimestamp text-secondary">
+                                        Hosting Provider
                                     </div>
-                                </div>
-                                <div class="absolute top-[-2px] left-2 select-none text-feedTimestamp text-secondary">
-                                    Hosting Provider
                                 </div>
                             </div>
+                            <InLaInput data-testid="login-password-input" v-model="enteredPassword" textLabel="Password"
+                                :isPasswordInput="true" :fillContainer="true"/>
                         </div>
-                        <InLaInput data-testid="login-password-input" v-model="enteredPassword" textLabel="Password"
-                            :isPasswordInput="true" :fillContainer="true"/>
+                        <div class="text-sm text-red-500 whitespace-pre-line">{{ validationErrorMessage }}</div>
+                        <div class="flex">
+                            <SquareButton @click="backToBrowseModeSelect" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
+                            <SquareButton @click="loginAccount" :is-disabled="isLoginDisabled"
+                            :is-awaiting-response="attemptingLogin" :title="titleMessage"
+                            class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
+                            text-primary md:self-end md:w-40 h-10">Login</SquareButton>
+                        </div>
                     </div>
-                    <div class="text-sm text-red-500 whitespace-pre-line">{{ validationErrorMessage }}</div>
-                    <SquareButton @click="loginAccount" :is-disabled="isLoginDisabled"
-                    :is-awaiting-response="attemptingLogin" :title="titleMessage"
-                    class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
-                    text-primary md:self-end md:w-40 h-10">Login</SquareButton>
+                    <!-- <div class="h-[1px] bg-slate-500 my-2"></div>
+                    {{ void "browse without account" }}
+                    <div class="relative flex flex-col items-start">
+                        <button data-testid="browse-as-guest-button" @click="browseAsGuest"
+                        class="rounded bg-transparent font-normal text-blue-400 hover:text-blue-500 border-none shadow-none cursor-pointer
+                        focus-visible:outline outline-2 active:bg-transparent p-0">
+                            Or Browse without an account
+                        </button>
+                        <div class="text-feedPostName leading-4">Note: Some content is unable to be viewed without an account due to
+                            Post visibility settings specified by the author.
+                        </div>
+                    </div> -->
                 </div>
-                <div>Accounts saved: {{ AppSettingsState.Settings.savedAccountState.accounts.length }}</div>
-                <div class="h-[1px] bg-slate-500 my-2"></div>
-                {{ void "browse without account" }}
-                <div class="relative flex flex-col items-start">
-                    <button data-testid="browse-as-guest-button" @click="browseAsGuest"
-                    class="rounded bg-transparent font-normal text-blue-400 hover:text-blue-500 border-none shadow-none cursor-pointer
-                    focus-visible:outline outline-2 active:bg-transparent p-0">
-                        Or Browse without an account
-                    </button>
-                    <div class="text-feedPostName leading-4">Note: Some content is unable to be viewed without an account due to
-                        Post visibility settings specified by the author.
-                    </div>
-                </div>
-            </div>
+            </Transition>
         </div>
     </div>
 </template>
@@ -124,11 +158,14 @@ import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
+import { RadioButton } from 'primevue';
+import { LoginState } from '../../interfaces/AccountInterfaces';
 
 export default defineComponent({
     components:{
         InLaInput: InLaInput,
         SquareButton,
+        RadioButton,
     },
     data(){
         return{
@@ -139,9 +176,17 @@ export default defineComponent({
             customHostProvider: "",
             isUsingDefaultHost: true,
             attemptingLogin: false,
+            guestBrowseSelected:false,
+            authBrowseSelected:false,
             AppState,
             AccountPeekState,
             AppSettingsState,
+            LoginState,
+            modalPage:[
+                {title:'Browsing Mode',description:'How do you wish to browse?'},
+                {title:'Login',description:'Enter your Username and'},
+            ],
+            currentPage:0,
             TrapFocus,
         }
     },
@@ -191,6 +236,22 @@ export default defineComponent({
             AppState.canBrowse = true;
             AppState.ToggleLoginModal();
             toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
+        },
+        /**Method called when User chooses to browse as guest. */
+        asGuestClicked(){
+            this.authBrowseSelected = false;
+            this.guestBrowseSelected = true;
+            this.browseAsGuest();
+        },
+        /**Method called when User chooses to log into an account. */
+        loginToAccountClicked(){
+            this.guestBrowseSelected = false;
+            this.authBrowseSelected = true;
+            this.currentPage = 1;
+        },
+        /**Method used to navigate to the starting "browsing mode select" page. */
+        backToBrowseModeSelect(){
+            this.currentPage = 0;
         },
         closeModal(){
             AppState.ToggleLoginModal();
@@ -251,7 +312,18 @@ export default defineComponent({
     },
     mounted(){
         //Focus username input
-        ((this.$el as HTMLElement).querySelector('[data-testid="login-username-input"] > input') as HTMLElement).focus()
+        // ((this.$el as HTMLElement).querySelector('[data-testid="login-username-input"] > input') as HTMLElement).focus();
+        switch (AppSettingsState.Settings.savedAccountState.state) {
+            case LoginState.Guest:
+                this.guestBrowseSelected = true;
+                break;
+            case LoginState.Authorized:
+                this.authBrowseSelected = true;
+                break;
+            default:
+                break;
+        }
+        (this.$el as HTMLElement).focus();
     }
 })
 </script>
@@ -296,5 +368,17 @@ div.group-heading{
     /* user-select: none; */
     pointer-events: none;
     background-color: gray;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.1s ease, transform 0.4s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+  position: absolute;
+  transform: translateX(-40px);
 }
 </style>
