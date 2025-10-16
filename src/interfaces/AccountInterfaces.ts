@@ -2,7 +2,7 @@
  * Values indicating if the User is browsing as a guest,
  * browsing with an account or hasn't made a selection yet.
  */
-enum LoginState{
+export enum LoginState{
     Unset,
     Guest,
     Authorized
@@ -12,7 +12,7 @@ enum LoginState{
  * Values indicating what platform the User Account is
  * connecting to.
  */
-enum ATPlatform{
+export enum ATPlatform{
     Bluesky,
     Blacksky,
     Other
@@ -22,7 +22,7 @@ enum ATPlatform{
  * Interface describing account information used to
  * login to an ATProtocol platform.
  */
-interface IAccount{
+export interface IAccount{
     /**Unique identifier for user account. */
     id:string,
     /**The handle associated with the user account. */
@@ -42,7 +42,7 @@ interface IAccount{
  * "Account State" - how the User is browsing, along
  * with a list of accounts available.
  */
-interface IAppAccountState{
+export interface IAppAccountState{
     /**Is the User is browsing as a guest, browsing with an account or undecided yet. */
     state:LoginState,
     /**The current User account being used. Value is -1 if a choice has not been made or no saved accounts exist. */

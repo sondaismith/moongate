@@ -4,6 +4,7 @@ import { AppSettingsArray, AppSettingsClass, IAppSettings, LangCode } from '../i
 import { load, Store } from '@tauri-apps/plugin-store';
 import { isTauri } from '@tauri-apps/api/core';
 import { WebDBAppSettings, web_db } from '../lib/db/web_db';
+import { LoginState } from '../interfaces/AccountInterfaces';
 
 export default{
     name:"AppSettingsState"
@@ -34,6 +35,11 @@ export const AppSettingsState = reactive({
         isHidingLikes: false,
         isHidingFollowers: false,
         isHidingFollowing: false,
+        savedAccountState: {
+            state: LoginState.Unset,
+            currentAccount: -1,
+            accounts: []
+        }
     } as IAppSettings,
     AppStore:Store,
     /**

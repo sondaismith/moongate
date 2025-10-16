@@ -95,6 +95,7 @@
                     class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
                     text-primary md:self-end md:w-40 h-10">Login</SquareButton>
                 </div>
+                <div>Accounts saved: {{ AppSettingsState.Settings.savedAccountState.accounts.length }}</div>
                 <div class="h-[1px] bg-slate-500 my-2"></div>
                 {{ void "browse without account" }}
                 <div class="relative flex flex-col items-start">
@@ -122,6 +123,7 @@ import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 export default defineComponent({
     components:{
@@ -139,6 +141,7 @@ export default defineComponent({
             attemptingLogin: false,
             AppState,
             AccountPeekState,
+            AppSettingsState,
             TrapFocus,
         }
     },
