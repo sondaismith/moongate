@@ -34,27 +34,58 @@
                     <div class="flex flex-col gap-1">
                         <div class="text-xs text-secondary">Note: Some content is unable to be viewed without an account due to Post visibility settings specified by the author.</div>
                         <button @click="asGuestClicked"
-                        class="flex group items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover">
+                        class="flex group items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover overflow-hidden">
                             <div class="flex gap-1.5 items-center justify-center w-full h-full px-1 rounded border-2 border-transparent
-                            group-focus-visible:border-feedtypeBtnFocusHighlight *:select-none">
-                                <div class="rounded-full aspect-square h-4 border border-primary/20" :class="[guestBrowseSelected ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
+                            group-focus-visible:border-feedtypeBtnFocusHighlight overflow-hidden *:select-none">
+                                <div class="rounded-full aspect-square h-4 border border-primary/20 shrink-0" :class="[guestBrowseSelected ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
                                 <div class="text-xs md:text-base">Browse as guest</div>
-                                <i-mdi:spy/>
+                                <i-mdi:spy class="shrink-0"/>
                                 <i-mdi:chevron-right class="ml-auto text-3xl"/>
                             </div>
                         </button>
                         <button @click="loginToAccountClicked"
-                        class="flex group items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover">
+                        class="flex group items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover overflow-hidden">
                             <div class="flex gap-1.5 items-center justify-center w-full h-full px-1 rounded border-2 border-transparent
-                            group-focus-visible:border-feedtypeBtnFocusHighlight *:select-none">
-                                <div class="rounded-full aspect-square h-4 border border-primary/20" :class="[authBrowseSelected ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
-                                <div class="text-xs md:text-base">Login to account</div>
-                                <i-mdi:login/>
-                                <div class="text-[10px] text-secondary ml-1">Accounts saved: {{ AppSettingsState.Settings.savedAccountState.accounts.length }}</div>
-                                <i-mdi:chevron-right class="ml-auto text-3xl"/>
+                            group-focus-visible:border-feedtypeBtnFocusHighlight overflow-hidden *:select-none">
+                                <div class="rounded-full aspect-square h-4 border border-primary/20 shrink-0" :class="[authBrowseSelected ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
+                                <div class="flex flex-col md:gap-1.5 md:flex-row md:items-center text-left">
+                                    <div class="flex gap-1.5 items-center bg-green-500s">
+                                        <div class="text-xs md:text-base text-nowrap">Login to account</div>
+                                        <i-mdi:login class="shrink-0"/>
+                                    </div>
+                                    <div class="text-[10px] leading-3 text-secondary text-nowrap bg-yellow-400s">Accounts saved: {{ AppSettingsState.Settings.savedAccountState.accounts.length }}</div>
+                                </div>
+                                <i-mdi:chevron-right class="ml-auto text-3xl shrink-0"/>
                             </div>
                         </button>
                     </div>
+                </div>
+                <div v-else-if="currentPage == 1" class="flex flex-col gap-3">
+                    <div>
+                        <div class="text-3xl text-loginBtn font-extrabold ">{{ modalPage[1].title }}</div>
+                        <div class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">{{ modalPage[1].description }}</div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <button v-for="(n, index) in AppSettingsState.Settings.savedAccountState.accounts"
+                        title="Select Account" @click="gotoLoginPage(n.handle.split('.bsky.social')[0])"
+                        class="flex group items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover overflow-hidden">
+                            <div class="flex gap-1.5 items-center justify-center w-full h-full px-1 rounded border-2 border-transparent
+                            group-focus-visible:border-feedtypeBtnFocusHighlight overflow-hidden *:select-none">
+                                <div class="rounded-full aspect-square h-4 border border-primary/20 shrink-0"
+                                :class="[AppSettingsState.Settings.savedAccountState.currentAccount == index ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
+                                <div class="flex aspect-square h-11 rounded overflow-hidden shrink-0"><img :src="n.avatar" class="object-cover"/></div>
+                                <div title="Bluesky Account"><i-logos:bluesky class="shrink-0" /></div>
+                                <!-- <i-fa6-brands:bluesky/> -->
+                                <div class="flex text-left flex-col md:flex-row md:gap-1.5 md:items-center overflow-hidden">
+                                    <div class="text-xs md:text-base overflow-hidden text-ellipsis text-nowrap" :title="n.name">{{ n.name }}</div>
+                                    <div class="text-xs w-auto text-secondary overflow-hidden text-ellipsis text-nowrap" :title="n.handle">{{ n.handle }}</div>
+                                </div>
+                                <i-mdi:chevron-right class="ml-auto text-3xl shrink-0"/>
+                            </div>
+                        </button>
+                    </div>
+                    <button class="flex rounded-none text-secondary text-sm shadow-none ml-auto">Edit List</button>
+                    <SquareButton @click="backToBrowseModeSelect" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
                 </div>
                 <div v-else>
                     {{ void "close button" }}
@@ -122,7 +153,7 @@
                         </div>
                         <div class="text-sm text-red-500 whitespace-pre-line">{{ validationErrorMessage }}</div>
                         <div class="flex">
-                            <SquareButton @click="backToBrowseModeSelect" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
+                            <SquareButton @click="backOnePage" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
                             <SquareButton @click="loginAccount" :is-disabled="isLoginDisabled"
                             :is-awaiting-response="attemptingLogin" :title="titleMessage"
                             class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
@@ -184,6 +215,7 @@ export default defineComponent({
             LoginState,
             modalPage:[
                 {title:'Browsing Mode',description:'How do you wish to browse?'},
+                {title:'Account Selection',description:'Which account do you want to use?'},
                 {title:'Login',description:'Enter your Username and'},
             ],
             currentPage:0,
@@ -247,11 +279,25 @@ export default defineComponent({
         loginToAccountClicked(){
             this.guestBrowseSelected = false;
             this.authBrowseSelected = true;
-            this.currentPage = 1;
+            if(AppSettingsState.Settings.savedAccountState.accounts.length>0) this.currentPage = 1;
+            else this.gotoLoginPage();
+        },
+        /**
+         * Method that navigates to the login page - where the User has to
+         * their credentials.
+         */
+        gotoLoginPage(handle:string=''){
+            this.currentPage = this.modalPage.length-1;
+            this.enteredUsername = handle;
         },
         /**Method used to navigate to the starting "browsing mode select" page. */
         backToBrowseModeSelect(){
             this.currentPage = 0;
+        },
+        /**Method used to move back a page in the Login modal. */
+        backOnePage(){
+            if(this.currentPage - 1 >= 0 && this.currentPage - 1 < this.modalPage.length) this.currentPage = this.currentPage-1;
+            else this.currentPage = 0;
         },
         closeModal(){
             AppState.ToggleLoginModal();

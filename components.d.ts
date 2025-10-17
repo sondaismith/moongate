@@ -28,6 +28,8 @@ declare module 'vue' {
     FollowUser: typeof import('./src/components/Utilities/FollowUser.vue')['default']
     Hashtag: typeof import('./src/components/Utilities/Hashtag.vue')['default']
     Hyperlink: typeof import('./src/components/Utilities/Hyperlink.vue')['default']
+    'IFa6Brands:bluesky': typeof import('~icons/fa6-brands/bluesky')['default']
+    'ILogos:bluesky': typeof import('~icons/logos/bluesky')['default']
     ImageContainer: typeof import('./src/components/Utilities/ImageContainer.vue')['default']
     'IMdi:accounts': typeof import('~icons/mdi/accounts')['default']
     'IMdi:block': typeof import('~icons/mdi/block')['default']

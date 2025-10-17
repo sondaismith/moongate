@@ -4,7 +4,7 @@ import { AppSettingsArray, AppSettingsClass, IAppSettings, LangCode } from '../i
 import { load, Store } from '@tauri-apps/plugin-store';
 import { isTauri } from '@tauri-apps/api/core';
 import { WebDBAppSettings, web_db } from '../lib/db/web_db';
-import { LoginState } from '../interfaces/AccountInterfaces';
+import { ATPlatform, LoginState } from '../interfaces/AccountInterfaces';
 
 export default{
     name:"AppSettingsState"
@@ -38,7 +38,10 @@ export const AppSettingsState = reactive({
         savedAccountState: {
             state: LoginState.Unset,
             currentAccount: -1,
-            accounts: []
+            accounts: [
+                {id:'ashjdhasjdh',handle:'test.com',name:'Test User ahsdjkhasdjhadsidhasudasasasadasdasdasdasd',avatar:'src/assets/test-media/posts/image04.png',did:'this_wont_work',platform:ATPlatform.Bluesky},
+                {id:'asscccweeee',handle:'dummyplug.bsky.social',name:'dummyplug',avatar:'src/assets/test-media/posts/image07.png',did:'this_wont_work2',platform:ATPlatform.Bluesky}
+            ]//[]
         }
     } as IAppSettings,
     AppStore:Store,
