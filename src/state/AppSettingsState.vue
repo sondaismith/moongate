@@ -40,7 +40,8 @@ export const AppSettingsState = reactive({
             currentAccount: -1,
             accounts: [
                 {id:'ashjdhasjdh',handle:'test.com',name:'Test User ahsdjkhasdjhadsidhasudasasasadasdasdasdasd',avatar:'src/assets/test-media/posts/image04.png',did:'this_wont_work',platform:ATPlatform.Bluesky},
-                {id:'asscccweeee',handle:'dummyplug.bsky.social',name:'dummyplug',avatar:'src/assets/test-media/posts/image07.png',did:'this_wont_work2',platform:ATPlatform.Bluesky}
+                {id:'asscccweeee',handle:'dummyplug.bsky.social',name:'dummyplug',avatar:'src/assets/test-media/posts/image07.png',did:'this_wont_work2',platform:ATPlatform.Bluesky},
+                {id:'urwhjweheie',handle:'dev.fourfour.one',name:'im on v1.0',avatar:'src/assets/test-media/posts/image01.png',did:'this_wont_work3',platform:ATPlatform.Bluesky},
             ]//[]
         }
     } as IAppSettings,

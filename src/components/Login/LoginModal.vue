@@ -1,7 +1,7 @@
 <template>
     <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-50 flex
-        flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm">
-        <div class="flex flex-col w-4/5 md:w-2/3 lg:max-w-[700px]
+        flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm p-4">
+        <div class="flex flex-col w-[90%] md:w-2/3 lg:max-w-[700px]
             bg-focusBG text-primary p-4 mx-auto my-auto rounded-md overflow-hidden">
             <div class="hidden">
                 <div>Which account do you wish to use?</div>
@@ -60,32 +60,49 @@
                         </button>
                     </div>
                 </div>
-                <div v-else-if="currentPage == 1" class="flex flex-col gap-3">
+                <div v-else-if="currentPage == 1" class="flex flex-col gap-3 overflow-hidden pb-1">
                     <div>
                         <div class="text-3xl text-loginBtn font-extrabold ">{{ modalPage[1].title }}</div>
-                        <div class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">{{ modalPage[1].description }}</div>
+                        <Transition name="swap">
+                            <div v-if="!isRemovingSavedAccount" class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">{{ modalPage[1].description }}</div>
+                            <div v-else class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">Which account do you wish to remove?</div>
+                        </Transition>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <button v-for="(n, index) in AppSettingsState.Settings.savedAccountState.accounts"
-                        title="Select Account" @click="gotoLoginPage(n.handle.split('.bsky.social')[0])"
-                        class="flex group items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover overflow-hidden">
-                            <div class="flex gap-1.5 items-center justify-center w-full h-full px-1 rounded border-2 border-transparent
-                            group-focus-visible:border-feedtypeBtnFocusHighlight overflow-hidden *:select-none">
-                                <div class="rounded-full aspect-square h-4 border border-primary/20 shrink-0"
-                                :class="[AppSettingsState.Settings.savedAccountState.currentAccount == index ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
-                                <div class="flex aspect-square h-11 rounded overflow-hidden shrink-0"><img :src="n.avatar" class="object-cover"/></div>
-                                <div title="Bluesky Account"><i-logos:bluesky class="shrink-0" /></div>
-                                <!-- <i-fa6-brands:bluesky/> -->
-                                <div class="flex text-left flex-col md:flex-row md:gap-1.5 md:items-center overflow-hidden">
-                                    <div class="text-xs md:text-base overflow-hidden text-ellipsis text-nowrap" :title="n.name">{{ n.name }}</div>
-                                    <div class="text-xs w-auto text-secondary overflow-hidden text-ellipsis text-nowrap" :title="n.handle">{{ n.handle }}</div>
+                    <div class="flexs flex-cols space-y-1 gap-1 overflow-hidden overflow-y-auto relative">
+                        <TransitionGroup name="list">
+                            <button v-for="(n, index) in AppSettingsState.Settings.savedAccountState.accounts" :key="n.id"
+                            :title="isRemovingSavedAccount ? 'Remove Account' : 'Select Account'" @click="clickedSavedAccount(n)"
+                            class="flex group w-full items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover overflow-hidden shrink-0 left-0">
+                                <div class="relative flex gap-1.5 items-center justify-centers w-full h-full px-1 rounded border-2 border-transparent
+                                group-focus-visible:border-feedtypeBtnFocusHighlight overflow-hidden *:select-none last:ml-auto">
+                                    <div class="rounded-full aspect-square h-4 border border-primary/20 shrink-0"
+                                    :class="[AppSettingsState.Settings.savedAccountState.currentAccount == index ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
+                                    <div class="flex aspect-square h-11 rounded overflow-hidden shrink-0"><img :src="n.avatar" class="object-cover"/></div>
+                                    <div title="Bluesky Account"><i-logos:bluesky class="shrink-0" /></div>
+                                    <!-- <i-fa6-brands:bluesky/> -->
+                                    <div class="flex text-left flex-col md:flex-row md:gap-1.5 md:items-center mr-auto overflow-hidden">
+                                        <div class="text-xs md:text-base overflow-hidden text-ellipsis text-nowrap" :title="n.name">{{ n.name }}</div>
+                                        <div class="text-xs w-auto text-secondary overflow-hidden text-ellipsis text-nowrap" :title="n.handle">{{ n.handle }}</div>
+                                    </div>
+                                    <Transition name="swap" class="right-1">
+                                        <i-mdi:chevron-right v-if="!isRemovingSavedAccount" class="text-3xl shrink-0"/>
+                                        <i-mingcute:delete-2-line v-else class="text-red-500 text-2xl shrink-0"/>
+                                    </Transition>
                                 </div>
-                                <i-mdi:chevron-right class="ml-auto text-3xl shrink-0"/>
-                            </div>
-                        </button>
+                            </button>
+                        </TransitionGroup>
+                        <div v-if="AppSettingsState.Settings.savedAccountState.accounts.length == 0"
+                        class="text-secondary">
+                            <div>No Saved Accounts Available</div>
+                        </div>
                     </div>
-                    <button class="flex rounded-none text-secondary text-sm shadow-none ml-auto">Edit List</button>
-                    <SquareButton @click="backToBrowseModeSelect" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
+                    <button v-if="AppSettingsState.Settings.savedAccountState.accounts.length>0" @click="editSavedAccountList"
+                    class="flex gap-1 items-center rounded-none text-secondary text-sm shadow-none ml-auto"
+                    :class="[{'!text-red-500' : isRemovingSavedAccount}]">
+                        <i-mingcute:pencil-line/>
+                        <div>{{isRemovingSavedAccount ? 'Cancel Edit' : 'Edit List'}}</div>
+                    </button>
+                    <SquareButton @click="clickedLoginPageBack" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
                 </div>
                 <div v-else>
                     {{ void "close button" }}
@@ -153,7 +170,7 @@
                         </div>
                         <div class="text-sm text-red-500 whitespace-pre-line">{{ validationErrorMessage }}</div>
                         <div class="flex">
-                            <SquareButton @click="backOnePage" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
+                            <SquareButton @click="clickedLoginPageBack" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
                             <SquareButton @click="loginAccount" :is-disabled="isLoginDisabled"
                             :is-awaiting-response="attemptingLogin" :title="titleMessage"
                             class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
@@ -190,7 +207,16 @@ import { GetBrowsingAgent } from '../../lib/api.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { RadioButton } from 'primevue';
-import { LoginState } from '../../interfaces/AccountInterfaces';
+import { IAccount, LoginState } from '../../interfaces/AccountInterfaces';
+
+/**
+ * Asks the User if they're sure they would like to delete the selected
+ * Feed record. If deletion is confirmed it will perform the passed Function.
+ * @param action The function to use to delete the Feed record.
+ */
+function ConfirmSavedAccountRemoval(action:Function){
+    AppState.showConfirmModal('Are you sure you wish to remove this Saved Account?', action);
+}
 
 export default defineComponent({
     components:{
@@ -219,6 +245,8 @@ export default defineComponent({
                 {title:'Login',description:'Enter your Username and'},
             ],
             currentPage:0,
+            isRemovingSavedAccount:false,
+            selectedAccount:{} as IAccount,
             TrapFocus,
         }
     },
@@ -282,6 +310,34 @@ export default defineComponent({
             if(AppSettingsState.Settings.savedAccountState.accounts.length>0) this.currentPage = 1;
             else this.gotoLoginPage();
         },
+        /**Method called when a saved account is clicked/selected. */
+        clickedSavedAccount(account:IAccount){
+            this.selectedAccount = account;
+            if(account.id.trim() != '' && this.isRemovingSavedAccount){
+                ConfirmSavedAccountRemoval(this.removeSavedAccount);
+            }
+            else this.gotoLoginPage(account.handle.split('.bsky.social')[0]);
+        },
+        /**
+         * Method that deletes Saved Feed a specified index. Should not be
+         * called directly - use `askAboutIndexedDBFeedDeletion()`.
+         */
+        removeSavedAccount(){
+            try{
+                if(!this.selectedAccount.id){
+                    toast.add({summary:"Error", detail:`Account ID not retrieved - if this keeps displaying contact developer.`, severity:'warn', group:'tr', life:3000});
+                    return; //cancel if no selected account object
+                }
+                let accIndex = AppSettingsState.Settings.savedAccountState.accounts.findIndex(acc => acc.id == this.selectedAccount.id);
+                if(accIndex != -1) console.log( AppSettingsState.Settings.savedAccountState.accounts.splice(accIndex,1));
+                //save changes to disk?
+                this.selectedAccount = {} as IAccount; //Clear selection
+                if(AppSettingsState.Settings.savedAccountState.accounts.length<1) this.isRemovingSavedAccount = false;
+            }
+            catch(err){
+                toast.add({summary:"Error", detail:`${err}`, severity:'error', group:'tr', life:3000});
+            }
+        },
         /**
          * Method that navigates to the login page - where the User has to
          * their credentials.
@@ -293,11 +349,23 @@ export default defineComponent({
         /**Method used to navigate to the starting "browsing mode select" page. */
         backToBrowseModeSelect(){
             this.currentPage = 0;
+            this.isRemovingSavedAccount = false;
         },
         /**Method used to move back a page in the Login modal. */
         backOnePage(){
             if(this.currentPage - 1 >= 0 && this.currentPage - 1 < this.modalPage.length) this.currentPage = this.currentPage-1;
             else this.currentPage = 0;
+            this.isRemovingSavedAccount = false;
+        },
+        clickedLoginPageBack(){
+            if(this.currentPage == this.modalPage.length-1 && AppSettingsState.Settings.savedAccountState.accounts.length == 0){
+                this.backToBrowseModeSelect();
+            }
+            else this.backOnePage();
+            this.isRemovingSavedAccount = false;
+        },
+        editSavedAccountList(){
+            this.isRemovingSavedAccount = !this.isRemovingSavedAccount;
         },
         closeModal(){
             AppState.ToggleLoginModal();
@@ -426,5 +494,37 @@ div.group-heading{
   opacity: 0;
   position: absolute;
   transform: translateX(-40px);
+}
+
+.swap-enter-active,
+.swap-leave-active {
+  transition: opacity 0.2s ease, transform 0.4s ease;
+}
+
+.swap-enter-from,
+.swap-leave-to {
+  opacity: 0;
+  /* right: 0; */
+  position: absolute;
+  transform: translateX(-10px);
+}
+
+.list-move, /* apply transition to moving elements */
+.list-enter-active,
+.list-leave-active {
+  transition: opacity 0.4s ease, transform 0.6s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+  /* transform: scale(0.6); */
+}
+
+/* ensure leaving items are taken out of layout flow so that moving
+   animations can be calculated correctly. */
+.list-leave-active {
+  position: absolute;
 }
 </style>
