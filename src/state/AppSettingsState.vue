@@ -4,6 +4,8 @@ import { AppSettingsArray, AppSettingsClass, IAppSettings, LangCode } from '../i
 import { load, Store } from '@tauri-apps/plugin-store';
 import { isTauri } from '@tauri-apps/api/core';
 import { WebDBAppSettings, web_db } from '../lib/db/web_db';
+import { ATPlatform, LoginState } from '../interfaces/AccountInterfaces';
+import { AppState } from './AppState.vue';
 
 export default{
     name:"AppSettingsState"
@@ -34,6 +36,16 @@ export const AppSettingsState = reactive({
         isHidingLikes: false,
         isHidingFollowers: false,
         isHidingFollowing: false,
+        savedAccountState: {
+            state: LoginState.Unset,
+            currentAccount: -1,
+            accounts:[]
+            // [
+            //     {id:'ashjdhasjdh',handle:'test.com',name:'Test User ahsdjkhasdjhadsidhasudasasasadasdasdasdasd',avatar:'src/assets/test-media/posts/image04.png',did:'this_wont_work',platform:ATPlatform.Bluesky},
+            //     {id:'asscccweeee',handle:'dummyplug.bsky.social',name:'dummyplug',avatar:'src/assets/test-media/posts/image07.png',did:'this_wont_work2',platform:ATPlatform.Bluesky},
+            //     {id:'urwhjweheie',handle:'dev.fourfour.one',name:'im on v1.0',avatar:'src/assets/test-media/posts/image01.png',did:'this_wont_work3',platform:ATPlatform.Bluesky},
+            // ]
+        }
     } as IAppSettings,
     AppStore:Store,
     /**
@@ -166,11 +178,25 @@ export const AppSettingsState = reactive({
                 appSettings.isHidingLikes = loadedSettings.isHidingLikes;
                 appSettings.isHidingFollowers = loadedSettings.isHidingFollowers;
                 appSettings.isHidingFollowing = loadedSettings.isHidingFollowing;
+                appSettings.savedAccountState = JSON.parse(loadedSettings.savedAccountState);
             })
             .catch(err => {
                 console.log(err);
             })
         }
+        //check for guest browsing setting - if set change to that mode
+        //we can't do auth browsing yet :(
+        if(AppSettingsState.Settings.savedAccountState.state == LoginState.Guest) AppState.browseAsGuest();
+        else{
+            //Since we cannot restore an auth account, we will unset the browsing state when last used was not Guest
+            //This is not saved to disk
+            AppSettingsState.Settings.savedAccountState = {
+                ...AppSettingsState.Settings.savedAccountState,
+                currentAccount:-1,
+                state:LoginState.Unset
+            }
+        }
+
         this.isSettingsLoaded = true;
     },
     /**
@@ -208,6 +234,7 @@ export const AppSettingsState = reactive({
                 isHidingLikes: cs.isHidingLikes,
                 isHidingFollowers: cs.isHidingFollowers,
                 isHidingFollowing: cs.isHidingFollowing,
+                savedAccountState:JSON.stringify(cs.savedAccountState),
             })
             // .then(res => {
             //     console.log(res);

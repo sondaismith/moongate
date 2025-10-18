@@ -23,6 +23,7 @@ interface AppSettings{ //extends IAppSettings{
   isHidingLikes: boolean;
   isHidingFollowers: boolean;
   isHidingFollowing: boolean;
+  savedAccountState:string //have to convert from IAppAccountState to string;
 }
 
 /**IndexedDB database with `savedFeeds` store/table.*/

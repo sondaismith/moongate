@@ -1,3 +1,5 @@
+import { IAppAccountState, LoginState } from "./AccountInterfaces";
+
 export interface LangCode{
     name:string,
     code:string
@@ -22,6 +24,11 @@ export class AppSettingsClass {
     isHidingLikes = false;
     isHidingFollowers = false;
     isHidingFollowing = false;
+    savedAccountState:IAppAccountState = {
+        state: LoginState.Unset,
+        currentAccount: -1,
+        accounts: []
+    }
 }
 export interface IAppSettings extends AppSettingsClass{}
 type AppSettingsPropsArray = Array<keyof IAppSettings>;

@@ -65,6 +65,7 @@ export default {
         logoFill: "oklch(from var(--color-logo-fill) l c h / <alpha-value>)",
         aboutPageBanner: "oklch(from var(--color-about-page-banner) l c h / <alpha-value>)",
         spoilerBlackoutColor: "oklch(from var(--color-spoiler-blackout-color) l c h / <alpha-value>)",
+        radioButtonSelected: "oklch(from var(--color-radio-button-selected) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

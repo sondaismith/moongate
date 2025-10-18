@@ -10,6 +10,8 @@ import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/exte
 import { postDetails } from './PostDetails.vue';
 import { FeedState } from './FeedList.vue';
 import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppSettingsState } from './AppSettingsState.vue';
+import { LoginState } from '../interfaces/AccountInterfaces';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -64,7 +66,7 @@ export function CopyTextToClipboard(textToCopy:string, copyAction:'text'|'link' 
  * @param e The Keydown KeyboardEvent that the method is called with.
  */
 export function TrapFocus(el:HTMLElement, e: KeyboardEvent){
-    let tabbable = el.querySelectorAll("button, input, select, textarea, [href], [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
+    let tabbable = el.querySelectorAll("button:not([disabled]), input, select, textarea, [href], [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
     let target = e.target;
     if(e.key.toLowerCase() !== 'tab') return; //cancel further actions
     if(e.shiftKey){
@@ -98,6 +100,22 @@ export const AppState = reactive({
      * posts. NOTE: if this is true, `isAuthBrowsing` must be false.
      */
     isGuestBrowsing: false,
+    /**
+     * Method used to switch browsing mode to "Guest Mode".
+     * Updates `AppSettingsState` and prints toast message.
+     */
+    browseAsGuest(){
+        AppState.isAuthBrowsing = false;
+        AppState.isGuestBrowsing = true;
+        AppState.currentUsername = "Guest";
+        AppState.canBrowse = true;
+        AppSettingsState.Settings.savedAccountState = {
+            ...AppSettingsState.Settings.savedAccountState,
+            currentAccount:-1,
+            state:LoginState.Guest
+        }
+        toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
+    },
     /**
      * Is the user browsing Bluesky with a user account. NOTE: if this is
      * true, `isGuestBrowsing` must be false.

@@ -13,3 +13,15 @@ export async function GenerateCID(encodeWord:string){
     const cid = CID.create(1, json.code, hash);
     return cid;
 }
+
+//Code from Mulan at https://stackoverflow.com/a/27747377
+function dec2hex (dec: number) {
+    return dec.toString(16).padStart(2, "0")
+}
+//Code from Mulan at https://stackoverflow.com/a/27747377
+export function GenerateUniqueID(len:number):string{
+    const arr = new Uint8Array((len || 40) / 2)
+    crypto.getRandomValues(arr);
+    const newId : string = Array.from(arr,dec2hex).join('');
+    return newId;
+}
