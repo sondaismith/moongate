@@ -187,6 +187,15 @@ export const AppSettingsState = reactive({
         //check for guest browsing setting - if set change to that mode
         //we can't do auth browsing yet :(
         if(AppSettingsState.Settings.savedAccountState.state == LoginState.Guest) AppState.browseAsGuest();
+        else{
+            //Since we cannot restore an auth account, we will unset the browsing state when last used was not Guest
+            //This is not saved to disk
+            AppSettingsState.Settings.savedAccountState = {
+                ...AppSettingsState.Settings.savedAccountState,
+                currentAccount:-1,
+                state:LoginState.Unset
+            }
+        }
 
         this.isSettingsLoaded = true;
     },
