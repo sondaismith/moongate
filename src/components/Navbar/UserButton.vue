@@ -38,10 +38,12 @@ import MingcuteProfileFill from '~icons/mingcute/profile-fill';
 import MdiUserSwitch from '~icons/mdi/user-switch';
 import MingcuteExitDoorLine from '~icons/mingcute/exit-door-line';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
+import { LoginState } from '../../interfaces/AccountInterfaces';
 
 let optionsMenu:IOptionMenuItem[] = [
     {Icon:MingcuteProfileFill,Label:'View Profile',Action:displayCurrentUsersAccount},
-    {Icon:MdiUserSwitch,Label:'Switch User',Action:()=>void 0},
+    {Icon:MdiUserSwitch,Label:'Switch User',Action:AppState.ToggleLoginModal},
     {Icon:MingcuteExitDoorLine,Label:'Log Out',Action:confirmLogout,LabelStyle:'text-red-500'},
 ]
 
@@ -83,6 +85,11 @@ async function logoutOfAccount(){
     .then(() => {
         AppState.canBrowse = AppState.isGuestBrowsing = AppState.isAuthBrowsing = false;
         AppState.currentUsername = "Login Here";
+        AppSettingsState.Settings.savedAccountState = {
+            ...AppSettingsState.Settings.savedAccountState,
+            currentAccount:-1,
+            state:LoginState.Unset
+        }
         AccountPeekState.lastMouseEvent = new MouseEvent('logout');
         AccountPeekState.profileData = {did:'',handle:''};
     })

@@ -1,8 +1,9 @@
 <template>
     <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-50 flex
-        flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm p-4">
-        <div class="flex flex-col relative gap-4 w-[90%] md:w-2/3 lg:max-w-[700px]
-            bg-focusBG text-primary p-4 mx-auto my-auto rounded-md overflow-hidden">
+        flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm justify-center focus-visible:outline-none">
+        <div @click="closeModal" class="absolute z-10 w-full h-full"></div>
+        <div class="flex flex-col relative z-20 gap-4 w-[90%] md:w-2/3 lg:max-w-[700px]
+            bg-focusBG text-primary p-4 mx-auto m-4 rounded-md overflow-hidden">
             <Transition>
                 <div v-if="currentPage == 0" class="flex flex-col gap-3">
                     <div>
@@ -11,14 +12,14 @@
                     </div>
                     <div class="flex flex-col gap-1">
                         <div class="text-xs text-secondary">Note: Some content is unable to be viewed without an account due to Post visibility settings specified by the author.</div>
-                        <RadioBarButton @click="asGuestClicked" :selected="guestBrowseSelected">
+                        <RadioBarButton @click="asGuestClicked" :selected="AppSettingsState.Settings.savedAccountState.state == LoginState.Guest">
                             <div class="text-xs md:text-base">Browse as guest</div>
                             <i-mdi:spy class="shrink-0"/>
                             <i-mdi:chevron-right class="ml-auto text-3xl"/>
                         </RadioBarButton>
-                        <RadioBarButton @click="loginToAccountClicked" :selected="authBrowseSelected">
+                        <RadioBarButton @click="loginToAccountClicked" :selected="AppSettingsState.Settings.savedAccountState.state == LoginState.Authorized">
                              <div class="flex flex-col md:gap-1.5 md:flex-row md:items-center text-left">
-                                <div class="flex gap-1.5 items-center bg-green-500s">
+                                <div class="flex gap-1.5 items-center">
                                     <div class="text-xs md:text-base text-nowrap">Login to account</div>
                                     <i-mdi:login class="shrink-0"/>
                                 </div>
@@ -54,6 +55,10 @@
                                 </Transition>
                             </RadioBarButton>
                         </TransitionGroup>
+                        <RadioBarButton :hide-radio-button="true" @click="gotoLoginPage()">
+                            <i-mingcute:add-circle-fill/>
+                            <div>Add new account</div>
+                        </RadioBarButton>
                         <div v-if="AppSettingsState.Settings.savedAccountState.accounts.length == 0"
                         class="text-secondary">
                             <div>No Saved Accounts Available</div>
@@ -156,8 +161,9 @@ import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
-import { IAccount, LoginState } from '../../interfaces/AccountInterfaces';
+import { ATPlatform, IAccount, LoginState } from '../../interfaces/AccountInterfaces';
 import RadioBarButton from '../Utilities/RadioBarButton.vue';
+import { GenerateUniqueID } from '../../helpers/generators';
 
 /**
  * Asks the User if they're sure they would like to delete the selected
@@ -232,6 +238,38 @@ export default defineComponent({
                 .then(res => {
                     AppState.currentPFP = res.data.avatar ? res.data.avatar : '';
                     AppState.currentUsername = res.data.displayName ? res.data.displayName : res.data.handle;
+
+                    /**Has account already been saved? */
+                    let accExists = false;
+                    for (let i = 0; i < AppSettingsState.Settings.savedAccountState.accounts.length; i++) {
+                        let acc = AppSettingsState.Settings.savedAccountState.accounts[i];
+                        if(acc.handle == res.data.handle){//account has already been saved, update that
+                            acc.avatar = res.data.avatar ? res.data.avatar : '';
+                            acc.did = res.data.did;
+                            acc.handle = res.data.handle;
+                            acc.id = 'generate me';
+                            acc.name = res.data.displayName ? res.data.displayName : '';
+                            acc.platform = ATPlatform.Bluesky;
+                            AppSettingsState.Settings.savedAccountState.currentAccount = i;//mark account as last selected
+                            AppSettingsState.Settings.savedAccountState.state = LoginState.Authorized;
+                            i = AppSettingsState.Settings.savedAccountState.accounts.length;//skip rest of items
+                            accExists = true;
+                        }
+                    }
+                    if(!accExists){
+                        let accId = GenerateUniqueID(12) + '_' + Date.now;
+                        let newAcc:IAccount = {
+                            avatar: res.data.avatar ? res.data.avatar : '',
+                            did: res.data.did,
+                            handle: res.data.handle,
+                            id: accId,
+                            name: res.data.displayName ? res.data.displayName : '',
+                            platform: ATPlatform.Bluesky
+                        }
+                        AppSettingsState.Settings.savedAccountState.currentAccount = AppSettingsState.Settings.savedAccountState.accounts.push(newAcc)-1;
+                        AppSettingsState.Settings.savedAccountState.state = LoginState.Authorized;
+                    }
+                    AppSettingsState.saveSettingsToStore();
                 })
                 .catch(err => {
                     toast.add(HandleAPIError(err, 'Error getting profile info'));
@@ -240,12 +278,9 @@ export default defineComponent({
             this.attemptingLogin = false;
         },
         browseAsGuest(){
-            AppState.isAuthBrowsing = false;
-            AppState.isGuestBrowsing = true;
-            AppState.currentUsername = "Guest";
-            AppState.canBrowse = true;
+            AppState.browseAsGuest();
+            AppSettingsState.saveSettingsToStore();
             AppState.ToggleLoginModal();
-            toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
         },
         /**Method called when User chooses to browse as guest. */
         asGuestClicked(){

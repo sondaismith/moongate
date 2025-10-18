@@ -48,5 +48,5 @@ export interface IAppAccountState{
     /**The current User account being used. Value is -1 if a choice has not been made or no saved accounts exist. */
     currentAccount:number,
     /**List of saved user accounts. */
-    accounts:Array<IAccount>|[]
+    accounts:Array<IAccount>
 }
