@@ -12,7 +12,7 @@
                     </div>
                     <div class="flex flex-col gap-1">
                         <div class="text-xs text-secondary">Note: Some content is unable to be viewed without an account due to Post visibility settings specified by the author.</div>
-                        <RadioBarButton @click="asGuestClicked" :selected="AppSettingsState.Settings.savedAccountState.state == LoginState.Guest">
+                        <RadioBarButton data-testid="browse-as-guest-button" @click="asGuestClicked" :selected="AppSettingsState.Settings.savedAccountState.state == LoginState.Guest">
                             <div class="text-xs md:text-base">Browse as guest</div>
                             <i-mdi:spy class="shrink-0"/>
                             <i-mdi:chevron-right class="ml-auto text-3xl"/>
