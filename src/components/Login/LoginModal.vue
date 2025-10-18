@@ -1,30 +1,8 @@
 <template>
     <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-50 flex
         flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm p-4">
-        <div class="flex flex-col w-[90%] md:w-2/3 lg:max-w-[700px]
+        <div class="flex flex-col relative gap-4 w-[90%] md:w-2/3 lg:max-w-[700px]
             bg-focusBG text-primary p-4 mx-auto my-auto rounded-md overflow-hidden">
-            <div class="hidden">
-                <div>Which account do you wish to use?</div>
-                <div>
-                    <div></div>
-                    <div v-if="true" class="border-t-0
-                        border-inherit border-slate-500 rounded-b flex bg-slate-800 overflow-auto"
-                        :class="[2<1 ? 'border-none' : 'border']">
-                        <div class="relative flex flex-col w-full">
-                            <div class="flex items-center hover:bg-gray-700 px-2 py-2
-                                cursor-pointer"
-                                v-for="n in 2" :key="n">
-                                <div class="flex rounded-full min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover"
-                                :style="{'background-image': 'url()'}">
-                                    <i-mingcute:user-add-fill v-if="true"/>
-                                </div>
-                                <div class="ml-2">Test {{ n }}</div>
-                                <div class="text-xs text-sky-500 ml-1">@{{ n }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <Transition>
                 <div v-if="currentPage == 0" class="flex flex-col gap-3">
                     <div>
@@ -65,7 +43,7 @@
                         <div class="text-3xl text-loginBtn font-extrabold ">{{ modalPage[1].title }}</div>
                         <Transition name="swap">
                             <div v-if="!isRemovingSavedAccount" class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">{{ modalPage[1].description }}</div>
-                            <div v-else class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold">Which account do you wish to remove?</div>
+                            <div v-else class="text-[0.75rem] leading-[0.875rem] md:text-lg font-bold text-red-500">Which account do you wish to remove?</div>
                         </Transition>
                     </div>
                     <div class="flexs flex-cols space-y-1 gap-1 overflow-hidden overflow-y-auto relative">
@@ -97,12 +75,11 @@
                         </div>
                     </div>
                     <button v-if="AppSettingsState.Settings.savedAccountState.accounts.length>0" @click="editSavedAccountList"
-                    class="flex gap-1 items-center rounded-none text-secondary text-sm shadow-none ml-auto"
+                    class="flex gap-1 items-center rounded-none text-secondary text-sm shadow-none ml-auto mr-1"
                     :class="[{'!text-red-500' : isRemovingSavedAccount}]">
                         <i-mingcute:pencil-line/>
                         <div>{{isRemovingSavedAccount ? 'Cancel Edit' : 'Edit List'}}</div>
                     </button>
-                    <SquareButton @click="clickedLoginPageBack" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
                 </div>
                 <div v-else>
                     {{ void "close button" }}
@@ -126,7 +103,7 @@
                             <div>bsky.social</div> -->
                             <div class="group-heading">Account</div>
                             <div class="flex">
-                                <InLaInput data-testid="login-username-input" v-model="enteredUsername" class="rounded-r-none" textLabel="Handle" :fillContainer="true"/>
+                                <InLaInput tabindex="-1" data-testid="login-username-input" id="login-username-input" v-model="enteredUsername" class="rounded-r-none outline-none" textLabel="Handle" :fillContainer="true"/>
                                 <!-- <InLaInput v-model="hostProvider" class="rounded-l-none border-l-0" textLabel="Host" :isDisabled="true" :fillContainer="true"/> -->
                                 <div class="relative flex flex-col group w-full cursor-pointer">
                                     <button v-if="isUsingDefaultHost" @click="toggleAccountProvider" title="Change Hosting Provider"
@@ -169,28 +146,16 @@
                                 :isPasswordInput="true" :fillContainer="true"/>
                         </div>
                         <div class="text-sm text-red-500 whitespace-pre-line">{{ validationErrorMessage }}</div>
-                        <div class="flex">
-                            <SquareButton @click="clickedLoginPageBack" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
-                            <SquareButton @click="loginAccount" :is-disabled="isLoginDisabled"
-                            :is-awaiting-response="attemptingLogin" :title="titleMessage"
-                            class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
-                            text-primary md:self-end md:w-40 h-10">Login</SquareButton>
-                        </div>
                     </div>
-                    <!-- <div class="h-[1px] bg-slate-500 my-2"></div>
-                    {{ void "browse without account" }}
-                    <div class="relative flex flex-col items-start">
-                        <button data-testid="browse-as-guest-button" @click="browseAsGuest"
-                        class="rounded bg-transparent font-normal text-blue-400 hover:text-blue-500 border-none shadow-none cursor-pointer
-                        focus-visible:outline outline-2 active:bg-transparent p-0">
-                            Or Browse without an account
-                        </button>
-                        <div class="text-feedPostName leading-4">Note: Some content is unable to be viewed without an account due to
-                            Post visibility settings specified by the author.
-                        </div>
-                    </div> -->
                 </div>
             </Transition>
+            <div class="flex">
+                <SquareButton v-if="currentPage != 0" @click="clickedBackButton" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
+                <SquareButton v-if="currentPage == modalPage.length-1" @click="loginAccount" :is-disabled="isLoginDisabled"
+                :is-awaiting-response="attemptingLogin" :title="titleMessage"
+                class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
+                text-primary md:self-end md:w-40 h-10">Login</SquareButton>
+            </div>
         </div>
     </div>
 </template>
@@ -345,6 +310,10 @@ export default defineComponent({
         gotoLoginPage(handle:string=''){
             this.currentPage = this.modalPage.length-1;
             this.enteredUsername = handle;
+            setTimeout(() => {
+                let input = (this.$el.querySelector(`div[data-testid='login-username-input']`) as HTMLElement);
+                if(input) input.focus();
+            }, 20);
         },
         /**Method used to navigate to the starting "browsing mode select" page. */
         backToBrowseModeSelect(){
@@ -354,16 +323,23 @@ export default defineComponent({
         /**Method used to move back a page in the Login modal. */
         backOnePage(){
             if(this.currentPage - 1 >= 0 && this.currentPage - 1 < this.modalPage.length) this.currentPage = this.currentPage-1;
-            else this.currentPage = 0;
+            else{
+                this.currentPage = 0;
+            }
             this.isRemovingSavedAccount = false;
+                this.$el.focus();
         },
-        clickedLoginPageBack(){
+        clickedBackButton(){
             if(this.currentPage == this.modalPage.length-1 && AppSettingsState.Settings.savedAccountState.accounts.length == 0){
                 this.backToBrowseModeSelect();
             }
             else this.backOnePage();
             this.isRemovingSavedAccount = false;
         },
+        /**
+         * Switches interaction between selecting a saved User account
+         * or removing it from the saved list.
+         */
         editSavedAccountList(){
             this.isRemovingSavedAccount = !this.isRemovingSavedAccount;
         },
@@ -486,14 +462,14 @@ div.group-heading{
 
 .v-enter-active,
 .v-leave-active {
-  transition: opacity 0.1s ease, transform 0.4s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
   position: absolute;
-  transform: translateX(-40px);
+  transform: translateX(-30px);
 }
 
 .swap-enter-active,
