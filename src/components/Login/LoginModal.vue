@@ -11,31 +11,21 @@
                     </div>
                     <div class="flex flex-col gap-1">
                         <div class="text-xs text-secondary">Note: Some content is unable to be viewed without an account due to Post visibility settings specified by the author.</div>
-                        <button @click="asGuestClicked"
-                        class="flex group items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover overflow-hidden">
-                            <div class="flex gap-1.5 items-center justify-center w-full h-full px-1 rounded border-2 border-transparent
-                            group-focus-visible:border-feedtypeBtnFocusHighlight overflow-hidden *:select-none">
-                                <div class="rounded-full aspect-square h-4 border border-primary/20 shrink-0" :class="[guestBrowseSelected ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
-                                <div class="text-xs md:text-base">Browse as guest</div>
-                                <i-mdi:spy class="shrink-0"/>
-                                <i-mdi:chevron-right class="ml-auto text-3xl"/>
-                            </div>
-                        </button>
-                        <button @click="loginToAccountClicked"
-                        class="flex group items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover overflow-hidden">
-                            <div class="flex gap-1.5 items-center justify-center w-full h-full px-1 rounded border-2 border-transparent
-                            group-focus-visible:border-feedtypeBtnFocusHighlight overflow-hidden *:select-none">
-                                <div class="rounded-full aspect-square h-4 border border-primary/20 shrink-0" :class="[authBrowseSelected ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
-                                <div class="flex flex-col md:gap-1.5 md:flex-row md:items-center text-left">
-                                    <div class="flex gap-1.5 items-center bg-green-500s">
-                                        <div class="text-xs md:text-base text-nowrap">Login to account</div>
-                                        <i-mdi:login class="shrink-0"/>
-                                    </div>
-                                    <div class="text-[10px] leading-3 text-secondary text-nowrap bg-yellow-400s">Accounts saved: {{ AppSettingsState.Settings.savedAccountState.accounts.length }}</div>
+                        <RadioBarButton @click="asGuestClicked" :selected="guestBrowseSelected">
+                            <div class="text-xs md:text-base">Browse as guest</div>
+                            <i-mdi:spy class="shrink-0"/>
+                            <i-mdi:chevron-right class="ml-auto text-3xl"/>
+                        </RadioBarButton>
+                        <RadioBarButton @click="loginToAccountClicked" :selected="authBrowseSelected">
+                             <div class="flex flex-col md:gap-1.5 md:flex-row md:items-center text-left">
+                                <div class="flex gap-1.5 items-center bg-green-500s">
+                                    <div class="text-xs md:text-base text-nowrap">Login to account</div>
+                                    <i-mdi:login class="shrink-0"/>
                                 </div>
-                                <i-mdi:chevron-right class="ml-auto text-3xl shrink-0"/>
+                                <div class="text-[10px] leading-3 text-secondary text-nowrap bg-yellow-400s">Accounts saved: {{ AppSettingsState.Settings.savedAccountState.accounts.length }}</div>
                             </div>
-                        </button>
+                            <i-mdi:chevron-right class="ml-auto text-3xl shrink-0"/>
+                        </RadioBarButton>
                     </div>
                 </div>
                 <div v-else-if="currentPage == 1" class="flex flex-col gap-3 overflow-hidden pb-1">
@@ -48,26 +38,21 @@
                     </div>
                     <div class="flexs flex-cols space-y-1 gap-1 overflow-hidden overflow-y-auto relative">
                         <TransitionGroup name="list">
-                            <button v-for="(n, index) in AppSettingsState.Settings.savedAccountState.accounts" :key="n.id"
-                            :title="isRemovingSavedAccount ? 'Remove Account' : 'Select Account'" @click="clickedSavedAccount(n)"
-                            class="flex group w-full items-center rounded p-0.5 border border-outline outline-none cursor-pointer hover:bg-btnHover overflow-hidden shrink-0 left-0">
-                                <div class="relative flex gap-1.5 items-center justify-centers w-full h-full px-1 rounded border-2 border-transparent
-                                group-focus-visible:border-feedtypeBtnFocusHighlight overflow-hidden *:select-none last:ml-auto">
-                                    <div class="rounded-full aspect-square h-4 border border-primary/20 shrink-0"
-                                    :class="[AppSettingsState.Settings.savedAccountState.currentAccount == index ? 'bg-radioButtonSelected' : 'bg-focusBG']"></div>
-                                    <div class="flex aspect-square h-11 rounded overflow-hidden shrink-0"><img :src="n.avatar" class="object-cover"/></div>
-                                    <div title="Bluesky Account"><i-logos:bluesky class="shrink-0" /></div>
-                                    <!-- <i-fa6-brands:bluesky/> -->
-                                    <div class="flex text-left flex-col md:flex-row md:gap-1.5 md:items-center mr-auto overflow-hidden">
-                                        <div class="text-xs md:text-base overflow-hidden text-ellipsis text-nowrap" :title="n.name">{{ n.name }}</div>
-                                        <div class="text-xs w-auto text-secondary overflow-hidden text-ellipsis text-nowrap" :title="n.handle">{{ n.handle }}</div>
-                                    </div>
-                                    <Transition name="swap" class="right-1">
-                                        <i-mdi:chevron-right v-if="!isRemovingSavedAccount" class="text-3xl shrink-0"/>
-                                        <i-mingcute:delete-2-line v-else class="text-red-500 text-2xl shrink-0"/>
-                                    </Transition>
+                            <RadioBarButton v-for="(n, index) in AppSettingsState.Settings.savedAccountState.accounts" :key="n.id"
+                            :selected="AppSettingsState.Settings.savedAccountState.currentAccount == index"
+                            @click="clickedSavedAccount(n)">
+                                <div class="flex aspect-square h-11 rounded overflow-hidden shrink-0"><img :src="n.avatar" class="object-cover"/></div>
+                                <div title="Bluesky Account"><i-logos:bluesky class="shrink-0" /></div>
+                                <!-- <i-fa6-brands:bluesky/> -->
+                                <div class="flex text-left flex-col md:flex-row md:gap-1.5 md:items-center mr-auto overflow-hidden">
+                                    <div class="text-xs md:text-base overflow-hidden text-ellipsis text-nowrap" :title="n.name">{{ n.name }}</div>
+                                    <div class="text-xs w-auto text-secondary overflow-hidden text-ellipsis text-nowrap" :title="n.handle">{{ n.handle }}</div>
                                 </div>
-                            </button>
+                                <Transition name="swap" class="right-1">
+                                    <i-mdi:chevron-right v-if="!isRemovingSavedAccount" class="text-3xl shrink-0"/>
+                                    <i-mingcute:delete-2-line v-else class="text-red-500 text-2xl shrink-0"/>
+                                </Transition>
+                            </RadioBarButton>
                         </TransitionGroup>
                         <div v-if="AppSettingsState.Settings.savedAccountState.accounts.length == 0"
                         class="text-secondary">
@@ -103,7 +88,7 @@
                             <div>bsky.social</div> -->
                             <div class="group-heading">Account</div>
                             <div class="flex">
-                                <InLaInput tabindex="-1" data-testid="login-username-input" id="login-username-input" v-model="enteredUsername" class="rounded-r-none outline-none" textLabel="Handle" :fillContainer="true"/>
+                                <InLaInput data-testid="login-username-input" id="login-username-input" v-model="enteredUsername" class="rounded-r-none outline-none" textLabel="Handle" :fillContainer="true"/>
                                 <!-- <InLaInput v-model="hostProvider" class="rounded-l-none border-l-0" textLabel="Host" :isDisabled="true" :fillContainer="true"/> -->
                                 <div class="relative flex flex-col group w-full cursor-pointer">
                                     <button v-if="isUsingDefaultHost" @click="toggleAccountProvider" title="Change Hosting Provider"
@@ -171,8 +156,8 @@ import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
-import { RadioButton } from 'primevue';
 import { IAccount, LoginState } from '../../interfaces/AccountInterfaces';
+import RadioBarButton from '../Utilities/RadioBarButton.vue';
 
 /**
  * Asks the User if they're sure they would like to delete the selected
@@ -187,7 +172,7 @@ export default defineComponent({
     components:{
         InLaInput: InLaInput,
         SquareButton,
-        RadioButton,
+        RadioBarButton,
     },
     data(){
         return{
@@ -311,9 +296,19 @@ export default defineComponent({
             this.currentPage = this.modalPage.length-1;
             this.enteredUsername = handle;
             setTimeout(() => {
-                let input = (this.$el.querySelector(`div[data-testid='login-username-input']`) as HTMLElement);
-                if(input) input.focus();
+                this.focusLoginInput();
             }, 20);
+        },
+        /**Method used to focus most relevant input when navigating to login page. */
+        focusLoginInput(){
+            let usernameInput = (this.$el.querySelector(`div[data-testid='login-username-input'] input`) as HTMLInputElement);
+            if(usernameInput){
+                if(usernameInput.value.trim() != ''){
+                    let passwordInput = (this.$el.querySelector(`div[data-testid='login-password-input'] input`) as HTMLInputElement);
+                    if(passwordInput) passwordInput.focus();
+                }
+                else usernameInput.focus();
+            }
         },
         /**Method used to navigate to the starting "browsing mode select" page. */
         backToBrowseModeSelect(){

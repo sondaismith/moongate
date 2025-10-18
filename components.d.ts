@@ -104,6 +104,7 @@ declare module 'vue' {
     PostReply: typeof import('./src/components/Post/PostReply.vue')['default']
     PostReplyInput: typeof import('./src/components/Post/PostReplyInput.vue')['default']
     PostThreadView: typeof import('./src/components/Post/PostThreadView.vue')['default']
+    RadioBarButton: typeof import('./src/components/Utilities/RadioBarButton.vue')['default']
     RadioButton: typeof import('./src/components/Utilities/RadioButton.vue')['default']
     ReplyBreadcrumb: typeof import('./src/components/Post/ReplyBreadcrumb.vue')['default']
     RichPostText: typeof import('./src/components/Utilities/RichPostText.vue')['default']
