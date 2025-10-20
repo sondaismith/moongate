@@ -6,7 +6,7 @@
   "scripts": {
     "predev": "node update-version.cjs",
     "dev": "vite --host",
-    "prebuild": "node update-version.ts",
+    "prebuild": "node update-version.cjs",
     "build": "vite build",
     "prebuild-web": "node update-version.cjs",
     "build-web": "vite build --base=/moon/",
