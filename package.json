@@ -4,11 +4,16 @@
   "version": "0.8.5",
   "type": "module",
   "scripts": {
+    "predev": "node update-version.cjs",
     "dev": "vite --host",
+    "prebuild": "node update-version.cjs",
     "build": "vite build",
+    "prebuild-web": "node update-version.cjs",
     "build-web": "vite build --base=/moon/",
+    "pretest": "node update-version.cjs",
     "test": "vitest",
     "preview": "vite preview",
+    "pretauri": "node update-version.cjs",
     "tauri": "tauri",
     "cy:open": "cypress open"
   },

@@ -9,7 +9,8 @@
                     <AppLogo :is-button="false" class="h-28 text-white scale-100"/>
                     <div>
                         <div class="text-4xl font-thin">Moongate</div>
-                        <div>Version: {{ getBuildNumber() }}<span class="align-super text-xs">{{isTauri() ? 'Tauri' : 'Web'}}</span></div>
+                        <div>Version: {{ versionDetails.version }}-{{ versionDetails.commitHash }}<span class="align-super text-xs">{{isTauri() ? 'Tauri' : 'Web'}}</span></div>
+                        <div class="italic text-[10px] leading-[10px]">{{ versionDetails.buildDate }}</div>
                     </div>
                 </div>
             </div>
@@ -53,6 +54,7 @@ import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import AppLogo from '../SVG/AppLogo.vue';
+import { GetVersion, IVersionDetails } from '../../lib/api/VersionService';
 
 /**
  * Method used to open link in the system's default browser.
@@ -75,6 +77,7 @@ export default defineComponent({
     data(){
         return{
             isTauri,
+            versionDetails:{} as IVersionDetails,
             issuesURL: "https://github.com/sondaismith/moongate-issues/",
         }
     },
@@ -103,7 +106,10 @@ export default defineComponent({
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },
-    }
+    },
+    created() {
+        this.versionDetails = GetVersion();
+    },
 })
 </script>
 
