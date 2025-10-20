@@ -10,6 +10,7 @@
     "build": "vite build",
     "prebuild-web": "node update-version.cjs",
     "build-web": "vite build --base=/moon/",
+    "pretest": "node update-version.cjs",
     "test": "vitest",
     "preview": "vite preview",
     "pretauri": "node update-version.cjs",

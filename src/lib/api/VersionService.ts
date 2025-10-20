@@ -1,4 +1,4 @@
-import {version,buildDate,commitHash} from "./../../helpers/version.ts"
+import {version,buildDate,commitHash} from "./../../helpers/version"
 
 export interface IVersionDetails{
     version:string,
