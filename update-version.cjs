@@ -12,4 +12,5 @@ export const commitHash = '${commitHash}';`;
 
 fs.writeFileSync("./src/helpers/version.ts", content);
 
+console.log(__dirname);
 console.log("Updated application version!", { version, commitHash, buildDate });
