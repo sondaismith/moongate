@@ -20,6 +20,8 @@ import SolarHashtagChatBold from '~icons/solar/hashtag-chat-bold';
 import MingcuteBellRingingFill from '~icons/mingcute/bell-ringing-fill';
 import MingcuteTrendingUpFill from '~icons/mingcute/trending-up-fill';
 import MingcuteDanmakuLine from '~icons/mingcute/danmaku-line';
+import MingcuteUser3Line from '~icons/mingcute/user-3-line';
+import MingcuteTag2Line from '~icons/mingcute/tag-2-line';
 
 import { defineComponent, FunctionalComponent } from 'vue'
 import { FeedEnums } from '../../enums/FeedEnums';
@@ -31,6 +33,8 @@ var FeedIconTypes : IFeedIconTypes[] = [
     { name: FeedEnums.Icons.AddList, icon: MdiPlaylistAdd },
     { name: FeedEnums.Icons.RemoveList, icon: MdiPlaylistRemove },
     { name: FeedEnums.Icons.CreatePost, icon: MdiPencilPlus },
+    { name: FeedEnums.Icons.User, icon: MingcuteUser3Line },
+    { name: FeedEnums.Icons.Tag, icon: MingcuteTag2Line },
     { name: FeedEnums.Icons.Friends, icon: MingcuteGroup3Fill },
     { name: FeedEnums.Icons.News, icon: MdiNewspaperVariantMultiple },
     { name: FeedEnums.Icons.Art, icon: MdiPaintOutline },

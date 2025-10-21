@@ -5,6 +5,8 @@ export namespace FeedEnums{
         AddList = "add_list",
         RemoveList = "remove_list",
         CreatePost = 'create_post',
+        User = 'user',
+        Tag = 'tag',
         Art = "art",
         News = "news",
         Friends = "friends",

@@ -35,17 +35,20 @@
                                 </PillButton> -->
                                 <!-- <PillButton :disabled="true">Mentions</PillButton>
                                 <PillButton :disabled="true">DMs</PillButton> -->
-                                <div class="flex flex-wrap gap-1">
+                                <div class="flex flex-wrap gap-2">
                                     <button v-for="item in feedTypeOptions" :key="item.id"
                                     @click="selectFeedType(item.value)"
                                     tabindex="0"
                                     :data-testid="`feedEditModal-${item.name.toLowerCase()}-feed-button`"
-                                    class="group cursor-pointer border-2 outline-none border-transparent rounded-full transition-colors
+                                    class="group flex gap-1 cursor-pointer items-center border-2 outline-none border-transparent rounded-md transition-colors
                                     bg-btn select-none p-[1px] overflow-hidden"
                                     :class="[item.value == selectedFeedType ? '!border-feedtypeBtnSelected' : '',
                                         !AppState.isAuthBrowsing && (item.value == FeedEnums.Types.Notifications || item.value == FeedEnums.Types.Following) ? 'bg-disabled' : 'hover:bg-feedTypeBtnHover'
                                     ]">
-                                        <div class="border-2 border-transparent group-focus-visible:border-feedtypeBtnFocusHighlight rounded-full px-3 py-1s">{{ item.name }}</div>
+                                        <div class="flex items-center gap-1 px-2 border-2 border-transparent group-focus-visible:border-feedtypeBtnFocusHighlight rounded-md">
+                                            <FeedIcon :icon="item.value"/>
+                                            <div>{{ item.name }}</div>
+                                        </div>
                                     </button>
                                 </div>
                             </div>
