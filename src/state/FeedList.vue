@@ -587,11 +587,16 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
             });
             break;
         case FeedEnums.Types.Following:
-            await GetBrowsingAgent().getTimeline({limit:postsToGet,cursor:cursor})
-            .then(res => {
-                feedResult.data = res.data.feed;
-                if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
-            });
+            if(AppState.isAuthBrowsing){
+                await GetBrowsingAgent().getTimeline({limit:postsToGet,cursor:cursor})
+                .then(res => {
+                    feedResult.data = res.data.feed;
+                    if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
+                });
+            }
+            else{
+                toast.add({summary:"Info", detail:`Please log in to view Following Timeline.`, severity:'info', group:'tr', life:3000});
+            }
             break;
         case FeedEnums.Types.Notifications:
             if(AppState.isAuthBrowsing){

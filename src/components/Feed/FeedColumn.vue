@@ -180,10 +180,18 @@
                 class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
                     End of Posts
                 </div>
-                <div v-else-if="feedData?.description.feedType == FeedEnums.Types.Notifications && !AppState.isAuthBrowsing"
-                class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
+                <button @click="AppState.ToggleLoginModal"
+                v-else-if="feedData?.description.feedType == FeedEnums.Types.Following && !AppState.isAuthBrowsing"
+                class="flex rounded justify-center p-1 bg-postMsg hover:bg-btnHover border border-outlineLighter text-btnText select-none
+                hover:border-transparent active:border-transparent focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
+                    Login to view Following Timeline
+                </button>
+                <button @click="AppState.ToggleLoginModal"
+                v-else-if="feedData?.description.feedType == FeedEnums.Types.Notifications && !AppState.isAuthBrowsing"
+                class="flex rounded justify-center p-1 bg-postMsg hover:bg-btnHover border border-outlineLighter text-btnText select-none
+                hover:border-transparent active:border-transparent focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
                     Login to view Notifications
-                </div>
+                </button>
                 <button v-else-if="feedData.description.feedType != FeedEnums.Types.Tag &&
                 feedData.description.feedType != FeedEnums.Types.Notifications &&
                 feedData?.description.feedType != FeedEnums.Types.Trending &&
