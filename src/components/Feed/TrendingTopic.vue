@@ -136,7 +136,7 @@ export default defineComponent({
                     did = res.data.did;
                     desc.feedHandle = urlParts[2];
                     desc.feedName = this.trend?.displayName ? this.trend.displayName : "N/A";
-                    desc.feedSourceDID = `at://${did}/app.bsky.feed/${urlParts[urlParts.length-1]}`;
+                    desc.feedSourceDID = `at://${did}/app.bsky.feed.generator/${urlParts[urlParts.length-1]}`;
                     desc.feedTags = this.trend?.displayName ? this.trend.displayName : ''; //Currently the only way I know to get the "Feed Generator" name when re-loading
                 })
                 await GetBrowsingAgent().app.bsky.feed.getFeed({feed:desc.feedSourceDID})
@@ -144,6 +144,10 @@ export default defineComponent({
                     feedResult.data = res.data.feed;
                     feedResult.cursor = res.data.cursor;
                     console.log(res.data);
+                })
+                .catch(err =>{
+                    console.log(err);
+                    toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
                 })
                 AddFeedToList(desc,feedResult.data,feedResult.cursor,'',false);
             }
