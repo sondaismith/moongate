@@ -62,7 +62,6 @@ export default defineComponent({
     },
     mounted(){
         // this.isSpoilered = this.hasSensitiveContent();
-        console.log(window.navigator.userAgent)
     }
 })
 </script>

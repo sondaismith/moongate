@@ -153,9 +153,7 @@
                 </div>
             </div>
             <TransitionGroup name="feedpost">
-                <div v-if="feedData?.description.feedType == FeedEnums.Types.User ||
-                feedData?.description.feedType == FeedEnums.Types.Tag ||
-                feedData?.description.feedType == FeedEnums.Types.FeedGenerator"
+                <div v-if="showStandardPostLayout"
                 class="flex flex-col gap-2">
                     <div v-for="n in feedData?.data" data-test="feedColumn-post" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">
@@ -182,10 +180,18 @@
                 class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
                     End of Posts
                 </div>
-                <div v-else-if="feedData?.description.feedType == FeedEnums.Types.Notifications && !AppState.isAuthBrowsing"
-                class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
+                <button @click="AppState.ToggleLoginModal"
+                v-else-if="feedData?.description.feedType == FeedEnums.Types.Following && !AppState.isAuthBrowsing"
+                class="flex rounded justify-center p-1 bg-postMsg hover:bg-btnHover border border-outlineLighter text-btnText select-none
+                hover:border-transparent active:border-transparent focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
+                    Login to view Following Timeline
+                </button>
+                <button @click="AppState.ToggleLoginModal"
+                v-else-if="feedData?.description.feedType == FeedEnums.Types.Notifications && !AppState.isAuthBrowsing"
+                class="flex rounded justify-center p-1 bg-postMsg hover:bg-btnHover border border-outlineLighter text-btnText select-none
+                hover:border-transparent active:border-transparent focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
                     Login to view Notifications
-                </div>
+                </button>
                 <button v-else-if="feedData.description.feedType != FeedEnums.Types.Tag &&
                 feedData.description.feedType != FeedEnums.Types.Notifications &&
                 feedData?.description.feedType != FeedEnums.Types.Trending &&
@@ -585,6 +591,17 @@ export default defineComponent({
     computed:{
         onMobileTouchscreen(){
             return isOnMobileTouchscreen();
+        },
+        showStandardPostLayout(){
+            switch (this.feedData?.description.feedType) {
+                case FeedEnums.Types.User:
+                case FeedEnums.Types.Tag:
+                case FeedEnums.Types.FeedGenerator:
+                case FeedEnums.Types.Following:
+                    return true;
+                default:
+                    return false;
+            }
         }
     },
     mounted(){

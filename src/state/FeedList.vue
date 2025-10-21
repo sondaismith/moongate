@@ -343,6 +343,14 @@ latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
                 feedTags:tags
             }
             break;
+        case FeedEnums.Types.Following:
+            desc = {...desc,
+                feedType:FeedEnums.Types.Following,
+                feedIcon:FeedEnums.Icons.Following,
+                feedHandle:'Following',
+                feedName:'Following'
+            }
+            break;
         case FeedEnums.Types.Notifications:
             desc = {...desc,
                 feedType:FeedEnums.Types.Notifications,
@@ -578,6 +586,18 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
                 })
             });
             break;
+        case FeedEnums.Types.Following:
+            if(AppState.isAuthBrowsing){
+                await GetBrowsingAgent().getTimeline({limit:postsToGet,cursor:cursor})
+                .then(res => {
+                    feedResult.data = res.data.feed;
+                    if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
+                });
+            }
+            else{
+                toast.add({summary:"Info", detail:`Please log in to view Following Timeline.`, severity:'info', group:'tr', life:3000});
+            }
+            break;
         case FeedEnums.Types.Notifications:
             if(AppState.isAuthBrowsing){
                 await GetBrowsingAgent().listNotifications()
@@ -715,7 +735,8 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
         .then(res => {
             if(feed && (feed.description.feedType == FeedEnums.Types.User ||
                 feed.description.feedType == FeedEnums.Types.Tag ||
-                feed.description.feedType == FeedEnums.Types.FeedGenerator)){
+                feed.description.feedType == FeedEnums.Types.FeedGenerator ||
+                feed.description.feedType == FeedEnums.Types.Following)){
                 //User and Tag Feed data should be in the shape of a FeedViewPost
                 // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
                 let latestDate = feed ? new Date(feed.description.latestPostDate) : lastUpdate;
@@ -748,6 +769,10 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
                 let newPosts = res.data.filter(post => new Date(GetRecordsFeedTimestamp(post)) >= latestDate && GetRecordsUniqueID(post) != feed?.description.latestPostCID);
                 feed.description.newPosts = newPosts.length;
                 feed.isAwaitingFeedData = false;
+            }
+            else{
+                toast.add({summary:'Error', detail:`${feed?.description.feedType} type Feeds have not been added to supported "refresh list"`, severity:'error', group:'tr', life:3000});
+                if(feed) feed.isAwaitingFeedData = false;
             }
         })
         .catch(err => {

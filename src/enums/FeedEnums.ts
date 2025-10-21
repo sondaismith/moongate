@@ -5,11 +5,14 @@ export namespace FeedEnums{
         AddList = "add_list",
         RemoveList = "remove_list",
         CreatePost = 'create_post',
+        User = 'user',
+        Tag = 'tag',
         Art = "art",
         News = "news",
         Friends = "friends",
         Music = "music",
         Hashtag = "hashtag",
+        Following = "following",
         Notifications = "notifications",
         Trending = "trending"
     }
@@ -17,6 +20,7 @@ export namespace FeedEnums{
         Home = "home",
         User = "user",
         Tag = "tag",
+        Following = "following",
         Notifications = "notifications",
         Mentions = "mentions",
         Replies = "replies",
