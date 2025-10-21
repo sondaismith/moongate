@@ -43,7 +43,7 @@
                                     class="group cursor-pointer border-2 outline-none border-transparent rounded-full transition-colors
                                     bg-btn select-none p-[1px] overflow-hidden"
                                     :class="[item.value == selectedFeedType ? '!border-feedtypeBtnSelected' : '',
-                                        !AppState.isAuthBrowsing && item.value == FeedEnums.Types.Notifications ? 'bg-disabled' : 'hover:bg-feedTypeBtnHover'
+                                        !AppState.isAuthBrowsing && (item.value == FeedEnums.Types.Notifications || item.value == FeedEnums.Types.Following) ? 'bg-disabled' : 'hover:bg-feedTypeBtnHover'
                                     ]">
                                         <div class="border-2 border-transparent group-focus-visible:border-feedtypeBtnFocusHighlight rounded-full px-3 py-1s">{{ item.name }}</div>
                                     </button>
@@ -52,8 +52,12 @@
                             <div v-if="selectedFeedType.trim() != ''" class="flex self-start border border-outline rounded p-1">
                                 <TransitionGroup>
                                     <div v-if="selectedFeedType == FeedEnums.Types.User">A User feed allows you to see all the content shared by a specific User account (Posts, Shares, Replies, etc.)</div>
-                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Tag">A Tag Feed displays returns the latest posts matching specified hashtags.</div>
+                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Tag">A Tag Feed displays the latest posts matching specified hashtags.</div>
                                     <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">A Trending Feed will display Bluesky's currently trending topics in a list.</div>
+                                    <div v-else-if="selectedFeedType == FeedEnums.Types.Following">
+                                        <div v-if="!AppState.isAuthBrowsing" class="font-medium text-feedHighlight">Login Required</div>
+                                        View timeline of posts from all your followed accounts.
+                                    </div>
                                     <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
                                         <div v-if="!AppState.isAuthBrowsing" class="font-medium text-feedHighlight">Login Required</div>
                                         Notifications will create a Feed Column that displays all of the currently logged in User's notifications.
@@ -76,13 +80,16 @@
                         <UserSearchBar data-testid="feedEditModal-user-search-bar"
                         v-if="selectedFeedType == FeedEnums.Types.User"
                         @user-selected="selectUser" :data-list="searchResults"/>
-                        <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
-                            <CheckBox @value-toggled="toggleJustMentions" :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
-                            <!-- <SquareButton @click="testGetNotifs">Load Notifs</SquareButton> -->
-                        </div>
                         <div v-if="selectedFeedType == FeedEnums.Types.Trending">
                             <div>No Options Currently</div>
                             <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
+                        </div>
+                        <div v-if="selectedFeedType == FeedEnums.Types.Following">
+                            <div>No Options</div>
+                        </div>
+                        <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
+                            <CheckBox @value-toggled="toggleJustMentions" :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
+                            <!-- <SquareButton @click="testGetNotifs">Load Notifs</SquareButton> -->
                         </div>
                     </div>
                     <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 2"
@@ -130,11 +137,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
-                            <div>Mentions Only? {{ feedFilters.notifications.justNotifs }}</div>
-                        </div>
                         <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">
                             <div>No Options Currently</div>
+                        </div>
+                        <div v-else-if="selectedFeedType == FeedEnums.Types.Following">
+                            <div>No Options</div>
+                        </div>
+                        <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
+                            <div>Mentions Only? {{ feedFilters.notifications.justNotifs }}</div>
                         </div>
                     </div>
                 </Transition>
@@ -212,6 +222,7 @@ export default defineComponent({
                 {id:0, name:'User',value:FeedEnums.Types.User},
                 {id:1, name:'Tag',value:FeedEnums.Types.Tag},
                 {id:2, name:'Trending',value:FeedEnums.Types.Trending},
+                {id:2, name:'Following',value:FeedEnums.Types.Following},
                 {id:3, name:'Notifications',value:FeedEnums.Types.Notifications},
             ],
             selectedFeedType:"",
@@ -373,6 +384,7 @@ export default defineComponent({
                 }
             })
             .catch(err => {
+                console.log(err);
                 toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
                 setTimeout(() => {
                     this.attemptingToCreateFeed = false;
@@ -419,7 +431,7 @@ export default defineComponent({
         isFeedTypeConfirmed(){
             if(this.selectedFeedType.trim() != "" &&
             this.currentPage != this.totalPages-1){
-                if(this.selectedFeedType == FeedEnums.Types.Notifications && !AppState.isAuthBrowsing) return false;
+                if(!AppState.isAuthBrowsing && (this.selectedFeedType == FeedEnums.Types.Notifications || this.selectedFeedType == FeedEnums.Types.Following)) return false;
                 return true;
             }
             // return this.selectedFeedType.trim() != "" &&

@@ -19,6 +19,7 @@ import MingcuteMusicLine from '~icons/mingcute/music-line';
 import SolarHashtagChatBold from '~icons/solar/hashtag-chat-bold';
 import MingcuteBellRingingFill from '~icons/mingcute/bell-ringing-fill';
 import MingcuteTrendingUpFill from '~icons/mingcute/trending-up-fill';
+import MingcuteDanmakuLine from '~icons/mingcute/danmaku-line';
 
 import { defineComponent, FunctionalComponent } from 'vue'
 import { FeedEnums } from '../../enums/FeedEnums';
@@ -37,6 +38,7 @@ var FeedIconTypes : IFeedIconTypes[] = [
     { name: FeedEnums.Icons.Hashtag, icon: SolarHashtagChatBold },
     { name: FeedEnums.Icons.Notifications, icon: MingcuteBellRingingFill },
     { name: FeedEnums.Icons.Trending, icon: MingcuteTrendingUpFill },
+    { name: FeedEnums.Icons.Following, icon: MingcuteDanmakuLine },
 ]
 
 export default defineComponent({

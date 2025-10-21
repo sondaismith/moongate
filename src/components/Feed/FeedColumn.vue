@@ -153,9 +153,7 @@
                 </div>
             </div>
             <TransitionGroup name="feedpost">
-                <div v-if="feedData?.description.feedType == FeedEnums.Types.User ||
-                feedData?.description.feedType == FeedEnums.Types.Tag ||
-                feedData?.description.feedType == FeedEnums.Types.FeedGenerator"
+                <div v-if="showStandardPostLayout"
                 class="flex flex-col gap-2">
                     <div v-for="n in feedData?.data" data-test="feedColumn-post" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">
@@ -585,6 +583,17 @@ export default defineComponent({
     computed:{
         onMobileTouchscreen(){
             return isOnMobileTouchscreen();
+        },
+        showStandardPostLayout(){
+            switch (this.feedData?.description.feedType) {
+                case FeedEnums.Types.User:
+                case FeedEnums.Types.Tag:
+                case FeedEnums.Types.FeedGenerator:
+                case FeedEnums.Types.Following:
+                    return true;
+                default:
+                    return false;
+            }
         }
     },
     mounted(){

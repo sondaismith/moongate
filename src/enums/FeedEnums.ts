@@ -10,6 +10,7 @@ export namespace FeedEnums{
         Friends = "friends",
         Music = "music",
         Hashtag = "hashtag",
+        Following = "following",
         Notifications = "notifications",
         Trending = "trending"
     }
@@ -17,6 +18,7 @@ export namespace FeedEnums{
         Home = "home",
         User = "user",
         Tag = "tag",
+        Following = "following",
         Notifications = "notifications",
         Mentions = "mentions",
         Replies = "replies",
