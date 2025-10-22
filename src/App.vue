@@ -113,8 +113,8 @@ button {
 
 /* width */
 ::-webkit-scrollbar {
-  height: 0.25rem;
-  width: 0.25rem;
+  height: 0.25rem !important;
+  width: 0.25rem !important;
 }
 /* Track */
 ::-webkit-scrollbar-track {
@@ -133,6 +133,14 @@ button {
   background: var(--color-scrollbar-thumb-hover);
 }
 
+/**Backup styling when Firefox/Waterfox does not respect above rules...
+* Unfortunately this actually overrides the above styles, so I will leave
+* it for now.
+*/
+/* *{
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
+} */
 
 .preload-gutter{
   scrollbar-gutter: stable;
