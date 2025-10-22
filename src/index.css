@@ -66,6 +66,8 @@
         --color-about-page-banner:theme(colors.slate.900);
         --color-spoiler-blackout-color:theme(colors.slate.700);
         --color-radio-button-selected:theme(colors.blue.500);
+        --color-donation-btn-bg:theme(colors.blue.600);
+        --color-donation-btn-icon-hover:theme(colors.red.400);
     }
 }
 
@@ -131,4 +133,6 @@
     --color-about-page-banner:theme(colors.slate.400);
     --color-spoiler-blackout-color:theme(colors.slate.800);
     --color-radio-button-selected:theme(colors.blue.600);
+    --color-donation-btn-bg:theme(colors.blue.400);
+    --color-donation-btn-icon-hover:theme(colors.red.500);
 }

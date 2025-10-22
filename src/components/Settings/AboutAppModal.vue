@@ -1,11 +1,11 @@
 <template>
-    <div class="z-30 flex w-full h-full" :class="[hideBackdrop ? '' : 'absolute']">
+    <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="z-30 flex w-full h-full" :class="[hideBackdrop ? '' : 'absolute']">
         <div v-if="!hideBackdrop" @click="closeModal" class="absolute bg-white/10 backdrop-blur-sm w-full h-full"></div>
         <div class="relative flex flex-col bg-focusBG w-[94%] max-w-[50rem] max-h-[30rem]
         mx-auto my-auto rounded-lg overflow-hidden text-primary drop-shadow-md"
         :class="[hideBackdrop ? 'max-h-full' : 'max-h-[30rem]']">
             <div class="flex flex-col bg-aboutPageBanner">
-                <div class="flex items-center text-white h-24">
+                <div class="flex items-center text-white md:h-24">
                     <AppLogo :is-button="false" class="h-28 text-white scale-100"/>
                     <div>
                         <div class="text-4xl font-thin">Moongate</div>
@@ -18,6 +18,17 @@
                 <div class="text-xl font-extralight">Desktop/Web Client for Bluesky</div>
                 <div class="text-sm">Moongate is an alternative Client App for Bluesky, built using Tauri + Vue.
                     The goal is to create a lightweight, feature-filled app that is responsive and easy to use.</div>
+            </div>
+            <div class="flex flex-col md:flex-row md:items-center gap-1 px-4 text-sm select-none">
+                <div class="font-bold">Like the app? Support development by buying me a coffee:</div>
+                <a :href="donateURL" target="_blank" class="group flex self-start rounded p-1
+                transition-colors bg-donationButtonBG cursor-pointer outline-none focus-visible:outline-feedtypeBtnFocusHighlight">
+                    <div class="flex gap-1 items-center">
+                        <i-simple-icons:kofi class="transition-colors group-hover:text-donationButtonIconHover
+                        group-focus-visible:text-donationButtonIconHover"/>
+                        <div class="text-primary">Support</div>
+                    </div>
+                </a>
             </div>
             <div class="px-4 text-xl font-semibold">Changelog:</div>
             <div class="flex flex-col gap-1 h-full px-4 overflow-y-scroll divide-outline divide-y">
@@ -49,7 +60,7 @@ import MingcuteWorld2Line from '~icons/mingcute/world-2-line';
 
 import { isTauri } from '@tauri-apps/api/core';
 import { defineComponent } from 'vue'
-import { AppState, CopyTextToClipboard } from '../../state/AppState.vue';
+import { AppState, CopyTextToClipboard, TrapFocus } from '../../state/AppState.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
@@ -77,8 +88,10 @@ export default defineComponent({
     data(){
         return{
             isTauri,
+            TrapFocus,
             versionDetails:{} as IVersionDetails,
             issuesURL: "https://github.com/sondaismith/moongate-issues/",
+            donateURL: "https://ko-fi.com/nextype",
         }
     },
     methods:{
@@ -109,6 +122,9 @@ export default defineComponent({
     },
     created() {
         this.versionDetails = GetVersion();
+    },
+    mounted() {
+        this.$el.focus();
     },
 })
 </script>
