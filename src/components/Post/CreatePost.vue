@@ -1,18 +1,19 @@
 <template>
-    <div class="absolute z-30 flex w-full h-full">
+    <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-30 flex w-full h-full">
         <div @click="confirmClose(canSubmitPost)" class="absolute w-full h-full bg-slate-800/60"/>
         <div class="relative rounded-lg flex flex-col w-full sm:w-3/5 text-primary bg-focusBG border
-        border-outlineLighter p-3 my-auto m-4 sm:m-auto gap-3">
+        border-outlineLighter p-3 my-auto m-4 sm:m-auto gap-3 overflow-hidden">
             <div class="flex items-center justify-between">
-                <div @click="confirmClose(canSubmitPost)" class="font-bold text-sky-500 hover:text-sky-300 cursor-pointer">Cancel</div>
-                <PillButton data-test="create-post-button" @click="createNewPost" class="transition-colors px-4 py-1 bg-sky-500"
-                :class="(!canSubmitPost || postDetails.isAwaitingPostThreadData) ? '!bg-gray-400 text-gray-500 !cursor-default' : ''">Post</PillButton>
+                <button @click="confirmClose(canSubmitPost)" class="font-bold text-sky-500 hover:text-sky-300 cursor-pointer focus-visible:outline
+                focus-visible:outline-searchbarFocusHightlight shadow-none">Cancel</button>
+                <PillButton data-test="create-post-button" :disabled="(!canSubmitPost || postDetails.isAwaitingFocusData)" @click="createNewPost"
+                class="transition-colors px-4 py-1 bg-sky-500">Post</PillButton>
             </div>
             <div v-if="postDetails.currentPostAction == PostActions.Reply && postDetails.isAwaitingPostThreadData">
                 <i-mingcute:loading-fill class="text-primary spinner self-center size-10"/>
             </div>
             <div v-else-if="postDetails.currentPostAction == PostActions.Reply" class="flex flex-col gap-1">
-                <div class="flex flex-col self-start text-sm underlines select-none">
+                <div class="flex flex-col self-start text-sm select-none">
                     <div>Replying to...</div>
                     <div class="h-[1px] bg-outlineLighter"></div>
                 </div>
@@ -60,6 +61,30 @@
                 @input="limitChars"
                 class="block rounded p-2 bg-slate-900 w-full postPlaceholder"/> -->
             </div>
+            <div class="flex flex-wrap gap-1 w-full">
+                <div v-for="(n, index) in uploadedMedia" class="relative aspect-square max-h-32 max-w-32 flex-[0_1_30%]
+                rounded-md border border-outline overflow-hidden">
+                    <img :src="n.image" class="object-cover h-full w-full"/>
+                    <div class="absolute top-0 left-0 flex flex-col gap-1 p-0.5 h-full w-full text-white">
+                        <div class="flex justify-between">
+                            <button class="z-[1] aspect-square h-6 text-center align-middle bg-black/80 rounded-full
+                            focus-visible:outline focus-visible:outline-searchbarFocusHightlight">{{ index+1 }}</button>
+                            <button class="z-[1] aspect-square h-6 p-0.5 text-center bg-black/80 rounded-full
+                            focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
+                                <i-mingcute:close-fill class="h-full w-full"/>
+                            </button>
+                        </div>
+                        <button :title="n.alt" class="h-full w-full rounded-none shadow-none border-none active:bg-transparent
+                        focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
+                        </button>
+                        <button :title="n.alt.trim() != '' ? n.alt : 'No ALT text provided'" class="flex aspect-square h-5 pr-1 items-center self-start bg-black/80 rounded-md
+                        focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
+                            <i-mingcute:add-fill class="h-3"/>
+                            <div class="text-xs">ALT</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
             <div v-if="postDetails.currentPostAction == PostActions.Quote && postDetails.isAwaitingPostThreadData">
                 <i-mingcute:loading-fill class="text-primary spinner self-center size-10"/>
             </div>
@@ -99,11 +124,32 @@
                     </div>
                 </div>
             </div>
+            <div class="flex flex-col">
+                <div v-if="uploadedMedia.length>0 && noAltTextProvided" class="flex gap-1 items-center">
+                    <i-mingcute:information-line/>
+                    <div class="text-sm">No ALT text has been provided for uploaded content.</div>
+                </div>
+                <div v-else-if="uploadedMedia.length>0 && !altTextProvidedForAll" class="flex gap-1 items-center">
+                    <i-mingcute:information-line/>
+                    <div class="text-sm">Some images do not have ALT text provided</div>
+                </div>
+                <div v-else-if="selectedImage > -1" class="flex flex-col gap-1">
+                    <div>ALT Text for Image {{ selectedImage+1 }}</div>
+                    <textarea id="post-textarea" role="text" placeholder="Alt text" contenteditable
+                    v-model="uploadedMedia[0].alt"
+                    class="block rounded p-2 bg-postBG w-full postPlaceholder"/>
+                    <div class="flex justify-between">
+                        <div>Char limit of 2000 here</div>
+                        <SquareButton class="bg-btn hover:bg-btnHover">Save</SquareButton>
+                    </div>
+                </div>
+            </div>
             <div class="flex rounded bg-btn p-2 items-center self-start gap-1 text-sm">
                 <i-mingcute:world-2-line/>
                 <div>Anybody can interact</div>
             </div>
             <CheckBox :model-value="showsPostAfterCreation" @value-toggled="n => showsPostAfterCreation = n">Show Post after creation?</CheckBox>
+            <hr class="border-outline"/>
             <div class="flex items-center">
                 <div class="flex gap-1">
                     <div v-for="option in mediaTypes" class="flex rounded p-2 hover:bg-btnHover
@@ -131,7 +177,7 @@ import { defineComponent, PropType } from 'vue'
 import MdiInsertPhoto from '~icons/mdi/insert-photo';
 import MdiFilmstripBoxMultiple from '~icons/mdi/filmstrip-box-multiple';
 import MdiFileGifBox from '~icons/mdi/file-gif-box';
-import { AppState, toast } from '../../state/AppState.vue';
+import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { CreateNewPost } from '../../lib/api/Post.vue';
 import { isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { postDetails } from '../../state/PostDetails.vue';
@@ -142,12 +188,16 @@ import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal, A
 import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import { PostActions } from '../../enums/PostEnums';
 import CheckBox from '../Utilities/CheckBox.vue';
+import PillButton from '../Utilities/PillButton.vue';
+import SquareButton from '../Utilities/SquareButton.vue';
 
 export default defineComponent({
     components:{
         AvatarRound,
         RichPostTextBsky,
         CheckBox,
+        SquareButton,
+        PillButton,
     },
     props:{
         avatar: String,
@@ -155,12 +205,20 @@ export default defineComponent({
     },
     data(){
         return{
+            TrapFocus,
             postText:'',
             mediaTypes:[
                 {label:'photo', icon:MdiInsertPhoto},
                 {label:'video', icon:MdiFilmstripBoxMultiple},
                 {label:'gif', icon:MdiFileGifBox},
             ],
+            uploadedMedia:[
+                {image:'src/assets/test-media/posts/image02.png', alt:'Christmas'},
+                {image:'src/assets/test-media/posts/image05.png', alt:'John halo'},
+                {image:'src/assets/test-media/posts/image04.png', alt:'a game that i miss :('},
+                {image:'src/assets/test-media/posts/image07.png', alt:'fornite'},
+            ],
+            selectedImage:-1,
             // canSubmitPost:false,
             confirmClose,
             postDetails,
@@ -293,7 +351,7 @@ export default defineComponent({
         /**
          * Determines if the current Post data held by the component contains any images.
          */
-         postContainsImage(){
+        postContainsImage(){
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
             if(!isViewRecord(this.postRef)){
                 if(this.postRef?.embed && this.postRef.embed.images){
@@ -317,6 +375,36 @@ export default defineComponent({
                     return true;
                 }
             }
+        },
+        /**
+         * Checks to see if any of the images selected to be uploaded as part of
+         * a post have ALT text provided. If none do `true` is returned, otherwise
+         * `false` is returned.
+         */
+        noAltTextProvided(){
+            let noAltText = true;
+            for (let i = 0; i < this.uploadedMedia.length; i++) {
+                if(this.uploadedMedia[i].alt.trim()!=''){
+                    noAltText = false;
+                    i = this.uploadedMedia.length;
+                }
+            }
+            return noAltText;
+        },
+        /**
+         * Checks to see if all the images selected to be uploaded as part of
+         * a post have ALT text provided. If one does not `false` is returned,
+         * and if all of them have ALT text `true` is returned.
+         */
+        altTextProvidedForAll(){
+            let allAltText = true;
+            for (let i = 0; i < this.uploadedMedia.length; i++) {
+                if(this.uploadedMedia[i].alt.trim()==''){
+                    allAltText = false;
+                    i = this.uploadedMedia.length;
+                }
+            }
+            return allAltText;
         },
         /**
          * Determines if the current Post data held by the component contains any video.
@@ -464,6 +552,9 @@ export default defineComponent({
             if(!isViewRecord(this.postRef)) return this.postRef?.record.text;
             else return this.postRef.value.text;
         },
+    },
+    mounted() {
+        this.$el.focus();
     },
     beforeUnmount() {
         postDetails.currentPostThreadData = {} as ThreadViewPost;

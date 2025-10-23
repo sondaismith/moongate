@@ -4,9 +4,9 @@
             disabled ? 'bg-gray-500 !border-gray-500 text-gray-400 select-none' : 'cursor-pointer']">
         <slot>[Set Slot Value Please!]</slot>
     </div> -->
-    <button
+    <button :disabled="disabled"
     class="group flex justify-center cursor-pointer !border-transparent rounded-full transition-colors
-    bg-btn select-none p-[1px] overflow-hidden">
+    bg-btn select-none p-[1px] overflow-hidden disabled:!bg-gray-400 disabled:text-gray-500 disabled:!cursor-default">
         <div class="border-2 border-transparent rounded-full w-full px-3s py-1s
         group-focus-visible:border-feedtypeBtnFocusHighlight">
             <slot>[Set Slot Value Please!]</slot>
