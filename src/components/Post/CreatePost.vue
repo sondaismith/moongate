@@ -62,25 +62,31 @@
                 class="block rounded p-2 bg-slate-900 w-full postPlaceholder"/> -->
             </div>
             <div class="flex flex-wrap gap-1 w-full">
-                <div v-for="(n, index) in uploadedMedia" class="relative aspect-square max-h-32 max-w-32 flex-[0_1_30%]
-                rounded-md border border-outline overflow-hidden">
+                <div v-for="(n, index) in uploadedMedia" :key="index" class="relative aspect-square max-h-32 max-w-32 flex-[0_1_30%]
+                rounded-md border border-outline overflow-hidden origin-top-left">
+                    <div v-if="(index == selectedImage)" class="absolute w-full h-full rounded-md border-4 border-primary"></div>
                     <img :src="n.image" class="object-cover h-full w-full"/>
                     <div class="absolute top-0 left-0 flex flex-col gap-1 p-0.5 h-full w-full text-white">
                         <div class="flex justify-between">
                             <button class="z-[1] aspect-square h-6 text-center align-middle bg-black/80 rounded-full
                             focus-visible:outline focus-visible:outline-searchbarFocusHightlight">{{ index+1 }}</button>
-                            <button class="z-[1] aspect-square h-6 p-0.5 text-center bg-black/80 rounded-full
+                            <button @click="removeUploadedMedia(index)" title="Remove Media"
+                            class="z-[1] aspect-square h-6 p-0.5 text-center bg-black/80 rounded-full
                             focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
                                 <i-mingcute:close-fill class="h-full w-full"/>
                             </button>
                         </div>
-                        <button :title="n.alt" class="h-full w-full rounded-none shadow-none border-none active:bg-transparent
+                        <button @click="toggleViewImageAltText(index)" :title="n.alt" class="h-full w-full rounded-none shadow-none border-none active:bg-transparent
                         focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
                         </button>
-                        <button :title="n.alt.trim() != '' ? n.alt : 'No ALT text provided'" class="flex aspect-square h-5 pr-1 items-center self-start bg-black/80 rounded-md
+                        <button @click="toggleViewImageAltText(index)" :title="n.alt.trim() != '' ? n.alt : 'No ALT text provided'"
+                        class="flex aspect-square h-5 pr-1 items-center self-start bg-black/80 rounded-md
                         focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
-                            <i-mingcute:add-fill class="h-3"/>
-                            <div class="text-xs">ALT</div>
+                            <Transition>
+                            <div v-if="n.alt.trim() == ''" class="absolute"><i-mingcute:add-fill class="h-3"/></div>
+                            <div v-else class="absolute"><i-mingcute:check-fill class="h-3"/></div>
+                            </Transition>
+                            <div class="ml-5 text-xs">ALT</div>
                         </button>
                     </div>
                 </div>
@@ -124,25 +130,26 @@
                     </div>
                 </div>
             </div>
-            <div class="flex flex-col">
-                <div v-if="uploadedMedia.length>0 && noAltTextProvided" class="flex gap-1 items-center">
-                    <i-mingcute:information-line/>
-                    <div class="text-sm">No ALT text has been provided for uploaded content.</div>
-                </div>
-                <div v-else-if="uploadedMedia.length>0 && !altTextProvidedForAll" class="flex gap-1 items-center">
-                    <i-mingcute:information-line/>
-                    <div class="text-sm">Some images do not have ALT text provided</div>
-                </div>
-                <div v-else-if="selectedImage > -1" class="flex flex-col gap-1">
-                    <div>ALT Text for Image {{ selectedImage+1 }}</div>
-                    <textarea id="post-textarea" role="text" placeholder="Alt text" contenteditable
-                    v-model="uploadedMedia[0].alt"
-                    class="block rounded p-2 bg-postBG w-full postPlaceholder"/>
-                    <div class="flex justify-between">
-                        <div>Char limit of 2000 here</div>
-                        <SquareButton class="bg-btn hover:bg-btnHover">Save</SquareButton>
+            <div class="flex flex-col gap-1">
+                <div v-if="uploadedMedia.length>0">
+                    <div v-for="n in getMediaAltTextState" class="flex gap-1 items-center">
+                        <i-mingcute:information-line v-if="!n.allProvided" class="text-blue-400"/>
+                        <i-mingcute:check-fill v-else class="text-green-400"/>
+                        <div class="text-sm">{{ n.text }}</div>
                     </div>
                 </div>
+                <Transition>
+                    <div v-if="selectedImage > -1" class="absolutes max-h-80 flex flex-col gap-1 h-full w-full">
+                        <div>ALT Text for Image {{ selectedImage+1 }}</div>
+                        <textarea id="post-textarea" role="text" placeholder="Alt text" contenteditable
+                        v-model="uploadedMedia[selectedImage].alt"
+                        class="block rounded p-2 bg-postBG w-full postPlaceholder"/>
+                        <div class="flex justify-between">
+                            <div>Char limit of 2000 here</div>
+                            <SquareButton class="bg-btn hover:bg-btnHover">Save</SquareButton>
+                        </div>
+                    </div>
+                </Transition>
             </div>
             <div class="flex rounded bg-btn p-2 items-center self-start gap-1 text-sm">
                 <i-mingcute:world-2-line/>
@@ -209,8 +216,7 @@ export default defineComponent({
             postText:'',
             mediaTypes:[
                 {label:'photo', icon:MdiInsertPhoto},
-                {label:'video', icon:MdiFilmstripBoxMultiple},
-                {label:'gif', icon:MdiFileGifBox},
+                // {label:'gif', icon:MdiFileGifBox},
             ],
             uploadedMedia:[
                 {image:'src/assets/test-media/posts/image02.png', alt:'Christmas'},
@@ -261,6 +267,26 @@ export default defineComponent({
             //limit char count
             let maxChars = 300;
             if(this.postText.length>maxChars) this.postText = this.postText.slice(0,maxChars);
+        },
+        /**
+         * Toggles the textbox that allows the User to enter ALT text for a
+         * specific piece of media selected to be uploaded.
+         * @param index The index of the uploaded media to show the ALT text
+         * for.
+         */
+        toggleViewImageAltText(index:number){
+            if(index == this.selectedImage) this.selectedImage = -1;
+            else this.selectedImage = index;
+        },
+        /**
+         * Removes a specific selected media file from the Post attatch/upload list.
+         * @param index The index of the uploaded media to remove from the upload
+         * list.
+         */
+        removeUploadedMedia(index:number){
+            if(index >-1 && index <= this.uploadedMedia.length-1){
+                this.uploadedMedia.splice(index,1);
+            }
         },
         async createNewPost(){
             if(this.isAwaitingPostConfirm) return;
@@ -335,7 +361,6 @@ export default defineComponent({
                     break;
             }
         }
-
     },
     computed:{
         charsRemaining(){
@@ -377,34 +402,17 @@ export default defineComponent({
             }
         },
         /**
-         * Checks to see if any of the images selected to be uploaded as part of
-         * a post have ALT text provided. If none do `true` is returned, otherwise
-         * `false` is returned.
+         * Computes the ALT text validation message that needs to be displayed to the User.
          */
-        noAltTextProvided(){
-            let noAltText = true;
+        getMediaAltTextState(){
+            let numWithAlt = 0;
+            let state = {text:'ALT text provided for each piece of uploaded media.',allProvided:true};
             for (let i = 0; i < this.uploadedMedia.length; i++) {
-                if(this.uploadedMedia[i].alt.trim()!=''){
-                    noAltText = false;
-                    i = this.uploadedMedia.length;
-                }
+                if(this.uploadedMedia[i].alt.trim()!='') numWithAlt++;
             }
-            return noAltText;
-        },
-        /**
-         * Checks to see if all the images selected to be uploaded as part of
-         * a post have ALT text provided. If one does not `false` is returned,
-         * and if all of them have ALT text `true` is returned.
-         */
-        altTextProvidedForAll(){
-            let allAltText = true;
-            for (let i = 0; i < this.uploadedMedia.length; i++) {
-                if(this.uploadedMedia[i].alt.trim()==''){
-                    allAltText = false;
-                    i = this.uploadedMedia.length;
-                }
-            }
-            return allAltText;
+            if(numWithAlt == 0) state = {text:'No ALT text has been provided for uploaded content.',allProvided:false};
+            else if(numWithAlt < this.uploadedMedia.length) state = {text:'Some images do not have ALT text provided.',allProvided:false};
+            return [state];
         },
         /**
          * Determines if the current Post data held by the component contains any video.
@@ -581,5 +589,17 @@ function close(){
   color: #94a3b8;
   content: attr(placeholder);
   pointer-events: none;
+}
+
+.v-enter-active,
+.v-leave-active {
+    transition: opacity 0.3s ease, transform 0.4s ease, max-height 0.8s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(20px);
 }
 </style>

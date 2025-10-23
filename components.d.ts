@@ -52,7 +52,6 @@ declare module 'vue' {
     'IMdi:twitterRetweet': typeof import('~icons/mdi/twitter-retweet')['default']
     'IMingcute:addCircleFill': typeof import('~icons/mingcute/add-circle-fill')['default']
     'IMingcute:addFill': typeof import('~icons/mingcute/add-fill')['default']
-    'IMingcute:addLine': typeof import('~icons/mingcute/add-line')['default']
     'IMingcute:arrowLeftFill': typeof import('~icons/mingcute/arrow-left-fill')['default']
     'IMingcute:arrowRightFill': typeof import('~icons/mingcute/arrow-right-fill')['default']
     'IMingcute:butterfly2Fill': typeof import('~icons/mingcute/butterfly2-fill')['default']
