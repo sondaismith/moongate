@@ -45,6 +45,7 @@ declare module 'vue' {
     'IMdi:login': typeof import('~icons/mdi/login')['default']
     'IMdi:magnifyScan': typeof import('~icons/mdi/magnify-scan')['default']
     'IMdi:paintOutline': typeof import('~icons/mdi/paint-outline')['default']
+    'IMdi:photoLibrary': typeof import('~icons/mdi/photo-library')['default']
     'IMdi:pin': typeof import('~icons/mdi/pin')['default']
     'IMdi:playlistAdd': typeof import('~icons/mdi/playlist-add')['default']
     'IMdi:smsFailedOutline': typeof import('~icons/mdi/sms-failed-outline')['default']

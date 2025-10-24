@@ -73,4 +73,9 @@ interface IOptionIcon{
     icon: FunctionalComponent
 }
 
-export type {IPostDetails, IPostDetailsList, IDetailIcon, IOptionIcon}
+interface IUploadedFile{
+    media:string,
+    alt:string
+}
+
+export type {IPostDetails, IPostDetailsList, IDetailIcon, IOptionIcon, IUploadedFile}

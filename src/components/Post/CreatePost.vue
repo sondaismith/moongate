@@ -65,7 +65,7 @@
                 <div v-for="(n, index) in uploadedMedia" :key="index" class="relative aspect-square max-h-32 max-w-32 flex-[0_1_30%]
                 rounded-md border border-outline overflow-hidden origin-top-left">
                     <div v-if="(index == selectedImage)" class="absolute w-full h-full rounded-md border-4 border-primary"></div>
-                    <img :src="n.image" class="object-cover h-full w-full"/>
+                    <img :src="n.media" class="object-cover h-full w-full"/>
                     <div class="absolute top-0 left-0 flex flex-col gap-1 p-0.5 h-full w-full text-white">
                         <div class="flex justify-between">
                             <button class="z-[1] aspect-square h-6 text-center align-middle bg-black/80 rounded-full
@@ -159,6 +159,8 @@
             <hr class="border-outline"/>
             <div class="flex items-center">
                 <div class="flex gap-1">
+                    <input id="file-upload" type="file" accept="image/*" multiple hidden @change="handleFileSelect"/>
+                    <button @click="uploadMedia" class="px-2 rounded-md hover:bg-btnHover text-xl text-blue-500 shadow-none"><i-mdi:photo-library/></button>
                     <div v-for="option in mediaTypes" class="flex rounded p-2 hover:bg-btnHover
                     cursor-pointer text-blue-500 text-xl items-center justify-center">
                         <component :is="option.icon"></component>
@@ -197,6 +199,7 @@ import { PostActions } from '../../enums/PostEnums';
 import CheckBox from '../Utilities/CheckBox.vue';
 import PillButton from '../Utilities/PillButton.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
+import { IUploadedFile } from "../../interfaces/PostInterfaces";
 
 export default defineComponent({
     components:{
@@ -213,17 +216,20 @@ export default defineComponent({
     data(){
         return{
             TrapFocus,
+            URL,
             postText:'',
             mediaTypes:[
                 {label:'photo', icon:MdiInsertPhoto},
                 // {label:'gif', icon:MdiFileGifBox},
             ],
-            uploadedMedia:[
-                {image:'src/assets/test-media/posts/image02.png', alt:'Christmas'},
-                {image:'src/assets/test-media/posts/image05.png', alt:'John halo'},
-                {image:'src/assets/test-media/posts/image04.png', alt:'a game that i miss :('},
-                {image:'src/assets/test-media/posts/image07.png', alt:'fornite'},
-            ],
+            // uploadedMedia:[
+            //     {image:'src/assets/test-media/posts/image02.png', alt:'Christmas'},
+            //     {image:'src/assets/test-media/posts/image05.png', alt:'John halo'},
+            //     {image:'src/assets/test-media/posts/image04.png', alt:'a game that i miss :('},
+            //     {image:'src/assets/test-media/posts/image07.png', alt:'fornite'},
+            // ],
+            uploadedMedia:[] as IUploadedFile[],
+            files: [] as File[],
             selectedImage:-1,
             // canSubmitPost:false,
             confirmClose,
@@ -285,8 +291,58 @@ export default defineComponent({
          */
         removeUploadedMedia(index:number){
             if(index >-1 && index <= this.uploadedMedia.length-1){
+                if(this.selectedImage == index) this.selectedImage = -1; //deselect removed image
+                else if(this.selectedImage > index) this.selectedImage = this.selectedImage-1; //handle index values changing from removal
                 this.uploadedMedia.splice(index,1);
             }
+        },
+        /**
+         * Initiates the selection of files to Upload by programmatically
+         * clicking hidden `<input type="file">` element.
+         */
+        uploadMedia(){
+            let upload = document.getElementById('file-upload') as HTMLInputElement;
+            if(upload) upload.click();
+        },
+        /**
+         * Handles the selection of files to include with the created Post.
+         * Process the selection and automatically rejects files with a simple
+         * check - not foolproof. The assumption is that Bluesky's servers will
+         * do more thorough checks to protect themselves. This metho only allows
+         * images at the moment.
+         * @param e The file upload <input> element's `onChange` event.
+         */
+        handleFileSelect(e: Event){
+            const input = e.target as HTMLInputElement;
+            const filesAsArray = Array.from(input?.files || []);
+            this.files = filesAsArray;
+            //remove GIFs as they are handled as videos on Bluesky
+            let invalidFiles = [] as {name:string,index:number}[];
+            for (let i = 0; i < filesAsArray.length; i++) {
+                if(filesAsArray[i].type.includes('gif')){
+                    invalidFiles.push({name:filesAsArray[i].name,index:i});
+                }
+            }
+            for (let i = invalidFiles.length-1; i > -1; i--) {
+                filesAsArray.splice(invalidFiles[i].index,1);
+            }
+            if(invalidFiles.length>0) toast.add({summary:'GIFs (Video) not yet supported', detail:`${invalidFiles.map(f => f.name).join(',\n')} cannot be uploaded.`, severity:'warn', group:'tr', life:5000});
+            //calculate how many files can be added to upload list
+            let newMedia = [] as IUploadedFile[];
+            if(this.uploadedMedia.length+filesAsArray.length>4){
+                toast.add({summary:'Too many images', detail:`4 images max can be uploaded with a Post.`, severity:'warn', group:'tr', life:3000});
+            }
+            for (let i = 0; i < this.calculateAllowedMediaCount(filesAsArray.length); i++) {
+                newMedia.push({media:this.URL.createObjectURL(filesAsArray[i]),alt:''});
+            }
+            this.uploadedMedia = this.uploadedMedia.concat(newMedia);
+        },
+        calculateAllowedMediaCount(itemsToAdd:number){
+            let spacesLeft = 4-this.uploadedMedia.length;
+            if(spacesLeft < 1) spacesLeft = 0;
+            if(itemsToAdd<=spacesLeft) return itemsToAdd;
+            else if(itemsToAdd>spacesLeft && spacesLeft>0) return spacesLeft;
+            else return 0;
         },
         async createNewPost(){
             if(this.isAwaitingPostConfirm) return;
