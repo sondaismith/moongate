@@ -74,8 +74,10 @@ interface IOptionIcon{
 }
 
 interface IUploadedFile{
-    media:string,
-    alt:string
+    blobURI:string,
+    fileName:string,
+    alt:string,
+    type:string
 }
 
 export type {IPostDetails, IPostDetailsList, IDetailIcon, IOptionIcon, IUploadedFile}

@@ -65,7 +65,7 @@
                 <div v-for="(n, index) in uploadedMedia" :key="index" class="relative aspect-square max-h-32 max-w-32 flex-[0_1_30%]
                 rounded-md border border-outline overflow-hidden origin-top-left">
                     <div v-if="(index == selectedImage)" class="absolute w-full h-full rounded-md border-4 border-primary"></div>
-                    <img :src="n.media" class="object-cover h-full w-full"/>
+                    <img :src="n.blobURI" class="object-cover h-full w-full"/>
                     <div class="absolute top-0 left-0 flex flex-col gap-1 p-0.5 h-full w-full text-white">
                         <div class="flex justify-between">
                             <button class="z-[1] aspect-square h-6 text-center align-middle bg-black/80 rounded-full
@@ -76,7 +76,7 @@
                                 <i-mingcute:close-fill class="h-full w-full"/>
                             </button>
                         </div>
-                        <button @click="toggleViewImageAltText(index)" :title="n.alt" class="h-full w-full rounded-none shadow-none border-none active:bg-transparent
+                        <button @click="toggleViewImageAltText(index)" :title="n.alt.trim() == '' ? n.fileName : n.alt" class="h-full w-full rounded-none shadow-none border-none active:bg-transparent
                         focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
                         </button>
                         <button @click="toggleViewImageAltText(index)" :title="n.alt.trim() != '' ? n.alt : 'No ALT text provided'"
@@ -137,6 +137,10 @@
                         <i-mingcute:check-fill v-else class="text-green-400"/>
                         <div class="text-sm">{{ n.text }}</div>
                     </div>
+                    <div v-if="webpSelectedForUpload" class="flex gap-1 items-center">
+                        <i-mingcute:information-line class="text-blue-400"/>
+                        <div class="text-sm">Animated WEBP files will be uploaded as a static image</div>
+                    </div>
                 </div>
                 <Transition>
                     <div v-if="selectedImage > -1" class="absolutes max-h-80 flex flex-col gap-1 h-full w-full">
@@ -160,7 +164,11 @@
             <div class="flex items-center">
                 <div class="flex gap-1">
                     <input id="file-upload" type="file" accept="image/*" multiple hidden @change="handleFileSelect"/>
-                    <button @click="uploadMedia" class="px-2 rounded-md hover:bg-btnHover text-xl text-blue-500 shadow-none"><i-mdi:photo-library/></button>
+                    <button @click="uploadMedia" :disabled="uploadDisabled" class="px-2 rounded-md hover:bg-btnHover text-xl text-blue-500 shadow-none transition-colors
+                        disabled:bg-disabledBG disabled:hover:bg-disabledBG disabled:hover:border-disabledBG disabled:text-disabled disabled:cursor-not-allowed"
+                        :title="uploadDisabled ? 'Max 4 Images Allowed' : 'Upload Image'">
+                        <i-mdi:photo-library/>
+                    </button>
                     <div v-for="option in mediaTypes" class="flex rounded p-2 hover:bg-btnHover
                     cursor-pointer text-blue-500 text-xl items-center justify-center">
                         <component :is="option.icon"></component>
@@ -218,6 +226,7 @@ export default defineComponent({
             TrapFocus,
             URL,
             postText:'',
+            allowedFileFormats:['jpe','jpeg','jpg','png','webp','svg','avif'],
             mediaTypes:[
                 {label:'photo', icon:MdiInsertPhoto},
                 // {label:'gif', icon:MdiFileGifBox},
@@ -316,24 +325,35 @@ export default defineComponent({
             const input = e.target as HTMLInputElement;
             const filesAsArray = Array.from(input?.files || []);
             this.files = filesAsArray;
-            //remove GIFs as they are handled as videos on Bluesky
-            let invalidFiles = [] as {name:string,index:number}[];
+            //remove unsupported file formats
+            let invalidFiles = [] as {name:string,index:number,reason:string}[];
             for (let i = 0; i < filesAsArray.length; i++) {
-                if(filesAsArray[i].type.includes('gif')){
-                    invalidFiles.push({name:filesAsArray[i].name,index:i});
+                if(!this.allowedFileFormats.some(f => filesAsArray[i].type.includes(f))){
+                    invalidFiles.push({name:filesAsArray[i].name,index:i,reason:'Invalid Format'});
                 }
             }
             for (let i = invalidFiles.length-1; i > -1; i--) {
                 filesAsArray.splice(invalidFiles[i].index,1);
             }
-            if(invalidFiles.length>0) toast.add({summary:'GIFs (Video) not yet supported', detail:`${invalidFiles.map(f => f.name).join(',\n')} cannot be uploaded.`, severity:'warn', group:'tr', life:5000});
+            if(invalidFiles.length>0) toast.add({summary:'File type not supported', detail:`${invalidFiles.map(f => f.name).join(',\n')} cannot be uploaded.`, severity:'warn', group:'tr', life:5000});
+            //remove files that are too large
+            invalidFiles = []; //reset
+            for (let i = 0; i < filesAsArray.length; i++) {
+                if(filesAsArray[i].size>5000000){
+                    invalidFiles.push({name:filesAsArray[i].name,index:i,reason:'Too large'});
+                }
+            }
+            for (let i = invalidFiles.length-1; i > -1; i--) {
+                filesAsArray.splice(invalidFiles[i].index,1);
+            }
+            if(invalidFiles.length>0) toast.add({summary:'File size too large', detail:`${invalidFiles.map(f => f.name).join(',\n')} is/are over 5MB.`, severity:'warn', group:'tr', life:5000});
             //calculate how many files can be added to upload list
             let newMedia = [] as IUploadedFile[];
             if(this.uploadedMedia.length+filesAsArray.length>4){
                 toast.add({summary:'Too many images', detail:`4 images max can be uploaded with a Post.`, severity:'warn', group:'tr', life:3000});
             }
             for (let i = 0; i < this.calculateAllowedMediaCount(filesAsArray.length); i++) {
-                newMedia.push({media:this.URL.createObjectURL(filesAsArray[i]),alt:''});
+                newMedia.push({blobURI:this.URL.createObjectURL(filesAsArray[i]),fileName:filesAsArray[i].name,alt:'',type:filesAsArray[i].type});
             }
             this.uploadedMedia = this.uploadedMedia.concat(newMedia);
         },
@@ -616,6 +636,23 @@ export default defineComponent({
             if(!isViewRecord(this.postRef)) return this.postRef?.record.text;
             else return this.postRef.value.text;
         },
+        /**Indicates if file uploading should be disabled (4 files have already been selected). */
+        uploadDisabled():boolean{
+            return this.uploadedMedia.length>3;
+        },
+        /**Indicates if a WEBP file has been select to be uploaded. Used to display message
+         * informing the User that animated WEBPs will be posted as a static image.
+         */
+        webpSelectedForUpload():boolean{
+            let result = false;
+            for (let i = 0; i < this.uploadedMedia.length; i++) {
+                if(this.uploadedMedia[i].type.includes('webp')){
+                    i = this.uploadedMedia.length;
+                    result = true;
+                }
+            }
+            return result;
+        }
     },
     mounted() {
         this.$el.focus();
