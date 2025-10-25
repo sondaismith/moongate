@@ -155,16 +155,23 @@
                     </div>
                 </Transition>
             </div>
-            <button @click="toggleThreadGateOptionsModal" class="flex rounded bg-btn hover:bg-btnHover p-2 items-center self-start gap-1 text-sm cursor-pointer">
-                <div class="flex gap-1 items-center">
-                    <div>
-                        <i-mingcute:world-2-line v-if="threadGateOptions[0].selected"/>
-                        <i-mdi:do-not-disturb-alt v-else-if="threadGateOptions[1].selected"/>
-                        <i-solar:users-group-rounded-bold v-else/>
+            <div class="flex gap-1">
+                <button @click="toggleThreadGateOptionsModal" class="flex rounded bg-btn hover:bg-btnHover p-2 items-center self-start gap-1 text-sm cursor-pointer">
+                    <div class="flex gap-1 items-center">
+                        <div>
+                            <i-mingcute:world-2-line v-if="threadGateOptions[0].selected"/>
+                            <i-mdi:do-not-disturb-alt v-else-if="threadGateOptions[1].selected"/>
+                            <i-solar:users-group-rounded-bold v-else/>
+                        </div>
+                        <div>{{ generatedThreadGateLabel }}</div>
                     </div>
-                    <div>{{ generatedThreadGateLabel }}</div>
-                </div>
-            </button>
+                </button>
+                <button v-if="uploadedMedia.length>0" @click="toggleContentLabelOptionsModal" class="flex rounded bg-btn hover:bg-btnHover p-2 items-center self-start gap-1 text-sm cursor-pointer">
+                    <i-mingcute:check-fill v-if="haveLabelsBeenAdded"/>
+                    <i-mingcute:safe-shield-2-fill v-else/>
+                    <div>{{ haveLabelsBeenAdded ? 'Labels Added' : 'Content Labels' }}</div>
+                </button>
+            </div>
             <CheckBox :model-value="showsPostAfterCreation" @value-toggled="n => showsPostAfterCreation = n">Show Post after creation?</CheckBox>
             <hr class="border-outline"/>
             <div class="flex items-center">
@@ -234,6 +241,43 @@
                     </div>
                 </div>
                 <SquareButton @click="closeThreadGateOptionsModal" class="mt-2 font-bold bg-blue-500">Close</SquareButton>
+            </div>
+        </div>
+        <div v-if="contentLabelsModalVisible" class="absolute flex w-full h-full">
+            <div class="absolute w-full h-full bg-black/50"></div>
+            <div class="z-30 flex flex-col gap-2 rounded-lg bg-focusBG p-4 mx-auto my-auto max-w-[420px] border border-outlineLighter text-primary">
+                <div class="flex">
+                    <div class="flex flex-col">
+                        <div class="font-bold text-xl">Add content warnings</div>
+                        <div>Please add content warning labels that are applicable for the media you are posting.</div>
+                    </div>
+                    <button @click="closeContentLabelOptionsModal" class="flex self-start hover:border-transparent shadow-none">
+                        <i-mingcute:close-fill class="text-outline"/>
+                    </button>
+                </div>
+                <hr class="border-outline"/>
+                <div class="flex flex-col gap-1 w-full">
+                    <div class="font-bold text-lg">Adult Content</div>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex flex-col gap-2">
+                            <CheckedButton @click="selectAdultContentLabelOptions(index)" v-for="(n,index) in contentLabelOptions[0].options"
+                            :selected="n.selected">{{ n.name }}</CheckedButton>
+                        </div>
+                        <div class="mt-1 text-sm">{{ generatedAdultContentLabel }}</div>
+                    </div>
+                </div>
+                <hr class="border-outline"/>
+                <div class="flex flex-col gap-1 w-full">
+                    <div class="font-bold text-lg">Other</div>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex flex-col gap-2">
+                            <CheckedButton @click="selectOtherContentLabelOptions(index)" v-for="(n,index) in contentLabelOptions[1].options"
+                            :selected="n.selected">{{ n.name }}</CheckedButton>
+                        </div>
+                        <div class="mt-1 text-sm">{{ generatedOtherContentLabel }}</div>
+                    </div>
+                </div>
+                <SquareButton @click="closeContentLabelOptionsModal" class="mt-2 font-bold bg-blue-500">Close</SquareButton>
             </div>
         </div>
     </div>
@@ -313,6 +357,23 @@ export default defineComponent({
                 },
                 {name:'Nobody', selected:false, options:[] as {name:string,selected:boolean,options:[]}[]},
             ],
+            /**Is the Content Label Options modal currently visible? */
+            contentLabelsModalVisible:false,
+            /**Collection used to display and set all the "Thread Gate" options.*/
+            contentLabelOptions:[
+                {name:'Adult Content', selected:false,
+                    options:[
+                        {name:'Suggestive',selected:false,options:[]},
+                        {name:'Nudity',selected:false,options:[]},
+                        {name:'Adult',selected:false,options:[]},
+                    ]
+                },
+                {name:'Other', selected:false,
+                    options:[
+                        {name:'Graphic Media',selected:false,options:[]}
+                    ]
+                },
+            ],
             // canSubmitPost:false,
             confirmClose,
             postDetails,
@@ -377,6 +438,7 @@ export default defineComponent({
                 else if(this.selectedImage > index) this.selectedImage = this.selectedImage-1; //handle index values changing from removal
                 this.uploadedMedia.splice(index,1);
             }
+            if(this.uploadedMedia.length == 0) this.deselectAllContentLabelOptions();
         },
         /**
          * Initiates the selection of files to Upload by programmatically
@@ -446,6 +508,14 @@ export default defineComponent({
         closeThreadGateOptionsModal(){
             this.threadGateOptionsVisible = false;
         },
+        /**Shows or hides Content label options modal. */
+        toggleContentLabelOptionsModal(){
+            this.contentLabelsModalVisible = !this.contentLabelsModalVisible;
+        },
+        /**Hides the Content label options modal. */
+        closeContentLabelOptionsModal(){
+            this.contentLabelsModalVisible = false;
+        },
         /**Toggles if the "Allow Quote posts" setting is on or off. */
         toggleAllowQuotePosts(){
             this.allowQuotePosts = !this.allowQuotePosts;
@@ -468,6 +538,29 @@ export default defineComponent({
         deselectSubEverythingThreadGateOptions(){
             for(let i = 0; i < this.threadGateOptions[0].options.length; i++) {
                 this.threadGateOptions[0].options[i].selected = false;
+            }
+        },
+        /**Used to set "Adult Content" content label options.*/
+        selectAdultContentLabelOptions(index:number){
+            this.contentLabelOptions[0].options[index].selected = !this.contentLabelOptions[0].options[index].selected;
+            for (let i = 0; i < this.contentLabelOptions[0].options.length; i++) {
+                if(i!=index) this.contentLabelOptions[0].options[i].selected = false;
+            }
+        },
+        /**Used to set "Other" content label options.*/
+        selectOtherContentLabelOptions(index:number){
+            this.contentLabelOptions[1].options[index].selected = !this.contentLabelOptions[1].options[index].selected;
+            for (let i = 0; i < this.contentLabelOptions[1].options.length; i++) {
+                if(i!=index) this.contentLabelOptions[1].options[i].selected = false;
+            }
+        },
+        /**Deselects all the Content label options. */
+        deselectAllContentLabelOptions(){
+            for (let i = 0; i < this.contentLabelOptions[0].options.length; i++) {
+                this.contentLabelOptions[0].options[i].selected = false;
+            }
+            for (let i = 0; i < this.contentLabelOptions[1].options.length; i++) {
+                this.contentLabelOptions[1].options[i].selected = false;
             }
         },
         async createNewPost(){
@@ -787,6 +880,29 @@ export default defineComponent({
                 message = ArrToString(subChoices) + ' Users can Reply';
             }
             return message;
+        },
+        /**
+         * Generates message listing the currently set Content label for "Adult" content.
+         */
+        generatedAdultContentLabel():string{
+            let message = '';
+            if(this.contentLabelOptions[0].options[0].selected) message = 'Pictures meant for adults.';
+            if(this.contentLabelOptions[0].options[1].selected) message = 'Artistic or non-erotic nudity.';
+            if(this.contentLabelOptions[0].options[2].selected) message = 'Sexual activity or erotic nudity.';
+            return message;
+        },
+        /**
+         * Generates message listing the currently set Content label for "Other" content.
+         */
+        generatedOtherContentLabel():string{
+            let message = '';
+            if(this.contentLabelOptions[1].options[0].selected) message = 'Media that may be disturbing or inappropriate for some audiences.';
+            return message;
+        },
+        /**Have any content labels been added for uploaded media? */
+        haveLabelsBeenAdded():boolean{
+            if(this.generatedAdultContentLabel != '' || this.generatedOtherContentLabel != '') return true;
+            else return false;
         }
     },
     mounted() {
