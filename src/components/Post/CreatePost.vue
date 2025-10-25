@@ -210,10 +210,7 @@
                         <div class="font-bold text-lg">Quote settings</div>
                         <div class="flex justify-between items-center">
                             <div class="text-sm text-secondary">Allow quote posts</div>
-                            <button @click="toggleAllowQuotePosts" class="relative flex flex-col p-1 h-7 w-11 items-center rounded-full border border-blue-600 shadow-none"
-                            :class="allowQuotePosts ? 'bg-slate-800 border-blue-600 hover:border-blue-500 focus-visible:border-blue-500' : 'bg-transparent border-disabled hover:border-slate-400 focus-visible:border-slate-400'">
-                                <div class="absolute transition-transform left-1 top-1 bottom-1 rounded-full aspect-square bg-blue-500" :class="allowQuotePosts ? 'translate-x-4':'translate-x-0 bg-disabled'"></div>
-                            </button>
+                            <ModernToggleButton :value-to-toggle="allowQuotePosts" @value-toggled="(newVal) => allowQuotePosts = newVal"/>
                         </div>
                     </div>
                 </div>
@@ -224,27 +221,19 @@
                         <div class="flex flex-col gap-1">
                             <div class="text-sm text-secondary">Allow replies from:</div>
                             <div class="flex gap-2">
-                                <button @click="selectTopLevelThreadGateFilter(index)" v-for="(n,index) in threadGateOptions" class="flex p-2 px-3 w-1/2 rounded-lg text-sm
-                                font-semibold items-center justify-between bg-slate-700 hover:bg-slate-600 focus-visible:bg-slate-600"
-                                :class="[{'!bg-slate-500' : n.selected}]">
-                                    <div>{{ n.name }}</div>
-                                    <i-mingcute:check-fill v-if="n.selected" class="text-green-400"/>
-                                </button>
+                                <CheckedButton @click="selectTopLevelThreadGateFilter(index)" v-for="(n,index) in threadGateOptions" :selected="n.selected" class="w-1/2">{{ n.name }}</CheckedButton>
                             </div>
                         </div>
                         <div v-if="threadGateOptions[0].selected || areAnySubEverythingThreadGatesSelected" class="flex flex-col gap-1">
                             <div class="text-sm text-secondary">Or combine options:</div>
                             <div class="flex flex-col gap-2">
-                                <button @click="selectSubEverythingThreadGateOptions(index)" v-for="(n,index) in threadGateOptions[0].options" class="flex p-2 px-3 rounded-lg text-sm
-                                font-semibold items-center justify-between bg-slate-700 hover:bg-slate-600 focus-visible:bg-slate-600">
-                                    <div>{{n.name}}</div>
-                                    <i-mingcute:check-fill v-if="n.selected" class="text-green-400"/>
-                                </button>
+                                <CheckedButton @click="selectSubEverythingThreadGateOptions(index)" v-for="(n,index) in threadGateOptions[0].options"
+                                :selected="n.selected">{{ n.name }}</CheckedButton>
                             </div>
                         </div>
                     </div>
                 </div>
-                <SquareButton @click="closeThreadGateOptionsModal" class="mt-2 bg-blue-500">Close</SquareButton>
+                <SquareButton @click="closeThreadGateOptionsModal" class="mt-2 font-bold bg-blue-500">Close</SquareButton>
             </div>
         </div>
     </div>
@@ -270,6 +259,8 @@ import PillButton from '../Utilities/PillButton.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { IUploadedFile } from "../../interfaces/PostInterfaces";
 import {ArrToString} from '../../helpers/formaters.ts';
+import ModernToggleButton from '../Utilities/ModernToggleButton.vue';
+import CheckedButton from '../Utilities/CheckedButton.vue';
 
 export default defineComponent({
     components:{
@@ -278,6 +269,8 @@ export default defineComponent({
         CheckBox,
         SquareButton,
         PillButton,
+        CheckedButton,
+        ModernToggleButton,
     },
     props:{
         avatar: String,
