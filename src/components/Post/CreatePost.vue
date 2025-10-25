@@ -155,10 +155,16 @@
                     </div>
                 </Transition>
             </div>
-            <div class="flex rounded bg-btn p-2 items-center self-start gap-1 text-sm">
-                <i-mingcute:world-2-line/>
-                <div>Anybody can interact</div>
-            </div>
+            <button @click="toggleThreadGateOptionsModal" class="flex rounded bg-btn hover:bg-btnHover p-2 items-center self-start gap-1 text-sm cursor-pointer">
+                <div class="flex gap-1 items-center">
+                    <div>
+                        <i-mingcute:world-2-line v-if="threadGateOptions[0].selected"/>
+                        <i-mdi:do-not-disturb-alt v-else-if="threadGateOptions[1].selected"/>
+                        <i-solar:users-group-rounded-bold v-else/>
+                    </div>
+                    <div>{{ generatedThreadGateLabel }}</div>
+                </div>
+            </button>
             <CheckBox :model-value="showsPostAfterCreation" @value-toggled="n => showsPostAfterCreation = n">Show Post after creation?</CheckBox>
             <hr class="border-outline"/>
             <div class="flex items-center">
@@ -186,6 +192,61 @@
                 </div>
             </div>
         </div>
+        <div v-if="threadGateOptionsVisible" class="absolute flex w-full h-full">
+            <div class="absolute w-full h-full bg-black/50"></div>
+            <div class="z-30 flex flex-col gap-2 rounded-lg bg-focusBG p-4 mx-auto my-auto border border-outlineLighter text-primary">
+                <div class="flex">
+                    <div class="flex flex-col">
+                        <div class="font-bold text-xl">Post interaction settings</div>
+                        <div>Customize who can interact with this post.</div>
+                    </div>
+                    <button @click="closeThreadGateOptionsModal" class="flex self-start hover:border-transparent shadow-none">
+                        <i-mingcute:close-fill class="text-outline"/>
+                    </button>
+                </div>
+                <hr class="border-outline"/>
+                <div class="flex">
+                    <div class="flex flex-col w-full">
+                        <div class="font-bold text-lg">Quote settings</div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-sm text-secondary">Allow quote posts</div>
+                            <button @click="toggleAllowQuotePosts" class="relative flex flex-col p-1 h-7 w-11 items-center rounded-full border border-blue-600 shadow-none"
+                            :class="allowQuotePosts ? 'bg-slate-800 border-blue-600 hover:border-blue-500 focus-visible:border-blue-500' : 'bg-transparent border-disabled hover:border-slate-400 focus-visible:border-slate-400'">
+                                <div class="absolute transition-transform left-1 top-1 bottom-1 rounded-full aspect-square bg-blue-500" :class="allowQuotePosts ? 'translate-x-4':'translate-x-0 bg-disabled'"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <hr class="border-outline"/>
+                <div class="flex">
+                    <div class="flex flex-col gap-1 w-full">
+                        <div class="font-bold text-lg">Reply Setting</div>
+                        <div class="flex flex-col gap-1">
+                            <div class="text-sm text-secondary">Allow replies from:</div>
+                            <div class="flex gap-2">
+                                <button @click="selectTopLevelThreadGateFilter(index)" v-for="(n,index) in threadGateOptions" class="flex p-2 px-3 w-1/2 rounded-lg text-sm
+                                font-semibold items-center justify-between bg-slate-700 hover:bg-slate-600 focus-visible:bg-slate-600"
+                                :class="[{'!bg-slate-500' : n.selected}]">
+                                    <div>{{ n.name }}</div>
+                                    <i-mingcute:check-fill v-if="n.selected" class="text-green-400"/>
+                                </button>
+                            </div>
+                        </div>
+                        <div v-if="threadGateOptions[0].selected || areAnySubEverythingThreadGatesSelected" class="flex flex-col gap-1">
+                            <div class="text-sm text-secondary">Or combine options:</div>
+                            <div class="flex flex-col gap-2">
+                                <button @click="selectSubEverythingThreadGateOptions(index)" v-for="(n,index) in threadGateOptions[0].options" class="flex p-2 px-3 rounded-lg text-sm
+                                font-semibold items-center justify-between bg-slate-700 hover:bg-slate-600 focus-visible:bg-slate-600">
+                                    <div>{{n.name}}</div>
+                                    <i-mingcute:check-fill v-if="n.selected" class="text-green-400"/>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <SquareButton @click="closeThreadGateOptionsModal" class="mt-2 bg-blue-500">Close</SquareButton>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -208,6 +269,7 @@ import CheckBox from '../Utilities/CheckBox.vue';
 import PillButton from '../Utilities/PillButton.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { IUploadedFile } from "../../interfaces/PostInterfaces";
+import {ArrToString} from '../../helpers/formaters.ts';
 
 export default defineComponent({
     components:{
@@ -237,9 +299,27 @@ export default defineComponent({
             //     {image:'src/assets/test-media/posts/image04.png', alt:'a game that i miss :('},
             //     {image:'src/assets/test-media/posts/image07.png', alt:'fornite'},
             // ],
+            /**App friendly details of the uploaded files. */
             uploadedMedia:[] as IUploadedFile[],
+            /**Raw collection of the uploaded files. */
             files: [] as File[],
+            /**Indicates which of the uploaded media has been selected - usually used to add ALT text. */
             selectedImage:-1,
+            /**Are other User's allowed to quote post this one? */
+            allowQuotePosts:true,
+            /**Is the Thread Gate Options modal currently visible? */
+            threadGateOptionsVisible:false,
+            /**Collection used to display and set all the "Thread Gate" options.*/
+            threadGateOptions:[
+                {name:'Everybody', selected:true,
+                    options:[
+                        {name:'Mentioned Users',selected:false,options:[]},
+                        {name:'Users you follow',selected:false,options:[]},
+                        {name:'Your followers',selected:false,options:[]},
+                    ]
+                },
+                {name:'Nobody', selected:false, options:[] as {name:string,selected:boolean,options:[]}[]},
+            ],
             // canSubmitPost:false,
             confirmClose,
             postDetails,
@@ -357,12 +437,45 @@ export default defineComponent({
             }
             this.uploadedMedia = this.uploadedMedia.concat(newMedia);
         },
+        /**Checks to see how many more files can be added to be included with Post. */
         calculateAllowedMediaCount(itemsToAdd:number){
             let spacesLeft = 4-this.uploadedMedia.length;
             if(spacesLeft < 1) spacesLeft = 0;
             if(itemsToAdd<=spacesLeft) return itemsToAdd;
             else if(itemsToAdd>spacesLeft && spacesLeft>0) return spacesLeft;
             else return 0;
+        },
+        /**Shows or hides Thread Gate option modal. */
+        toggleThreadGateOptionsModal(){
+            this.threadGateOptionsVisible = !this.threadGateOptionsVisible;
+        },
+        /**Hides the Thread Gate option modal. */
+        closeThreadGateOptionsModal(){
+            this.threadGateOptionsVisible = false;
+        },
+        /**Toggles if the "Allow Quote posts" setting is on or off. */
+        toggleAllowQuotePosts(){
+            this.allowQuotePosts = !this.allowQuotePosts;
+        },
+        /**Used to set if all replies are allowed or no replies are allowed. */
+        selectTopLevelThreadGateFilter(index:number){
+            for(let i = 0; i < this.threadGateOptions.length; i++){
+                if(i == index) this.threadGateOptions[i].selected = true;
+                else this.threadGateOptions[i].selected = false;
+            }
+            this.deselectSubEverythingThreadGateOptions();
+        },
+        /**Used to set finely grained thread gate options. (Mentioned, Following, etc.) */
+        selectSubEverythingThreadGateOptions(index:number){
+            this.threadGateOptions[0].selected = false;
+            this.threadGateOptions[0].options[index].selected = !this.threadGateOptions[0].options[index].selected;
+            if(!this.areAnySubEverythingThreadGatesSelected) this.threadGateOptions[0].selected = true;
+        },
+        /**Clears all of the finely grained thread gate options from being set. */
+        deselectSubEverythingThreadGateOptions(){
+            for(let i = 0; i < this.threadGateOptions[0].options.length; i++) {
+                this.threadGateOptions[0].options[i].selected = false;
+            }
         },
         async createNewPost(){
             if(this.isAwaitingPostConfirm) return;
@@ -652,6 +765,35 @@ export default defineComponent({
                 }
             }
             return result;
+        },
+        /**
+         * Returns boolean value indicating if any finely grained thread gate
+         * options have been selected.
+         */
+        areAnySubEverythingThreadGatesSelected(){
+            let anySelected = false;
+            for (let i = 0; i < this.threadGateOptions[0].options.length; i++) {
+                if(this.threadGateOptions[0].options[i].selected){
+                    anySelected = true;
+                    i = this.threadGateOptions[0].options.length;
+                }
+            }
+            return anySelected;
+        },
+        /**
+         * Generates message listing the currently set Thread Gate settings.
+         */
+        generatedThreadGateLabel():string{
+            let message = 'Everybody can reply';
+            let subChoices = [] as string[]
+            if(this.threadGateOptions[1].selected) message = 'No replies allowed';
+            else if(!this.threadGateOptions[0].selected){
+                if(this.threadGateOptions[0].options[0].selected) subChoices.push('Mentioned');
+                if(this.threadGateOptions[0].options[1].selected) subChoices.push('Followed');
+                if(this.threadGateOptions[0].options[2].selected) subChoices.push('Following');
+                message = ArrToString(subChoices) + ' Users can Reply';
+            }
+            return message;
         }
     },
     mounted() {
