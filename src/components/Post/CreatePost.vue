@@ -289,7 +289,7 @@ import MdiInsertPhoto from '~icons/mdi/insert-photo';
 import MdiFilmstripBoxMultiple from '~icons/mdi/filmstrip-box-multiple';
 import MdiFileGifBox from '~icons/mdi/file-gif-box';
 import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
-import { CreateNewPost } from '../../lib/api/Post.vue';
+import { CreateContentLabelObjects, CreateNewPost, CreateThreadGateObject } from '../../lib/api/Post.vue';
 import { isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { postDetails } from '../../state/PostDetails.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
@@ -301,7 +301,7 @@ import { PostActions } from '../../enums/PostEnums';
 import CheckBox from '../Utilities/CheckBox.vue';
 import PillButton from '../Utilities/PillButton.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
-import { IUploadedFile } from "../../interfaces/PostInterfaces";
+import { INestedPostOptions, IUploadedFile } from "../../interfaces/PostInterfaces";
 import {ArrToString} from '../../helpers/formaters.ts';
 import ModernToggleButton from '../Utilities/ModernToggleButton.vue';
 import CheckedButton from '../Utilities/CheckedButton.vue';
@@ -356,24 +356,26 @@ export default defineComponent({
                     ]
                 },
                 {name:'Nobody', selected:false, options:[] as {name:string,selected:boolean,options:[]}[]},
-            ],
+            ] as INestedPostOptions[],
+            CreateThreadGateObject,
             /**Is the Content Label Options modal currently visible? */
             contentLabelsModalVisible:false,
             /**Collection used to display and set all the "Thread Gate" options.*/
             contentLabelOptions:[
                 {name:'Adult Content', selected:false,
                     options:[
-                        {name:'Suggestive',selected:false,options:[]},
-                        {name:'Nudity',selected:false,options:[]},
-                        {name:'Adult',selected:false,options:[]},
+                        {name:'Suggestive',selected:false,options:[],value:'sexual'},
+                        {name:'Nudity',selected:false,options:[],value:'nudity'},
+                        {name:'Adult',selected:false,options:[],value:'porn'},
                     ]
                 },
                 {name:'Other', selected:false,
                     options:[
-                        {name:'Graphic Media',selected:false,options:[]}
+                        {name:'Graphic Media',selected:false,options:[],value:'graphic-media'}
                     ]
                 },
-            ],
+            ] as INestedPostOptions[],
+            CreateContentLabelObjects,
             // canSubmitPost:false,
             confirmClose,
             postDetails,
@@ -562,6 +564,23 @@ export default defineComponent({
             for (let i = 0; i < this.contentLabelOptions[1].options.length; i++) {
                 this.contentLabelOptions[1].options[i].selected = false;
             }
+        },
+        /**Discoveres all of the Content Labels that have been applied by the User (checks `contentLabelOptions`). */
+        discoverSelectedContentLabels():string[]{
+            let labelVals:string[] = [];
+            for (let i = 0; i < this.contentLabelOptions[0].options.length; i++) {
+                if(this.contentLabelOptions[0].options[i].selected){
+                    let val = this.contentLabelOptions[0].options[i].value ? this.contentLabelOptions[0].options[i].value : undefined;
+                    if(typeof val !== 'undefined') labelVals.push(val);
+                }
+            }
+            for (let i = 0; i < this.contentLabelOptions[1].options.length; i++) {
+                if(this.contentLabelOptions[1].options[i].selected){
+                    let val = this.contentLabelOptions[1].options[i].value ? this.contentLabelOptions[1].options[i].value : undefined;
+                    if(typeof val !== 'undefined') labelVals.push(val);
+                }
+            }
+            return labelVals;
         },
         async createNewPost(){
             if(this.isAwaitingPostConfirm) return;

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { AppBskyFeedDefs, AppBskyFeedGetPostThread, isDid } from "@atproto/api";
+import { $Typed, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedThreadgate, isDid } from "@atproto/api";
 import { GetBrowsingAgent } from "../api.vue";
 import { FeedViewPost, isReasonPin, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { AppState, toast } from "../../state/AppState.vue";
@@ -7,6 +7,9 @@ import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/post";
 import { postDetails, showFocusModal } from "../../state/PostDetails.vue";
 import { FeedState } from "../../state/FeedList.vue";
 import { PostActions } from "../../enums/PostEnums";
+import { INestedPostOptions } from "../../interfaces/PostInterfaces";
+import { FollowerRule, FollowingRule, MentionRule } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate";
+import { SelfLabel, SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs";
 
 export default{
     name:"Post API Methods"
@@ -66,6 +69,50 @@ export async function getBlueskyPostThread(postDID: string){
 export async function getPostThread(postURI:string):Promise<AppBskyFeedGetPostThread.Response>{
     var result = await GetBrowsingAgent().getPostThread({uri:postURI});
     return result;
+}
+
+/**
+ * Function used to create the object data needed to to create a Thread Gate for a
+ * specific Post, limiting who can reply. This function does not need to be called if
+ * no restrictions need to be applied (i.e Everyone can reply).
+ * @param postUri The URI of the Post that needs a Thread Gate applied.
+ * @param selectedThreadGateOptions Collection of Thread Gate rules set - should usually be `CreatePost.threadGateOptions`.
+ */
+export function CreateThreadGateObject(postUri:string, selectedThreadGateOptions:INestedPostOptions[]):AppBskyFeedThreadgate.Record{
+    let threadGate:AppBskyFeedThreadgate.Record = {
+        $type:"app.bsky.feed.threadgate",
+        post: postUri,
+        createdAt: new Date().toISOString()
+    }
+    let subGates:($Typed<MentionRule> | $Typed<FollowerRule> | $Typed<FollowingRule>)[] = [];
+    if(selectedThreadGateOptions[1].selected) threadGate = {...threadGate,allow:[]};//No replies allowed
+    else if(!selectedThreadGateOptions[0].selected){
+        let subOptions = selectedThreadGateOptions[0].options
+        if(subOptions[0].selected) subGates.push({$type:"app.bsky.feed.threadgate#mentionRule"})
+        if(subOptions[1].selected) subGates.push({$type:"app.bsky.feed.threadgate#followingRule"})
+        if(subOptions[2].selected) subGates.push({$type:"app.bsky.feed.threadgate#followerRule"})
+        threadGate = {...threadGate,allow:subGates}
+    }
+    return threadGate;
+}
+
+/**
+ * Function used to create the object data needed to create Content Labels for a
+ * specific Post.
+ * @param accountDID The account DID of the User applying the content label.
+ * @param postUri AT URI of the record, repository (account), or other resource that this label applies to. Not actually used at the moment.
+ * @param labels String array containing the label values - should use `CreatePost.discoverSelectedContentLabels()`.
+ */
+export function CreateContentLabelObjects(accountDID:string, postUri:string, labels:string[]):SelfLabels|undefined{
+    if(labels.length<1) return;
+    else{
+        let labelObjects:SelfLabel[] = [];
+        labels.forEach(l => {
+            labelObjects.push({$type:"com.atproto.label.defs#selfLabel",val:l});
+        });
+        //not sure if I also have to return an object for this -> labels?: ComAtprotoLabelDefs.Label[] from PostView
+        return {$type:"com.atproto.label.defs#selfLabels",values:labelObjects};
+    }
 }
 
 /**

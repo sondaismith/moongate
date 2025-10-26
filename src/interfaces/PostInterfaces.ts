@@ -80,4 +80,11 @@ interface IUploadedFile{
     type:string
 }
 
-export type {IPostDetails, IPostDetailsList, IDetailIcon, IOptionIcon, IUploadedFile}
+interface INestedPostOptions{
+    name:string,
+    selected:boolean,
+    options: INestedPostOptions[]|[],
+    value?:string
+}
+
+export type {IPostDetails, IPostDetailsList, IDetailIcon, IOptionIcon, IUploadedFile, INestedPostOptions}
