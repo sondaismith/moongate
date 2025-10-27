@@ -71,27 +71,35 @@
                     <div v-if="(index == selectedImage)" class="absolute w-full h-full rounded-md border-4 border-primary"></div>
                     <img :src="n.blobURI" class="object-cover h-full w-full"/>
                     <div class="absolute top-0 left-0 flex flex-col gap-1 p-0.5 h-full w-full text-white">
-                        <div class="flex justify-between">
-                            <button class="z-[1] aspect-square h-6 text-center align-middle bg-black/80 rounded-full
-                            focus-visible:outline focus-visible:outline-searchbarFocusHightlight">{{ index+1 }}</button>
-                            <button @click="removeUploadedMedia(index)" title="Remove Media"
-                            class="z-[1] aspect-square h-6 p-0.5 text-center bg-black/80 rounded-full
+                        <div v-if="checkIfMediaIsBeingUploaded(n)" class="z-[5] absolute justify-center top-0 left-0 flex w-full h-full bg-black/60">
+                            <i-mingcute:loading-fill class="text-gray-300 spinner h-full w-full"/>
+                        </div>
+                        <div v-else-if="n.uploaded" class="z-[5] absolute justify-center top-0 left-0 flex w-full h-full bg-black/60">
+                            <i-mingcute:check-fill class="text-green-400 p-5 h-full w-full"/>
+                        </div>
+                        <div v-else class="flex flex-col h-full w-full">
+                            <div class="flex justify-between">
+                                <button class="z-[1] aspect-square h-6 text-center align-middle bg-black/80 rounded-full
+                                focus-visible:outline focus-visible:outline-searchbarFocusHightlight">{{ index+1 }}</button>
+                                <button @click="removeUploadedMedia(index)" title="Remove Media"
+                                class="z-[1] aspect-square h-6 p-0.5 text-center bg-black/80 rounded-full
+                                focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
+                                    <i-mingcute:close-fill class="h-full w-full"/>
+                                </button>
+                            </div>
+                            <button @click="toggleViewImageAltText(index)" :title="n.alt.trim() == '' ? n.fileName : n.alt" class="h-full w-full rounded-none shadow-none border-none active:bg-transparent
                             focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
-                                <i-mingcute:close-fill class="h-full w-full"/>
+                            </button>
+                            <button @click="toggleViewImageAltText(index)" :title="n.alt.trim() != '' ? n.alt : 'No ALT text provided'"
+                            class="flex aspect-square h-5 pr-1 items-center self-start bg-black/80 rounded-md
+                            focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
+                                <Transition>
+                                <div v-if="n.alt.trim() == ''" class="absolute"><i-mingcute:add-fill class="h-3"/></div>
+                                <div v-else class="absolute"><i-mingcute:check-fill class="h-3"/></div>
+                                </Transition>
+                                <div class="ml-5 text-xs">ALT</div>
                             </button>
                         </div>
-                        <button @click="toggleViewImageAltText(index)" :title="n.alt.trim() == '' ? n.fileName : n.alt" class="h-full w-full rounded-none shadow-none border-none active:bg-transparent
-                        focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
-                        </button>
-                        <button @click="toggleViewImageAltText(index)" :title="n.alt.trim() != '' ? n.alt : 'No ALT text provided'"
-                        class="flex aspect-square h-5 pr-1 items-center self-start bg-black/80 rounded-md
-                        focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
-                            <Transition>
-                            <div v-if="n.alt.trim() == ''" class="absolute"><i-mingcute:add-fill class="h-3"/></div>
-                            <div v-else class="absolute"><i-mingcute:check-fill class="h-3"/></div>
-                            </Transition>
-                            <div class="ml-5 text-xs">ALT</div>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -496,7 +504,7 @@ export default defineComponent({
                 toast.add({summary:'Too many images', detail:`4 images max can be uploaded with a Post.`, severity:'warn', group:'tr', life:3000});
             }
             for (let i = 0; i < this.calculateAllowedMediaCount(filesAsArray.length); i++) {
-                newMedia.push({blobURI:this.URL.createObjectURL(filesAsArray[i]),fileName:filesAsArray[i].name,alt:'',type:filesAsArray[i].type});
+                newMedia.push({blobURI:this.URL.createObjectURL(filesAsArray[i]),fileName:filesAsArray[i].name,alt:'',type:filesAsArray[i].type,uploaded:false,uploadInProgress:false});
                 this.files.push(filesAsArray[i]);//Add allowed files to array of references pointing to files on disk
             }
             this.uploadedMedia = this.uploadedMedia.concat(newMedia);
@@ -596,6 +604,14 @@ export default defineComponent({
         getCurrentMediaAltText():string[]{
             return this.uploadedMedia.map(m => m.alt);
         },
+        /**
+         * Check to see if a specific media file is in the process of being uploaded to
+         * Bluesky so that it can be attached to the Post being created.
+         * @param media The media file selected to be attached to the Post being created.
+         */
+        checkIfMediaIsBeingUploaded(media:IUploadedFile){
+            return !media.uploaded && media.uploadInProgress;
+        },
         async testUploadImagePost(){
             if(this.isAwaitingPostConfirm) return;
             if(!AppState.checkIfLoggedIn('post')) return;
@@ -604,11 +620,20 @@ export default defineComponent({
                 return;
             }
             this.isAwaitingPostConfirm = true;
+            this.selectedImage = -1;//Hide any open ALT text input
             //Upload any prepped images to Bluesky to get the Blob ref to attach to the Post
             let uploadedImages:ComAtprotoRepoUploadBlob.Response[] = [];
             for (let i = 0; i < this.files.length; i++) {
+                this.uploadedMedia[i].uploadInProgress = true;
                 await GetBrowsingAgent().uploadBlob(this.files[i])
-                .then(res => uploadedImages.push(res));
+                .then(res => {
+                    uploadedImages.push(res);
+                    this.uploadedMedia[i].uploaded = true;
+                    this.uploadedMedia[i].uploadInProgress = true;
+                })
+                .finally(()=>{
+                    this.uploadedMedia[i].uploadInProgress = false;
+                });
             }
             //Create embed object conatining Post's attaching images
             let imageEmbedObject = CreateImageMediaObject(uploadedImages,this.getCurrentMediaAltText());

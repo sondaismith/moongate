@@ -77,7 +77,9 @@ interface IUploadedFile{
     blobURI:string,
     fileName:string,
     alt:string,
-    type:string
+    type:string,
+    uploaded:boolean,
+    uploadInProgress:boolean
 }
 
 interface INestedPostOptions{
