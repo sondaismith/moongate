@@ -1,11 +1,15 @@
 <template>
     <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-30 flex w-full h-full">
-        <div @click="confirmClose(canSubmitPost)" class="absolute w-full h-full bg-slate-800/60"/>
+        <div @click="confirmClose(canSubmitPost,isAwaitingPostConfirm)" class="absolute w-full h-full bg-slate-800/60"/>
         <div class="relative rounded-lg flex flex-col w-full sm:w-3/5 text-primary bg-focusBG border
         border-outlineLighter p-3 my-auto m-4 sm:m-auto gap-3 overflow-hidden">
             <div class="flex items-center justify-between">
-                <button @click="confirmClose(canSubmitPost)" class="font-bold text-sky-500 hover:text-sky-300 cursor-pointer focus-visible:outline
+                <button @click="confirmClose(canSubmitPost,isAwaitingPostConfirm)" class="font-bold text-sky-500 hover:text-sky-300 cursor-pointer focus-visible:outline
                 focus-visible:outline-searchbarFocusHightlight shadow-none">Cancel</button>
+                <button @click="testUploadImagePost" class="flex gap-1 items-center bg-btn disabled:bg-disabledBG disabled:text-disabled disabled:border-transparent px-2 py-1 text-primary" :disabled="!canSubmitPost">
+                    <i-mingcute:loading-fill v-if="isAwaitingPostConfirm" class="spinner"/>
+                    <div>Test Image Post</div>
+                </button>
                 <PillButton data-test="create-post-button" :disabled="(!canSubmitPost || postDetails.isAwaitingFocusData)" @click="createNewPost"
                 class="transition-colors px-4 py-1 bg-sky-500">Post</PillButton>
             </div>
@@ -289,13 +293,13 @@ import MdiInsertPhoto from '~icons/mdi/insert-photo';
 import MdiFilmstripBoxMultiple from '~icons/mdi/filmstrip-box-multiple';
 import MdiFileGifBox from '~icons/mdi/file-gif-box';
 import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
-import { CreateContentLabelObjects, CreateNewPost, CreateThreadGateObject } from '../../lib/api/Post.vue';
+import { CreateContentLabelObjects, CreateImageMediaObject, CreateNewPost, CreateThreadGateObject } from '../../lib/api/Post.vue';
 import { isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { postDetails } from '../../state/PostDetails.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import { isView, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
-import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal, AppBskyEmbedRecord } from '@atproto/api';
+import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal, AppBskyEmbedRecord, ComAtprotoRepoUploadBlob } from '@atproto/api';
 import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import { PostActions } from '../../enums/PostEnums';
 import CheckBox from '../Utilities/CheckBox.vue';
@@ -305,6 +309,7 @@ import { INestedPostOptions, IUploadedFile } from "../../interfaces/PostInterfac
 import {ArrToString} from '../../helpers/formaters.ts';
 import ModernToggleButton from '../Utilities/ModernToggleButton.vue';
 import CheckedButton from '../Utilities/CheckedButton.vue';
+import { GetBrowsingAgent } from '../../lib/api.vue';
 
 export default defineComponent({
     components:{
@@ -438,9 +443,10 @@ export default defineComponent({
             if(index >-1 && index <= this.uploadedMedia.length-1){
                 if(this.selectedImage == index) this.selectedImage = -1; //deselect removed image
                 else if(this.selectedImage > index) this.selectedImage = this.selectedImage-1; //handle index values changing from removal
-                this.uploadedMedia.splice(index,1);
+                this.uploadedMedia.splice(index,1);//clear from UI
+                this.files.splice(index,1);//clear ref to file on disk
             }
-            if(this.uploadedMedia.length == 0) this.deselectAllContentLabelOptions();
+            if(this.uploadedMedia.length == 0) this.deselectAllContentLabelOptions();//no media left - clear content labels
         },
         /**
          * Initiates the selection of files to Upload by programmatically
@@ -461,7 +467,7 @@ export default defineComponent({
         handleFileSelect(e: Event){
             const input = e.target as HTMLInputElement;
             const filesAsArray = Array.from(input?.files || []);
-            this.files = filesAsArray;
+            // if(this.files.length < 1) this.files = filesAsArray;
             //remove unsupported file formats
             let invalidFiles = [] as {name:string,index:number,reason:string}[];
             for (let i = 0; i < filesAsArray.length; i++) {
@@ -491,6 +497,7 @@ export default defineComponent({
             }
             for (let i = 0; i < this.calculateAllowedMediaCount(filesAsArray.length); i++) {
                 newMedia.push({blobURI:this.URL.createObjectURL(filesAsArray[i]),fileName:filesAsArray[i].name,alt:'',type:filesAsArray[i].type});
+                this.files.push(filesAsArray[i]);//Add allowed files to array of references pointing to files on disk
             }
             this.uploadedMedia = this.uploadedMedia.concat(newMedia);
         },
@@ -582,6 +589,40 @@ export default defineComponent({
             }
             return labelVals;
         },
+        /**
+         * Returns an array containing the alt text content for each media file selected
+         * to be attached to the created Post.
+         */
+        getCurrentMediaAltText():string[]{
+            return this.uploadedMedia.map(m => m.alt);
+        },
+        async testUploadImagePost(){
+            if(this.isAwaitingPostConfirm) return;
+            if(!AppState.checkIfLoggedIn('post')) return;
+            if(this.files.length<1){
+                console.log('Must have at least 1 image selected to upload.')
+                return;
+            }
+            this.isAwaitingPostConfirm = true;
+            //Upload any prepped images to Bluesky to get the Blob ref to attach to the Post
+            let uploadedImages:ComAtprotoRepoUploadBlob.Response[] = [];
+            for (let i = 0; i < this.files.length; i++) {
+                await GetBrowsingAgent().uploadBlob(this.files[i])
+                .then(res => uploadedImages.push(res));
+            }
+            //Create embed object conatining Post's attaching images
+            let imageEmbedObject = CreateImageMediaObject(uploadedImages,this.getCurrentMediaAltText());
+            if(typeof imageEmbedObject != 'undefined' ){
+                await CreateNewPost({
+                    $type:'app.bsky.feed.post',
+                    text: this.postText,
+                    langs:['en-US'],
+                    embed:imageEmbedObject,
+                    createdAt: new Date().toISOString()
+                },this.showsPostAfterCreation)
+                .then(()=>{this.isAwaitingPostConfirm = false});
+            }
+        },
         async createNewPost(){
             if(this.isAwaitingPostConfirm) return;
             this.isAwaitingPostConfirm = true;
@@ -664,7 +705,7 @@ export default defineComponent({
             return ((this.postText.length/300)*100).toFixed(2);
         },
         canSubmitPost(){
-            if(this.postText.length>0 && !this.isAwaitingPostConfirm) return true;
+            if((this.postText.length>0 || this.files.length>0) && !this.isAwaitingPostConfirm) return true;
             return false;
         },
         /**
@@ -933,7 +974,11 @@ export default defineComponent({
     },
 })
 
-function confirmClose(postContentExists:boolean){
+function confirmClose(postContentExists:boolean,awaitingPosting:boolean){
+    if(awaitingPosting){
+        toast.add({summary:"Please wait", detail:`Post creation in progress, please wait`, severity:'info', group:'tr', life:1500});
+        return;
+    }
     if(postContentExists){
         AppState.showConfirmModal('Are you sure you want to discard this post?',close);
     }

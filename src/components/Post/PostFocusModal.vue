@@ -562,6 +562,7 @@ export default defineComponent({
             //Image Post
             if(postDetails.currentThreadView.post.embed &&
             postDetails.currentThreadView.post.embed.images &&
+            (postDetails.currentThreadView.post.embed.images as ViewImage[]).length > 0 &&
             (postDetails.currentThreadView.post.embed.images as ViewImage[])[this.currentMediaIndex].alt.trim() != '')
                 return true;
             //Image Post w/ QRT
