@@ -307,7 +307,7 @@ import { postDetails } from '../../state/PostDetails.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import { isView, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
-import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal, AppBskyEmbedRecord, ComAtprotoRepoUploadBlob } from '@atproto/api';
+import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal, AppBskyEmbedRecord, ComAtprotoRepoUploadBlob, AtUri } from '@atproto/api';
 import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import { PostActions } from '../../enums/PostEnums';
 import CheckBox from '../Utilities/CheckBox.vue';
@@ -318,6 +318,7 @@ import {ArrToString} from '../../helpers/formaters.ts';
 import ModernToggleButton from '../Utilities/ModernToggleButton.vue';
 import CheckedButton from '../Utilities/CheckedButton.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
+import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 
 export default defineComponent({
     components:{
@@ -490,14 +491,14 @@ export default defineComponent({
             //remove files that are too large
             invalidFiles = []; //reset
             for (let i = 0; i < filesAsArray.length; i++) {
-                if(filesAsArray[i].size>5000000){
+                if(filesAsArray[i].size>=1000000){
                     invalidFiles.push({name:filesAsArray[i].name,index:i,reason:'Too large'});
                 }
             }
             for (let i = invalidFiles.length-1; i > -1; i--) {
                 filesAsArray.splice(invalidFiles[i].index,1);
             }
-            if(invalidFiles.length>0) toast.add({summary:'File size too large', detail:`${invalidFiles.map(f => f.name).join(',\n')} is/are over 5MB.`, severity:'warn', group:'tr', life:5000});
+            if(invalidFiles.length>0) toast.add({summary:'File size larger than 1MB', detail:`Invalid files: ${invalidFiles.map(f => f.name).join('\n')}`, severity:'warn', group:'tr', life:5000});
             //calculate how many files can be added to upload list
             let newMedia = [] as IUploadedFile[];
             if(this.uploadedMedia.length+filesAsArray.length>4){
@@ -584,16 +585,12 @@ export default defineComponent({
         discoverSelectedContentLabels():string[]{
             let labelVals:string[] = [];
             for (let i = 0; i < this.contentLabelOptions[0].options.length; i++) {
-                if(this.contentLabelOptions[0].options[i].selected){
-                    let val = this.contentLabelOptions[0].options[i].value ? this.contentLabelOptions[0].options[i].value : undefined;
-                    if(typeof val !== 'undefined') labelVals.push(val);
-                }
+                let val = this.contentLabelOptions[0].options[i].value;
+                if(this.contentLabelOptions[0].options[i].selected &&  typeof val != 'undefined') labelVals.push(val);
             }
             for (let i = 0; i < this.contentLabelOptions[1].options.length; i++) {
-                if(this.contentLabelOptions[1].options[i].selected){
-                    let val = this.contentLabelOptions[1].options[i].value ? this.contentLabelOptions[1].options[i].value : undefined;
-                    if(typeof val !== 'undefined') labelVals.push(val);
-                }
+                let val = this.contentLabelOptions[1].options[i].value;
+                if(this.contentLabelOptions[1].options[i].selected &&  typeof val != 'undefined') labelVals.push(val);
             }
             return labelVals;
         },
@@ -635,17 +632,21 @@ export default defineComponent({
                     this.uploadedMedia[i].uploadInProgress = false;
                 });
             }
-            //Create embed object conatining Post's attaching images
+            //Create embed object containing Post's uploaded images
             let imageEmbedObject = CreateImageMediaObject(uploadedImages,this.getCurrentMediaAltText());
             if(typeof imageEmbedObject != 'undefined' ){
-                await CreateNewPost({
+                let selectedLabels:string[] = this.discoverSelectedContentLabels();
+                let newPostRecord:Record = {
                     $type:'app.bsky.feed.post',
                     text: this.postText,
                     langs:['en-US'],
                     embed:imageEmbedObject,
                     createdAt: new Date().toISOString()
-                },this.showsPostAfterCreation)
-                .then(()=>{this.isAwaitingPostConfirm = false});
+                };
+                //Add content labels if selected
+                if(selectedLabels.length>0) newPostRecord = {...newPostRecord,labels:CreateContentLabelObjects(selectedLabels)};
+                await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions)
+                .then(() =>{this.isAwaitingPostConfirm = false});
             }
         },
         async createNewPost(){

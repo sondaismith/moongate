@@ -1,5 +1,5 @@
 <script lang="ts">
-import { $Typed, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedThreadgate, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
+import { $Typed, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedThreadgate, AtUri, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
 import { GetBrowsingAgent } from "../api.vue";
 import { FeedViewPost, isReasonPin, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { AppState, toast } from "../../state/AppState.vue";
@@ -10,7 +10,7 @@ import { PostActions } from "../../enums/PostEnums";
 import { INestedPostOptions } from "../../interfaces/PostInterfaces";
 import { FollowerRule, FollowingRule, MentionRule } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate";
 import { SelfLabel, SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs";
-import { Image, Main } from "@atproto/api/dist/client/types/app/bsky/embed/images";
+import { Main } from "@atproto/api/dist/client/types/app/bsky/embed/images";
 
 export default{
     name:"Post API Methods"
@@ -125,14 +125,13 @@ export function CreateThreadGateObject(postUri:string, selectedThreadGateOptions
  * @param postUri AT URI of the record, repository (account), or other resource that this label applies to. Not actually used at the moment.
  * @param labels String array containing the label values - should use `CreatePost.discoverSelectedContentLabels()`.
  */
-export function CreateContentLabelObjects(accountDID:string, postUri:string, labels:string[]):SelfLabels|undefined{
+export function CreateContentLabelObjects(labels:string[]):$Typed<SelfLabels>|undefined{
     if(labels.length<1) return;
     else{
         let labelObjects:SelfLabel[] = [];
         labels.forEach(l => {
             labelObjects.push({$type:"com.atproto.label.defs#selfLabel",val:l});
         });
-        //not sure if I also have to return an object for this -> labels?: ComAtprotoLabelDefs.Label[] from PostView
         return {$type:"com.atproto.label.defs#selfLabels",values:labelObjects};
     }
 }
@@ -142,13 +141,30 @@ export function CreateContentLabelObjects(accountDID:string, postUri:string, lab
  * Can be used to make standalone Posts as well as replies and quote posts.
  * @param postData A `Record`-type object describing the content of the new Post.
  * @param openPostAfterCreation Value indicating if the created post should be opened in `PostFocusModal` after being created.
+ * @param selectedThreadGateOptions The thread gate options selected, usually taken from `CreatePost.threadGateOptions`.
+ * @returns The URI pointing to the created Post.
  */
-export async function CreateNewPost(postData:Record, openPostAfterCreation:boolean=true){
+export async function CreateNewPost(postData:Record, openPostAfterCreation:boolean=true, selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined):Promise<string>{
     console.log(postData);
+    let postUri = '';
     if(AppState.checkIfLoggedIn('post')){
         await GetBrowsingAgent().post(postData)
         .then(async res => {
             toast.add({summary:'Success',detail:'Post Created!',severity:'success',group:'tr',life:3000});
+            postUri = res.uri;
+            //create thread gate record if needed
+            if(selectedThreadGateOptions!=undefined){
+                let accountDID = GetBrowsingAgent().did;
+                if(typeof accountDID != 'undefined'){
+                    console.log('Adding thread gate...');
+                    await GetBrowsingAgent().com.atproto.repo.createRecord({
+                        repo:accountDID,
+                        rkey:new AtUri(postUri).rkey,
+                        collection: 'app.bsky.feed.threadgate',
+                        record:CreateThreadGateObject(postUri,selectedThreadGateOptions)
+                    })
+                }
+            }
             //show newly created post
             await GetBrowsingAgent().getPostThread({uri: res.uri})
             .then(newPostRes => {
@@ -228,6 +244,7 @@ export async function CreateNewPost(postData:Record, openPostAfterCreation:boole
             toast.add({summary:'Error',detail:`Error creating new post: ${err}`,severity:'error',group:'tr',life:3000})
         );
     }
+    return postUri;
 }
 
 /**
