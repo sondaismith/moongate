@@ -224,7 +224,8 @@ export async function CreateNewPost(postData:Record, openPostAfterCreation:boole
                 if(!(newPostRes.data.thread as ThreadViewPost).parent){//no parent, is root post/not reply
                     let userFeeds = FeedState.FeedList.filter(feed => feed.description.feedSourceDID == GetBrowsingAgent().assertDid);
                     userFeeds.forEach(feed => {
-                        if(isReasonPin(feed.data[0].reason)){
+                        let firstPost = feed.data[0];
+                        if(typeof firstPost != 'undefined' && isReasonPin((firstPost as FeedViewPost).reason)){
                             feed.data.splice(1,0,{post:(newPostRes.data.thread as ThreadViewPost).post})
                         }
                         else{
