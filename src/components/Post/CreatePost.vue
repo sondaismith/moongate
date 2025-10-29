@@ -656,7 +656,7 @@ export default defineComponent({
                 };
                 //Add content labels if selected
                 if(selectedLabels.length>0) newPostRecord = {...newPostRecord,labels:CreateContentLabelObjects(selectedLabels)};
-                await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions)
+                await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
                 .then(() =>{this.isAwaitingPostConfirm = false});
             }
         },

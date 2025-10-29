@@ -1,5 +1,5 @@
 <script lang="ts">
-import { $Typed, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedThreadgate, AtUri, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
+import { $Typed, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedPostgate, AppBskyFeedThreadgate, AtUri, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
 import { GetBrowsingAgent } from "../api.vue";
 import { FeedViewPost, isReasonPin, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { AppState, toast } from "../../state/AppState.vue";
@@ -147,9 +147,11 @@ export function CreateContentLabelObjects(labels:string[]):$Typed<SelfLabels>|un
  * @param postData A `Record`-type object describing the content of the new Post.
  * @param openPostAfterCreation Value indicating if the created post should be opened in `PostFocusModal` after being created.
  * @param selectedThreadGateOptions The thread gate options selected, usually taken from `CreatePost.threadGateOptions`.
+ * @param allowQuotePosts Are quote posts allowed? If false, results in the creation of a "Post Gate".
  * @returns The URI pointing to the created Post.
  */
-export async function CreateNewPost(postData:Record, openPostAfterCreation:boolean=true, selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined):Promise<string>{
+export async function CreateNewPost(postData:Record, openPostAfterCreation:boolean=true,
+selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined,allowQuotePosts:boolean=true):Promise<string>{
     console.log(postData);
     let postUri = '';
     if(AppState.checkIfLoggedIn('post')){
@@ -157,9 +159,9 @@ export async function CreateNewPost(postData:Record, openPostAfterCreation:boole
         .then(async res => {
             toast.add({summary:'Success',detail:'Post Created!',severity:'success',group:'tr',life:3000});
             postUri = res.uri;
+            let accountDID = GetBrowsingAgent().did;
             //create thread gate record if needed
             if(selectedThreadGateOptions!=undefined){
-                let accountDID = GetBrowsingAgent().did;
                 if(typeof accountDID != 'undefined'){
                     console.log('Adding thread gate...');
                     await GetBrowsingAgent().com.atproto.repo.createRecord({
@@ -167,6 +169,25 @@ export async function CreateNewPost(postData:Record, openPostAfterCreation:boole
                         rkey:new AtUri(postUri).rkey,
                         collection: 'app.bsky.feed.threadgate',
                         record:CreateThreadGateObject(postUri,selectedThreadGateOptions)
+                    })
+                }
+            }
+            //create post gate record if needed
+            if(!allowQuotePosts){
+                if(typeof accountDID != 'undefined'){
+                    console.log('Adding post gate...');
+                    await GetBrowsingAgent().com.atproto.repo.createRecord({
+                        repo:accountDID,
+                        rkey:new AtUri(postUri).rkey,
+                        collection: 'app.bsky.feed.postgate',
+                        record:{
+                            $type:"app.bsky.feed.postgate",
+                            post: postUri,
+                            createdAt: new Date().toISOString(),
+                            embeddingRules:[{
+                                $type:"app.bsky.feed.postgate#disableRule"
+                            }]
+                        }as AppBskyFeedPostgate.Record
                     })
                 }
             }
