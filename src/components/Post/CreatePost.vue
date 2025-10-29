@@ -319,6 +319,8 @@ import ModernToggleButton from '../Utilities/ModernToggleButton.vue';
 import CheckedButton from '../Utilities/CheckedButton.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import {imageDimensionsFromData} from 'image-dimensions';
+import { AspectRatio } from '@atproto/api/dist/client/types/app/bsky/embed/defs';
 
 export default defineComponent({
     components:{
@@ -473,7 +475,7 @@ export default defineComponent({
          * images at the moment.
          * @param e The file upload <input> element's `onChange` event.
          */
-        handleFileSelect(e: Event){
+        async handleFileSelect(e: Event){
             const input = e.target as HTMLInputElement;
             const filesAsArray = Array.from(input?.files || []);
             // if(this.files.length < 1) this.files = filesAsArray;
@@ -505,7 +507,9 @@ export default defineComponent({
                 toast.add({summary:'Too many images', detail:`4 images max can be uploaded with a Post.`, severity:'warn', group:'tr', life:3000});
             }
             for (let i = 0; i < this.calculateAllowedMediaCount(filesAsArray.length); i++) {
-                newMedia.push({blobURI:this.URL.createObjectURL(filesAsArray[i]),fileName:filesAsArray[i].name,alt:'',type:filesAsArray[i].type,uploaded:false,uploadInProgress:false});
+                let parsedDimensions = imageDimensionsFromData(await filesAsArray[i].bytes())
+                let imgDimensions:AspectRatio = typeof parsedDimensions != 'undefined' ? {height:parsedDimensions.height, width:parsedDimensions.width} : {height:0,width:0};
+                newMedia.push({blobURI:this.URL.createObjectURL(filesAsArray[i]),fileName:filesAsArray[i].name,alt:'',aspectRatio:imgDimensions,type:filesAsArray[i].type,uploaded:false,uploadInProgress:false});
                 this.files.push(filesAsArray[i]);//Add allowed files to array of references pointing to files on disk
             }
             this.uploadedMedia = this.uploadedMedia.concat(newMedia);
@@ -602,6 +606,13 @@ export default defineComponent({
             return this.uploadedMedia.map(m => m.alt);
         },
         /**
+         * Returns an array containing the aspect ratio for each media file selected
+         * to be attached to the created Post.
+         */
+        getCurrentMediaAspectRatios():AspectRatio[]{
+            return this.uploadedMedia.map(ar => ar.aspectRatio);
+        },
+        /**
          * Check to see if a specific media file is in the process of being uploaded to
          * Bluesky so that it can be attached to the Post being created.
          * @param media The media file selected to be attached to the Post being created.
@@ -633,7 +644,7 @@ export default defineComponent({
                 });
             }
             //Create embed object containing Post's uploaded images
-            let imageEmbedObject = CreateImageMediaObject(uploadedImages,this.getCurrentMediaAltText());
+            let imageEmbedObject = CreateImageMediaObject(uploadedImages,this.getCurrentMediaAltText(),this.getCurrentMediaAspectRatios());
             if(typeof imageEmbedObject != 'undefined' ){
                 let selectedLabels:string[] = this.discoverSelectedContentLabels();
                 let newPostRecord:Record = {

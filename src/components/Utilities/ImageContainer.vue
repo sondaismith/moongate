@@ -215,7 +215,7 @@ export default defineComponent({
         /**Returns if image to display is in portrait orientation (height greater than width). */
         isImagePortrait(){
             if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && typeof this.imagesToDisplay[0] != 'undefined' && this.imagesToDisplay[0].aspectRatio){
-                console.log(`image is portrait?:${this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width}`)
+                // console.log(`image is portrait?:${this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width}`)
                 return this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width;
             }
         },

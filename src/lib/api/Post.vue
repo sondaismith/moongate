@@ -11,6 +11,7 @@ import { INestedPostOptions } from "../../interfaces/PostInterfaces";
 import { FollowerRule, FollowingRule, MentionRule } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate";
 import { SelfLabel, SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs";
 import { Main } from "@atproto/api/dist/client/types/app/bsky/embed/images";
+import { AspectRatio } from "@atproto/api/dist/client/types/app/bsky/embed/defs";
 
 export default{
     name:"Post API Methods"
@@ -76,9 +77,9 @@ export async function getPostThread(postURI:string):Promise<AppBskyFeedGetPostTh
  * Function that creates the embed object needed to attach an image or images to a Post.
  * @param images Array containing image Blobs returned after uploading the images to Bluesky.
  * @param imageAltText Array containing alt text for each image.
+ * @param imageAspectRatio Array containing aspect ratio for each image.
  */
-// export function CreateImageMediaObject(images:ComAtprotoRepoUploadBlob.Response[],imageAltText:string[]):Image[]{
-export function CreateImageMediaObject(images:ComAtprotoRepoUploadBlob.Response[],imageAltText:string[]):$Typed<Main>|undefined{
+export function CreateImageMediaObject(images:ComAtprotoRepoUploadBlob.Response[],imageAltText:string[],imageAspectRatio:AspectRatio[]):$Typed<Main>|undefined{
     if(images.length != imageAltText.length){
         console.log('Length of provided arrays do not match - aborting');
         return undefined;
@@ -87,7 +88,11 @@ export function CreateImageMediaObject(images:ComAtprotoRepoUploadBlob.Response[
     for (let i = 0; i < images.length; i++) {
         result.images.push({
             image:images[i].data.blob,
-            alt:imageAltText[i]
+            alt:imageAltText[i],
+            aspectRatio:{
+                width:imageAspectRatio[i].width,
+                height:imageAspectRatio[i].height
+            }
         })
     }
     return result;
