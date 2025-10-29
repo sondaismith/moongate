@@ -4,12 +4,9 @@
         <div class="relative rounded-lg flex flex-col w-full sm:w-3/5 text-primary bg-focusBG border
         border-outlineLighter p-3 my-auto m-4 sm:m-auto gap-3 overflow-hidden">
             <div class="flex items-center justify-between">
-                <button @click="confirmClose(canSubmitPost,isAwaitingPostConfirm)" class="font-bold text-sky-500 hover:text-sky-300 cursor-pointer focus-visible:outline
+                <button @click="confirmClose(canSubmitPost,isAwaitingPostConfirm)" class="font-bold text-sky-500 hover:text-sky-300
+                hover:border-transparent active:bg-transparent active:border-transparent active:text-sky-700 cursor-pointer focus-visible:outline
                 focus-visible:outline-searchbarFocusHightlight shadow-none">Cancel</button>
-                <button @click="testUploadImagePost" class="flex gap-1 items-center bg-btn disabled:bg-disabledBG disabled:text-disabled disabled:border-transparent px-2 py-1 text-primary" :disabled="!canSubmitPost">
-                    <i-mingcute:loading-fill v-if="isAwaitingPostConfirm" class="spinner"/>
-                    <div>Test Image Post</div>
-                </button>
                 <PillButton data-test="create-post-button" :disabled="(!canSubmitPost || postDetails.isAwaitingFocusData)" @click="createNewPost"
                 class="transition-colors px-4 py-1 bg-sky-500">Post</PillButton>
             </div>
@@ -305,9 +302,9 @@ import { CreateContentLabelObjects, CreateImageMediaObject, CreateNewPost, Creat
 import { isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { postDetails } from '../../state/PostDetails.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
-import { isView, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isView, Main, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
-import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal, AppBskyEmbedRecord, ComAtprotoRepoUploadBlob, AtUri } from '@atproto/api';
+import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal, AppBskyEmbedRecord, ComAtprotoRepoUploadBlob, AtUri, $Typed } from '@atproto/api';
 import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import { PostActions } from '../../enums/PostEnums';
 import CheckBox from '../Utilities/CheckBox.vue';
@@ -623,10 +620,6 @@ export default defineComponent({
         async testUploadImagePost(){
             if(this.isAwaitingPostConfirm) return;
             if(!AppState.checkIfLoggedIn('post')) return;
-            if(this.files.length<1){
-                console.log('Must have at least 1 image selected to upload.')
-                return;
-            }
             this.isAwaitingPostConfirm = true;
             this.selectedImage = -1;//Hide any open ALT text input
             //Upload any prepped images to Bluesky to get the Blob ref to attach to the Post
@@ -643,34 +636,68 @@ export default defineComponent({
                     this.uploadedMedia[i].uploadInProgress = false;
                 });
             }
-            //Create embed object containing Post's uploaded images
-            let imageEmbedObject = CreateImageMediaObject(uploadedImages,this.getCurrentMediaAltText(),this.getCurrentMediaAspectRatios());
-            if(typeof imageEmbedObject != 'undefined' ){
-                let selectedLabels:string[] = this.discoverSelectedContentLabels();
-                let newPostRecord:Record = {
-                    $type:'app.bsky.feed.post',
-                    text: this.postText,
-                    langs:['en-US'],
-                    embed:imageEmbedObject,
-                    createdAt: new Date().toISOString()
-                };
-                //Add content labels if selected
-                if(selectedLabels.length>0) newPostRecord = {...newPostRecord,labels:CreateContentLabelObjects(selectedLabels)};
-                await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
-                .then(() =>{this.isAwaitingPostConfirm = false});
+            //Create embed object containing Post's uploaded images if needed
+            let imageEmbedObject:$Typed<Main>|undefined;
+            let selectedLabels:string[]|undefined;
+            if(uploadedImages.length>0){
+                imageEmbedObject = CreateImageMediaObject(uploadedImages,this.getCurrentMediaAltText(),this.getCurrentMediaAspectRatios());
+                selectedLabels = this.discoverSelectedContentLabels();
             }
+            let newPostRecord:Record = {
+                $type:'app.bsky.feed.post',
+                text: this.postText,
+                langs:['en-US'],
+                createdAt: new Date().toISOString()
+            };
+            if(typeof imageEmbedObject != 'undefined' ){
+                newPostRecord = {...newPostRecord, embed:imageEmbedObject};
+            }
+            //Add content labels if selected
+            if(typeof selectedLabels != 'undefined' && selectedLabels.length>0) newPostRecord = {...newPostRecord,labels:CreateContentLabelObjects(selectedLabels)};
+            await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
+            .then(() =>{this.isAwaitingPostConfirm = false});
         },
         async createNewPost(){
             if(this.isAwaitingPostConfirm) return;
+            if(!AppState.checkIfLoggedIn('post')) return;
             this.isAwaitingPostConfirm = true;
+            this.selectedImage = -1;//Hide any open ALT text input
+            //Upload any prepped images to Bluesky to get the Blob ref to attach to the Post
+            let uploadedImages:ComAtprotoRepoUploadBlob.Response[] = [];
+            for (let i = 0; i < this.files.length; i++) {
+                this.uploadedMedia[i].uploadInProgress = true;
+                await GetBrowsingAgent().uploadBlob(this.files[i])
+                .then(res => {
+                    uploadedImages.push(res);
+                    this.uploadedMedia[i].uploaded = true;
+                    this.uploadedMedia[i].uploadInProgress = true;
+                })
+                .finally(()=>{
+                    this.uploadedMedia[i].uploadInProgress = false;
+                });
+            }
+            //Create embed object containing Post's uploaded images if needed
+            let imageEmbedObject:$Typed<Main>|undefined;
+            let selectedLabels:string[]|undefined;
+            if(uploadedImages.length>0){
+                imageEmbedObject = CreateImageMediaObject(uploadedImages,this.getCurrentMediaAltText(),this.getCurrentMediaAspectRatios());
+                selectedLabels = this.discoverSelectedContentLabels();
+            }
+            let newPostRecord:Record = {
+                $type:'app.bsky.feed.post',
+                text: this.postText,
+                langs:['en-US'],
+                createdAt: new Date().toISOString()
+            };
+            if(typeof imageEmbedObject != 'undefined' ){
+                newPostRecord = {...newPostRecord, embed:imageEmbedObject};
+            }
+            //Add content labels if selected
+            if(typeof selectedLabels != 'undefined' && selectedLabels.length>0) newPostRecord = {...newPostRecord,labels:CreateContentLabelObjects(selectedLabels)};
+
             switch (postDetails.currentPostAction) {
                 case PostActions.Post:
-                    await CreateNewPost({
-                        $type:'app.bsky.feed.post',
-                        text: this.postText,
-                        langs:['en-US'],
-                        createdAt: new Date().toISOString()
-                    },this.showsPostAfterCreation)
+                    await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
                     .then(()=>{this.isAwaitingPostConfirm = false});
                     break;
                 case PostActions.Reply:
@@ -678,9 +705,7 @@ export default defineComponent({
                         let root:ThreadViewPost = postDetails.getPostThreadRoot(postDetails.currentPostThreadData);
                         console.log(root);
                         if(isThreadViewPost(root)){
-                            await CreateNewPost({
-                                $type:'app.bsky.feed.post',
-                                text: this.postText,
+                            newPostRecord = {...newPostRecord,
                                 reply:{
                                     root:{
                                         uri:root.post.uri,
@@ -690,10 +715,9 @@ export default defineComponent({
                                         uri:postDetails.currentPostData.uri,
                                         cid:postDetails.currentPostData.cid
                                     }
-                                },
-                                langs:['en-US'],
-                                createdAt: new Date().toISOString(),
-                            },this.showsPostAfterCreation)
+                                }
+                            }
+                            await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
                             .then(() =>{
                                 AppState.updateReplyParentsInLists(postDetails.currentPostData.cid, postDetails.currentPostData.replyCount ? postDetails.currentPostData.replyCount : 0);
                                 this.isAwaitingPostConfirm = false;
@@ -709,11 +733,7 @@ export default defineComponent({
                         let root:ThreadViewPost = postDetails.getPostThreadRoot(postDetails.currentPostThreadData);
                         console.log(root);
                         if(isThreadViewPost(root)){
-                            await CreateNewPost({
-                                $type:'app.bsky.feed.post',
-                                text: this.postText,
-                                langs:['en-US'],
-                                createdAt: new Date().toISOString(),
+                            newPostRecord = {...newPostRecord,
                                 embed:{
                                     $type:'app.bsky.embed.record',
                                     record:{
@@ -721,7 +741,20 @@ export default defineComponent({
                                         cid:postDetails.currentPostData.cid
                                     }
                                 }
-                            },this.showsPostAfterCreation)
+                            }
+                            if(typeof imageEmbedObject != 'undefined' && typeof newPostRecord.embed != 'undefined'){//we have images to attach
+                                newPostRecord.embed = {
+                                    $type:'app.bsky.embed.recordWithMedia',
+                                    record:{
+                                        record:{
+                                            uri:postDetails.currentPostData.uri,
+                                            cid:postDetails.currentPostData.cid
+                                        }
+                                    },
+                                    media:imageEmbedObject
+                                }
+                            }
+                            await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
                             .then(()=>{this.isAwaitingPostConfirm = false});
                         }
                     }

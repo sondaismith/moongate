@@ -161,7 +161,7 @@ selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined,allowQuotePos
             postUri = res.uri;
             let accountDID = GetBrowsingAgent().did;
             //create thread gate record if needed
-            if(selectedThreadGateOptions!=undefined){
+            if(typeof selectedThreadGateOptions != 'undefined'){
                 if(typeof accountDID != 'undefined'){
                     console.log('Adding thread gate...');
                     await GetBrowsingAgent().com.atproto.repo.createRecord({
