@@ -132,7 +132,7 @@
                 <div class="flex flex-col gap-2">
                     <div class="flex flex-wrap gap-1s leading-5 py-0.5 border-b-[1px] border-slate-600">
                         <div class="text-feedPostName bgs-lime-300 text-secondary cursor-pointer hover:underline mr-1">{{ convertToLongTimestamp(postDetails.currentThreadView.post.indexedAt) }}</div>
-                        <div class="flex bg-spink-300 items-center text-feedPostName text-secondary cursor-pointer hover:underline">
+                        <div v-if="showThreadGateRules" class="flex bg-spink-300 items-center text-feedPostName text-secondary cursor-pointer hover:underline">
                             <i-mdi:accounts/>
                             <div>{{ postDetails.whoCanReply(postDetails.currentThreadView.post) }}</div>
                         </div>
@@ -663,6 +663,11 @@ export default defineComponent({
                 return true;
             return false;
         },
+        /**Determines if the label displaying the thread/post gate rules applied to the current Post should be displayed. */
+        showThreadGateRules():boolean{
+            //if NOT (viewing a reply while not logged in)
+            return !(typeof postDetails.currentThreadView.parent != 'undefined' && !AppState.isAuthBrowsing);
+        }
     },
     created(){
         /**Defines actions for the `toggleScrollToTop` function */

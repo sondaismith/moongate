@@ -284,6 +284,12 @@ export const postDetails = reactive({
                 else replyString = 'Replies Disabled';
             }
         }
+        else if(typeof postToCheck.viewer != 'undefined'){//For replies
+            let rules:string[] = [];
+            if(typeof postToCheck.viewer.replyDisabled != 'undefined' && postToCheck.viewer.replyDisabled) rules.push('Replies')
+            if(typeof postToCheck.viewer.embeddingDisabled != 'undefined' && postToCheck.viewer.embeddingDisabled) rules.push('Quote Posts')
+            if(rules.length>0) replyString = ArrToString(rules)+' Disabled';
+        }
         return replyString;
     },
     clickedElement: document.children[0].children[1].children[1] as HTMLElement,
