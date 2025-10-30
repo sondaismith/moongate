@@ -153,6 +153,7 @@ export const AppState = reactive({
     checkIfLoggedIn(action:string){
         if(!this.isAuthBrowsing){
             toast.add({summary:"Error", detail:`In order to ${action} you must be logged in.`, severity:'error', group:'tr', life:3000});
+            this.loginModalStartPage = 1;
             this.isLoggingIntoAccount = true;
             return this.isAuthBrowsing;
         }
@@ -184,6 +185,8 @@ export const AppState = reactive({
     isUpdatingFeed: false,
     /**Is the LoginModal currently open. */
     isLoggingIntoAccount: false,
+    /**What page to open login modal to when displayed. Should be reset to -1 after opening. */
+    loginModalStartPage:-1,
     /**Is the UserFocusModal currently open. */
     isViewingUserAccount: false,
     /**Toggles display of `FeedEditModal` component. */
