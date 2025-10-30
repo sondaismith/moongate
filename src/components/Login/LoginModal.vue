@@ -430,6 +430,12 @@ export default defineComponent({
             return msg;
         }
     },
+    beforeMount() {
+        if(AppState.loginModalStartPage == 1){
+            this.loginToAccountClicked();
+            AppState.loginModalStartPage = -1; //reset 'load page on open' variable
+        }
+    },
     mounted(){
         //Focus username input
         // ((this.$el as HTMLElement).querySelector('[data-testid="login-username-input"] > input') as HTMLElement).focus();

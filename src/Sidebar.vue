@@ -254,7 +254,7 @@ import AboutAppModal from "./components/Settings/AboutAppModal.vue";
                 this.showScrollXPos();
             },
             createNewPost(){
-                // if(!AppState.checkIfLoggedIn("post")) return;
+                if(!AppState.checkIfLoggedIn("post")) return;
                 AppState.showCreatePost();
             },
             showSettingsPanel(){

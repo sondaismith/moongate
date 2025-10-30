@@ -15,6 +15,7 @@ import MingcuteHeartFill from '~icons/mingcute/heart-fill';
 import SolarShareBold from '~icons/solar/share-bold';
 import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
 import { AppBskyFeedThreadgate } from '@atproto/api';
+import { ArrToString } from '../helpers/formaters';
 
 export default{
     name:"PostDetails State"
@@ -266,24 +267,30 @@ export const postDetails = reactive({
      * To be used wherever that info needs to be communicated to the User (`PostFocusModal`, `PostInteractionIcons`).
      */
     whoCanReply(postToCheck:PostView):String{
-        if(postToCheck.threadgate){
-            let tgRecord = postToCheck.threadgate.record as AppBskyFeedThreadgate.Record
-            if(tgRecord.allow && tgRecord.allow.length>0){
-                let replyString = '';
-                for (let i = 0; i < tgRecord.allow.length; i++) {
-                    if(i>0 && i<tgRecord.allow.length-1) replyString += ', ';
-                    else if(i != 0 && i == tgRecord.allow.length-1) replyString += ' and ';
-                    if(AppBskyFeedThreadgate.isMentionRule(tgRecord.allow[i])) replyString += "Mentioned"
-                    else if(AppBskyFeedThreadgate.isFollowingRule(tgRecord.allow[i])) replyString += "Followed By"
-                    else if(AppBskyFeedThreadgate.isFollowerRule(tgRecord.allow[i])) replyString += "Following"
-                    else if(AppBskyFeedThreadgate.isListRule(tgRecord.allow[i])) replyString += "Listed"
+        let replyString = 'Everybody can Reply';
+        if(typeof postToCheck.threadgate != 'undefined' && typeof postToCheck.threadgate.record != 'undefined'){
+            let tgRecord = postToCheck.threadgate.record as AppBskyFeedThreadgate.Record;
+            if(typeof tgRecord.allow != 'undefined'){
+                if(tgRecord.allow.length>0){
+                    let rules:string[] = [];
+                    for (let i = 0; i < tgRecord.allow.length; i++){
+                        if(AppBskyFeedThreadgate.isMentionRule(tgRecord.allow[i])) rules.push("Mentioned")
+                        else if(AppBskyFeedThreadgate.isFollowingRule(tgRecord.allow[i])) rules.push("Followed By")
+                        else if(AppBskyFeedThreadgate.isFollowerRule(tgRecord.allow[i])) rules.push("Following")
+                        else if(AppBskyFeedThreadgate.isListRule(tgRecord.allow[i])) rules.push("Listed")
+                    }
+                    replyString = ArrToString(rules) + ' Users may Reply';
                 }
-                replyString += ' Users may Reply'
-                return replyString;
+                else replyString = 'Replies Disabled';
             }
-            else return 'Replies Disabled';
         }
-        else{return 'Everybody can Reply'}
+        else if(typeof postToCheck.viewer != 'undefined'){//For replies
+            let rules:string[] = [];
+            if(typeof postToCheck.viewer.replyDisabled != 'undefined' && postToCheck.viewer.replyDisabled) rules.push('Replies')
+            if(typeof postToCheck.viewer.embeddingDisabled != 'undefined' && postToCheck.viewer.embeddingDisabled) rules.push('Quote Posts')
+            if(rules.length>0) replyString = ArrToString(rules)+' Disabled';
+        }
+        return replyString;
     },
     clickedElement: document.children[0].children[1].children[1] as HTMLElement,
     postDetailIconValues: [

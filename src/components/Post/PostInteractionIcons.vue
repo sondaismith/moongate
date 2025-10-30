@@ -158,6 +158,10 @@ export default defineComponent({
                 {Icon:MingcuteRepeatLine,Label:(isReposted ? 'Undo Repost' : 'Repost'),Action:this.toggleRepost},
                 {Icon:MingcuteQuoteRightFill,Label:'Quote post',Action:function(){QuotePost(post)}},
             ] as IOptionMenuItem[]
+            //if the current user cannot quote post the interacted with post, "disable" the quote post button
+            if(typeof post.viewer != 'undefined' && typeof post.viewer.embeddingDisabled != undefined && post.viewer.embeddingDisabled){
+                OptionsMenuState.currentMenuItems[1] = {Icon:MingcuteQuoteRightFill,Label:'Quote Posts disabled',Action:()=>{},disabled:true}
+            }
             OptionsMenuState.showOptionMenu(e);
         },
         replyToPost(){
@@ -320,11 +324,18 @@ export default defineComponent({
          * yet - will prevent replying if any Threadgate.Allow rule is found.
          */
         canUserReply(){
-            if(this.postData.threadgate){
-                let tgRecord = this.postData.threadgate.record as AppBskyFeedThreadgate.Record
-                if(!tgRecord.allow) return false;
+            let status = true;
+            //user is logged in - viewer is available
+            if(typeof this.postData.viewer != 'undefined' && typeof this.postData.viewer.replyDisabled != 'undefined'){
+                status = !this.postData.viewer.replyDisabled;
             }
-            else{return true;}
+            //no viewer, check thread gate
+            else if(typeof this.postData.threadgate != 'undefined'){
+                let tgRecord = this.postData.threadgate.record as AppBskyFeedThreadgate.Record
+                //show disabled if "no replies" rule applied
+                if(typeof tgRecord.allow != 'undefined' && tgRecord.allow.length == 0) status = false;
+            }
+            return status;
         },
     }
 })

@@ -26,7 +26,7 @@
                 <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
             </div>
         </div>
-        <div v-else-if="Array.isArray(imagesToDisplay) && isLargeContainerView"
+        <div v-else-if="Array.isArray(imagesToDisplay) && typeof imagesToDisplay[0] != 'undefined' && isLargeContainerView"
         @contextmenu="showOptionsMenu($event, imagesToDisplay[0], author, postText)" class="flex h-full w-full overflow-hidden">
             <div class="flex max-h-full max-w-full mx-auto" :class=imageContainerClasses>
                 <img @click="$emit('imageClicked', imagesToDisplay[0])"  :src="showFullsize ? imagesToDisplay[0].fullsize : imagesToDisplay[0].thumb"
@@ -193,7 +193,7 @@ export default defineComponent({
             var component = (this.$refs.imageContainer as HTMLElement);
             // console.log("updating doesImageHeightSurpassContainer");//DEBUG
             if(component){
-                if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && this.imagesToDisplay[0].aspectRatio){
+                if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && typeof this.imagesToDisplay[0] != 'undefined' && this.imagesToDisplay[0].aspectRatio){
                     let isImageWiderThanContainer = (component.clientWidth - this.imagesToDisplay[0].aspectRatio.width) <= 0;
                     let scale = 1;
                     if(isImageWiderThanContainer) scale = component.clientWidth/this.imagesToDisplay[0].aspectRatio.width;
@@ -214,8 +214,8 @@ export default defineComponent({
     computed:{
         /**Returns if image to display is in portrait orientation (height greater than width). */
         isImagePortrait(){
-            if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && this.imagesToDisplay[0].aspectRatio){
-                console.log(`image is portrait?:${this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width}`)
+            if(Array.isArray(this.imagesToDisplay) && this.imagesToDisplay.length>0 && typeof this.imagesToDisplay[0] != 'undefined' && this.imagesToDisplay[0].aspectRatio){
+                // console.log(`image is portrait?:${this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width}`)
                 return this.imagesToDisplay[0].aspectRatio.height > this.imagesToDisplay[0].aspectRatio.width;
             }
         },

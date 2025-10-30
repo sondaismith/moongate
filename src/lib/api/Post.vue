@@ -1,5 +1,5 @@
 <script lang="ts">
-import { AppBskyFeedDefs, AppBskyFeedGetPostThread, isDid } from "@atproto/api";
+import { $Typed, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedPostgate, AppBskyFeedThreadgate, AtUri, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
 import { GetBrowsingAgent } from "../api.vue";
 import { FeedViewPost, isReasonPin, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { AppState, toast } from "../../state/AppState.vue";
@@ -7,6 +7,11 @@ import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/post";
 import { postDetails, showFocusModal } from "../../state/PostDetails.vue";
 import { FeedState } from "../../state/FeedList.vue";
 import { PostActions } from "../../enums/PostEnums";
+import { INestedPostOptions } from "../../interfaces/PostInterfaces";
+import { FollowerRule, FollowingRule, MentionRule } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate";
+import { SelfLabel, SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs";
+import { Main } from "@atproto/api/dist/client/types/app/bsky/embed/images";
+import { AspectRatio } from "@atproto/api/dist/client/types/app/bsky/embed/defs";
 
 export default{
     name:"Post API Methods"
@@ -69,17 +74,123 @@ export async function getPostThread(postURI:string):Promise<AppBskyFeedGetPostTh
 }
 
 /**
+ * Function that creates the embed object needed to attach an image or images to a Post.
+ * @param images Array containing image Blobs returned after uploading the images to Bluesky.
+ * @param imageAltText Array containing alt text for each image.
+ * @param imageAspectRatio Array containing aspect ratio for each image.
+ */
+export function CreateImageMediaObject(images:ComAtprotoRepoUploadBlob.Response[],imageAltText:string[],imageAspectRatio:AspectRatio[]):$Typed<Main>|undefined{
+    if(images.length != imageAltText.length){
+        console.log('Length of provided arrays do not match - aborting');
+        return undefined;
+    }
+    let result:$Typed<Main> = {$type:"app.bsky.embed.images",images:[]};
+    for (let i = 0; i < images.length; i++) {
+        result.images.push({
+            image:images[i].data.blob,
+            alt:imageAltText[i],
+            aspectRatio:{
+                width:imageAspectRatio[i].width,
+                height:imageAspectRatio[i].height
+            }
+        })
+    }
+    return result;
+}
+
+/**
+ * Function used to create the object data needed to to create a Thread Gate for a
+ * specific Post, limiting who can reply. This function does not need to be called if
+ * no restrictions need to be applied (i.e Everyone can reply).
+ * @param postUri The URI of the Post that needs a Thread Gate applied.
+ * @param selectedThreadGateOptions Collection of Thread Gate rules set - should usually be `CreatePost.threadGateOptions`.
+ */
+export function CreateThreadGateObject(postUri:string, selectedThreadGateOptions:INestedPostOptions[]):AppBskyFeedThreadgate.Record{
+    let threadGate:AppBskyFeedThreadgate.Record = {
+        $type:"app.bsky.feed.threadgate",
+        post: postUri,
+        createdAt: new Date().toISOString()
+    }
+    let subGates:($Typed<MentionRule> | $Typed<FollowerRule> | $Typed<FollowingRule>)[] = [];
+    if(selectedThreadGateOptions[1].selected) threadGate = {...threadGate,allow:[]};//No replies allowed
+    else if(!selectedThreadGateOptions[0].selected){
+        let subOptions = selectedThreadGateOptions[0].options
+        if(subOptions[0].selected) subGates.push({$type:"app.bsky.feed.threadgate#mentionRule"})
+        if(subOptions[1].selected) subGates.push({$type:"app.bsky.feed.threadgate#followingRule"})
+        if(subOptions[2].selected) subGates.push({$type:"app.bsky.feed.threadgate#followerRule"})
+        threadGate = {...threadGate,allow:subGates}
+    }
+    return threadGate;
+}
+
+/**
+ * Function used to create the object data needed to create Content Labels for a
+ * specific Post.
+ * @param accountDID The account DID of the User applying the content label.
+ * @param postUri AT URI of the record, repository (account), or other resource that this label applies to. Not actually used at the moment.
+ * @param labels String array containing the label values - should use `CreatePost.discoverSelectedContentLabels()`.
+ */
+export function CreateContentLabelObjects(labels:string[]):$Typed<SelfLabels>|undefined{
+    if(labels.length<1) return;
+    else{
+        let labelObjects:SelfLabel[] = [];
+        labels.forEach(l => {
+            labelObjects.push({$type:"com.atproto.label.defs#selfLabel",val:l});
+        });
+        return {$type:"com.atproto.label.defs#selfLabels",values:labelObjects};
+    }
+}
+
+/**
  * Method that creates a new post using the currently selected User's account.
  * Can be used to make standalone Posts as well as replies and quote posts.
  * @param postData A `Record`-type object describing the content of the new Post.
  * @param openPostAfterCreation Value indicating if the created post should be opened in `PostFocusModal` after being created.
+ * @param selectedThreadGateOptions The thread gate options selected, usually taken from `CreatePost.threadGateOptions`.
+ * @param allowQuotePosts Are quote posts allowed? If false, results in the creation of a "Post Gate".
+ * @returns The URI pointing to the created Post.
  */
-export async function CreateNewPost(postData:Record, openPostAfterCreation:boolean=true){
+export async function CreateNewPost(postData:Record, openPostAfterCreation:boolean=true,
+selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined,allowQuotePosts:boolean=true):Promise<string>{
     console.log(postData);
+    let postUri = '';
     if(AppState.checkIfLoggedIn('post')){
         await GetBrowsingAgent().post(postData)
         .then(async res => {
             toast.add({summary:'Success',detail:'Post Created!',severity:'success',group:'tr',life:3000});
+            postUri = res.uri;
+            let accountDID = GetBrowsingAgent().did;
+            //create thread gate record if needed
+            if(typeof selectedThreadGateOptions != 'undefined'){
+                if(typeof accountDID != 'undefined'){
+                    console.log('Adding thread gate...');
+                    await GetBrowsingAgent().com.atproto.repo.createRecord({
+                        repo:accountDID,
+                        rkey:new AtUri(postUri).rkey,
+                        collection: 'app.bsky.feed.threadgate',
+                        record:CreateThreadGateObject(postUri,selectedThreadGateOptions)
+                    })
+                }
+            }
+            //create post gate record if needed
+            if(!allowQuotePosts){
+                if(typeof accountDID != 'undefined'){
+                    console.log('Adding post gate...');
+                    await GetBrowsingAgent().com.atproto.repo.createRecord({
+                        repo:accountDID,
+                        rkey:new AtUri(postUri).rkey,
+                        collection: 'app.bsky.feed.postgate',
+                        record:{
+                            $type:"app.bsky.feed.postgate",
+                            post: postUri,
+                            createdAt: new Date().toISOString(),
+                            embeddingRules:[{
+                                $type:"app.bsky.feed.postgate#disableRule"
+                            }]
+                        }as AppBskyFeedPostgate.Record
+                    })
+                }
+            }
             //show newly created post
             await GetBrowsingAgent().getPostThread({uri: res.uri})
             .then(newPostRes => {
@@ -139,7 +250,8 @@ export async function CreateNewPost(postData:Record, openPostAfterCreation:boole
                 if(!(newPostRes.data.thread as ThreadViewPost).parent){//no parent, is root post/not reply
                     let userFeeds = FeedState.FeedList.filter(feed => feed.description.feedSourceDID == GetBrowsingAgent().assertDid);
                     userFeeds.forEach(feed => {
-                        if(isReasonPin(feed.data[0].reason)){
+                        let firstPost = feed.data[0];
+                        if(typeof firstPost != 'undefined' && isReasonPin((firstPost as FeedViewPost).reason)){
                             feed.data.splice(1,0,{post:(newPostRes.data.thread as ThreadViewPost).post})
                         }
                         else{
@@ -159,6 +271,7 @@ export async function CreateNewPost(postData:Record, openPostAfterCreation:boole
             toast.add({summary:'Error',detail:`Error creating new post: ${err}`,severity:'error',group:'tr',life:3000})
         );
     }
+    return postUri;
 }
 
 /**
