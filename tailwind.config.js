@@ -5,6 +5,7 @@ export default {
     extend: {
       colors:{
         // primary: s"var(--color-primary-text) / <alpha-value>",
+        blueskyBlue: "oklch(from var(--color-bluesky-blue) l c h / <alpha-value>)",
         primary: "oklch(from var(--color-primary-text) l c h / <alpha-value>)",
         primaryInverted: "oklch(from var(--color-primary-text-inverted) l c h / <alpha-value>)",
         secondary: "oklch(from var(--color-secondary-text) l c h / <alpha-value>)",
@@ -78,6 +79,7 @@ export default {
         checkedButtonBGSelected: "oklch(from var(--color-checked-btn-bg-selected) l c h / <alpha-value>)",
         checkedButtonCheckmark: "oklch(from var(--color-checked-btn-checkmark) l c h / <alpha-value>)",
         customFeedBtnBGHover: "oklch(from var(--color-custom-feed-btn-bg-hover) l c h / <alpha-value>)",
+        customFeedBtnBGActive: "oklch(from var(--color-custom-feed-btn-bg-active) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',
