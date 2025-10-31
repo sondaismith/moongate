@@ -57,6 +57,7 @@
                                     <div v-if="selectedFeedType == FeedEnums.Types.User">A User feed allows you to see all the content shared by a specific User account (Posts, Shares, Replies, etc.)</div>
                                     <div v-else-if="selectedFeedType == FeedEnums.Types.Tag">A Tag Feed displays the latest posts matching specified hashtags.</div>
                                     <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">A Trending Feed will display Bluesky's currently trending topics in a list.</div>
+                                    <div v-else-if="selectedFeedType == FeedEnums.Types.FeedGenerator">Select a Custom Feed to display from a List.</div>
                                     <div v-else-if="selectedFeedType == FeedEnums.Types.Following">
                                         <div v-if="!AppState.isAuthBrowsing" class="font-medium text-feedHighlight">Login Required</div>
                                         View timeline of posts from all your followed accounts.
@@ -86,6 +87,52 @@
                         <div v-if="selectedFeedType == FeedEnums.Types.Trending">
                             <div>No Options Currently</div>
                             <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
+                        </div>
+                        <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex h-full">
+                            <div class="flex flex-col gap-1">
+                                <InLaInput text-label="Filter Feeds"/>
+                                <div class="flex flex-col gap-1 overflow-y-scroll">
+                                    <div class="flex gap-1 items-center">
+                                        <div class="text-lg">Bluesky</div>
+                                        <div title="Bluesky Account"><i-logos:bluesky class="shrink-0" /></div>
+                                    </div>
+                                    <hr class="border-outline"/>
+                                    <div class="flex flex-wrap gap-2 p-1">
+                                        <button v-for="n in 2" class="flex flex-col gap-2 p-3  flex-wrap text-left hover:bg-customFeedBtnBGHover
+                                        focus-visible:bg-customFeedBtnBGHover hover:bg-slate-700/30s border border-outline rounded min-w-64 sm:flex-[1_0_32%]">
+                                            <div class="flex gap-1 items-center">
+                                                <div class="flex bg-black aspect-square w-8">Img</div>
+                                                <div class="flex flex-col">
+                                                    <div class="text-base leading-4">Feed Title</div>
+                                                    <div class="text-xs text-secondary">Feed by Feed_Author</div>
+                                                </div>
+                                                <button class="ml-auto px-2 py-1 rounded-none bg-btn hover:bg-btnHover">Pin</button>
+                                            </div>
+                                            <div class="text-sm">Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
+                                            <div class="text-sm">Liked By:</div>
+                                        </button>
+                                    </div>
+                                    <div class="flex gap-1 items-center">
+                                        <div class="text-lg">Discover New Feeds</div>
+                                        <div title="Bluesky Account"><i-mingcute:sparkles-fill class="shrink-0 text-yellow-500" /></div>
+                                    </div>
+                                    <hr class="border-outline"/>
+                                    <div class="flex flex-wrap gap-2 p-1">
+                                        <button v-for="n in 2" class="flex flex-col gap-2 p-3 flex-wrap text-left border border-outline rounded min-w-64 sm:flex-[1_0_32%]">
+                                            <div class="flex gap-1 items-center">
+                                                <div class="flex bg-black aspect-square w-8">Img</div>
+                                                <div class="flex flex-col">
+                                                    <div class="text-base leading-4">Feed Title</div>
+                                                    <div class="text-xs text-secondary">Feed by Feed_Author</div>
+                                                </div>
+                                                <button class="ml-auto px-2 py-1 rounded-none bg-btn hover:bg-btnHover">Pin</button>
+                                            </div>
+                                            <div class="text-sm">Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
+                                            <div class="text-sm">Liked By:</div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div v-if="selectedFeedType == FeedEnums.Types.Following">
                             <div>No Options</div>
@@ -225,8 +272,9 @@ export default defineComponent({
                 {id:0, name:'User',value:FeedEnums.Types.User},
                 {id:1, name:'Tag',value:FeedEnums.Types.Tag},
                 {id:2, name:'Trending',value:FeedEnums.Types.Trending},
-                {id:2, name:'Following',value:FeedEnums.Types.Following},
-                {id:3, name:'Notifications',value:FeedEnums.Types.Notifications},
+                {id:3, name:'Custom Feed',value:FeedEnums.Types.FeedGenerator},
+                {id:4, name:'Following',value:FeedEnums.Types.Following},
+                {id:5, name:'Notifications',value:FeedEnums.Types.Notifications},
             ],
             selectedFeedType:"",
             feedTypeSelected:false,

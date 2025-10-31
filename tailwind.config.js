@@ -77,6 +77,7 @@ export default {
         checkedButtonBGHover: "oklch(from var(--color-checked-btn-bg-hover) l c h / <alpha-value>)",
         checkedButtonBGSelected: "oklch(from var(--color-checked-btn-bg-selected) l c h / <alpha-value>)",
         checkedButtonCheckmark: "oklch(from var(--color-checked-btn-checkmark) l c h / <alpha-value>)",
+        customFeedBtnBGHover: "oklch(from var(--color-custom-feed-btn-bg-hover) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

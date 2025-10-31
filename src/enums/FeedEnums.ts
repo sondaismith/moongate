@@ -14,7 +14,8 @@ export namespace FeedEnums{
         Hashtag = "hashtag",
         Following = "following",
         Notifications = "notifications",
-        Trending = "trending"
+        Trending = "trending",
+        FeedGenerator = "feed_generator"
     }
     export enum Types{
         Home = "home",

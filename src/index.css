@@ -76,6 +76,7 @@
         --color-checked-btn-bg-hover:theme(colors.slate.600);
         --color-checked-btn-bg-selected:theme(colors.slate.500);
         --color-checked-btn-checkmark:theme(colors.green.400);
+        --color-custom-feed-btn-bg-hover:#2a3a53;
     }
 }
 
@@ -152,4 +153,5 @@
     --color-checked-btn-bg-hover:theme(colors.slate.300);
     --color-checked-btn-bg-selected:theme(colors.slate.400);
     --color-checked-btn-checkmark:theme(colors.green.400);
+    --color-custom-feed-btn-bg-hover:theme(colors.slate.200);
 }
