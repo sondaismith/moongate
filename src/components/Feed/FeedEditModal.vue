@@ -3,7 +3,7 @@
     class="absolute z-10 flex w-full h-full text-primary bg-slate-800/40 backdrop-blur-sm focus-visible:outline-none">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{void "Modal Control"}}
-        <div class="z-20 flex flex-col w-[95%] md:max-w-[1024px] h-[92%] mx-auto my-auto rounded bg-feedColumnBG
+        <div class="z-20 flex flex-col gap-1 w-[95%] md:max-w-[1024px] h-[92%] mx-auto my-auto rounded bg-feedColumnBG
             p-4 drop-shadow-lg">
             <div class="flex flex-col gap-1">
                 <div class="flex gap-2">
@@ -92,7 +92,16 @@
                         </div>
                         <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex h-full">
                             <div class="flex flex-col gap-1 w-full">
-                                <InLaInput text-label="Filter Feeds"/>
+                                <div class="flex border border-outline rounded-sm p-1 gap-1 focus-within:border-blue-500">
+                                    <input type="text" autocomplete="off" placeholder="Search Feeds..." v-model="feedFilters.feedGenerator.searchTerm" @keyup.enter="searchForFeedGenerators"
+                                    class="h-full w-full px-2 py-1 bg-transparent rounded-sm outline-none shadow-none">
+                                    <button v-if="viewingFeedGenSearchResults" @click="getCustomFeeds"
+                                    class="flex gap-1 items-center shadow-none px-2 rounded hover:border-transparent
+                                    active:border-transparent bg-gray-400 hover:bg-gray-500 active:bg-gray-600 text-white">
+                                        <div>Clear</div>
+                                        <i-mingcute:close-circle-line/>
+                                    </button>
+                                </div>
                                 <div v-if="selectedFeedGeneratorsCount>0" class="pt-1 w-full max-h-16 min-h-16 border-b pb-1 border-outline overflow-y-auto">
                                     <div class="flex gap-1">
                                         <div tabindex="-1" class="flex flex-wrap gap-1 w-full items-start">
@@ -108,7 +117,7 @@
                                         <SquareButton v-if="selectedFeedGeneratorsCount>0" @click="clearSelectedFeeds" title="Clear All Selected Feeds"
                                         class="self-start h-auto sticky top-0 ml-auto bg-deleteBtnBG hover:bg-deleteBtnBGHover active:bg-deleteBtnBGActive text-white text-sm text-nowrap"
                                         focus-padding="0.5" button-padding="0.5">
-                                            Clear All
+                                            Clear Selected
                                         </SquareButton>
                                     </div>
                                 </div>
@@ -242,7 +251,7 @@
                 </Transition>
                 <!-- <div v-for="page in modalPages">{{ page.title }}</div> -->
             </div>
-            <div class="flex mt-3 justify-between">
+            <div class="flex mt-2 justify-between">
                 <SquareButton data-testid="feedEditModal-back-button" @click="backOnePage"
                 tabindex="0" class="bg-btn hover:bg-btnHover">
                     {{currentPage == 0 ? 'Cancel':'Back'}}
@@ -309,6 +318,9 @@ export default defineComponent({
                 } as ProfileViewDetailed,
                 notifications:{
                     justNotifs:false,
+                },
+                feedGenerator:{
+                    searchTerm:'',
                 }
             },
             /**Are we currently waiting for Profile Data request(s) from the API to complete?*/
@@ -366,6 +378,8 @@ export default defineComponent({
             // }] as IFeedGeneratorSelection[],
             /**Cursor used to retrieve more Feed Generators via Bluesky API. */
             customFeedDataCursor:'' as string|undefined,
+            /**Is the User currently viewing returned Feed Generators filter with a search term? */
+            viewingFeedGenSearchResults: false,
             attemptingToCreateFeed: false,
             FeedEnums,
             TrapFocus,
@@ -490,8 +504,10 @@ export default defineComponent({
          */
         async getCustomFeeds(){
             this.awaitingInitialCustomFeedData = true;
+            this.viewingFeedGenSearchResults = false;
             this.defaultFeedData = [];
             this.customFeedData = [];
+            this.feedFilters.feedGenerator.searchTerm = '';
             //Get "Discover" Feed
             GetBrowsingAgent().app.bsky.feed.getFeedGenerators({feeds:['at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot']})
             .then(res => {
@@ -532,6 +548,30 @@ export default defineComponent({
                 toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
             })
             .finally(()=>{this.awaitingAdditionalCustomFeedData = false;})
+        },
+        /**
+         * Method used to return Feed Generators matching a provided search term.
+         */
+        async searchForFeedGenerators(){
+            let searchTerm = this.feedFilters.feedGenerator.searchTerm;
+            if(!this.awaitingInitialCustomFeedData && !this.awaitingAdditionalCustomFeedData &&
+            typeof searchTerm != 'undefined' && searchTerm.trim() != ''){
+                this.awaitingInitialCustomFeedData = true;
+                this.customFeedData = [];
+                GetBrowsingAgent().app.bsky.unspecced.getPopularFeedGenerators({limit:100,query:searchTerm})
+                .then(res => {
+                    res.data.feeds.forEach(element => {
+                        this.customFeedData.push({generator:element,selected:false});
+                    });
+                    this.customFeedDataCursor = res.data.cursor;
+                    this.viewingFeedGenSearchResults = true;
+                })
+                .catch(err => {
+                    console.log(err);
+                    toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+                })
+                .finally(()=>{this.awaitingInitialCustomFeedData = false;})
+            }
         },
         /**Method that deselects all currently displayed Custom Feeds. */
         clearSelectedFeeds(){
