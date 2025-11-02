@@ -23,7 +23,7 @@
             <div class="text-xs font-semibold mt-auto">Liked By: {{ feedGeneratorView ? feedGeneratorView.likeCount : 'PROP MISSING' }} users</div>
         </div>
     </button>
-    <div v-else class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover cursor-pointers rounded select-none">
+    <div v-else class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
         <div class="flex flex-col gap-2 w-full overflow-hidden">
             <div class="flex gap-1 items-center">
                 <div class="flex bg-blueskyBlue aspect-square shrink-0 w-8 items-center justify-center">

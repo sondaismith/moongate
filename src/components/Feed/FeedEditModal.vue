@@ -109,17 +109,17 @@
                                         </SquareButton>
                                     </div>
                                 </div>
-                                <div class="flex flex-col gap- overflow-y-scroll">
+                                <div class="flex flex-col gap-1 h-full overflow-y-auto preload-gutter">
                                     <div class="flex gap-1 items-center">
                                         <div class="text-lg">Bluesky</div>
-                                        <div title="Bluesky Account"><i-logos:bluesky class="shrink-0" /></div>
+                                        <div title="Bluesky Discover Feed Generator"><i-logos:bluesky class="shrink-0" /></div>
                                     </div>
-                                    <hr class="border-outline"/>
+                                    <hr class="border-outline mb-1"/>
                                     <div v-if="!awaitingCustomFeedData && defaultFeedData.length>0" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
                                             <CustomFeedButton v-for="n in defaultFeedData" class="min-w-64 sm:flex-[1_0_32%]" :feed-generator-view="n.generator"/>
                                     </div>
-                                    <div v-else-if="awaitingCustomFeedData" class="flex rounded justify-center p-2 min-h-24 bg-slate-400/30 animate-pulse">
-                                        <i-mingcute:loading-fill class="text-primary spinner h-20 w-20"/>
+                                    <div v-else-if="awaitingCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
+                                        <CustomFeedButtonPlaceholder class="min-w-64 w-full sm:flex-[1_0_32%]"/>
                                     </div>
                                     <div v-else class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
                                         <div class="flex gap-1 items-center">
@@ -131,15 +131,15 @@
                                     </div>
                                     <div class="flex gap-1 items-center">
                                         <div class="text-lg">Discover New Feeds</div>
-                                        <div title="Bluesky Account"><i-mingcute:sparkles-fill class="shrink-0 text-yellow-500" /></div>
+                                        <div title="Discover New Feed Generators"><i-mingcute:sparkles-fill class="shrink-0 text-yellow-500" /></div>
                                     </div>
-                                    <hr class="border-outline"/>
+                                    <hr class="border-outline mb-1"/>
                                     <div v-if="!awaitingCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
-                                        <CustomFeedButton v-for="(n,index) in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
+                                        <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
                                         @feed-generator-selected="toggleFeedGeneratorSelection" :selected="n.selected"/>
                                     </div>
-                                    <div v-else-if="awaitingCustomFeedData" class="flex rounded justify-center p-2 min-h-24 bg-slate-400/30 animate-pulse">
-                                        <i-mingcute:loading-fill class="text-primary spinner h-20 w-20"/>
+                                    <div v-else-if="awaitingCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
+                                        <CustomFeedButtonPlaceholder v-for="n in 5" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
                                     </div>
                                     <div v-else class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
                                         <div class="flex gap-1 items-center">
@@ -269,6 +269,7 @@ import { getCompactNumberValue } from '../../helpers/converters';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import CustomFeedButton from './CustomFeedButton.vue';
 import { IFeedGeneratorSelection } from '../../interfaces/FeedInterfaces';
+import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
 
 export default defineComponent({
     components:{
@@ -278,6 +279,7 @@ export default defineComponent({
         UserSearchBar,
         CheckBox,
         CustomFeedButton,
+        CustomFeedButtonPlaceholder,
     },
     data(){
         return{
@@ -474,7 +476,6 @@ export default defineComponent({
          */
         async getCustomFeeds(){
             this.awaitingCustomFeedData = true;
-            this.selectedCustomFeeds = [];
             this.defaultFeedData = [];
             this.customFeedData = [];
             //Get "Discover" Feed
