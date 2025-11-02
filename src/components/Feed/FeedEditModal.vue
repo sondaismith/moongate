@@ -3,20 +3,22 @@
     class="absolute z-10 flex w-full h-full text-primary bg-slate-800/40 backdrop-blur-sm focus-visible:outline-none">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{void "Modal Control"}}
-        <div class="z-20 flex flex-col w-[95%] md:w-2/3 h-4/5 mx-auto my-auto rounded bg-feedColumnBG
+        <div class="z-20 flex flex-col w-[95%] md:max-w-[1024px] h-[92%] mx-auto my-auto rounded bg-feedColumnBG
             p-4 drop-shadow-lg">
-            <div class="flex gap-2">
-                <div class="text-2xl">{{modalPages[currentPage].title}}</div>
-                <div v-if="AppState.isCreatingFeed" class="flex bg-green-600 rounded-full px-2 py-1 items-center self-center">Creating</div>
-                <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div>
-            </div>
-            {{ void "Pages" }}
-            <div class="flex items-center w-full">
-                <template v-for="n in totalPages">
-                    <div class="border border-primary rounded-full aspect-square p-1"
-                        :class="{'bg-primary' : currentPage==n-1}"></div>
-                    <div v-if="n != totalPages" class="h-[1px] bg-gray-500 w-full"></div>
-                </template>
+            <div class="flex flex-col gap-1">
+                <div class="flex gap-2">
+                    <div class="text-2xl">{{modalPages[currentPage].title}}</div>
+                    <div v-if="AppState.isCreatingFeed" class="flex bg-green-600 rounded-full px-2 py-1 items-center self-center">Creating</div>
+                    <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div>
+                </div>
+                {{ void "Pages" }}
+                <div class="flex items-center w-full">
+                    <template v-for="n in totalPages">
+                        <div class="border border-primary rounded-full aspect-square p-1"
+                            :class="{'bg-primary' : currentPage==n-1}"></div>
+                        <div v-if="n != totalPages" class="h-[1px] bg-gray-500 w-full"></div>
+                    </template>
+                </div>
             </div>
             <div>{{ modalPages[currentPage].instruction }}</div>
             <div class="flex flex-col relative grow overflow-hidden">
@@ -97,7 +99,8 @@
                                             <button v-for="n in selectedFeedGenerators" @click="toggleFeedGeneratorSelection(n.generator.uri)"
                                             :title="'Remove &quot;'+n.generator.displayName+'&quot; Feed'"
                                             class="flex shrink-0 grow-0 items-center gap-1 bg-itemTagBG transition-colors border-2 border-transparent
-                                            active:bg-itemTagBGActive hover:border-itemTagBorder active:border-itemTagBGActive focus-visible:border-itemTagBorder outline-none rounded p-0.5 px-1 text-primary text-xs text-nowrap cursor-pointer shadow-none">
+                                            active:bg-itemTagBGActive hover:border-itemTagBorder active:border-itemTagBGActive focus-visible:border-itemTagBorder
+                                            outline-none rounded p-0.5 px-1 text-primary text-xs text-nowrap cursor-pointer shadow-none">
                                                 <div>{{ n.generator.displayName }}</div>
                                                 <i-mingcute:close-circle-line/>
                                             </button>
@@ -110,15 +113,14 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1 h-full overflow-y-auto preload-gutter">
-                                    <div class="flex gap-1 items-center">
+                                    <div class="flex gap-1 items-center py-1 bg-feedColumnBG shadow-scroll-underline">
                                         <div class="text-lg">Bluesky</div>
                                         <div title="Bluesky Discover Feed Generator"><i-logos:bluesky class="shrink-0" /></div>
                                     </div>
-                                    <hr class="border-outline mb-1"/>
-                                    <div v-if="!awaitingCustomFeedData && defaultFeedData.length>0" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
+                                    <div v-if="!awaitingInitialCustomFeedData && defaultFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
                                             <CustomFeedButton v-for="n in defaultFeedData" class="min-w-64 sm:flex-[1_0_32%]" :feed-generator-view="n.generator"/>
                                     </div>
-                                    <div v-else-if="awaitingCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
+                                    <div v-else-if="awaitingInitialCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
                                         <CustomFeedButtonPlaceholder class="min-w-64 w-full sm:flex-[1_0_32%]"/>
                                     </div>
                                     <div v-else class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
@@ -129,25 +131,32 @@
                                         <hr class="border-outline"/>
                                         <div class="text-sm">Default feeds could not be reached at this time</div>
                                     </div>
-                                    <div class="flex gap-1 items-center">
-                                        <div class="text-lg">Discover New Feeds</div>
-                                        <div title="Discover New Feed Generators"><i-mingcute:sparkles-fill class="shrink-0 text-yellow-500" /></div>
+                                    <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline">
+                                        <div class="text-lg">Popular Feeds</div>
+                                        <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
+                                        <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded</div>
                                     </div>
-                                    <hr class="border-outline mb-1"/>
-                                    <div v-if="!awaitingCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
+                                    <div v-if="!awaitingInitialCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
                                         <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
                                         @feed-generator-selected="toggleFeedGeneratorSelection" :selected="n.selected"/>
+                                        <button @click="loadMoreFeedGenerators" :disabled="awaitingAdditionalCustomFeedData"
+                                        class="flex gap-1 items-center justify-center py-1 w-full rounded bg-btn hover:bg-btnHover
+                                        hover:border-hover disabled:bg-disabledBG disabled:border-transparent disabled:text-disabled">
+                                            <i-mingcute:loading-fill v-if="awaitingAdditionalCustomFeedData" class="spinner"/>
+                                            <i-mingcute:plus-fill v-else/>
+                                            <div>Load More</div>
+                                        </button>
                                     </div>
-                                    <div v-else-if="awaitingCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
+                                    <div v-else-if="awaitingInitialCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
                                         <CustomFeedButtonPlaceholder v-for="n in 5" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
                                     </div>
                                     <div v-else class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
                                         <div class="flex gap-1 items-center">
-                                            <div class="text-lg font-semibold">Error Retrieving Default Feeds</div>
+                                            <div class="text-lg font-semibold">Error Retrieving Feed Generators</div>
                                             <i-mingcute:wifi-off-line/>
                                         </div>
                                         <hr class="border-outline"/>
-                                        <div class="text-sm">Default feeds could not be reached at this time</div>
+                                        <div class="text-sm">Feed Generators could not be reached at this time</div>
                                     </div>
                                 </div>
                             </div>
@@ -209,12 +218,12 @@
                         <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">
                             <div>No Options Currently</div>
                         </div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex flex-col gap-2 overflow-hidden">
-                            <div class="flex items-center gap-1">
+                        <div v-else-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex flex-col gap-2 overflow-y-auto preload-gutter">
+                            <div class="flex items-center gap-1 bg-feedColumnBG sticky top-0 pb-1 shadow-scroll-underline">
                                 <div class="text-xl font-bold">Selected Feeds</div>
                                 <div class="text-sm text-secondary">{{ selectedFeedGeneratorsCount }} item(s)</div>
                             </div>
-                            <div v-if="selectedFeedGeneratorsCount>0" class="flex flex-wrap gap-1 p-2 pt-0 overflow-y-scroll">
+                            <div v-if="selectedFeedGeneratorsCount>0" class="flex flex-wrap gap-1 p-2 pt-0s">
                                 <CustomFeedButton v-for="fg in selectedFeedGenerators" :feed-generator-view="fg.generator"
                                 :display-only="true" @feed-generator-selected="toggleFeedGeneratorSelection" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
                             </div>
@@ -328,30 +337,35 @@ export default defineComponent({
             debouncedSearchTerm:'',
             /**Current text used to filter the displayed Feed Generators. */
             customFeedFilterText:'',
-            /**Are we waiting for Custom Feed GeneratorView objects to be returned? */
-            awaitingCustomFeedData:false,
+            /**Are we waiting for the 1st collection Custom Feed GeneratorView objects to be returned? */
+            awaitingInitialCustomFeedData:false,
+            /**Are we trying to load Custom Feed GeneratorView objects via "Load more" button? */
+            awaitingAdditionalCustomFeedData:false,
             /**Object that holds the default Bluesky-created Feeds. */
             defaultFeedData:[] as IFeedGeneratorSelection[],
             /**Object that holds the most popular custom Feed Generator objects. */
-            customFeedData:[{
-                generator:{
-                    cid:'',
-                    creator:{
-                        did:'fake-did',
-                        handle:'fake-dude.bsky.app',
-                        displayName:'moongate test suite',
-                        avatar:'src/assets/test-media/posts/image04.png'
-                    },
-                    did:'fake-did',
-                    avatar:'src/assets/test-media/posts/image01.png',
-                    displayName:'Fake Feed 1',
-                    description:'A dummy Custom Feed created for testing purposes.',
-                    likeCount:12345,
-                    indexedAt: new Date().toISOString(),
-                    uri:'www.google.com'
-                },
-                selected:false
-            }] as IFeedGeneratorSelection[],
+            customFeedData: [] as IFeedGeneratorSelection[],
+            // [{
+            //     generator:{
+            //         cid:'',
+            //         creator:{
+            //             did:'fake-did',
+            //             handle:'fake-dude.bsky.app',
+            //             displayName:'moongate test suite',
+            //             avatar:'src/assets/test-media/posts/image04.png'
+            //         },
+            //         did:'fake-did',
+            //         avatar:'src/assets/test-media/posts/image01.png',
+            //         displayName:'Fake Feed 1',
+            //         description:'A dummy Custom Feed created for testing purposes.',
+            //         likeCount:12345,
+            //         indexedAt: new Date().toISOString(),
+            //         uri:'www.google.com'
+            //     },
+            //     selected:false
+            // }] as IFeedGeneratorSelection[],
+            /**Cursor used to retrieve more Feed Generators via Bluesky API. */
+            customFeedDataCursor:'' as string|undefined,
             attemptingToCreateFeed: false,
             FeedEnums,
             TrapFocus,
@@ -374,7 +388,7 @@ export default defineComponent({
                 this.currentPage++
             }
             this.feedTypeSelected = true;
-            if(this.currentPage == 1 && this.selectedFeedType == FeedEnums.Types.FeedGenerator) this.getCustomFeeds();
+            if(this.customFeedData.length<1 && this.currentPage == 1 && this.selectedFeedType == FeedEnums.Types.FeedGenerator) this.getCustomFeeds();
             if(this.validTags.length>0 || this.feedFilters.user) this.feedSpecificationsSet = true;
             (this.$el as HTMLElement).focus();
         },
@@ -475,7 +489,7 @@ export default defineComponent({
          * Method that loads the Default and Most Popular Feed Generators via Bluesky's API.
          */
         async getCustomFeeds(){
-            this.awaitingCustomFeedData = true;
+            this.awaitingInitialCustomFeedData = true;
             this.defaultFeedData = [];
             this.customFeedData = [];
             //Get "Discover" Feed
@@ -490,17 +504,34 @@ export default defineComponent({
                 toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
             });
             //Get "User Created" Feeds
-            GetBrowsingAgent().app.bsky.unspecced.getPopularFeedGenerators({limit:10})
+            GetBrowsingAgent().app.bsky.unspecced.getPopularFeedGenerators({limit:10,cursor:this.customFeedDataCursor})
             .then(res => {
                 res.data.feeds.forEach(element => {
                     this.customFeedData.push({generator:element,selected:false});
                 });
-                this.awaitingCustomFeedData = false;
+                this.customFeedDataCursor = res.data.cursor;
             })
             .catch(err => {
                 console.log(err);
                 toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
             })
+            .finally(()=>{this.awaitingInitialCustomFeedData = false;})
+        },
+        /**Method used to load additional Feed Generators through Bluesky's API after the 1st request. */
+        async loadMoreFeedGenerators(){
+            this.awaitingAdditionalCustomFeedData = true;
+            GetBrowsingAgent().app.bsky.unspecced.getPopularFeedGenerators({limit:10,cursor:this.customFeedDataCursor})
+            .then(res => {
+                res.data.feeds.forEach(element => {
+                    this.customFeedData.push({generator:element,selected:false});
+                });
+                this.customFeedDataCursor = res.data.cursor;
+            })
+            .catch(err => {
+                console.log(err);
+                toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+            })
+            .finally(()=>{this.awaitingAdditionalCustomFeedData = false;})
         },
         /**Method that deselects all currently displayed Custom Feeds. */
         clearSelectedFeeds(){
@@ -618,7 +649,7 @@ export default defineComponent({
                     case FeedEnums.Types.Tag:
                         return this.validTags.length>0;
                     case FeedEnums.Types.FeedGenerator:
-                        return !this.awaitingCustomFeedData && this.selectedFeedGeneratorsCount>0;
+                        return !this.awaitingInitialCustomFeedData && this.selectedFeedGeneratorsCount>0;
                     default:
                         return true;
                 }
