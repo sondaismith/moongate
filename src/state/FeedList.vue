@@ -156,7 +156,7 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
     undefined,tags)
     .then(res => {
         desc = res;
-    })
+    });
 
     return {description:desc, data:feedResult.data, cursor:feedResult.cursor, isAwaitingFeedData:false};
 }
@@ -368,13 +368,21 @@ latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
             }
             break;
         case FeedEnums.Types.FeedGenerator:
-            desc = {...desc,
-                feedType:FeedEnums.Types.FeedGenerator,
-                feedIcon:FeedEnums.Icons.Trending,
-                feedHandle:'trending.bsky.app',
-                feedName:tags,
-                feedSourceDID:sourceDID
-            }
+            //Get profile name
+            await GetBrowsingAgent().app.bsky.feed.getFeedGenerator({feed:sourceDID})
+            .then(res => {
+                desc = {...desc,
+                    feedHandle: res.data.view.creator.handle,
+                    feedName: res.data.view.displayName
+                }
+            })
+            .finally(()=>{
+                desc = {...desc,
+                    feedType:FeedEnums.Types.FeedGenerator,
+                    feedIcon:FeedEnums.Icons.FeedGenerator,
+                    feedSourceDID:sourceDID
+                }
+            })
             break;
         default:
             break;
@@ -629,6 +637,7 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
             await GetBrowsingAgent().app.bsky.feed.getFeed({feed:did,cursor:cursor})
             .then(res => {
                 feedResult.data = res.data.feed;
+                feedResult.cursor = (typeof res.data.cursor != 'undefined') ? res.data.cursor : '';
                 console.log(res.data);
             })
             break;

@@ -303,6 +303,7 @@ import CustomFeedButton from './CustomFeedButton.vue';
 import { IFeedGeneratorSelection } from '../../interfaces/FeedInterfaces';
 import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
 import { AppBskyFeedDefs } from '@atproto/api/dist/client';
+import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 
 export default defineComponent({
     components:{
@@ -631,12 +632,19 @@ export default defineComponent({
         async createFeed(){
             this.attemptingToCreateFeed = true;
 
-            PrepareFeedData(this.selectedFeedType as FeedEnums.Types,
-            {
+            let feedSourceData:IUserSearchResult = {
                 did:this.feedFilters.user.did,
                 handle:this.feedFilters.user.handle,
                 name:''
-            },
+            }
+            if(this.selectedFeedType == FeedEnums.Types.FeedGenerator){
+                feedSourceData.did = this.selectedFeedItems[0].uri;
+                feedSourceData.handle = this.selectedFeedItems[0].creator.handle;
+                feedSourceData.name = this.selectedFeedItems[0].displayName;
+            }
+
+            PrepareFeedData(this.selectedFeedType as FeedEnums.Types,
+            feedSourceData,
             this.feedFilters.tag)
             .then(res => {
                 //Create the Feed
