@@ -98,11 +98,11 @@
                                     <button v-if="viewingFeedGenSearchResults" @click="getCustomFeeds"
                                     class="flex gap-1 items-center shadow-none px-2 rounded hover:border-transparent
                                     active:border-transparent bg-gray-400 hover:bg-gray-500 active:bg-gray-600 text-white">
-                                        <div>Clear</div>
+                                        <div class="text-nowrap">Remove Filter</div>
                                         <i-mingcute:close-circle-line/>
                                     </button>
                                 </div>
-                                <div v-if="selectedFeedGeneratorsCount>0" class="pt-1 w-full max-h-16 min-h-16 border-b pb-1 border-outline overflow-y-auto">
+                                <div v-if="selectedFeedItems.length>0" class="pt-1 w-full max-h-16 min-h-16 border-b pb-1 border-outline overflow-y-auto">
                                     <div class="flex gap-1">
                                         <div tabindex="-1" class="flex flex-wrap gap-1 w-full items-start">
                                             <button v-for="n in selectedFeedGenerators" @click="toggleFeedGeneratorSelection(n.generator.uri)"
@@ -114,7 +114,7 @@
                                                 <i-mingcute:close-circle-line/>
                                             </button>
                                         </div>
-                                        <SquareButton v-if="selectedFeedGeneratorsCount>0" @click="clearSelectedFeeds" title="Clear All Selected Feeds"
+                                        <SquareButton v-if="selectedFeedItems.length>0" @click="clearSelectedFeeds" title="Clear All Selected Feeds"
                                         class="self-start h-auto sticky top-0 ml-auto bg-deleteBtnBG hover:bg-deleteBtnBGHover active:bg-deleteBtnBGActive text-white text-sm text-nowrap"
                                         focus-padding="0.5" button-padding="0.5">
                                             Clear Selected
@@ -143,9 +143,9 @@
                                         </div>
                                     </div>
                                     <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline">
-                                        <div class="text-lg">Popular Feeds</div>
+                                        <div class="text-lg">Discover New Feeds</div>
                                         <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
-                                        <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded</div>
+                                        <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded<span v-if="selectedFeedItems.length>0">, {{ selectedFeedItems.length }} selected</span></div>
                                     </div>
                                     <div v-if="!awaitingInitialCustomFeedData && !awaitingSearchCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
                                         <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
@@ -244,10 +244,10 @@
                         <div v-else-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex flex-col gap-2 overflow-y-auto preload-gutter">
                             <div class="flex items-center gap-1 bg-feedColumnBG sticky top-0 pb-1 shadow-scroll-underline">
                                 <div class="text-xl font-bold">Selected Feeds</div>
-                                <div class="text-sm text-secondary">{{ selectedFeedGeneratorsCount }} item(s)</div>
+                                <div class="text-sm text-secondary">{{ selectedFeedItems.length }} item(s)</div>
                             </div>
-                            <div v-if="selectedFeedGeneratorsCount>0" class="flex flex-wrap gap-1 p-2 pt-0s">
-                                <CustomFeedButton v-for="fg in selectedFeedGenerators" :feed-generator-view="fg.generator"
+                            <div v-if="selectedFeedItems.length>0" class="flex flex-wrap gap-1 p-2 pt-0s">
+                                <CustomFeedButton v-for="fg in selectedFeedItems" :feed-generator-view="fg"
                                 :display-only="true" @feed-generator-selected="toggleFeedGeneratorSelection" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
                             </div>
                             <div v-else>
@@ -302,6 +302,7 @@ import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import CustomFeedButton from './CustomFeedButton.vue';
 import { IFeedGeneratorSelection } from '../../interfaces/FeedInterfaces';
 import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
+import { AppBskyFeedDefs } from '@atproto/api/dist/client';
 
 export default defineComponent({
     components:{
@@ -374,6 +375,8 @@ export default defineComponent({
             defaultFeedData:[] as IFeedGeneratorSelection[],
             /**Object that holds the most popular custom Feed Generator objects. */
             customFeedData: [] as IFeedGeneratorSelection[],
+            //**Object that holds all the Feed Generators the User has selected. */
+            selectedFeedItems: [] as AppBskyFeedDefs.GeneratorView[],
             // [{
             //     generator:{
             //         cid:'',
@@ -524,6 +527,7 @@ export default defineComponent({
             this.viewingFeedGenSearchResults = false;
             this.defaultFeedData = [];
             this.customFeedData = [];
+            this.selectedFeedItems = [];
             this.feedFilters.feedGenerator.searchTerm = '';
             this.feedFilters.feedGenerator.lastSearchTerm = '';
             //Get "Discover" Feed
@@ -572,12 +576,13 @@ export default defineComponent({
          */
         async searchForFeedGenerators(){
             let searchTerm = this.feedFilters.feedGenerator.searchTerm;
-            this.feedFilters.feedGenerator.lastSearchTerm = this.feedFilters.feedGenerator.searchTerm;
-            this.awaitingSearchCustomFeedData = true;
             if(!this.awaitingInitialCustomFeedData && !this.awaitingAdditionalCustomFeedData &&
             typeof searchTerm != 'undefined' && searchTerm.trim() != ''){
+                this.feedFilters.feedGenerator.lastSearchTerm = this.feedFilters.feedGenerator.searchTerm;
+                this.awaitingSearchCustomFeedData = true;
                 this.awaitingAdditionalCustomFeedData = true;
                 this.customFeedData = [];
+                this.selectedFeedItems = [];
                 GetBrowsingAgent().app.bsky.unspecced.getPopularFeedGenerators({limit:100,query:searchTerm})
                 .then(res => {
                     res.data.feeds.forEach(element => {
@@ -600,11 +605,21 @@ export default defineComponent({
             this.customFeedData.forEach(fd => {
                 fd.selected = false;
             });
+            this.selectedFeedItems = [];
         },
         /**Method that selects or deselects a specific Feed Generator in the displayed list. */
         toggleFeedGeneratorSelection(atUri:string|undefined){
             let index = this.customFeedData.findIndex(x => x.generator.uri == atUri);
-            if(index > -1) this.customFeedData[index].selected = !this.customFeedData[index].selected;
+            if(index > -1){
+                //Toggle selection in array used as "View" source
+                this.customFeedData[index].selected = !this.customFeedData[index].selected;
+                //Update "selected items" array
+                if(!this.customFeedData[index].selected){
+                    let indexToRemove = this.selectedFeedItems.findIndex(f=>f.uri == atUri);
+                    if(indexToRemove>-1) this.selectedFeedItems.splice(indexToRemove,1);
+                }
+                else this.selectedFeedItems.push(this.customFeedData[index].generator);
+            }
         },
         toggleJustMentions(){
             this.feedFilters.notifications.justNotifs = !this.feedFilters.notifications.justNotifs;
@@ -711,7 +726,7 @@ export default defineComponent({
                     case FeedEnums.Types.Tag:
                         return this.validTags.length>0;
                     case FeedEnums.Types.FeedGenerator:
-                        return !this.awaitingInitialCustomFeedData && this.selectedFeedGeneratorsCount>0;
+                        return !this.awaitingInitialCustomFeedData && this.selectedFeedItems.length>0;
                     default:
                         return true;
                 }
@@ -738,7 +753,7 @@ export default defineComponent({
                     case FeedEnums.Types.Tag:
                         return this.validTags.length>0;
                     case FeedEnums.Types.FeedGenerator:
-                        return this.selectedFeedGeneratorsCount>0;
+                        return this.selectedFeedItems.length>0;
                     case FeedEnums.Types.Trending:
                         return true;
                     default:
