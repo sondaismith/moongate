@@ -78,6 +78,7 @@ describe('Creating new Feed', () => {
             await userSearchBar.find('[data-testid="userSearchBar-returned-users-container"').find('div').trigger('click');
             //Note that the above click should navigate to summary page AND request ProfileViewDetail data from API
             //Would be great if the API call could actually have a mock call instead of failing and having the data set below
+            //checkout https://vitest.dev/guide/mocking.html#requests
             //Check that we navigated to summary page
             expect(wrapper.find('[data-testid="feedEditModal-summary-page"').exists()).toBe(true);
             //Mock that ProfileViewDetailed was returned for summary page

@@ -132,23 +132,25 @@
                                     <div v-else-if="awaitingInitialCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
                                         <CustomFeedButtonPlaceholder class="min-w-64 w-full sm:flex-[1_0_32%]"/>
                                     </div>
-                                    <div v-else class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
-                                        <div class="flex gap-1 items-center">
-                                            <div class="text-lg font-semibold">Error Retrieving Default Feeds</div>
-                                            <i-mingcute:wifi-off-line/>
+                                    <div v-else class="pt-2">
+                                        <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
+                                            <div class="flex gap-1 items-center">
+                                                <div class="text-lg font-semibold">Error Retrieving Default Feeds</div>
+                                                <i-mingcute:wifi-off-line/>
+                                            </div>
+                                            <hr class="border-outline"/>
+                                            <div class="text-sm">Default feeds could not be reached at this time</div>
                                         </div>
-                                        <hr class="border-outline"/>
-                                        <div class="text-sm">Default feeds could not be reached at this time</div>
                                     </div>
                                     <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline">
                                         <div class="text-lg">Popular Feeds</div>
                                         <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
                                         <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded</div>
                                     </div>
-                                    <div v-if="!awaitingInitialCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
+                                    <div v-if="!awaitingInitialCustomFeedData && !awaitingSearchCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
                                         <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
                                         @feed-generator-selected="toggleFeedGeneratorSelection" :selected="n.selected"/>
-                                        <button @click="loadMoreFeedGenerators" :disabled="awaitingAdditionalCustomFeedData"
+                                        <button v-if="!viewingFeedGenSearchResults" @click="loadMoreFeedGenerators" :disabled="awaitingAdditionalCustomFeedData"
                                         class="flex gap-1 items-center justify-center py-1 w-full rounded bg-btn hover:bg-btnHover
                                         hover:border-hover disabled:bg-disabledBG disabled:border-transparent disabled:text-disabled">
                                             <i-mingcute:loading-fill v-if="awaitingAdditionalCustomFeedData" class="spinner"/>
@@ -156,16 +158,28 @@
                                             <div>Load More</div>
                                         </button>
                                     </div>
-                                    <div v-else-if="awaitingInitialCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
+                                    <div v-else-if="awaitingInitialCustomFeedData || awaitingSearchCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
                                         <CustomFeedButtonPlaceholder v-for="n in 5" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
                                     </div>
-                                    <div v-else class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
-                                        <div class="flex gap-1 items-center">
-                                            <div class="text-lg font-semibold">Error Retrieving Feed Generators</div>
-                                            <i-mingcute:wifi-off-line/>
+                                    <div v-else-if="viewingFeedGenSearchResults && customFeedData.length<1" class="pt-2">
+                                        <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
+                                            <div class="flex gap-1 items-center">
+                                                <div class="text-lg font-semibold">No Results</div>
+                                                <i-mingcute:search-3-line/>
+                                            </div>
+                                            <hr class="border-outline"/>
+                                            <div class="text-sm">No Results found matching "{{ feedFilters.feedGenerator.lastSearchTerm }}"</div>
                                         </div>
-                                        <hr class="border-outline"/>
-                                        <div class="text-sm">Feed Generators could not be reached at this time</div>
+                                    </div>
+                                    <div v-else class="pt-2">
+                                        <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
+                                            <div class="flex gap-1 items-center">
+                                                <div class="text-lg font-semibold">Error Retrieving Feed Generators</div>
+                                                <i-mingcute:wifi-off-line/>
+                                            </div>
+                                            <hr class="border-outline"/>
+                                            <div class="text-sm">Feed Generators could not be reached at this time</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -321,6 +335,7 @@ export default defineComponent({
                 },
                 feedGenerator:{
                     searchTerm:'',
+                    lastSearchTerm:'',
                 }
             },
             /**Are we currently waiting for Profile Data request(s) from the API to complete?*/
@@ -353,6 +368,8 @@ export default defineComponent({
             awaitingInitialCustomFeedData:false,
             /**Are we trying to load Custom Feed GeneratorView objects via "Load more" button? */
             awaitingAdditionalCustomFeedData:false,
+            /**Are we waiting for results from a Feed Generator search query? */
+            awaitingSearchCustomFeedData:false,
             /**Object that holds the default Bluesky-created Feeds. */
             defaultFeedData:[] as IFeedGeneratorSelection[],
             /**Object that holds the most popular custom Feed Generator objects. */
@@ -508,6 +525,7 @@ export default defineComponent({
             this.defaultFeedData = [];
             this.customFeedData = [];
             this.feedFilters.feedGenerator.searchTerm = '';
+            this.feedFilters.feedGenerator.lastSearchTerm = '';
             //Get "Discover" Feed
             GetBrowsingAgent().app.bsky.feed.getFeedGenerators({feeds:['at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot']})
             .then(res => {
@@ -554,9 +572,11 @@ export default defineComponent({
          */
         async searchForFeedGenerators(){
             let searchTerm = this.feedFilters.feedGenerator.searchTerm;
+            this.feedFilters.feedGenerator.lastSearchTerm = this.feedFilters.feedGenerator.searchTerm;
+            this.awaitingSearchCustomFeedData = true;
             if(!this.awaitingInitialCustomFeedData && !this.awaitingAdditionalCustomFeedData &&
             typeof searchTerm != 'undefined' && searchTerm.trim() != ''){
-                this.awaitingInitialCustomFeedData = true;
+                this.awaitingAdditionalCustomFeedData = true;
                 this.customFeedData = [];
                 GetBrowsingAgent().app.bsky.unspecced.getPopularFeedGenerators({limit:100,query:searchTerm})
                 .then(res => {
@@ -564,14 +584,16 @@ export default defineComponent({
                         this.customFeedData.push({generator:element,selected:false});
                     });
                     this.customFeedDataCursor = res.data.cursor;
+                    this.awaitingSearchCustomFeedData = false;
                     this.viewingFeedGenSearchResults = true;
                 })
                 .catch(err => {
                     console.log(err);
                     toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
                 })
-                .finally(()=>{this.awaitingInitialCustomFeedData = false;})
+                .finally(()=>{this.awaitingAdditionalCustomFeedData = false;})
             }
+            else if(this.viewingFeedGenSearchResults && searchTerm.trim() == '') this.getCustomFeeds();
         },
         /**Method that deselects all currently displayed Custom Feeds. */
         clearSelectedFeeds(){

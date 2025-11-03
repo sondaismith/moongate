@@ -82,6 +82,7 @@ declare module 'vue' {
     'IMingcute:repeatLine': typeof import('~icons/mingcute/repeat-line')['default']
     'IMingcute:rightFill': typeof import('~icons/mingcute/right-fill')['default']
     'IMingcute:safeShield2Fill': typeof import('~icons/mingcute/safe-shield2-fill')['default']
+    'IMingcute:search3Line': typeof import('~icons/mingcute/search3-line')['default']
     'IMingcute:settings2Line': typeof import('~icons/mingcute/settings2-line')['default']
     'IMingcute:settings6Fill': typeof import('~icons/mingcute/settings6-fill')['default']
     'IMingcute:sparklesFill': typeof import('~icons/mingcute/sparkles-fill')['default']
