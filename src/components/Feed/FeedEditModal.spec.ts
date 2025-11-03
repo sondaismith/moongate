@@ -76,8 +76,20 @@ describe('Creating new Feed', () => {
             expect(userSearchBar.find('[data-testid="userSearchBar-returned-users-container"').exists()).toBe(true);
             //Select "returned" user result
             await userSearchBar.find('[data-testid="userSearchBar-returned-users-container"').find('div').trigger('click');
+            //Note that the above click should navigate to summary page AND request ProfileViewDetail data from API
+            //Would be great if the API call could actually have a mock call instead of failing and having the data set below
             //Check that we navigated to summary page
             expect(wrapper.find('[data-testid="feedEditModal-summary-page"').exists()).toBe(true);
+            //Mock that ProfileViewDetailed was returned for summary page
+            await wrapper.setData({
+                feedFilters:{
+                    user:{
+                        did:'did:test-did-valie',
+                        handle:'test.bsky.social',
+                        displayName:'Test Profle'
+                    }
+                }
+            })
             expect(wrapper.find('[data-testid="feedEditModal-create-button"').exists()).toBe(true);
         })
         afterAll(() => {

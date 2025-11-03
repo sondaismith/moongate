@@ -438,7 +438,7 @@ export default defineComponent({
         selectUser(user:ProfileView){
             this.getUserProfileViewDetailed(user.did)
             .then(res => {
-                if(res != undefined) this.feedFilters.user = res
+                if(typeof res != 'undefined') this.feedFilters.user = res
             })
             this.forwardOnePage();
         },
@@ -717,6 +717,8 @@ export default defineComponent({
                         return this.validTags.length>0;
                     case FeedEnums.Types.FeedGenerator:
                         return this.selectedFeedGeneratorsCount>0;
+                    case FeedEnums.Types.Trending:
+                        return true;
                     default:
                         return false;
                 }
