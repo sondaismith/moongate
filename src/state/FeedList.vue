@@ -634,7 +634,7 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
             });
             break;
         case FeedEnums.Types.FeedGenerator:
-            await GetBrowsingAgent().app.bsky.feed.getFeed({feed:did,cursor:cursor})
+            await GetBrowsingAgent().app.bsky.feed.getFeed({feed:did,cursor:cursor,limit:postsToGet})
             .then(res => {
                 feedResult.data = res.data.feed;
                 feedResult.cursor = (typeof res.data.cursor != 'undefined') ? res.data.cursor : '';

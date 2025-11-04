@@ -176,7 +176,8 @@
                         <TrendingTopic :trend="tt as TrendView" :position="index+1"/>
                     </div>
                 </div>
-                <div v-if="feedData?.description.feedType == FeedEnums.Types.User && !feedData?.cursor"
+                <div v-if="(feedData?.description.feedType == FeedEnums.Types.User ||
+                feedData?.description.feedType == FeedEnums.Types.FeedGenerator) && !feedData?.cursor"
                 class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
                     End of Posts
                 </div>
