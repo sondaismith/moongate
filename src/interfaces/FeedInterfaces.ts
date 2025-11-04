@@ -154,4 +154,11 @@ interface IFeedGeneratorSelection{
     selected:boolean
 }
 
-export type {IFeedDescription, IFeedListing, IFeedReturnedPostResults, IFeedColumnSettings, IFeedDBData, IFeedIconTypes, IFeedGeneratorSelection}
+interface IFeedCreationStatus{
+    message:string,
+    attempted:boolean,
+    success:boolean
+}
+
+export type {IFeedDescription, IFeedListing, IFeedReturnedPostResults, IFeedColumnSettings,
+IFeedDBData, IFeedIconTypes, IFeedGeneratorSelection, IFeedCreationStatus}

@@ -275,11 +275,26 @@
                     v-if="canGoToNextPage"
                     @click="forwardOnePage"
                     class="bg-btn hover:bg-btnHover" tabindex="0">Next</SquareButton>
+                    <SquareButton data-testid="feedEditModal-create-button" @click="createFeeds()"
+                    v-if="areCreatePostConditionsMet && selectedFeedItems.length>1"
+                    :is-disabled="attemptingToCreateFeed">Create Feeds</SquareButton>
                     <SquareButton data-testid="feedEditModal-create-button" @click="createFeed()"
-                    v-if="areCreatePostConditionsMet"
+                    v-else-if="areCreatePostConditionsMet"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
             </div>
+            <Transition>
+                <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator && attemptingToCreateFeed" class="absolute flex justify-center h-full w-full right-0 bottom-0 rounded bg-black/80">
+                    <div class="flex flex-col gap-1 items-center justify-center">
+                        <div v-for="n in feedCreationStatus" class="flex gap-1 px-2 py-0.5 rounded items-center bg-focusBG border border-modernToggleBtnBorder select-none">
+                            <div>{{ n.message }}</div>
+                            <i-mingcute:loading-fill v-if="!n.attempted" class="text-gray-300 spinner h-4 w-4"/>
+                            <i-mingcute:check-fill v-else-if="n.attempted && n.success" class="text-green-400 h-4 w-4"/>
+                            <i-mingcute:close-fill v-else-if="n.attempted && !n.success" class="text-deleteBtnBG h-4 w-4"/>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
         </div>
     </div>
 </template>
@@ -300,7 +315,7 @@ import { isUserVerified } from '../../helpers/states';
 import { getCompactNumberValue } from '../../helpers/converters';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import CustomFeedButton from './CustomFeedButton.vue';
-import { IFeedGeneratorSelection } from '../../interfaces/FeedInterfaces';
+import { IFeedCreationStatus, IFeedGeneratorSelection } from '../../interfaces/FeedInterfaces';
 import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
 import { AppBskyFeedDefs } from '@atproto/api/dist/client';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
@@ -376,8 +391,10 @@ export default defineComponent({
             defaultFeedData:[] as IFeedGeneratorSelection[],
             /**Object that holds the most popular custom Feed Generator objects. */
             customFeedData: [] as IFeedGeneratorSelection[],
-            //**Object that holds all the Feed Generators the User has selected. */
+            /**Object that holds all the Feed Generators the User has selected. */
             selectedFeedItems: [] as AppBskyFeedDefs.GeneratorView[],
+            /**Array used to display the status of each attempt to create a Feed from multiple selection. */
+            feedCreationStatus: [] as IFeedCreationStatus[],
             // [{
             //     generator:{
             //         cid:'',
@@ -664,6 +681,87 @@ export default defineComponent({
                     this.attemptingToCreateFeed = false;
                 }, 800);
             });
+        },
+        /**
+         * Method used to create more than one Feed at a time.
+         */
+        async createFeeds(){
+            this.attemptingToCreateFeed = true;
+            this.feedCreationStatus = [];
+            let successes = 0;
+            let lastFeedItem = false;
+            if(this.selectedFeedType == FeedEnums.Types.FeedGenerator){
+                for (let i = 0; i < this.selectedFeedItems.length; i++) {
+                    lastFeedItem = (i == this.selectedFeedItems.length-1);
+                    let feedSourceData:IUserSearchResult = {
+                        did: this.selectedFeedItems[i].uri,
+                        handle: this.selectedFeedItems[i].creator.handle,
+                        name: this.selectedFeedItems[i].displayName
+                    }
+                    this.feedCreationStatus.push({
+                        message:`Attempting to create "${feedSourceData.name}" Feed...`,
+                        attempted:false,
+                        success:false
+                    });
+
+                    await PrepareFeedData(this.selectedFeedType as FeedEnums.Types,
+                    feedSourceData,
+                    this.feedFilters.tag)
+                    .then(res => {
+                        //Create the Feed
+                        if(AppState.isCreatingFeed){
+                            AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false,lastFeedItem);
+                            this.feedCreationStatus[i] = {
+                                message:`Created "${feedSourceData.name}" Feed!`,
+                                attempted:true,
+                                success:true
+                            };
+                            successes++;
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+                        this.feedCreationStatus[i] = {
+                            message:`Failed to create "${feedSourceData.name}" Feed...`,
+                            attempted:true,
+                            success:false
+                        };
+                        // setTimeout(() => {
+                        //     this.attemptingToCreateFeed = false;
+                        // }, 800);
+                    });
+                };
+                //DEBUG CODE
+                // for (let i = 0; i < 5; i++) {
+                //     this.feedCreationStatus.push({
+                //         message:`Attempting to create "Feed ${i}" Feed...`,
+                //         attempted:false,
+                //         success:false
+                //     });
+                //     await new Promise((resolve) => setTimeout(resolve,800));
+                //     this.feedCreationStatus[i] = {
+                //         message:`Created "Feed ${i}" Feed!`,
+                //         attempted:true,
+                //         success:true
+                //     };
+                // }
+                if(successes>0){
+                    setTimeout(() => {
+                        this.closeModal();
+                    }, 2500);
+                }
+                else{
+                    this.feedCreationStatus.push({
+                        message:'Failed to create Feeds...',
+                        attempted:true,
+                        success:false
+                    })
+                    setTimeout(() => {
+                        // this.attemptingToCreateFeed = false;
+                    }, 2500);
+                }
+            }
         },
         closeModal(){
             // AppState.ToggleCreateFeedModal();

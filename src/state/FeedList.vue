@@ -81,8 +81,10 @@ export const FeedState = reactive({
  * @param awaitingData Indicates if the Feed is waiting for data to display. Using
  * the default value of true usually means the Feed is being added from the "Saved Feed"
  * database.
+ * @param saveChanges Should the FeedList be saved to disk after Feed was added. Can be
+ * used to postpone save until bulk add has finished.
  */
-export async function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true){
+export async function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true, saveChanges:boolean=true){
     /**Used to prevent duplicate Feeds from being created during a hot reload (or any other situation) */
     let isFeedDuplicate = FeedState.FeedList.find(feed => feed.description.feedId == description.feedId) != undefined;
     if(isFeedDuplicate){
@@ -97,8 +99,8 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
         seenAt:seenAt,
         isAwaitingFeedData:awaitingData,
     });
-    //Attempt to save FeedList to disk if Feed was newly created
-    if(!awaitingData) await SaveFeedChanges();
+    //Save changes when requested
+    if(saveChanges) await SaveFeedChanges();
 }
 
 /**
@@ -518,7 +520,7 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
     .then(res => {
         desc = res;
     })
-    AddFeedToList(desc,[]);
+    AddFeedToList(desc,[],undefined,undefined,undefined,false);
 }
 
 export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
