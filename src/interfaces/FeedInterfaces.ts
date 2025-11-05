@@ -3,6 +3,7 @@ import { FeedEnums } from "../enums/FeedEnums"
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs"
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications"
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs"
+import { AppBskyFeedDefs } from "@atproto/api/dist/client"
 
 // interface IFeedCollection{
 //     feedName: string
@@ -144,4 +145,20 @@ interface IFeedIconTypes{
     icon : FunctionalComponent
 }
 
-export type {IFeedDescription, IFeedListing, IFeedReturnedPostResults, IFeedColumnSettings, IFeedDBData, IFeedIconTypes}
+/**
+ * Describes the shape of data used to allow Users to specify
+ * which Feed Generators they would like to add to their Feed List.
+ */
+interface IFeedGeneratorSelection{
+    generator:AppBskyFeedDefs.GeneratorView,
+    selected:boolean
+}
+
+interface IFeedCreationStatus{
+    message:string,
+    attempted:boolean,
+    success:boolean
+}
+
+export type {IFeedDescription, IFeedListing, IFeedReturnedPostResults, IFeedColumnSettings,
+IFeedDBData, IFeedIconTypes, IFeedGeneratorSelection, IFeedCreationStatus}

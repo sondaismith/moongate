@@ -5,6 +5,10 @@
 @layer base{
     /* Dark theme as default for now */
     :root{
+        --color-bluesky-blue:#0070ff;
+        --color-delete-btn-bg:theme(colors.red.500);
+        --color-delete-btn-bg-hover:theme(colors.red.600);
+        --color-delete-btn-bg-active:theme(colors.red.700);
         --color-primary-text: theme(colors.white);
         --color-primary-text-inverted:theme(colors.black);
         --color-secondary-text: oklch(70.4% 0.04 256.788);
@@ -76,10 +80,20 @@
         --color-checked-btn-bg-hover:theme(colors.slate.600);
         --color-checked-btn-bg-selected:theme(colors.slate.500);
         --color-checked-btn-checkmark:theme(colors.green.400);
+        --color-custom-feed-btn-bg-hover:#2a3a53;
+        --color-custom-feed-btn-bg-active:#161e31;
+        --color-item-tag-bg:theme(colors.blue.600);
+        --color-item-tag-bg-active:theme(colors.blue.900);
+        --color-item-tag-border:theme(colors.white);
+        --color-placeholder-pulse-bg:theme(colors.slate.600);
     }
 }
 
 .theme-light{
+    --color-bluesky-blue:#0070ff;
+    --color-delete-btn-bg:theme(colors.red.500);
+    --color-delete-btn-bg-hover:theme(colors.red.500);
+    --color-delete-btn-bg-active:theme(colors.red.700);
     --color-primary-text: theme(colors.black);
     --color-primary-text-inverted:theme(colors.white);
     --color-secondary-text: oklch(44.6% 0.03 256.802);
@@ -152,4 +166,10 @@
     --color-checked-btn-bg-hover:theme(colors.slate.300);
     --color-checked-btn-bg-selected:theme(colors.slate.400);
     --color-checked-btn-checkmark:theme(colors.green.400);
+    --color-custom-feed-btn-bg-hover:theme(colors.blue.100);
+    --color-custom-feed-btn-bg-active:theme(colors.blue.200);
+    --color-item-tag-bg:theme(colors.blue.400);
+    --color-item-tag-bg-active:theme(colors.blue.300);
+    --color-item-tag-border:theme(colors.black);
+    --color-placeholder-pulse-bg:theme(colors.slate.400);
 }
