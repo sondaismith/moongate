@@ -1,10 +1,10 @@
 <template>
     <div data-testid="feed-edit-modal" tabindex="-1" @keydown="(e)=>TrapFocus($el,e)"
-    class="absolute z-10 flex w-full h-full text-primary bg-slate-800/40 backdrop-blur-sm focus-visible:outline-none">
-        <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
+    class="absolute z-10 flex w-full h-full text-primary focus-visible:outline-none">
+        <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full bg-slate-800/40 backdrop-blur-sm"></div>
         {{void "Modal Control"}}
         <div class="z-20 flex flex-col gap-1 w-[95%] md:max-w-[1024px] h-[92%] mx-auto my-auto rounded bg-feedColumnBG
-            p-4 drop-shadow-lg">
+            p-4 drop-shadow-lg backdrop-blur-0">
             <div class="flex flex-col gap-1">
                 <div class="flex gap-2">
                     <div class="text-2xl">{{modalPages[currentPage].title}}</div>
@@ -199,6 +199,12 @@
                             <div class="leading-3 text-sm">{{ selectedFeedType.split('_').map(x => x[0].toUpperCase()+x.slice(1)).join(' ') }}</div>
                         </div>
                         <hr class="border-outline my-1"/>
+                        <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator"
+                        class="flex items-center gap-2 p-2 rounded text-white text-xs md:text-sm font-semibold bg-blue-500 italic">
+                                <i-mingcute:information-line class="size-5 shrink-0"/>
+                                <div>Please note: Some Feeds may not be able to be created/viewed without using a Bluesky account,
+                                while others may no longer be active/available.</div>
+                        </div>
                         <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ validTags.join(', ') }}</div>
                         <div v-else-if="selectedFeedType == FeedEnums.Types.User"
                         class="flex flex-col overflow-auto divide-y divide-outline">
@@ -246,7 +252,7 @@
                                 <div class="text-xl font-bold">Selected Feeds</div>
                                 <div class="text-sm text-secondary">{{ selectedFeedItems.length }} item(s)</div>
                             </div>
-                            <div v-if="selectedFeedItems.length>0" class="flex flex-wrap gap-1 p-2 pt-0s">
+                            <div v-if="selectedFeedItems.length>0" class="flex flex-wrap gap-1 pt-1">
                                 <CustomFeedButton v-for="fg in selectedFeedItems" :feed-generator-view="fg"
                                 :display-only="true" @feed-generator-selected="toggleFeedGeneratorSelection" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
                             </div>
@@ -276,22 +282,31 @@
                     @click="forwardOnePage"
                     class="bg-btn hover:bg-btnHover" tabindex="0">Next</SquareButton>
                     <SquareButton data-testid="feedEditModal-create-button" @click="createFeeds()"
-                    v-if="areCreatePostConditionsMet && selectedFeedItems.length>1"
-                    :is-disabled="attemptingToCreateFeed">Create Feeds</SquareButton>
+                    v-if="areCreatePostConditionsMet && selectedFeedItems.length>0"
+                    :is-disabled="attemptingToCreateFeed">
+                        <div class="flex gap-1 items-center">
+                            <i-mingcute:loading-fill v-if="attemptingToCreateFeed" class="text-primary spinner h-4 w-4"/>
+                            <div>Create Feeds</div>
+                        </div>
+                    </SquareButton>
                     <SquareButton data-testid="feedEditModal-create-button" @click="createFeed()"
                     v-else-if="areCreatePostConditionsMet"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
             </div>
             <Transition>
-                <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator && attemptingToCreateFeed" class="absolute flex justify-center h-full w-full right-0 bottom-0 rounded bg-black/80">
+                <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator && attemptingToCreateFeed"
+                class="absolute z-10 flex justify-center h-full w-full right-0 bottom-0 rounded bg-slate-800/70">
                     <div class="flex flex-col gap-1 items-center justify-center">
-                        <div v-for="n in feedCreationStatus" class="flex gap-1 px-2 py-0.5 rounded items-center bg-focusBG border border-modernToggleBtnBorder select-none">
-                            <div>{{ n.message }}</div>
-                            <i-mingcute:loading-fill v-if="!n.attempted" class="text-gray-300 spinner h-4 w-4"/>
-                            <i-mingcute:check-fill v-else-if="n.attempted && n.success" class="text-green-400 h-4 w-4"/>
-                            <i-mingcute:close-fill v-else-if="n.attempted && !n.success" class="text-deleteBtnBG h-4 w-4"/>
-                        </div>
+                        <TransitionGroup name="list">
+                            <div v-for="(n,index) in feedCreationStatus" :key="index"
+                            class="flex gap-1 px-2 py-1 rounded items-center bg-focusBG border border-modernToggleBtnBorder select-none">
+                                <div>{{ n.message }}</div>
+                                <i-mingcute:loading-fill v-if="!n.attempted" class="text-primary spinner h-4 w-4"/>
+                                <i-mingcute:check-fill v-else-if="n.attempted && n.success" class="text-green-400 h-4 w-4"/>
+                                <i-mingcute:close-fill v-else-if="n.attempted && !n.success" class="text-deleteBtnBG h-4 w-4"/>
+                            </div>
+                        </TransitionGroup>
                     </div>
                 </div>
             </Transition>
@@ -749,7 +764,7 @@ export default defineComponent({
                 if(successes>0){
                     setTimeout(() => {
                         this.closeModal();
-                    }, 2500);
+                    }, 3000);
                 }
                 else{
                     this.feedCreationStatus.push({
@@ -758,8 +773,8 @@ export default defineComponent({
                         success:false
                     })
                     setTimeout(() => {
-                        // this.attemptingToCreateFeed = false;
-                    }, 2500);
+                        this.attemptingToCreateFeed = false;
+                    }, 3000);
                 }
             }
         },
@@ -936,4 +951,15 @@ export default defineComponent({
 .v-leave-to{
     transform: translateY(-500px);
 } */
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
 </style>
