@@ -17,7 +17,7 @@
                     <div class="text-base leading-4 text-nowrap overflow-hidden text-ellipsis">{{ feedGeneratorView ? feedGeneratorView.displayName : 'PROP MISSING' }}</div>
                     <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">Feed by @{{ feedGeneratorView ? feedGeneratorView.creator.handle : 'PROP MISSING' }}</div>
                 </div>
-                <button v-if="!displayOnly" @click.stop="clickedPinFeed" :title="'Save &quot;'+feedGeneratorView?.displayName+'&quot; Feed'" class="ml-auto mr-1 px-2 rounded-none bg-btn hover:bg-btnHover">Pin</button>
+                <!-- <button v-if="!displayOnly" @click.stop="clickedPinFeed" :title="'Save &quot;'+feedGeneratorView?.displayName+'&quot; Feed'" class="ml-auto mr-1 px-2 rounded-none bg-btn hover:bg-btnHover">Pin</button> -->
             </div>
             <div class="text-sm">{{ feedGeneratorView ? feedGeneratorView.description : 'Please supply the `:feed-generator-view` prop' }}</div>
             <div class="text-xs font-semibold mt-auto">Liked By: {{ feedGeneratorView ? feedGeneratorView.likeCount : 'PROP MISSING' }} users</div>
