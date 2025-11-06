@@ -322,19 +322,16 @@ latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
                 feedName:'[Fetching Displayname...]',
                 feedSourceDID:sourceDID
             }
-            let userHandle = '';
-            let userName = '';
             //Get profile name
             await GetBrowsingAgent().getProfile({actor:sourceDID})
             .then(res => {
-                userHandle = res.data.handle;
-                userName = res.data.displayName ? res.data.displayName : '';
+                //Update required values of `IFeedDescription` template
+                desc = {...desc,
+                    feedName:res.data.displayName ? res.data.displayName : '',
+                    feedHandle:res.data.handle,
+                    feedAvatar:res.data.avatar ? res.data.avatar : '',
+                }
             });
-            //Update required values of `IFeedDescription` template
-            desc = {...desc,
-                feedName:userName,
-                feedHandle:userHandle
-            }
             break;
         case FeedEnums.Types.Tag:
             //Update required values of `IFeedDescription` template
@@ -375,7 +372,8 @@ latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
             .then(res => {
                 desc = {...desc,
                     feedHandle: res.data.view.creator.handle,
-                    feedName: res.data.view.displayName
+                    feedName: res.data.view.displayName,
+                    feedAvatar: res.data.view.avatar ? res.data.view.avatar : ''
                 }
             })
             .finally(()=>{

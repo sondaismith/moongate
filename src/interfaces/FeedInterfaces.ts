@@ -48,6 +48,8 @@ interface IFeedDescription{
     feedType: FeedEnums.Types,
     /**The Icon used alongside the feed title. */
     feedIcon: FeedEnums.Icons,
+    /**URL string pointing to the avatar used by this Feed. */
+    feedAvatar: string,
     /**Number of unread posts. */
     newPosts: number,
     /**

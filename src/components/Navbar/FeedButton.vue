@@ -1,18 +1,21 @@
 <template>
-    <div :data-testid="`feedButton-${feedId}`" class="relative cursor-pointer" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
-    @click="highlightFeed" @contextmenu="(e) => showFeedOptionsMenu(e,userDid ? userDid : '')">
+    <div :data-testid="`feedButton-${feedDescription.feedId}`" class="relative cursor-pointer" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
+    @click="highlightFeed" @contextmenu="(e) => showFeedOptionsMenu(e,getFeedSourceDID)">
         <button class="group relative flex justify-center items-center
             rounded-xl drop-shadow-md bg-feedBtn border border-outline outline-none transition-[border]
-            hover:border-secondary button-size !w-full p-0.5 overflow-hidden">
+            hover:border-secondary aspect-square !w-full p-0.5 overflow-hidden">
             <div class="w-full h-full z-[1] group-focus-visible:bg-black/60 border-2 rounded-lg transition-[border] border-transparent
             group-focus-visible:border-feedtypeBtnFocusHighlight"></div>
-            <FeedIcon v-if="!userDid" :icon="icon"
+            <FeedIcon v-if="!hasAvatar" :icon="feedDescription.feedIcon"
             class="absolute h-full text-2xl text-primary select-none pointer-events-none"/>
+            <div v-else class="absolute flex bg-blueskyBlue w-full h-full items-centers justify-centers">
+                <img v-if="feedDescription.feedAvatar.trim() != ''" :src="feedDescription.feedAvatar" class="h-full w-full object-contain"/>
+                <i-mingcute:radar-2-fill v-else class="text-white h-full w-full p-1"/>
+            </div>
             <i-mingcute:loading-fill v-show="awaitingPFPRequest"
             class="absolute text-primary spinner self-center select-none pointer-events-none"/>
-            <img :src="userPfp" class="absolute"/>
         </button>
-        <UnreadMsgCount :data-testid="`unreadMsgCount-${feedId}`" :unreadCount="newPosts" :isAwaitingData="isAwaitingNewPostData" class="select-none"/>
+        <UnreadMsgCount :data-testid="`unreadMsgCount-${feedDescription.feedIcon}`" :unreadCount="feedDescription.newPosts" :isAwaitingData="isAwaitingNewPostData" class="select-none"/>
     </div>
 </template>
 
@@ -21,13 +24,15 @@ import MingcuteProfileFill from '~icons/mingcute/profile-fill';
 import MingcuteEdit4Line from '~icons/mingcute/edit-4-line';
 import SolarTrashBinTrashBold from '~icons/solar/trash-bin-trash-bold';
 
-import { defineComponent } from 'vue';
+import { defineComponent, PropType } from 'vue';
 import { FeedState, RemoveFeed, UpdateSelectedFeed } from '../../state/FeedList.vue';
 import { getUserProfile } from '../../lib/api/User.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { IFeedDescription } from '../../interfaces/FeedInterfaces';
+import { FeedEnums } from '../../enums/FeedEnums';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to
@@ -77,11 +82,11 @@ export default defineComponent({
         }
     },
     props: {
-        feedId: String,
         tooltip: String,
-        icon: String,
-        userDid:String,
-        newPosts: Number,
+        feedDescription:{
+            type:Object as PropType<IFeedDescription>,
+            required:true
+        },
         /**Is the data for the associated Feed still be loaded? */
         isAwaitingNewPostData:{
             type:Boolean,
@@ -128,8 +133,8 @@ export default defineComponent({
         highlightFeed(){
             //Only if it is related to a FeedDisplay and we are not already scrolling
             //Also if we are not dragging the button
-            if(this.feedId && !this.isScrolling && !this.buttonBeingDragged){
-                var el = document.getElementById(this.feedId);
+            if(this.feedDescription.feedId && !this.isScrolling && !this.buttonBeingDragged){
+                var el = document.getElementById(this.feedDescription.feedId);
                 if(el){
                     this.startScrolling();
                     this.scrollTo(el);
@@ -230,17 +235,20 @@ export default defineComponent({
          * existing Feed. Current options are Edit and Delete.
          * @param e The MouseEvent fired after context clicking the FeedButton.
          */
-        showFeedOptionsMenu(e:MouseEvent, userDid:string){
+        showFeedOptionsMenu(e:MouseEvent, feedSourceDID:string){
             e.preventDefault();
-            if(this.feedId){
-                UpdateSelectedFeed(this.feedId);
+            if(this.feedDescription.feedId){
+                UpdateSelectedFeed(this.feedDescription.feedId);
                 let menuOptions = [] as IOptionMenuItem[];
-                if(this.userDid && this.userDid.trim() != ''){
-                    menuOptions.push({Icon:MingcuteProfileFill,Label:'View Profile',Action:function(){ShowUserProfile(userDid)}})
+                if(typeof feedSourceDID != "undefined" && feedSourceDID.trim() != '' && this.feedDescription.feedType == FeedEnums.Types.User){
+                    menuOptions.push({Icon:MingcuteProfileFill,Label:'View Profile',Action:function(){ShowUserProfile(feedSourceDID)}})
                 }
+                //Need to update "feed edit" functionality, so removing this for now.
+                // if(this.feedDescription.feedType != FeedEnums.Types.FeedGenerator){
+                //     menuOptions.push({Icon:MingcuteEdit4Line,Label:'Edit Feed',Action:function(){UpdateFeed()}})
+                // }
                 menuOptions = [...menuOptions,
-                    {Icon:MingcuteEdit4Line,Label:'Edit Feed',Action:function(){UpdateFeed()}},
-                    {Icon:SolarTrashBinTrashBold,Label:'Delete Feed',Action:function(){DeleteFeed()}},
+                    {Icon:SolarTrashBinTrashBold,Label:'Remove Feed',Action:function(){DeleteFeed()}},
                 ] as IOptionMenuItem[]
                 OptionsMenuState.currentMenuItems = menuOptions;
                 OptionsMenuState.showOptionMenu(e);
@@ -250,29 +258,37 @@ export default defineComponent({
          * Method used to get the Avatar/PFP of the User associated with a
          * User Feed `FeedButton`.
          */
-        async GetUserFeedPFP(){
-            if(this.userDid && this.userDid.trim() != ''){
-                this.awaitingPFPRequest = true
-                await getUserProfile(this.userDid)
-                .then(res => {
-                    this.userPfp = res.data.avatar ? res.data.avatar : '';
-                    this.awaitingPFPRequest = false;
-                })
-                .catch(err => toast.add(HandleAPIError(err, 'Error getting UserButton profile avatar')));
-            }
+        // async GetUserFeedPFP(){
+        //     if(this.userDid && this.userDid.trim() != ''){
+        //         this.awaitingPFPRequest = true
+        //         await getUserProfile(this.userDid)
+        //         .then(res => {
+        //             this.userPfp = res.data.avatar ? res.data.avatar : '';
+        //             this.awaitingPFPRequest = false;
+        //         })
+        //         .catch(err => toast.add(HandleAPIError(err, 'Error getting UserButton profile avatar')));
+        //     }
+        // }
+    },
+    computed:{
+        hasAvatar(){
+            return this.feedDescription.feedType == FeedEnums.Types.User || this.feedDescription.feedType == FeedEnums.Types.FeedGenerator;
+        },
+        getFeedSourceDID(){
+            return this.feedDescription.feedType == FeedEnums.Types.User ? this.feedDescription.feedSourceDID : '';
         }
     },
     watch:{
         /**
          * If the userDid changes, update the displayed Icon/PFP.
          */
-        userDid(newDid:string, oldDid:string){
-            if(newDid.trim() != '') this.GetUserFeedPFP();
-            else this.userPfp ='';
-        }
+        // userDid(newDid:string, oldDid:string){
+        //     if(newDid.trim() != '') this.GetUserFeedPFP();
+        //     else this.userPfp ='';
+        // }
     },
     created(){
-        this.GetUserFeedPFP();
+        // this.GetUserFeedPFP();
     }
 })
 </script>
