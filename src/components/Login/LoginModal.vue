@@ -98,8 +98,8 @@
                                 <div class="relative flex flex-col group w-full cursor-pointer">
                                     <button v-if="isUsingDefaultHost" @click="toggleAccountProvider" title="Change Hosting Provider"
                                     class="group relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
-                                    rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-blue-100
-                                    focus-visible:bg-blue-100">
+                                    rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-loginHostHover
+                                    focus-visible:bg-loginHostHover">
                                         <div class="flex w-full h-full border-2 rounded-md transition-[border] border-transparent
                                         group-focus-visible:border-feedtypeBtnFocusHighlight">
                                             <div class="pt-[0.625rem] pl-1 text-searchbarBorderDisabled">Bluesky Social</div>
@@ -112,8 +112,8 @@
                                     </button>
                                     <div v-else
                                     class="relative flex w-full h-11 p-0.5 border bg-searchbarBG border-outline
-                                    rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-blue-100
-                                    focus-visible:bg-blue-100">
+                                    rounded-md rounded-l-none border-l-0 shadow-none transition-colors group-hover:bg-loginHostHover
+                                    focus-visible:bg-loginHostHover">
                                         <div class="flex w-full h-full border-2 rounded-md transition-[border] border-transparent
                                         group-focus-visible:border-feedtypeBtnFocusHighlight">
                                             <div class="pt-[0.625rem] pl-1 text-searchbarBorderDisabled">https://</div>

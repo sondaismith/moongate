@@ -50,6 +50,7 @@
         --color-searchbar-handle: oklch(68.5% 0.169 237.323);
         --color-login-btn: oklch(48.8% 0.243 264.376);
         --color-login-btn-hover: oklch(62.3% 0.214 259.815);
+        --color-login-host-hover:theme(colors.slate.950);
         --color-savemodal-bg: oklch(37.2% 0.044 257.287);
         --color-savemodal-ext-bg: oklch(27.9% 0.041 260.031);
         --color-embed-hover-bg:oklch(27.9% 0.041 260.031);
@@ -135,6 +136,7 @@
     --color-searchbar-handle: oklch(68.5% 0.169 237.323);
     --color-login-btn: oklch(62.3% 0.214 259.815);
     --color-login-btn-hover: oklch(70.7% 0.165 254.624);
+    --color-login-host-hover:theme(colors.blue.100);
     --color-savemodal-bg: oklch(86.9% 0.022 252.894);
     --color-savemodal-ext-bg: oklch(70.4% 0.04 256.788);
     --color-embed-hover-bg:oklch(92.9% 0.013 255.508);
