@@ -48,6 +48,7 @@ export default {
         searchbarHandle: "oklch(from var(--color-searchbar-handle) l c h / <alpha-value>)",
         loginBtn: "oklch(from var(--color-login-btn) l c h / <alpha-value>)",
         loginBtnHover: "oklch(from var(--color-login-btn-hover) l c h / <alpha-value>)",
+        loginHostHover: "oklch(from var(--color-login-host-hover) l c h / <alpha-value>)",
         feedtypeBtnSelected: "oklch(from var(--color-feedtype-btn-selected) l c h / <alpha-value>)",
         feedtypeBtnFocusHighlight: "oklch(from var(--color-feedtype-btn-focus-highlight) l c h / <alpha-value>)",
         savemodalBG: "oklch(from var(--color-savemodal-bg) l c h / <alpha-value>)",
