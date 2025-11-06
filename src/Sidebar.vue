@@ -11,7 +11,7 @@
                 {{ void "Feed List + Add btn" }}
                 <div class="flex flex-col h-full">
                     <div class="flex-shrink preload-gutter overflow-x-hidden">
-                        <div class="space-y-2 py-2 pl-2 pr-1">
+                        <div class="space-y-2 p-2">
                             <!-- <FeedButton :icon="FeedEnums.Icons.Home" tooltip="Home"/> -->
                             <TransitionGroup name="feedbutton">
                                 <!-- <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/> -->
