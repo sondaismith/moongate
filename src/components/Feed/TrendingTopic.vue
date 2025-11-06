@@ -17,7 +17,7 @@
                 </div>
             </div>
             <div class="flex gap-2 items-center">
-                <div class="flex overflow-hidden">
+                <div v-if="typeof trend != 'undefined' && trend.actors.length>0" class="flex overflow-hidden">
                     <div v-for="a in trend?.actors"
                     class="flex rounded-full size-5 shrink-0 bg-slate-700 bg-contain"
                     :style="`background-image:url(${a.avatar})`"
@@ -43,10 +43,10 @@ import { defineComponent, PropType } from 'vue'
 import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 import { convertToShortTimestamp, getCompactNumberValue } from '../../helpers/converters';
 import { GetBrowsingAgent } from '../../lib/api.vue';
-import { IFeedColumnSettings, IFeedDescription, IFeedReturnedPostResults } from '../../interfaces/FeedInterfaces';
-import { AddFeedToList, GenerateUniqueId } from '../../state/FeedList.vue';
+import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import { toast } from '../../state/AppState.vue';
+import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 
 export default defineComponent({
     props:{
@@ -109,47 +109,33 @@ export default defineComponent({
         async createFeedForTopic(){
             toast.add({summary:"Creating Feed...", detail:`Creating feed containing posts related to '${this.trend?.displayName}''`,severity:'info',group:'tr',life:3000});
             if(this.trend){
-                var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
-                var usedFeedId:string =  GenerateUniqueId(10);
-                var defaultAppearance:IFeedColumnSettings = {
-                    width: FeedEnums.Widths.Small,
-                }
-
-                var desc:IFeedDescription = {
-                    feedId: usedFeedId,
-                    userId:1,
-                    feedHandle:'loading_tag',
-                    feedName:'[loading name]',
-                    feedType:FeedEnums.Types.FeedGenerator,
-                    feedIcon:FeedEnums.Icons.Trending,
-                    newPosts:0,totalPosts:30,
-                    feedColumnSettings:defaultAppearance,
-                    feedSourceDID:'',
-                    feedTags:''
-                }
-
                 let urlParts = this.trend.link.split('\/');
-                let did = '';
                 console.log('Returned Topic Feed Data:');
-                await GetBrowsingAgent().resolveHandle({handle:urlParts[2]})
+                let startOfProfile = this.trend.link.indexOf('\/profile');
+                let endOfProfile = this.trend.link.indexOf('\/feed');
+                let handleToUse = this.trend.link.substring(startOfProfile+9,endOfProfile);
+                let feedSourceData:IUserSearchResult = {
+                    did:'',
+                    handle:'',
+                    name:''
+                }
+                await GetBrowsingAgent().resolveHandle({handle:handleToUse})
                 .then(res =>{
-                    did = res.data.did;
-                    desc.feedHandle = urlParts[2];
-                    desc.feedName = this.trend?.displayName ? this.trend.displayName : "N/A";
-                    desc.feedSourceDID = `at://${did}/app.bsky.feed.generator/${urlParts[urlParts.length-1]}`;
-                    desc.feedTags = this.trend?.displayName ? this.trend.displayName : ''; //Currently the only way I know to get the "Feed Generator" name when re-loading
+                    feedSourceData.did = `at://${res.data.did}/app.bsky.feed.generator/${urlParts[urlParts.length-1]}`;
+                    feedSourceData.handle = handleToUse;
+                    feedSourceData.name = this.trend?.displayName ? this.trend.displayName : "N/A";
                 })
-                await GetBrowsingAgent().app.bsky.feed.getFeed({feed:desc.feedSourceDID})
+
+                PrepareFeedData(FeedEnums.Types.FeedGenerator,
+                feedSourceData)
                 .then(res => {
-                    feedResult.data = res.data.feed;
-                    feedResult.cursor = res.data.cursor;
-                    console.log(res.data);
+                    //Create the Feed
+                    AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false);
                 })
-                .catch(err =>{
+                .catch(err => {
                     console.log(err);
                     toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
-                })
-                AddFeedToList(desc,feedResult.data,feedResult.cursor,'',false);
+                });
             }
         }
     }

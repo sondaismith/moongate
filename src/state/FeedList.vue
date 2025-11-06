@@ -145,6 +145,7 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
         userId:1,
         feedHandle:'loading_handle',
         feedName:'',
+        feedAvatar:'',
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
         newPosts:0,totalPosts:0,
@@ -255,11 +256,14 @@ export function OLDcreateFeedDescription(userId:number,handle:string,name:string
         feedTags: feedTags,
         feedHandle: handle,
         feedName: name,
+        feedAvatar:'',
         feedType: type,
         feedIcon: icon,
         newPosts: newPosts,
         totalPosts: totalPosts,
         feedColumnSettings: feedColumnSettings,
+        latestPostDate:'',
+        latestPostCID:'',
     }
     return desc;
 }
@@ -305,6 +309,7 @@ latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
         userId:userId,
         feedHandle:'loading_handle',
         feedName:tags.replace(' ',','),
+        feedAvatar:'',
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
         newPosts:0,totalPosts:30,
@@ -489,6 +494,7 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
         userId:savedFeed.userId,
         feedHandle:'loading_handle',
         feedName:savedFeed.tags,
+        feedAvatar:'',
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
         newPosts:0,totalPosts:30,
