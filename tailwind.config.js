@@ -88,6 +88,10 @@ export default {
         itemTagBGActive: "oklch(from var(--color-item-tag-bg-active) l c h / <alpha-value>)",
         itemTagBorder: "oklch(from var(--color-item-tag-border) l c h / <alpha-value>)",
         placeholderPulseBG: "oklch(from var(--color-placeholder-pulse-bg) l c h / <alpha-value>)",
+        feedNoticeBG: "oklch(from var(--color-feed-notice-bg) l c h / <alpha-value>)",
+        submitBtnBG: "oklch(from var(--color-submit-btn-bg) l c h / <alpha-value>)",
+        submitBtnBGHover: "oklch(from var(--color-submit-btn-bg-hover) l c h / <alpha-value>)",
+        submitBtnBGActive: "oklch(from var(--color-submit-btn-bg-active) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

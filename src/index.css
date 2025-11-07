@@ -87,6 +87,10 @@
         --color-item-tag-bg-active:theme(colors.blue.900);
         --color-item-tag-border:theme(colors.white);
         --color-placeholder-pulse-bg:theme(colors.slate.600);
+        --color-feed-notice-bg:theme(colors.slate.500);
+        --color-submit-btn-bg:theme(colors.blue.700);
+        --color-submit-btn-bg-hover:theme(colors.blue.800);
+        --color-submit-btn-bg-active:theme(colors.blue.900);
     }
 }
 
@@ -174,4 +178,8 @@
     --color-item-tag-bg-active:theme(colors.blue.300);
     --color-item-tag-border:theme(colors.black);
     --color-placeholder-pulse-bg:theme(colors.slate.400);
+    --color-feed-notice-bg:theme(colors.blue.500);
+    --color-submit-btn-bg:theme(colors.blue.500);
+    --color-submit-btn-bg-hover:theme(colors.blue.400);
+    --color-submit-btn-bg-active:theme(colors.blue.600);
 }
