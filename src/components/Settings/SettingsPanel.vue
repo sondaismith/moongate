@@ -79,12 +79,12 @@
                                     <div class="text-sm">
                                         Please note: Currently only
                                         <span class="font-bold italic">one</span>
-                                        language will be used to filter returned Posts. The first item shown under
+                                        language will be used to filter returned <span class="font-bold italic">Tag Feed</span> Posts. The first item shown under
                                         "Selected Languages" will be the one used.
                                     </div>
-                                    <ToggleButton left-option="Whitelist" right-option="Blacklist"
+                                    <!-- <ToggleButton left-option="Whitelist" right-option="Blacklist"
                                     :toggle-value="AppSettingsState.Settings.isWhitelist"
-                                    @toggle-action="toggleAllowListType" :disabled="AppSettingsState.Settings.isAcceptingAllLanguages"/>
+                                    @toggle-action="toggleAllowListType" :disabled="AppSettingsState.Settings.isAcceptingAllLanguages"/> -->
                                     <!-- <MultiSelect @change="console.log(SetttingData.Options.PostFilters.data.languageBlacklist)" :model-value="SetttingData.Options.PostFilters.data.languageBlacklist" filter :options="LocalesObject" :max-selected-labels="2" size="large" placeholder="Select Languages" class="w-full"/> -->
                                     <!-- <div class="relative h-full overflow-hidden bg-lime-400"> -->
                                     <FilterSelect ref="languageSelector" placeholder="Select Languages" :options="LocalesObject" value-key="name"
