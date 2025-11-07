@@ -166,7 +166,7 @@
                         </div>
                         {{ void "General Posts" }}
                         <div v-if="isViewingFeed || isViewingPosts || isViewingReplies || isViewingLikes"
-                        class="flex flex-col flex-wrap items-start py-2 gap-2 max-w-[30rem] w-full">
+                        class="flex flex-col flex-wrap items-start py-2 px-4 gap-2 max-w-[30rem] w-full">
                             {{ void "Placeholder Post" }}
                             <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
                                 <div class="flex h-10 gap-2">

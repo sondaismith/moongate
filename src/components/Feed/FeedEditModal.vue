@@ -122,7 +122,7 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1 h-full overflow-y-auto preload-gutter">
-                                    <div class="flex gap-1 items-center py-1 bg-feedColumnBG shadow-scroll-underline">
+                                    <!-- <div class="flex gap-1 items-center py-1 bg-feedColumnBG shadow-scroll-underline">
                                         <div class="text-lg">Bluesky</div>
                                         <div title="Bluesky Discover Feed Generator"><i-logos:bluesky class="shrink-0" /></div>
                                     </div>
@@ -141,7 +141,7 @@
                                             <hr class="border-outline"/>
                                             <div class="text-sm">Default feeds could not be reached at this time</div>
                                         </div>
-                                    </div>
+                                    </div> -->
                                     <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline">
                                         <div class="text-lg">Discover New Feeds</div>
                                         <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
@@ -200,7 +200,7 @@
                         </div>
                         <hr class="border-outline my-1"/>
                         <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator"
-                        class="flex items-center gap-2 p-2 rounded text-white text-xs md:text-sm font-semibold bg-blue-500 italic">
+                        class="flex items-center gap-2 p-2 rounded text-white text-xs md:text-sm font-semibold bg-feedNoticeBG italic">
                                 <i-mingcute:information-line class="size-5 shrink-0"/>
                                 <div>Please note: Some Feeds may not be able to be created/viewed without using a Bluesky account,
                                 while others may no longer be active/available.</div>
@@ -283,7 +283,8 @@
                     class="bg-btn hover:bg-btnHover" tabindex="0">Next</SquareButton>
                     <SquareButton data-testid="feedEditModal-create-button" @click="createFeeds()"
                     v-if="areCreatePostConditionsMet && selectedFeedItems.length>0"
-                    :is-disabled="attemptingToCreateFeed">
+                    :is-disabled="attemptingToCreateFeed"
+                    class="bg-submitBtnBG hover:bg-submitBtnBGHover focus-visible:bg-submitBtnBGHover active:bg-submitBtnBGActive text-white">
                         <div class="flex gap-1 items-center">
                             <i-mingcute:loading-fill v-if="attemptingToCreateFeed" class="text-primary spinner h-4 w-4"/>
                             <div>Create Feeds</div>
@@ -291,6 +292,7 @@
                     </SquareButton>
                     <SquareButton data-testid="feedEditModal-create-button" @click="createFeed()"
                     v-else-if="areCreatePostConditionsMet"
+                    class="bg-submitBtnBG hover:bg-submitBtnBGHover focus-visible:bg-submitBtnBGHover active:bg-submitBtnBGActive text-white"
                     :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
             </div>

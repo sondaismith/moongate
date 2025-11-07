@@ -186,15 +186,15 @@
             <div class="flex items-center">
                 <div class="flex gap-1">
                     <input id="file-upload" type="file" accept="image/*" multiple hidden @change="handleFileSelect"/>
-                    <button @click="uploadMedia" :disabled="uploadDisabled" class="px-2 rounded-md hover:bg-btnHover text-xl text-blue-500 shadow-none transition-colors
+                    <button @click="uploadMedia" :disabled="uploadDisabled" class="p-2 rounded-md hover:bg-btnHover text-xl text-blue-500 shadow-none transition-colors
                         disabled:bg-disabledBG disabled:hover:bg-disabledBG disabled:hover:border-disabledBG disabled:text-disabled disabled:cursor-not-allowed"
                         :title="uploadDisabled ? 'Max 4 Images Allowed' : 'Upload Image'">
                         <i-mdi:photo-library/>
                     </button>
-                    <div v-for="option in mediaTypes" class="flex rounded p-2 hover:bg-btnHover
+                    <!-- <div v-for="option in mediaTypes" class="flex rounded p-2 hover:bg-btnHover
                     cursor-pointer text-blue-500 text-xl items-center justify-center">
                         <component :is="option.icon"></component>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="flex items-center ml-auto gap-2 h-10">
                     <div class="font-bold text-sky-500 cursor-not-allowed" title="Language is English Only atm">English</div>
