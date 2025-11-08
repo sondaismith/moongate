@@ -53,8 +53,8 @@
                             <div v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-no-repeat bg-center bg-cover"
                             :class="{'cursor-pointer' : hasProfileBanner}"
                             :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.banner+')'"/>
-                            <div v-else class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
-                            :style="'mask: url(src/assets/placeholder/no_banner_pattern.svg)'">
+                            <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
+                            :style="`mask: url(./assets/placeholder/no_banner_pattern.svg)`">
                             </div>
                             <div @click="showPFPFullscreen" class="absolute z-[3] flex bg-sky-400 rounded-full aspect-square size-24 left-4
                             items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
