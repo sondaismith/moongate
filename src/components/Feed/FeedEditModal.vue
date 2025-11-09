@@ -878,6 +878,8 @@ export default defineComponent({
                     case FeedEnums.Types.FeedGenerator:
                         return this.selectedFeedItems.length>0;
                     case FeedEnums.Types.Trending:
+                    case FeedEnums.Types.Following:
+                    case FeedEnums.Types.Mentions:
                         return true;
                     default:
                         return false;

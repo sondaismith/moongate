@@ -41,6 +41,15 @@
 </template>
 
 <script lang="ts">
+//Option Menu icons
+import MingcuteLinkLine from '~icons/mingcute/link-line';
+import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
+import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
+import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
+import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
+import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
+import MdiPersonBlock from '~icons/mdi/person-block';
+
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { CreateBskyWeblink, getCompactNumberValue } from '../../helpers/converters';
@@ -51,14 +60,9 @@ import { AppState, toast } from '../../state/AppState.vue';
 import { PostActions } from '../../enums/PostEnums';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import { DeletePost } from '../../lib/api/Post.vue';
-
-//Option Menu icons
-import MingcuteLinkLine from '~icons/mingcute/link-line';
-import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
-import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
-import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
 import { AppBskyFeedThreadgate } from '@atproto/api';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
+import { MuteUser, UnmuteUser } from '../../lib/api/User.vue';
 
 function CopyPostLink(postUri:string, handle:string=""){
     let link = CreateBskyWeblink(postUri, handle);
@@ -122,6 +126,8 @@ export default defineComponent({
             isAwaitingLikeUpdate:false,
             isAwaitingRepostUpdate:false,
             isAwaitingPostDelete:false,
+            /**Are we currently waiting for an action relating to muting or unmuting a User account to finish? */
+            isAwaitingAccountMuteAction:false,
         }
     },
     methods:{
@@ -134,6 +140,13 @@ export default defineComponent({
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteLinkLine,Label:'Copy link to Post',Action:function(){CopyPostLink(postURI, handle)}},
             ] as IOptionMenuItem[]
+            if(AppState.isAuthBrowsing && GetBrowsingAgent().did != this.postData.author.did){
+                if(!this.isAccountMuted)
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.toggleMute});
+                else
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.toggleMute});
+                OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:()=>{}});
+            }
             //Only show "delete post" option if the User is logged in and this is one of their Posts
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did == this.postData.author.did){
                 OptionsMenuState.currentMenuItems.push({
@@ -306,6 +319,39 @@ export default defineComponent({
                 toast.add({summary:"Error", detail:`${err} Issue deleting post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
                 this.isAwaitingPostDelete = false;
             })
+        },
+        async toggleMute(){
+            if(!AppState.checkIfLoggedIn('mute an Account')) return;
+            if(this.isAwaitingAccountMuteAction) return;
+            this.isAwaitingAccountMuteAction = true;
+            if(!this.isAccountMuted){
+                await MuteUser(this.postData.author.did)
+                .then(() => {
+                    if(typeof this.postData.author.viewer != 'undefined'){
+                        this.postData.author.viewer.muted = true;
+                        AppState.UpdateAccountsInFeedList(this.postData.author);
+                    }
+                    toast.add({summary:"Account Muted", detail:`Muted account - ${this.postData.author.handle}`, severity:'info', group:'tr', life:3000});
+                })
+                .catch(err => {
+                    toast.add({summary:"Error", detail:`${err} Issue muting account - ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
+                })
+                .finally(() => {this.isAwaitingAccountMuteAction = false});
+            }
+            else{
+                await UnmuteUser(this.postData.author.did)
+                .then(() => {
+                    if(typeof this.postData.author.viewer != 'undefined'){
+                        this.postData.author.viewer.muted = false;
+                        AppState.UpdateAccountsInFeedList(this.postData.author);
+                    }
+                    toast.add({summary:"Account Unuted", detail:`Unmuted account - ${this.postData.author.handle}`, severity:'info', group:'tr', life:3000});
+                })
+                .catch(err => {
+                    toast.add({summary:"Error", detail:`${err} Issue unmuting account - ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
+                })
+                .finally(() => {this.isAwaitingAccountMuteAction = false});
+            }
         }
     },
     computed:{
@@ -337,6 +383,9 @@ export default defineComponent({
             }
             return status;
         },
+        isAccountMuted(){
+            return (typeof this.postData.author.viewer != 'undefined' && typeof this.postData.author.viewer.muted != 'undefined' && this.postData.author.viewer.muted);
+        }
     }
 })
 </script>

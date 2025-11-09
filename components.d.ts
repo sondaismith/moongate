@@ -42,6 +42,7 @@ declare module 'vue' {
     'IMdi:dotsHorizontal': typeof import('~icons/mdi/dots-horizontal')['default']
     'IMdi:editBoxOutline': typeof import('~icons/mdi/edit-box-outline')['default']
     'IMdi:expandMore': typeof import('~icons/mdi/expand-more')['default']
+    'IMdi:eyeOff': typeof import('~icons/mdi/eye-off')['default']
     'IMdi:flame': typeof import('~icons/mdi/flame')['default']
     'IMdi:formatVerticalAlignTop': typeof import('~icons/mdi/format-vertical-align-top')['default']
     'IMdi:gearBox': typeof import('~icons/mdi/gear-box')['default']

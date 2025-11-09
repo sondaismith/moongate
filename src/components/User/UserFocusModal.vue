@@ -135,6 +135,13 @@
                             </div>
                             <!-- <RichPostText v-else :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/> -->
                             <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory" :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
+                            <div class="flex my-1">
+                                <div v-if="isAccountMuted" title="You have muted this account."
+                                class="flex items-center gap-1 rounded-full px-2 bg-slate-600 text-sm select-none">
+                                    <i-mdi:eye-off/>
+                                    <div>Account Muted</div>
+                                </div>
+                            </div>
                         </div>
                         <div id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
                         :style="{'top':userSummaryBottomPos+'px'}">
@@ -764,6 +771,16 @@ export default defineComponent({
         /**Does this User Profile have a Banner image? */
         hasProfileBanner(){
             return UserFocusModalState.GetCurrentHistoryData().ProfileData.banner != undefined;
+        },
+        /**Is the currently displayed account muted by the logged in User? */
+        isAccountMuted():boolean{
+            let result = false;
+            let data = UserFocusModalState.GetCurrentHistoryData(); //handle `UserFocusModal` being mounted
+            if(typeof data != 'undefined'){
+                let profile = data.ProfileData;
+                result = (typeof profile != 'undefined' && typeof profile.viewer != 'undefined' && typeof profile.viewer.muted != 'undefined' && profile.viewer.muted);
+            }
+            return result;
         }
     },
     async created() {

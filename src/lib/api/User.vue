@@ -63,4 +63,20 @@ export async function FollowUser(userDid:string):Promise<{uri: string,cid: strin
     })
     return result;
 }
+
+/**
+ * Mute the selected User, removing their Posts from the logged in User's Feeds.
+ * @param userDid The DID of the User to Mute.
+ */
+export async function MuteUser(userDid:string){
+    await GetBrowsingAgent().mute(userDid);
+}
+
+/**
+ * Unmute the selected User.
+ * @param userDid The DID of the User to Unmute.
+ */
+export async function UnmuteUser(userDid:string){
+    await GetBrowsingAgent().unmute(userDid);
+}
 </script>
