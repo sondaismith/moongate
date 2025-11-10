@@ -712,10 +712,10 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to the selected User Profile being viewed.
          */
-        showUserOptionsMenu(e:MouseEvent, postURI:string, handle:string=""){
+        showUserOptionsMenu(e:MouseEvent, handle:string=""){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteLinkLine,Label:'Copy link to Profile Page',Action:function(){CopyPostLink(postURI, handle)}},
+                {Icon:MingcuteLinkLine,Label:'Copy link to Profile Page',Action:function(){CopyPostLink(handle)}},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },

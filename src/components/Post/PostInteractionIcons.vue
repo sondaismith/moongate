@@ -62,7 +62,7 @@ import { GetBrowsingAgent } from '../../lib/api.vue';
 import { DeletePost } from '../../lib/api/Post.vue';
 import { AppBskyFeedThreadgate } from '@atproto/api';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
-import { MuteUser, UnmuteUser } from '../../lib/api/User.vue';
+import { toggleMute } from '../../lib/api/User.vue';
 
 function CopyPostLink(postUri:string, handle:string=""){
     let link = CreateBskyWeblink(postUri, handle);
@@ -142,9 +142,9 @@ export default defineComponent({
             ] as IOptionMenuItem[]
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did != this.postData.author.did){
                 if(!this.isAccountMuted)
-                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.toggleMute});
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute});
                 else
-                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.toggleMute});
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.requestToggleMute});
                 OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:()=>{}});
             }
             //Only show "delete post" option if the User is logged in and this is one of their Posts
@@ -320,38 +320,15 @@ export default defineComponent({
                 this.isAwaitingPostDelete = false;
             })
         },
-        async toggleMute(){
-            if(!AppState.checkIfLoggedIn('mute an Account')) return;
+        /**
+         * Method used to attempt to mute/unmute the account associated with the
+         * Post that was interacted with.
+         */
+        async requestToggleMute(){
             if(this.isAwaitingAccountMuteAction) return;
             this.isAwaitingAccountMuteAction = true;
-            if(!this.isAccountMuted){
-                await MuteUser(this.postData.author.did)
-                .then(() => {
-                    if(typeof this.postData.author.viewer != 'undefined'){
-                        this.postData.author.viewer.muted = true;
-                        AppState.UpdateAccountsInFeedList(this.postData.author);
-                    }
-                    toast.add({summary:"Account Muted", detail:`Muted account - ${this.postData.author.handle}`, severity:'info', group:'tr', life:3000});
-                })
-                .catch(err => {
-                    toast.add({summary:"Error", detail:`${err} Issue muting account - ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
-                })
-                .finally(() => {this.isAwaitingAccountMuteAction = false});
-            }
-            else{
-                await UnmuteUser(this.postData.author.did)
-                .then(() => {
-                    if(typeof this.postData.author.viewer != 'undefined'){
-                        this.postData.author.viewer.muted = false;
-                        AppState.UpdateAccountsInFeedList(this.postData.author);
-                    }
-                    toast.add({summary:"Account Unuted", detail:`Unmuted account - ${this.postData.author.handle}`, severity:'info', group:'tr', life:3000});
-                })
-                .catch(err => {
-                    toast.add({summary:"Error", detail:`${err} Issue unmuting account - ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
-                })
-                .finally(() => {this.isAwaitingAccountMuteAction = false});
-            }
+            await toggleMute(this.postData.author)
+            .finally(() => {this.isAwaitingAccountMuteAction = false});
         }
     },
     computed:{

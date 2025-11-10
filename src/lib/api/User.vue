@@ -1,6 +1,8 @@
 <script lang="ts">
 import { AppBskyActorGetProfile, ComAtprotoIdentityResolveHandle } from '@atproto/api/dist/client';
 import { GetBrowsingAgent } from '../api.vue';
+import { AppState, toast } from '../../state/AppState.vue';
+import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 export default{
     name:"User API Methods"
@@ -68,7 +70,7 @@ export async function FollowUser(userDid:string):Promise<{uri: string,cid: strin
  * Mute the selected User, removing their Posts from the logged in User's Feeds.
  * @param userDid The DID of the User to Mute.
  */
-export async function MuteUser(userDid:string){
+async function MuteUser(userDid:string){
     await GetBrowsingAgent().mute(userDid);
 }
 
@@ -76,7 +78,42 @@ export async function MuteUser(userDid:string){
  * Unmute the selected User.
  * @param userDid The DID of the User to Unmute.
  */
-export async function UnmuteUser(userDid:string){
+async function UnmuteUser(userDid:string){
     await GetBrowsingAgent().unmute(userDid);
+}
+
+/**
+ * Mutes/unmutes a specific account. Can only be used when logged in. When used, scans entire
+ * FeedList to sync account "mute/unmute" state.
+ * @param authorData The current state of the ProfileView associated with the account that needs to be muted/unmuted.
+ */
+export async function toggleMute(authorData:ProfileView|ProfileViewBasic|ProfileViewDetailed){
+    if(!AppState.checkIfLoggedIn('mute an Account')) return;
+    if(typeof authorData.viewer != 'undefined' && typeof authorData.viewer.muted != 'undefined' && !authorData.viewer.muted){
+        await MuteUser(authorData.did)
+        .then(() => {
+            if(typeof authorData.viewer != 'undefined'){
+                authorData.viewer.muted = true;
+                AppState.UpdateAccountsInFeedList(authorData);
+            }
+            toast.add({summary:"Account Muted", detail:`Muted account - ${authorData.handle}`, severity:'info', group:'tr', life:3000});
+        })
+        .catch(err => {
+            toast.add({summary:"Error", detail:`${err} Issue muting account - ${authorData.handle}`, severity:'error', group:'tr', life:3000});
+        });
+    }
+    else{
+        await UnmuteUser(authorData.did)
+        .then(() => {
+            if(typeof authorData.viewer != 'undefined'){
+                authorData.viewer.muted = false;
+                AppState.UpdateAccountsInFeedList(authorData);
+            }
+            toast.add({summary:"Account Unuted", detail:`Unmuted account - ${authorData.handle}`, severity:'info', group:'tr', life:3000});
+        })
+        .catch(err => {
+            toast.add({summary:"Error", detail:`${err} Issue unmuting account - ${authorData.handle}`, severity:'error', group:'tr', life:3000});
+        });
+    }
 }
 </script>
