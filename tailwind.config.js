@@ -92,6 +92,7 @@ export default {
         submitBtnBG: "oklch(from var(--color-submit-btn-bg) l c h / <alpha-value>)",
         submitBtnBGHover: "oklch(from var(--color-submit-btn-bg-hover) l c h / <alpha-value>)",
         submitBtnBGActive: "oklch(from var(--color-submit-btn-bg-active) l c h / <alpha-value>)",
+        accountMuteLabelBG: "oklch(from var(--color-account-mute-label-bg) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

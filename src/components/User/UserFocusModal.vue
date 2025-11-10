@@ -137,7 +137,7 @@
                             <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory" :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
                             <div class="flex my-1">
                                 <div v-if="isAccountMuted" title="You have muted this account."
-                                class="flex items-center gap-1 rounded-full px-2 bg-slate-600 text-sm select-none">
+                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
                                     <i-mdi:eye-off/>
                                     <div>Account Muted</div>
                                 </div>
@@ -300,6 +300,9 @@
 <script lang="ts">
 //Option Menu icons
 import MingcuteLinkLine from '~icons/mingcute/link-line';
+import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
+import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
+import MdiPersonBlock from '~icons/mdi/person-block';
 
 import { defineComponent } from 'vue'
 import PillButton from '../Utilities/PillButton.vue';
@@ -335,6 +338,7 @@ import SquareButton from '../Utilities/SquareButton.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
+import { toggleMute } from '../../lib/api/User.vue';
 
 /**
  * Used to create a HTTP URL link To the currently view User's profile.
@@ -375,7 +379,8 @@ export default defineComponent({
              * Used to update component content when using page history navigation.
              */
             isNavigatingHistory:false,
-            currentUserProfile:{} as ProfileViewDetailed,
+            /**Are we currently waiting for an action relating to muting or unmuting a User account to finish? */
+            isAwaitingAccountMuteAction:false,
             currentUserAccountTimelineData:{data:[],cursor:''} as IFeedReturnedPostResults,
             userSummaryBottomPos:0,
             /**Is the User's PFP being shown fullscreen? */
@@ -415,7 +420,7 @@ export default defineComponent({
                     UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s timeline`)));
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s timeline`)));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -431,7 +436,7 @@ export default defineComponent({
                     UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s posts`)));
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s posts`)));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -447,7 +452,7 @@ export default defineComponent({
                     UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s replies`)));
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s replies`)));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -467,7 +472,7 @@ export default defineComponent({
                     UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s media`)));
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s media`)));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -479,18 +484,17 @@ export default defineComponent({
                 this.isViewingFeed = this.isViewingPosts = this.isViewingReplies = this.isViewingMedia = false;
                 this.isAwaitingTabSwitchData = true;
                 //Get liked posts
-                await getAuthorLikes(this.currentUserProfile.did)
+                await getAuthorLikes(UserFocusModalState.currentUserAccountDID)
                 .then(res => {
                     UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s likes`)));
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s likes`)));
                 this.isAwaitingTabSwitchData = false;
             }
         },
         async loadOlderPosts(){
             this.isAwaitingLoadMorePosts = true;
-            // await GetFeedDataForFeedType(FeedEnums.Types.User,this.currentUserProfile.did,'',this.currentUserAccountTimelineData.cursor)
             if(this.isViewingFeed || this.isViewingMedia){
                 await GetFeedDataForFeedType(FeedEnums.Types.User,UserFocusModalState.currentUserAccountDID,'', UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
                 .then(res => {
@@ -552,16 +556,15 @@ export default defineComponent({
                     actor:UserFocusModalState.currentUserAccountDID
                 })
                 .then(res => {
-                    this.currentUserProfile = res.data
+                    userProfile = res
                 });
-                var userTL;
                 await getAuthorFeed(UserFocusModalState.currentUserAccountDID)
                 .then(res => {
                     //If the current history index is not at the end of the array, drop
                     //all of the items in front of the current index
                     if(UserFocusModalState.currentNavIndex < UserFocusModalState.navigationHistory.length-1) UserFocusModalState.navigationHistory.splice(UserFocusModalState.currentNavIndex+1);
                     //Add the latest User Account page to the history array
-                    UserFocusModalState.navigationHistory.push({FeedData:{data:res.data.feed,cursor:res.data.cursor},ProfileData:this.currentUserProfile,scrollPos:0});
+                    UserFocusModalState.navigationHistory.push({FeedData:{data:res.data.feed,cursor:res.data.cursor},ProfileData:userProfile.data,scrollPos:0});
                     //Move to the newly added User account - will not occur if there is only one item (initial state)
                     if(UserFocusModalState.navigationHistory.length > 1) this.goToNextNavHistory(false);
                     // setTimeout(() => {
@@ -569,7 +572,7 @@ export default defineComponent({
                     //     this.scrollToModalPos(0);
                     // }, 10);
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${this.currentUserProfile.handle}'s timeline`)));
+                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s timeline`)));
                 console.log(UserFocusModalState.GetCurrentHistoryData().ProfileData);
                 this.awaitingProfileData = false;
 
@@ -717,7 +720,24 @@ export default defineComponent({
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteLinkLine,Label:'Copy link to Profile Page',Action:function(){CopyPostLink(handle)}},
             ] as IOptionMenuItem[]
+            if(AppState.isAuthBrowsing && GetBrowsingAgent().did != UserFocusModalState.currentUserAccountDID){
+                if(!this.isAccountMuted)
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute});
+                else
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.requestToggleMute});
+                OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:()=>{}});
+            }
             OptionsMenuState.showOptionMenu(e);
+        },
+        /**
+         * Method used to attempt to mute/unmute the account associated with the
+         * Post that was interacted with.
+         */
+        async requestToggleMute(){
+            if(this.isAwaitingAccountMuteAction) return;
+            this.isAwaitingAccountMuteAction = true;
+            await toggleMute(UserFocusModalState.GetCurrentHistoryData().ProfileData)
+            .finally(() => {this.isAwaitingAccountMuteAction = false});
         },
         showPFPFullscreen(){
             this.isPFPFullscreen = true;

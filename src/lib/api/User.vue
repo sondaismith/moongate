@@ -95,6 +95,7 @@ export async function toggleMute(authorData:ProfileView|ProfileViewBasic|Profile
             if(typeof authorData.viewer != 'undefined'){
                 authorData.viewer.muted = true;
                 AppState.UpdateAccountsInFeedList(authorData);
+                AppState.UpdateAccountsInUserFocusModalState(authorData);
             }
             toast.add({summary:"Account Muted", detail:`Muted account - ${authorData.handle}`, severity:'info', group:'tr', life:3000});
         })
@@ -108,6 +109,7 @@ export async function toggleMute(authorData:ProfileView|ProfileViewBasic|Profile
             if(typeof authorData.viewer != 'undefined'){
                 authorData.viewer.muted = false;
                 AppState.UpdateAccountsInFeedList(authorData);
+                AppState.UpdateAccountsInUserFocusModalState(authorData);
             }
             toast.add({summary:"Account Unuted", detail:`Unmuted account - ${authorData.handle}`, severity:'info', group:'tr', life:3000});
         })

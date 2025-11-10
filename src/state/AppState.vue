@@ -297,7 +297,7 @@ export const AppState = reactive({
     },
     /**
      * Method used to update "author view" records for the account that was interacted with (mute/unmute,
-     * block, etc.) in all visible Feeds. Used to keep the state of the Post consistent throughout the app.
+     * block, etc.) in all visible Feeds. Used to keep the state of the Account consistent throughout the app.
      * @param accountProfileView ProfileView of account that was just updated (muted/unmute, block, etc.)
      */
     UpdateAccountsInFeedList(accountProfileView:ProfileViewBasic|ProfileView|ProfileViewDetailed){
@@ -315,6 +315,22 @@ export const AppState = reactive({
             }
         })
         console.log(`Updated Posts in ${feedUpdates} Feed(s).`);
+    },
+    /**
+     * Method used to update "author view" records for the account that was interacted with (mute/unmute,
+     * block, etc.) in all "navigation history" records. Used to keep the state of the Account consistant
+     * throughout the app.
+     * @param accountProfileView ProfileView of account that was just updated (muted/unmute, block, etc.)
+     */
+    UpdateAccountsInUserFocusModalState(accountProfileView:ProfileView|ProfileViewBasic|ProfileViewDetailed){
+        let navHistoryUpdates = 0;
+        UserFocusModalState.navigationHistory.forEach(navHistory => {
+            if(navHistory.ProfileData.did == accountProfileView.did){
+                navHistory.ProfileData = {...navHistory.ProfileData,viewer:accountProfileView.viewer};
+                navHistoryUpdates++;
+            }
+        })
+        console.log(`Updated Profiles in ${navHistoryUpdates} UserFocusModal NavHistory record(s).`);
     },
     //#region Post Deletion
     /**
