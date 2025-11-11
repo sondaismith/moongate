@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AboutAppModal: typeof import('./src/components/Settings/AboutAppModal.vue')['default']
     AccountPeek: typeof import('./src/components/Utilities/AccountPeek.vue')['default']
+    AccountSettingsPanel: typeof import('./src/components/Settings/AccountSettingsPanel.vue')['default']
     AppLogo: typeof import('./src/components/SVG/AppLogo.vue')['default']
     AvatarRound: typeof import('./src/components/Utilities/AvatarRound.vue')['default']
     CheckBox: typeof import('./src/components/Utilities/CheckBox.vue')['default']
@@ -50,6 +51,7 @@ declare module 'vue' {
     'IMdi:login': typeof import('~icons/mdi/login')['default']
     'IMdi:magnifyScan': typeof import('~icons/mdi/magnify-scan')['default']
     'IMdi:paintOutline': typeof import('~icons/mdi/paint-outline')['default']
+    'IMdi:personBlock': typeof import('~icons/mdi/person-block')['default']
     'IMdi:photoLibrary': typeof import('~icons/mdi/photo-library')['default']
     'IMdi:pin': typeof import('~icons/mdi/pin')['default']
     'IMdi:playlistAdd': typeof import('~icons/mdi/playlist-add')['default']
@@ -59,6 +61,7 @@ declare module 'vue' {
     'IMingcute:addCircleFill': typeof import('~icons/mingcute/add-circle-fill')['default']
     'IMingcute:addFill': typeof import('~icons/mingcute/add-fill')['default']
     'IMingcute:arrowLeftFill': typeof import('~icons/mingcute/arrow-left-fill')['default']
+    'IMingcute:arrowLeftLine': typeof import('~icons/mingcute/arrow-left-line')['default']
     'IMingcute:arrowRightFill': typeof import('~icons/mingcute/arrow-right-fill')['default']
     'IMingcute:butterfly2Fill': typeof import('~icons/mingcute/butterfly2-fill')['default']
     'IMingcute:checkFill': typeof import('~icons/mingcute/check-fill')['default']

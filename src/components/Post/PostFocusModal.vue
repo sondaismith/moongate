@@ -597,7 +597,7 @@ export default defineComponent({
             else if(postDetails.currentThreadView.post.embed &&
             AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
             (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
-                return (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[0].alt;
+                return (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[this.currentMediaIndex].alt;
             return '';
         },
         /**

@@ -1,8 +1,22 @@
+import { FunctionalComponent } from "vue";
 import { IAppAccountState, LoginState } from "./AccountInterfaces";
 
 export interface LangCode{
     name:string,
     code:string
+}
+
+export interface IAccountSettingsMenuItem{
+    /**Text representing the settings option. Usually displayed to the User. */
+    label:string,
+    /**Iconify icon associated with the option. Optional. */
+    icon:FunctionalComponent|undefined
+    /**Whether or not this option has been selected. Not required - if provided usually means this option is togglable. */
+    selected:boolean
+    /**Any submenu options this option has. */
+    submenu:IAccountSettingsMenuItem[]|undefined
+    /**What action to perform when option is interacted with. Not required - if provided usually means this option is for displaying another menu. */
+    action:Function|undefined
 }
 
 /**
