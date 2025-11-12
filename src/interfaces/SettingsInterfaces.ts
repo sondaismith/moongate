@@ -11,10 +11,12 @@ export interface IAccountSettingsMenuItem{
     label:string,
     /**Iconify icon associated with the option. Optional. */
     icon:FunctionalComponent|undefined
+    /**Used to identify menu item when running Unit tests. */
+    testId:string,
     /**Whether or not this option has been selected. Not required - if provided usually means this option is togglable. */
     selected:boolean
     /**Any submenu options this option has. */
-    submenu:IAccountSettingsMenuItem[]|undefined
+    submenu:IAccountSettingsMenuItem[]
     /**What action to perform when option is interacted with. Not required - if provided usually means this option is for displaying another menu. */
     action:Function|undefined
 }

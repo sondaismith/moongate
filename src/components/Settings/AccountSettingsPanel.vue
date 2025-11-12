@@ -2,10 +2,10 @@
     <div class="flex flex-col gap-2">
         <div class="flex gap-2 items-center h-10 border-b border-outline pb-2 text-lg">
             <button v-if="!noSubMenusSelected || breadcrumbs.length>0" @click="backToMainMenu"
-            class="h-full p-1 shadow-none bg-btn">
+            class="h-full p-1 shadow-none bg-btn" data-testid="accountSettingsPanel-menu-back-button">
                 <i-mingcute:arrow-left-line/>
             </button>
-            <div>{{ currentMenuLabel }}</div>
+            <div data-testid="accountSettingsPanel-current-menu-label">{{ currentMenuLabel }}</div>
         </div>
         <!-- <div v-if="noSubMenusSelected" class="flex flex-col gap-1">
             <RadioBarButton v-for="(o,index) in MainMenu" :hide-radio-button="true"
@@ -17,7 +17,7 @@
         </div> -->
         <div class="flex flex-col gap-1">
             <RadioBarButton v-for="(o,index) in getMenuViaBreadcrumbs" :hide-radio-button="true"
-            @click="o.action(breadcrumbs)">
+            @click="o.action(breadcrumbs)" :data-testid="'accountSettingsPanel-'+o.testId">
                 <component :is="o.icon"></component>
                 <div class="place-self-center">{{ o.label }}</div>
                 <i-mdi:chevron-right class="text-3xl shrink-0 ml-auto"/>
@@ -69,17 +69,21 @@ export default defineComponent({
                 {
                     label:'Moderation',
                     icon: MdiHandFrontRight,
+                    testId:'moderation',
                     selected:false,
                     submenu:[
                         {
                             label:'View Muted Accounts',
                             icon: MingcuteVolumeMuteFill,
+                            testId:'view-muted-accounts',
+                            submenu:[],
                             selected:false,
                             action:(bc:number[])=>{bc.push(0);}
                         },
                         {
                             label:'View Blocked Accounts',
                             icon:MdiPersonBlock,
+                            testId:'view-blocked-accounts',
                             selected:false,
                             action:(bc:number[])=>{bc.push(1)}
                         },
@@ -88,14 +92,17 @@ export default defineComponent({
                 },
                 {
                     label:'Privacy and Security',
+                    testId:'privacy-and-security',
                     selected:false,
                     submenu:[
                         {
                             label:'A test option under privacy',
                             icon: MingcuteVolumeMuteFill,
+                            testId:'test-under-privacy',
                             selected:false,
                             submenu:[{
                                 label:'further sub option',
+                                testId:'further-sub-option',
                                 selected:false,
                                 action:(bc:number[])=>{bc.push(0)}
                             }],
@@ -104,9 +111,11 @@ export default defineComponent({
                         {
                             label:'2nd test option under privacy',
                             icon: MingcuteVolumeMuteFill,
+                            testId:'second-test-option-under-privacy',
                             selected:false,
                             submenu:[{
                                 label:'another option',
+                                testId:'another-option',
                                 selected:false,
                                 action:(bc:number[])=>{bc.push(0)}
                             }],
@@ -118,6 +127,7 @@ export default defineComponent({
                 {
                     label:'Accessibility',
                     icon:undefined,
+                    testId:'accessibility',
                     selected:false,
                     submenu:undefined,
                     action:(bc:number[])=>{bc.push(2)}
