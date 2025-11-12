@@ -21,7 +21,10 @@ describe("AccountSettingsPanel tests", () => {
         expect(menuLabel.text()).toBe("Moderation");
         expect(wrapper.find('[data-testid="accountSettingsPanel-menu-back-button"]').exists()).toBe(true);
         await wrapper.find('[data-testid="accountSettingsPanel-view-muted-accounts"]').trigger('click');
-        expect(menuLabel.text()).toBe("View Muted Accounts");
+        //Should be kicked back 1 menu because not logged in
+        expect(menuLabel.text()).toBe("Moderation");
+        //Need to log in to see "View Muted Accounts"
+        // expect(menuLabel.text()).toBe("View Muted Accounts");
     })
 
     // test.skip("clicking reply timestamp updates PostThreadView via API request", async () => {

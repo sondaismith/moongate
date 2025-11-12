@@ -1,20 +1,12 @@
 <template>
-    <div class="flex flex-col gap-2">
+    <div class="relative flex flex-col gap-2 overflow-hidden">
         <div class="flex gap-2 items-center h-10 border-b border-outline pb-2 text-lg">
-            <button v-if="!noSubMenusSelected || breadcrumbs.length>0" @click="backToMainMenu"
+            <button v-if="!noSubMenusSelected || breadcrumbs.length>0" @click="backUpMenuTree"
             class="h-full p-1 shadow-none bg-btn" data-testid="accountSettingsPanel-menu-back-button">
                 <i-mingcute:arrow-left-line/>
             </button>
             <div data-testid="accountSettingsPanel-current-menu-label">{{ currentMenuLabel }}</div>
         </div>
-        <!-- <div v-if="noSubMenusSelected" class="flex flex-col gap-1">
-            <RadioBarButton v-for="(o,index) in MainMenu" :hide-radio-button="true"
-            @click="selectMainMenuItem(index)">
-                <component :is="o.icon"></component>
-                <div class="place-self-center">{{ o.label }}</div>
-                <i-mdi:chevron-right class="text-3xl shrink-0 ml-auto"/>
-            </RadioBarButton>
-        </div> -->
         <div class="flex flex-col gap-1">
             <RadioBarButton v-for="(o,index) in getMenuViaBreadcrumbs" :hide-radio-button="true"
             @click="o.action(breadcrumbs)" :data-testid="'accountSettingsPanel-'+o.testId">
@@ -23,33 +15,37 @@
                 <i-mdi:chevron-right class="text-3xl shrink-0 ml-auto"/>
             </RadioBarButton>
         </div>
-        <div v-if="breadcrumbs.toString() == '0,0'">
-            <div>Filter bar here</div>
-            <div>
-                <div class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
-                    <div class="flex flex-col gap-2 w-full overflow-hidden">
-                        <div class="flex gap-1 items-center">
-                            <div class="flex bg-blueskyBlue aspect-square rounded-full shrink-0 w-8 items-center justify-center">
-                                <img v-if="feedGeneratorView?.avatar" :src="feedGeneratorView?.avatar"/>
-                                <i-mingcute:radar-2-fill v-else class="text-white h-6 w-6"/>
+        <div v-if="isViewingMutedAccounts" class="flex flex-col gap-2 h-full overflow-hidden">
+            <div class="bg-yellow-600">Filter bar here</div>
+            <div class="overflow-y-auto preload-gutter">
+                <div v-if="!isAwaitingMutedAccountData && mutedAccountData.length>0" class="flex flex-col gap-2">
+                    <div v-for="mutedAccount in mutedAccountData" class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
+                        <div class="flex flex-col gap-2 w-full overflow-hidden">
+                            <div class="flex gap-1 items-center">
+                                <div class="flex bg-blueskyBlue aspect-square rounded-full shrink-0 w-8 items-center justify-center">
+                                    <img v-if="mutedAccount?.avatar" :src="mutedAccount?.avatar"/>
+                                    <i-mingcute:radar-2-fill v-else class="text-white h-6 w-6"/>
+                                </div>
+                                <div class="flex flex-col overflow-hidden">
+                                    <div class="text-base leading-4 text-nowrap overflow-hidden text-ellipsis">{{ mutedAccount.displayName ? mutedAccount.displayName : 'PROP MISSING' }}</div>
+                                    <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">@{{ mutedAccount.handle ? mutedAccount.handle : 'PROP MISSING' }}</div>
+                                </div>
+                                <button @click="" :title="'Remove &quot;'+mutedAccount?.displayName+'&quot; Feed'"
+                                class="self-center ml-auto mr-0.5 rounded p-1 border bg-deleteBtnBG active:bg-deleteBtnBGActive text-xs text-white hover:border-primary shadow-none">Unmute</button>
                             </div>
-                            <div class="flex flex-col overflow-hidden">
-                                <div class="text-base leading-4 text-nowrap overflow-hidden text-ellipsis">{{ feedGeneratorView ? feedGeneratorView.displayName : 'PROP MISSING' }}</div>
-                                <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">Feed by @{{ feedGeneratorView ? feedGeneratorView.creator.handle : 'PROP MISSING' }}</div>
-                            </div>
-                            <button @click="clickedFeedGenerator" :title="'Remove &quot;'+feedGeneratorView?.displayName+'&quot; Feed'"
-                            class="self-center ml-auto mr-0.5 rounded p-1 border bg-deleteBtnBG active:bg-deleteBtnBGActive text-xs text-white hover:border-primary shadow-none">Remove</button>
+                            <div class="text-sm">{{ mutedAccount ? mutedAccount.description : 'Please supply the `:feed-generator-view` prop' }}</div>
                         </div>
-                        <div class="text-sm">{{ feedGeneratorView ? feedGeneratorView.description : 'Please supply the `:feed-generator-view` prop' }}</div>
                     </div>
+                </div>
+                <div v-else-if="isAwaitingMutedAccountData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
+                    <CustomFeedButtonPlaceholder v-for="n in 5" :hide-toggle="true" :hide-liked-by="true" :use-rounded-pfp="true" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
+                </div>
+                <div v-else>
+                    No Muted Accounts
                 </div>
             </div>
         </div>
-        <!-- <div>{{ MainMenu }}</div> -->
-        <div>{{currentMenuData}}</div>
-        <!-- <div>{{currentMenu}}</div> -->
-        <!-- <div>{{ MainMenu }}</div> -->
-        <div>breadcrumbs: {{ breadcrumbs }}</div>
+        <div class="bg-purple-500">breadcrumbs: {{ breadcrumbs }}</div>
     </div>
 </template>
 
@@ -61,8 +57,15 @@ import MdiPersonBlock from '~icons/mdi/person-block';
 
 import { defineComponent } from 'vue'
 import { IAccountSettingsMenuItem } from '../../interfaces/SettingsInterfaces'
+import { AppState } from '../../state/AppState.vue';
+import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
+import { GetBrowsingAgent } from '../../lib/api.vue';
+import { AppBskyActorDefs } from '@atproto/api/dist/client';
 
 export default defineComponent({
+    components:{
+        CustomFeedButtonPlaceholder,
+    },
     data(){
         return{
             MainMenu:[
@@ -133,109 +136,38 @@ export default defineComponent({
                     action:(bc:number[])=>{bc.push(2)}
                 }
             ] as IAccountSettingsMenuItem[],
-            // Moderation:[
-            //     {
-            //         label:'View Muted Accounts',
-            //         icon: MingcuteVolumeMuteFill,
-            //         selected:false,
-            //         submenu:[{
-            //             label:'Muted Accounts',
-            //             selected:false
-            //         }],
-            //         action:(text:string)=>{alert(text)}
-            //     },
-            //     {
-            //         label:'View Blocked Accounts',
-            //         icon:MdiPersonBlock,
-            //         selected:false
-            //     },
-            // ] as IAccountSettingsMenuItem[],
             mutedUserList:[],
             breadcrumbs:[] as number[],
             isViewingMutedAccounts:false,
+            isAwaitingMutedAccountData:false,
+            mutedAccountData:{} as AppBskyActorDefs.ProfileView[],
+            mutedAccountDataCursor:'',
         }
     },
     methods:{
-        selectMainMenuItem(i:number){
-            //deselect other options
-            for (let i = 0; i < this.MainMenu.length; i++){
-                this.MainMenu[i].selected = false;
-            }
-            this.MainMenu[i].selected = !this.MainMenu[i].selected;
-        },
-        backToMainMenu(){
+        /**
+         * Method used to navigate back up the menu tree.
+         */
+        backUpMenuTree(){
             this.breadcrumbs.pop();
-            // for (let i = 0; i < this.MainMenu.length; i++){
-            //     this.MainMenu[i].selected = false;
-            // }
-            // let choices = this.currentMenuData;
-            // let menuToClear = [] as IAccountSettingsMenuItem[];
-            // if(choices.length>0){
-            //     if(choices.length<2){
-
-            //     }
-            //     else{
-            //         //for each decision made
-            //         for (let i = 0; i < choices.length; i++) {
-            //             let subMenu = this.MainMenu[choices[i]].submenu;
-            //             if(typeof subMenu != 'undefined'){
-            //                 menuToClear = subMenu;
-            //                 i = choices.length;
-            //             }
-            //         }
-            //         for (let i = 0; i < menuToClear.length; i++) {
-            //             menuToClear[i].selected = false;
-            //         }
-            //     }
-            // }
-
-            // for (let i = 0; i < this.Moderation.length; i++){
-            //     this.Moderation[i].selected = false;
-            // }
+            //Clear variables
+            this.isViewingMutedAccounts = false;
+            this.isAwaitingMutedAccountData = false;
         },
-        selectModerationItem(i:number){
-            //deselect other options
-            for (let i = 0; i < this.MainMenu[0].submenu.length; i++){
-                this.MainMenu[0].submenu[i].selected = false;
-            }
-            this.MainMenu[0].submenu[i].selected = !this.MainMenu[0].submenu[i].selected;
-        },
-        // selectModerationItem(i:number){
-        //     //deselect other options
-        //     for (let i = 0; i < this.Moderation.length; i++){
-        //         this.Moderation[i].selected = false;
-        //     }
-        //     this.Moderation[i].selected = !this.Moderation[i].selected;
-        // },
-        getSelectedMenuItemAndDepth(menu:IAccountSettingsMenuItem[],depth:number=0,selection:number[]=[]){//:{depth:number;selection:number}{
-            // let result = {depth:depth,selection:selection};
-            // for (let i = 0; i < menu.length; i++) {
-            //     if(menu[i].selected){
-            //         let submenu = menu[i].submenu;
-            //         if(typeof submenu != 'undefined' && submenu.length>0){
-            //             result = this.getSelectedMenuItemAndDepth(submenu,depth+1,i);
-            //         }
-            //         else{
-            //             result = {...result,selection:i}
-            //         }
-            //         i = menu.length;
-            //     }
-            // }
-            let result:number[] = selection;
-            for (let i = 0; i < menu.length; i++) {
-                if(menu[i].selected){
-                    selection.push(i);
-                    let submenu = menu[i].submenu;
-                    if(typeof submenu != 'undefined' && submenu.length>0){
-                        result = this.getSelectedMenuItemAndDepth(submenu,depth+1,selection);
-                    }
-                    else{
-                        result = selection;
-                    }
-                    i = menu.length;
-                }
-            }
-            return result;
+        /**
+         * Get list of muted accounts for currently logged in User. If User
+         * is not currently logged in they will be prompted to do so.
+         */
+        async getMutedUsers(){
+            if(this.isAwaitingMutedAccountData) return;
+            if(!AppState.checkIfLoggedIn('post')){ this.backUpMenuTree(); return;}
+            this.isAwaitingMutedAccountData = true;
+            await GetBrowsingAgent().app.bsky.graph.getMutes()
+            .then(res => {
+                this.mutedAccountData = res.data.mutes
+                this.mutedAccountDataCursor = typeof res.data.cursor != 'undefined' ? res.data.cursor : ''
+            })
+            .finally(()=>{this.isAwaitingMutedAccountData=false});
         }
     },
     computed:{
@@ -249,16 +181,10 @@ export default defineComponent({
             }
             return result;
         },
-        // currentMenuLabel():string{
-        //     let label = "Account Settings";
-        //     for (let i = 0; i < this.MainMenu.length; i++){
-        //         if(this.MainMenu[i].selected){
-        //             label = this.MainMenu[i].label;
-        //             i = this.MainMenu.length;
-        //         }
-        //     }
-        //     return label;
-        // },
+        /**
+         * Finds the title of the current menu item selected and returns it
+         * so it can be used as a label.
+         */
         currentMenuLabel():string{
             let label = "Account Settings";
             if(this.breadcrumbs.length>0){
@@ -279,13 +205,10 @@ export default defineComponent({
             }
             return label;
         },
-        currentMenu(){
-            let menu = this.MainMenu;
-            for (let i = 0; i < this.currentMenuData.length; i++) {
-                menu = menu[this.currentMenuData[i]].submenu;
-            }
-            return menu;
-        },
+        /**
+         * Returns the current menu to display based on the breadcrumbs created
+         * when clicking on the displayed items.
+         */
         getMenuViaBreadcrumbs(){
             let menu = this.MainMenu;
             for (let i = 0; i < this.breadcrumbs.length; i++) {
@@ -293,8 +216,21 @@ export default defineComponent({
             }
             return menu;
         },
-        currentMenuData(){
-            return this.getSelectedMenuItemAndDepth(this.MainMenu);
+    },
+    watch:{
+        //Use this to perform actions when certain options are selected/reached.
+        breadcrumbs:{
+            handler(newVal, oldVal){
+                switch (newVal.toString()) {
+                    case '0,0': //View Muted Accounts
+                        this.isViewingMutedAccounts = true;
+                        this.getMutedUsers();
+                        break;
+                    default:
+                        break;
+                }
+            },
+            deep:true
         }
     }
 })
