@@ -309,7 +309,7 @@ export const AppState = reactive({
                 if(matchingPosts.length>0){
                     feedUpdates++;
                     matchingPosts.forEach(feedPost => {
-                        feedPost.post.author.viewer = accountProfileView.viewer;
+                        feedPost.post.author.viewer = {...feedPost.post.author.viewer, ...accountProfileView.viewer};
                     });
                 }
             }

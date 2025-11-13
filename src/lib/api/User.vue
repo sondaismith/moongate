@@ -86,8 +86,10 @@ async function UnmuteUser(userDid:string){
  * Mutes/unmutes a specific account. Can only be used when logged in. When used, scans entire
  * FeedList to sync account "mute/unmute" state.
  * @param authorData The current state of the ProfileView associated with the account that needs to be muted/unmuted.
+ * @param throwOnError Optional. Determines if a promise will be rejected (error "thrown") if an error is caught
+ * during the mute/unmute process. Default value is false.
  */
-export async function toggleMute(authorData:ProfileView|ProfileViewBasic|ProfileViewDetailed){
+export async function toggleMute(authorData:ProfileView|ProfileViewBasic|ProfileViewDetailed, throwOnError:boolean=false){
     if(!AppState.checkIfLoggedIn('mute an Account')) return;
     if(typeof authorData.viewer != 'undefined' && typeof authorData.viewer.muted != 'undefined' && !authorData.viewer.muted){
         await MuteUser(authorData.did)
@@ -101,6 +103,7 @@ export async function toggleMute(authorData:ProfileView|ProfileViewBasic|Profile
         })
         .catch(err => {
             toast.add({summary:"Error", detail:`${err} Issue muting account - ${authorData.handle}`, severity:'error', group:'tr', life:3000});
+            if(throwOnError) return Promise.reject(`${err} Issue muting account - ${authorData.handle}`);
         });
     }
     else{
@@ -115,6 +118,7 @@ export async function toggleMute(authorData:ProfileView|ProfileViewBasic|Profile
         })
         .catch(err => {
             toast.add({summary:"Error", detail:`${err} Issue unmuting account - ${authorData.handle}`, severity:'error', group:'tr', life:3000});
+            if(throwOnError) return Promise.reject(`${err} Issue unmuting account - ${authorData.handle}`);
         });
     }
 }

@@ -18,46 +18,50 @@
         <div v-if="isViewingMutedAccounts" class="flex flex-col gap-2 h-full overflow-hidden">
             <div class="bg-yellow-600">Filter bar here</div>
             <div v-if="!isAwaitingMutedAccountData" class="text-sm text-secondary">{{ mutedAccountData.length }} muted account(s) loaded</div>
-            <div class="overflow-y-auto preload-gutter">
+            <div class="flex flex-col gap-2 overflow-y-auto preload-gutter">
                 <div v-if="!isAwaitingMutedAccountData && mutedAccountData.length>0" class="flex flex-col gap-2">
-                    <div v-for="mutedAccount in mutedAccountData" class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
+                    <div v-for="(mutedAccount,index) in mutedAccountData" class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
                         <div class="flex flex-col gap-2 w-full overflow-hidden">
                             <div class="flex gap-1 items-center">
-                                <div class="flex bg-blueskyBlue aspect-square rounded-full shrink-0 w-8 items-center justify-center">
-                                    <img v-if="mutedAccount?.avatar" :src="mutedAccount?.avatar"/>
+                                <div class="flex bg-blueskyBlue aspect-square rounded-full shrink-0 w-8 items-center justify-center overflow-hidden">
+                                    <img v-if="mutedAccount?.account.avatar" :src="mutedAccount?.account.avatar"/>
                                     <i-mingcute:radar-2-fill v-else class="text-white h-6 w-6"/>
                                 </div>
                                 <div class="flex flex-col overflow-hidden">
-                                    <div class="text-base leading-4 text-nowrap overflow-hidden text-ellipsis">{{ mutedAccount.displayName ? mutedAccount.displayName : 'PROP MISSING' }}</div>
-                                    <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">@{{ mutedAccount.handle ? mutedAccount.handle : 'PROP MISSING' }}</div>
+                                    <div class="text-base leading-4 text-nowrap overflow-hidden text-ellipsis">{{ mutedAccount.account.displayName ? mutedAccount.account.displayName : '\n' }}</div>
+                                    <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">@{{ mutedAccount.account.handle ? mutedAccount.account.handle : 'PROP MISSING' }}</div>
                                 </div>
-                                <button @click="" :title="'Remove &quot;'+mutedAccount?.displayName+'&quot; Feed'"
-                                class="self-center ml-auto mr-0.5 rounded p-1 border bg-deleteBtnBG active:bg-deleteBtnBGActive text-xs text-white hover:border-primary shadow-none">Unmute</button>
+                                <button @click="unmuteAccount(mutedAccount.account,index)" :title="'Remove &quot;'+mutedAccount?.account.displayName+'&quot; Feed'"
+                                class=" flex items-center gap-1 self-center ml-auto mr-0.5 rounded p-1 border bg-deleteBtnBG active:bg-deleteBtnBGActive
+                                text-xs text-white hover:border-primary disabled:bg-disabledBG disabled:text-disabled disabled:border-transparent shadow-none"
+                                :disabled="mutedAccount.isAwaitingUnmute">
+                                    <i-mingcute:loading-fill v-if="mutedAccount.isAwaitingUnmute" class="spinner"/>
+                                    <div>Unmute</div>
+                                </button>
                             </div>
-                            <div class="text-sm">{{ mutedAccount ? mutedAccount.description : 'Please supply the `:feed-generator-view` prop' }}</div>
+                            <div class="text-sm">{{ mutedAccount ? mutedAccount.account.description : 'Please supply the `:feed-generator-view` prop' }}</div>
                         </div>
-                    </div>
-                    <button v-if="typeof mutedAccountDataCursor != 'undefined'" @click="loadMoreMutedUsers" :disabled="isAwaitingAdditionalMutedAccountData"
-                    class="flex gap-1 items-center justify-center py-1 w-full rounded bg-btn hover:bg-btnHover
-                    hover:border-hover disabled:bg-disabledBG disabled:border-transparent disabled:text-disabled">
-                        <i-mingcute:loading-fill v-if="isAwaitingAdditionalMutedAccountData" class="spinner"/>
-                        <i-mingcute:plus-fill v-else/>
-                        <div>Load More</div>
-                    </button>
-                    <div v-else
-                    class="flex gap-1 items-center justify-center py-1 w-full rounded bg-postMsg text-disabled select-none">
-                        <div>End of List</div>
                     </div>
                 </div>
                 <div v-else-if="isAwaitingMutedAccountData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
                     <CustomFeedButtonPlaceholder v-for="n in 5" :hide-toggle="true" :hide-liked-by="true" :use-rounded-pfp="true" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
                 </div>
-                <div v-else>
-                    No Muted Accounts
+                <button v-if="typeof mutedAccountDataCursor != 'undefined'" @click="loadMoreMutedUsers" :disabled="isAwaitingAdditionalMutedAccountData"
+                class="flex gap-1 items-center justify-center py-1 w-full rounded bg-btn hover:bg-btnHover
+                hover:border-hover disabled:bg-disabledBG disabled:border-transparent disabled:text-disabled">
+                    <i-mingcute:loading-fill v-if="isAwaitingAdditionalMutedAccountData" class="spinner"/>
+                    <i-mingcute:plus-fill v-else/>
+                    <div>Load More</div>
+                </button>
+                <div v-else
+                class="flex gap-1 items-center justify-center py-1 w-full rounded bg-postMsg text-disabled select-none">
+                    <div>End of List</div>
                 </div>
+                <!-- <div v-else">
+                    No Muted Accounts to display
+                </div> -->
             </div>
         </div>
-        <div class="bg-purple-500">breadcrumbs: {{ breadcrumbs }}</div>
     </div>
 </template>
 
@@ -68,14 +72,17 @@ import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
 
 import { defineComponent } from 'vue'
-import { IAccountSettingsMenuItem } from '../../interfaces/SettingsInterfaces'
+import { IAccountSettingsMenuItem, IUnmuteAccountItem } from '../../interfaces/SettingsInterfaces'
 import { AppState, toast } from '../../state/AppState.vue';
 import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
-import { AppBskyActorDefs } from '@atproto/api/dist/client';
+import RadioBarButton from '../Utilities/RadioBarButton.vue';
+import { toggleMute } from '../../lib/api/User.vue';
+import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 
 export default defineComponent({
     components:{
+        RadioBarButton,
         CustomFeedButtonPlaceholder,
     },
     data(){
@@ -148,12 +155,11 @@ export default defineComponent({
                     action:(bc:number[])=>{bc.push(2)}
                 }
             ] as IAccountSettingsMenuItem[],
-            mutedUserList:[],
             breadcrumbs:[] as number[],
             isViewingMutedAccounts:false,
             isAwaitingMutedAccountData:false,
             isAwaitingAdditionalMutedAccountData:false,
-            mutedAccountData:{} as AppBskyActorDefs.ProfileView[],
+            mutedAccountData:[] as IUnmuteAccountItem[],
             mutedAccountDataCursor:'' as string|undefined,
         }
     },
@@ -179,7 +185,9 @@ export default defineComponent({
             this.isAwaitingMutedAccountData = true;
             GetBrowsingAgent().app.bsky.graph.getMutes({limit:5, cursor:this.mutedAccountDataCursor})
             .then(res => {
-                this.mutedAccountData = res.data.mutes
+                res.data.mutes.forEach(account => {
+                    this.mutedAccountData.push({account:account,isAwaitingUnmute:false});
+                });
                 this.mutedAccountDataCursor = res.data.cursor;
             })
             .catch(err => {
@@ -197,7 +205,7 @@ export default defineComponent({
             GetBrowsingAgent().app.bsky.graph.getMutes({cursor:this.mutedAccountDataCursor})
             .then(res => {
                 res.data.mutes.forEach(mute => {
-                    this.mutedAccountData.push(mute)
+                    this.mutedAccountData.push({account:mute,isAwaitingUnmute:false})
                 });
                 this.mutedAccountDataCursor = res.data.cursor;
             })
@@ -207,17 +215,24 @@ export default defineComponent({
             })
             .finally(()=>{this.isAwaitingAdditionalMutedAccountData=false});
         },
-        async unmuteAccount(did:string,index:number){
-            GetBrowsingAgent().unmute(did)
+        /**
+         * Unmutes specified account. Is expected to be used via an arrangement that displays the
+         * contents of {@link mutedAccountData} in a list.
+         * @param profile The ProfileView of the account to unmute.
+         * @param index The index that points to where the provided ProfileView is stored inside {@link mutedAccountData}.
+         */
+        async unmuteAccount(profile:ProfileView, index:number){
+            this.mutedAccountData[index].isAwaitingUnmute = true;
+            await toggleMute(profile,true)
             .then(()=>{
-                this.mutedAccountData.splice(index,1);
+                //remove item from displayed list
+                let pos = this.mutedAccountData.findIndex(x=>x.account.did == profile.did);
+                if(pos>-1){
+                    this.mutedAccountData.splice(pos,1);
+                }
             })
-            .catch(err => {
-                console.log(err);
-                toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
-            })
-            .finally(()=>{
-
+            .catch(()=>{
+                this.mutedAccountData[index].isAwaitingUnmute = false;
             })
         }
     },

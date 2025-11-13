@@ -24,7 +24,7 @@ export interface IAccountSettingsMenuItem{
 
 export interface IUnmuteAccountItem{
     /**The Profile data associated with muted account. */
-    account: AppBskyActorDefs.ProfileView[]
+    account: AppBskyActorDefs.ProfileView
     /**Is this account waiting for an unmute request to complete? */
     isAwaitingUnmute: boolean
 }
