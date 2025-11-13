@@ -17,6 +17,7 @@
         </div>
         <div v-if="isViewingMutedAccounts" class="flex flex-col gap-2 h-full overflow-hidden">
             <div class="bg-yellow-600">Filter bar here</div>
+            <div v-if="!isAwaitingMutedAccountData" class="text-sm text-secondary">{{ mutedAccountData.length }} muted account(s) loaded</div>
             <div class="overflow-y-auto preload-gutter">
                 <div v-if="!isAwaitingMutedAccountData && mutedAccountData.length>0" class="flex flex-col gap-2">
                     <div v-for="mutedAccount in mutedAccountData" class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
@@ -35,6 +36,17 @@
                             </div>
                             <div class="text-sm">{{ mutedAccount ? mutedAccount.description : 'Please supply the `:feed-generator-view` prop' }}</div>
                         </div>
+                    </div>
+                    <button v-if="typeof mutedAccountDataCursor != 'undefined'" @click="loadMoreMutedUsers" :disabled="isAwaitingAdditionalMutedAccountData"
+                    class="flex gap-1 items-center justify-center py-1 w-full rounded bg-btn hover:bg-btnHover
+                    hover:border-hover disabled:bg-disabledBG disabled:border-transparent disabled:text-disabled">
+                        <i-mingcute:loading-fill v-if="isAwaitingAdditionalMutedAccountData" class="spinner"/>
+                        <i-mingcute:plus-fill v-else/>
+                        <div>Load More</div>
+                    </button>
+                    <div v-else
+                    class="flex gap-1 items-center justify-center py-1 w-full rounded bg-postMsg text-disabled select-none">
+                        <div>End of List</div>
                     </div>
                 </div>
                 <div v-else-if="isAwaitingMutedAccountData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
@@ -57,7 +69,7 @@ import MdiPersonBlock from '~icons/mdi/person-block';
 
 import { defineComponent } from 'vue'
 import { IAccountSettingsMenuItem } from '../../interfaces/SettingsInterfaces'
-import { AppState } from '../../state/AppState.vue';
+import { AppState, toast } from '../../state/AppState.vue';
 import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import { AppBskyActorDefs } from '@atproto/api/dist/client';
@@ -140,8 +152,9 @@ export default defineComponent({
             breadcrumbs:[] as number[],
             isViewingMutedAccounts:false,
             isAwaitingMutedAccountData:false,
+            isAwaitingAdditionalMutedAccountData:false,
             mutedAccountData:{} as AppBskyActorDefs.ProfileView[],
-            mutedAccountDataCursor:'',
+            mutedAccountDataCursor:'' as string|undefined,
         }
     },
     methods:{
@@ -153,21 +166,59 @@ export default defineComponent({
             //Clear variables
             this.isViewingMutedAccounts = false;
             this.isAwaitingMutedAccountData = false;
+            this.mutedAccountData = [];
+            this.mutedAccountDataCursor = '';
         },
         /**
-         * Get list of muted accounts for currently logged in User. If User
+         * Get initial list of muted accounts for currently logged in User. If User
          * is not currently logged in they will be prompted to do so.
          */
         async getMutedUsers(){
             if(this.isAwaitingMutedAccountData) return;
             if(!AppState.checkIfLoggedIn('post')){ this.backUpMenuTree(); return;}
             this.isAwaitingMutedAccountData = true;
-            await GetBrowsingAgent().app.bsky.graph.getMutes()
+            GetBrowsingAgent().app.bsky.graph.getMutes({limit:5, cursor:this.mutedAccountDataCursor})
             .then(res => {
                 this.mutedAccountData = res.data.mutes
-                this.mutedAccountDataCursor = typeof res.data.cursor != 'undefined' ? res.data.cursor : ''
+                this.mutedAccountDataCursor = res.data.cursor;
+            })
+            .catch(err => {
+                console.log(err);
+                toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
             })
             .finally(()=>{this.isAwaitingMutedAccountData=false});
+        },
+        /**
+         * Load additional muted accounts that are in the list in the backend but haven't
+         * been requested/displayed yet.
+         */
+        async loadMoreMutedUsers(){
+            this.isAwaitingAdditionalMutedAccountData = true;
+            GetBrowsingAgent().app.bsky.graph.getMutes({cursor:this.mutedAccountDataCursor})
+            .then(res => {
+                res.data.mutes.forEach(mute => {
+                    this.mutedAccountData.push(mute)
+                });
+                this.mutedAccountDataCursor = res.data.cursor;
+            })
+            .catch(err => {
+                console.log(err);
+                toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+            })
+            .finally(()=>{this.isAwaitingAdditionalMutedAccountData=false});
+        },
+        async unmuteAccount(did:string,index:number){
+            GetBrowsingAgent().unmute(did)
+            .then(()=>{
+                this.mutedAccountData.splice(index,1);
+            })
+            .catch(err => {
+                console.log(err);
+                toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+            })
+            .finally(()=>{
+
+            })
         }
     },
     computed:{

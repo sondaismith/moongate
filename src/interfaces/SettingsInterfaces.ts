@@ -1,5 +1,6 @@
 import { FunctionalComponent } from "vue";
 import { IAppAccountState, LoginState } from "./AccountInterfaces";
+import { AppBskyActorDefs } from "@atproto/api/dist/client";
 
 export interface LangCode{
     name:string,
@@ -19,6 +20,13 @@ export interface IAccountSettingsMenuItem{
     submenu:IAccountSettingsMenuItem[]
     /**What action to perform when option is interacted with. Not required - if provided usually means this option is for displaying another menu. */
     action:Function|undefined
+}
+
+export interface IUnmuteAccountItem{
+    /**The Profile data associated with muted account. */
+    account: AppBskyActorDefs.ProfileView[]
+    /**Is this account waiting for an unmute request to complete? */
+    isAwaitingUnmute: boolean
 }
 
 /**
