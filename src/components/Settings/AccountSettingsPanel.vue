@@ -16,11 +16,14 @@
             </RadioBarButton>
         </div>
         <div v-if="isViewingMutedAccounts" class="flex flex-col gap-2 h-full overflow-hidden">
-            <div class="bg-yellow-600">Filter bar here</div>
-            <div v-if="!isAwaitingMutedAccountData" class="text-sm text-secondary">{{ mutedAccountData.length }} muted account(s) loaded</div>
+            <div class="p-1">
+                <input type="text" placeholder="Filter results..." v-model="mutedAccountFilter" class="w-full h-10 px-2 rounded bg-white border-outline text-black"/>
+            </div>
+            <div v-if="!isAwaitingMutedAccountData && mutedAccountFilter.trim() == ''" class="text-sm text-secondary">{{ filteredMutedAccounts.length }} muted account(s) loaded</div>
+            <div v-else-if="mutedAccountFilter.trim() != ''" class="text-sm text-secondary">{{ filteredMutedAccounts.length }} muted account(s) found</div>
             <div class="flex flex-col gap-2 overflow-y-auto preload-gutter">
                 <div v-if="!isAwaitingMutedAccountData && mutedAccountData.length>0" class="flex flex-col gap-2">
-                    <div v-for="(mutedAccount,index) in mutedAccountData" class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
+                    <div v-for="(mutedAccount,index) in filteredMutedAccounts" class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
                         <div class="flex flex-col gap-2 w-full overflow-hidden">
                             <div class="flex gap-1 items-center">
                                 <div class="flex bg-blueskyBlue aspect-square rounded-full shrink-0 w-8 items-center justify-center overflow-hidden">
@@ -57,9 +60,6 @@
                 class="flex gap-1 items-center justify-center py-1 w-full rounded bg-postMsg text-disabled select-none">
                     <div>End of List</div>
                 </div>
-                <!-- <div v-else">
-                    No Muted Accounts to display
-                </div> -->
             </div>
         </div>
     </div>
@@ -87,6 +87,7 @@ export default defineComponent({
     },
     data(){
         return{
+            /**Collection of all menu options available. */
             MainMenu:[
                 {
                     label:'Moderation',
@@ -155,12 +156,24 @@ export default defineComponent({
                     action:(bc:number[])=>{bc.push(2)}
                 }
             ] as IAccountSettingsMenuItem[],
+            /**Array holding the index of each menu item selected. Used to figure out what menu to display. */
             breadcrumbs:[] as number[],
+            /**Is the User currently viewing the accounts that they have muted? */
             isViewingMutedAccounts:false,
+            /**Are we waiting for the initial batch of muted account data to be returned by the API? */
             isAwaitingMutedAccountData:false,
+            /**Are we waiting for additional muted account data to be returned by the API? (Load more clicked) */
             isAwaitingAdditionalMutedAccountData:false,
+            /**Collection of muted accounts returned from API. */
             mutedAccountData:[] as IUnmuteAccountItem[],
+            /**
+             * String cursor used to paginate requested muted account results.
+             * Also determines if end of "muted account" list is reached - if
+             * variable is undefined, there are no more records to return.
+             */
             mutedAccountDataCursor:'' as string|undefined,
+            /**Search term used to filter displayed "muted account" results. */
+            mutedAccountFilter:'',
         }
     },
     methods:{
@@ -282,6 +295,14 @@ export default defineComponent({
             }
             return menu;
         },
+        filteredMutedAccounts():IUnmuteAccountItem[]{
+            let result = this.mutedAccountData;
+            if(this.mutedAccountFilter.trim() != ''){
+                result = this.mutedAccountData.filter(x=>x.account.displayName?.toLowerCase().includes(this.mutedAccountFilter) ||
+                x.account.handle.includes(this.mutedAccountFilter) || x.account.description?.toLowerCase().includes(this.mutedAccountFilter));
+            }
+            return result;
+        }
     },
     watch:{
         //Use this to perform actions when certain options are selected/reached.
