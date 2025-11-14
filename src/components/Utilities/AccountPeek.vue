@@ -8,17 +8,30 @@
                 <div class="flex shrink-0 rounded-full bg-blue-500 size-14 items-center justify-center
                     bg-contain" :style="'background-image: url('+(AccountPeekState.profileData.avatar ? AccountPeekState.profileData.avatar : '')+')'">
                 </div>
-                <FollowUser v-if="!AccountPeekState.awaitingAPIResponse" :is-user-followed="isFollowingUser"
-                :user-did="AccountPeekState.profileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
+                <div class="flex flex-col gap-1 ml-auto self-center">
+                    <FollowUser v-if="!AccountPeekState.awaitingAPIResponse && !isAccountBlocked"
+                    :is-user-followed="isFollowingUser"
+                    :user-did="AccountPeekState.profileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
+                    <div v-if="isAccountMuted" title="You have muted this account."
+                    class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-primary text-sm select-none">
+                        <i-mdi:eye-off/>
+                        <div class="whitespace-nowrap">Account Muted</div>
+                    </div>
+                    <div v-if="isAccountBlocked" title="You have blocked this account."
+                    class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-primary text-sm select-none">
+                        <i-mdi:user-off/>
+                        <div class="whitespace-nowrap">Account Blocked</div>
+                    </div>
+                </div>
             </div>
-            <div class="flex flex-col gap-1 grow-0 shrink-0">
+            <div class="flex flex-col gap-1 grow-0 shrink-0 py-1 bg-green-400s">
                 <div class="flex flex-wrap items-center *:leading-5 leading-5 gap-1">
                     <div class="inline text-primary font-medium">{{ AccountPeekState.profileData.displayName }}</div>
                     <VerifiedBadge v-if="isUserVerified" class="size-4"/>
                 </div>
                 <div class="text-secondary leading-3">@{{ AccountPeekState.profileData.handle }}</div>
             </div>
-            <div class="flex text-sm text-primary mt-2 mb-1 gap-1 grow-0 shrink-0">
+            <div v-if="!isAccountBlocked" class="flex text-sm text-primary gap-1 grow-0 shrink-0">
                 <div class="flex hover:underline cursor-pointer">
                     <div>{{ AccountPeekState.profileData.followersCount }}</div>
                     <div class="text-secondary whitespace-pre"> Followers</div>
@@ -28,7 +41,7 @@
                     <div class="text-secondary whitespace-pre"> Following</div>
                 </div>
             </div>
-            <RichPostText class="text-sm overflow-auto grow shrink break-words"
+            <RichPostText v-if="!isAccountBlocked" class="text-sm overflow-auto grow shrink break-words"
             :post-text="AccountPeekState.profileData.description"/>
         </div>
     </div>
@@ -91,6 +104,14 @@ export default defineComponent({
                 return true;
             return false;
         },
+        /**Is the viewed account muted by the logged in User? */
+        isAccountMuted(){
+            return typeof AccountPeekState.profileData.viewer != 'undefined' && typeof AccountPeekState.profileData.viewer.muted != 'undefined' && typeof AccountPeekState.profileData.viewer.muted;
+        },
+        /**Is the viewed account blocked by the logged in User? */
+        isAccountBlocked(){
+            return typeof AccountPeekState.profileData.viewer != 'undefined' && typeof AccountPeekState.profileData.viewer.blocking != 'undefined';
+        }
     },
 })
 </script>

@@ -194,7 +194,7 @@ export default defineComponent({
          */
         async getMutedUsers(){
             if(this.isAwaitingMutedAccountData) return;
-            if(!AppState.checkIfLoggedIn('post')){ this.backUpMenuTree(); return;}
+            if(!AppState.checkIfLoggedIn('view Muted Accounts')){ this.backUpMenuTree(); return;}
             this.isAwaitingMutedAccountData = true;
             GetBrowsingAgent().app.bsky.graph.getMutes({limit:5, cursor:this.mutedAccountDataCursor})
             .then(res => {

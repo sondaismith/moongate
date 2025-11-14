@@ -50,16 +50,20 @@
                             shrink-0 border-2 border-slate-800 user-pfp"></div>
                         </div>
                         <div v-else class="relative w-full user-banner">
-                            <div v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-no-repeat bg-center bg-cover"
-                            :class="{'cursor-pointer' : hasProfileBanner}"
-                            :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.banner+')'"/>
+                            <div v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
+                            bg-no-repeat bg-center bg-cover overflow-hidden"
+                            :class="{'cursor-pointer' : hasProfileBanner}">
+                                <img :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.banner" :class="{'blur-lg':isAccountBlocked}"/>
+                            </div>
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
                             :style="`mask: url(./assets/placeholder/no_banner_pattern.svg)`">
                             </div>
-                            <div @click="showPFPFullscreen" class="absolute z-[3] flex bg-sky-400 rounded-full aspect-square size-24 left-4
+                            <div @click="showPFPFullscreen" class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
                             items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
-                            cursor-pointer transition-colors hover:border-hover"
-                            :style="'background-image: url('+UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar+')'">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '' : 'PFP'}}
+                            cursor-pointer transition-colors hover:border-hover overflow-hidden">
+                                <img v-if="typeof UserFocusModalState.GetCurrentHistoryData().ProfileData != 'undefined'" :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar"
+                                class="scale-150" :class="{'blur':isAccountBlocked}"/>
+                                <div v-else>PFP</div>
                             </div>
                         </div>
                         {{ void "User Details Content" }}
@@ -103,14 +107,14 @@
                                     </div>
                                     <div class="relative flex items-center mt-1 gap-2 h-9">
                                         <Transition name="smooth">
-                                            <FollowUser v-if="!awaitingProfileData" class="px-4" :is-user-followed="isUserFollowed"
+                                            <FollowUser v-if="!awaitingProfileData && !isAccountBlocked" class="px-4" :is-user-followed="isUserFollowed"
                                             :user-did="UserFocusModalState.GetCurrentHistoryData().ProfileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
                                         </Transition>
                                         <PillButton @click="showUserOptionsMenu($event,UserFocusModalState.GetCurrentHistoryData().ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
                                         focus-visible:bg-btnHover">...</PillButton>
                                     </div>
                                 </div>
-                                <div class="flex mt-2">
+                                <div v-if="!isAccountBlocked" class="flex mt-2">
                                     <div v-if="!AppSettingsState.Settings.isHidingFollowers" class="flex text-sm pr-2">
                                         <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.followersCount : '1'}}</div>
                                         <div class="text-secondary">followers</div>
@@ -127,23 +131,28 @@
                             </div>
                         </div>
                         <div id="user-focus-bio" class="flex flex-col py-2 px-4 mb-2s w-full border-y border-outlineLighter shrink grow-0 self-start">
-                            <div class="text-xs text-secondary">Bio</div>
+                            <div class="text-xs text-secondary" v-if="!isAccountBlocked">Bio</div>
                             <div v-if="awaitingProfileData" class="flex flex-col gap-1 animate-pulse">
                                 <div class="bg-slate-500 rounded h-4 w-4/5"></div>
                                 <div class="bg-slate-500 rounded h-4 w-2/3"></div>
                                 <div class="bg-slate-500 rounded h-4 w-3/5"></div>
                             </div>
                             <!-- <RichPostText v-else :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/> -->
-                            <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory" :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
-                            <div class="flex my-1">
+                            <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory && !isAccountBlocked" :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
+                            <div class="flex gap-1 my-1">
                                 <div v-if="isAccountMuted" title="You have muted this account."
                                 class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
                                     <i-mdi:eye-off/>
                                     <div>Account Muted</div>
                                 </div>
+                                <div v-if="isAccountBlocked" title="You have blocked this account."
+                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
+                                    <i-mdi:user-off/>
+                                    <div>Account Blocked</div>
+                                </div>
                             </div>
                         </div>
-                        <div id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
+                        <div v-if="!isAccountBlocked" id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
                         :style="{'top':userSummaryBottomPos+'px'}">
                             <div @click="viewFeed" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View User's Feed (Posts, Retweets)">
@@ -172,7 +181,7 @@
                             </div>
                         </div>
                         {{ void "General Posts" }}
-                        <div v-if="isViewingFeed || isViewingPosts || isViewingReplies || isViewingLikes"
+                        <div v-if="(isViewingFeed || isViewingPosts || isViewingReplies || isViewingLikes) && !isAccountBlocked"
                         class="flex flex-col flex-wrap items-start py-2 px-4 gap-2 max-w-[30rem] w-full">
                             {{ void "Placeholder Post" }}
                             <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
@@ -303,6 +312,7 @@ import MingcuteLinkLine from '~icons/mingcute/link-line';
 import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
+import MdiUserCheck from '~icons/mdi/user-check';
 
 import { defineComponent } from 'vue'
 import PillButton from '../Utilities/PillButton.vue';
@@ -310,7 +320,6 @@ import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { FeedViewPost, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppBskyActorGetProfile, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
-import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { GenerateTagLinkText } from '../../helpers/parsers';
 import Hashtag from '../Utilities/Hashtag.vue';
@@ -319,7 +328,7 @@ import { HandleAPIError } from '../../helpers/errors';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
-import { convertToLongTimestamp, convertToShortTimestamp, CreateBskyWeblink } from '../../helpers/converters';
+import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
@@ -338,7 +347,7 @@ import SquareButton from '../Utilities/SquareButton.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
-import { toggleMute } from '../../lib/api/User.vue';
+import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 
 /**
  * Used to create a HTTP URL link To the currently view User's profile.
@@ -381,12 +390,16 @@ export default defineComponent({
             isNavigatingHistory:false,
             /**Are we currently waiting for an action relating to muting or unmuting a User account to finish? */
             isAwaitingAccountMuteAction:false,
+            /**Are we currently waiting for an action relating to blocking or unblockng a User account to finish? */
+            isAwaitingAccountBlockAction:false,
             currentUserAccountTimelineData:{data:[],cursor:''} as IFeedReturnedPostResults,
             userSummaryBottomPos:0,
             /**Is the User's PFP being shown fullscreen? */
             isPFPFullscreen:false,
             /**Is the User's Profile Banner being shown fullscreen? */
             isBannerFullscreen:false,
+            /**Is the currently viewed account blocked? */
+            isAccountBlocked:false,
         }
     },
     components:{
@@ -571,9 +584,17 @@ export default defineComponent({
                     //     this.setUserSummaryBottomPos();
                     //     this.scrollToModalPos(0);
                     // }, 10);
+                    console.log(UserFocusModalState.GetCurrentHistoryData().ProfileData);
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s timeline`)));
-                console.log(UserFocusModalState.GetCurrentHistoryData().ProfileData);
+                .catch(err => {
+                    //Account is probably blocked - Display Profile, but no posts
+                    UserFocusModalState.navigationHistory.push({FeedData:{data:[],cursor:undefined},ProfileData:userProfile.data,scrollPos:0});
+                    if((err as string).includes('block')){
+                        this.isAccountBlocked = true;
+                        toast.add({summary:"Account Blocked", detail:`This account is currently blocked. You will be unable to view or interact with any of this account's content until it is unblocked.`, severity:'info', group:'tr', life:3000});
+                    }
+                    else toast.add({summary:"Error", detail:`${err}`, severity:'error', group:'tr', life:3000});
+                });
                 this.awaitingProfileData = false;
 
             }
@@ -725,7 +746,10 @@ export default defineComponent({
                     OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute});
                 else
                     OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.requestToggleMute});
-                OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:()=>{}});
+                if(!this.isAccountBlocked)
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:this.requestToggleBlock});
+                else
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiUserCheck,Label:'Unblock Account',Action:this.requestToggleBlock});
             }
             OptionsMenuState.showOptionMenu(e);
         },
@@ -738,6 +762,16 @@ export default defineComponent({
             this.isAwaitingAccountMuteAction = true;
             await toggleMute(UserFocusModalState.GetCurrentHistoryData().ProfileData)
             .finally(() => {this.isAwaitingAccountMuteAction = false});
+        },
+        /**
+         * Method used to attempt to block/unblock the account associated with the
+         * Post that was interacted with.
+         */
+        async requestToggleBlock(){
+            if(this.isAwaitingAccountBlockAction) return;
+            this.isAwaitingAccountBlockAction = true;
+            await toggleBlock(UserFocusModalState.GetCurrentHistoryData().ProfileData)
+            .finally(() => {this.isAwaitingAccountBlockAction = false});
         },
         showPFPFullscreen(){
             this.isPFPFullscreen = true;
@@ -799,6 +833,16 @@ export default defineComponent({
             if(typeof data != 'undefined'){
                 let profile = data.ProfileData;
                 result = (typeof profile != 'undefined' && typeof profile.viewer != 'undefined' && typeof profile.viewer.muted != 'undefined' && profile.viewer.muted);
+            }
+            return result;
+        },
+        /**Is the currently displayed account blocked by the logged in User? */
+        isAccountBlocked():boolean{
+            let result = false;
+            let data = UserFocusModalState.GetCurrentHistoryData(); //handle `UserFocusModal` being mounted
+            if(typeof data != 'undefined'){
+                let profile = data.ProfileData;
+                result = (typeof profile != 'undefined' && typeof profile.viewer != 'undefined' && typeof profile.viewer.blocking != 'undefined');
             }
             return result;
         }

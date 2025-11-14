@@ -44,6 +44,9 @@ export async function getAuthorFeed(did:string, cursor:string='', postsToGet:num
             cursor:cursor
         }
     )
+    .catch(err => {
+        return Promise.reject(`${err}`);
+    })
     return result;
 }
 

@@ -49,6 +49,7 @@ import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
 import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
+import MdiUserCheck from '~icons/mdi/user-check';
 
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
@@ -62,7 +63,7 @@ import { GetBrowsingAgent } from '../../lib/api.vue';
 import { DeletePost } from '../../lib/api/Post.vue';
 import { AppBskyFeedThreadgate } from '@atproto/api';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
-import { toggleMute } from '../../lib/api/User.vue';
+import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 
 function CopyPostLink(postUri:string, handle:string=""){
     let link = CreateBskyWeblink(postUri, handle);
@@ -128,6 +129,8 @@ export default defineComponent({
             isAwaitingPostDelete:false,
             /**Are we currently waiting for an action relating to muting or unmuting a User account to finish? */
             isAwaitingAccountMuteAction:false,
+            /**Are we currently waiting for an action relating to blocking or unblocking a User account to finish? */
+            isAwaitingAccountBlockAction:false,
         }
     },
     methods:{
@@ -145,7 +148,10 @@ export default defineComponent({
                     OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute});
                 else
                     OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.requestToggleMute});
-                OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:()=>{}});
+                if(!this.isAccountBlocked)
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:this.requestToggleBlock});
+                else
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiUserCheck,Label:'Unblock Account',Action:this.requestToggleBlock});
             }
             //Only show "delete post" option if the User is logged in and this is one of their Posts
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did == this.postData.author.did){
@@ -329,6 +335,16 @@ export default defineComponent({
             this.isAwaitingAccountMuteAction = true;
             await toggleMute(this.postData.author)
             .finally(() => {this.isAwaitingAccountMuteAction = false});
+        },
+        /**
+         * Method used to attempt to block/unblock the account associated with the
+         * Post that was interacted with.
+         */
+        async requestToggleBlock(){
+            if(this.isAwaitingAccountBlockAction) return;
+            this.isAwaitingAccountBlockAction = true;
+            await toggleBlock(this.postData.author)
+            .finally(() => {this.isAwaitingAccountBlockAction = false});
         }
     },
     computed:{
@@ -362,6 +378,9 @@ export default defineComponent({
         },
         isAccountMuted(){
             return (typeof this.postData.author.viewer != 'undefined' && typeof this.postData.author.viewer.muted != 'undefined' && this.postData.author.viewer.muted);
+        },
+        isAccountBlocked(){
+            return (typeof this.postData.author.viewer != 'undefined' && typeof this.postData.author.viewer.blocking != 'undefined');
         }
     }
 })

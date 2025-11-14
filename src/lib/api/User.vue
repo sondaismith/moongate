@@ -3,6 +3,7 @@ import { AppBskyActorGetProfile, ComAtprotoIdentityResolveHandle } from '@atprot
 import { GetBrowsingAgent } from '../api.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AtUri } from '@atproto/api';
 
 export default{
     name:"User API Methods"
@@ -119,6 +120,88 @@ export async function toggleMute(authorData:ProfileView|ProfileViewBasic|Profile
         .catch(err => {
             toast.add({summary:"Error", detail:`${err} Issue unmuting account - ${authorData.handle}`, severity:'error', group:'tr', life:3000});
             if(throwOnError) return Promise.reject(`${err} Issue unmuting account - ${authorData.handle}`);
+        });
+    }
+}
+
+/**
+ * Block the selected User, preventing any interaction going forward and removing their
+ * content from the logged in User's client experience (posts, replies, account in search,
+ * etc).
+ * @param currentAcc The DID of the currently logged in User.
+ * @param userToBlockDid The DID of the User to Block.
+ */
+async function BlockUser(currentAcc:string,userToBlockDid:string):Promise<{uri: string;cid: string;}>{
+    let result;
+    result = await GetBrowsingAgent().app.bsky.graph.block.create(
+        {repo:currentAcc},
+        {
+            subject:userToBlockDid,
+            createdAt: new Date().toISOString()
+        }
+    )
+    .then(res => result = res);
+    return result;
+}
+
+/**
+ * Unblock the selected User.
+ * @param blockRkey The Record Key of the block record.
+ */
+async function UnblockUser(blockRkey:string){
+    let currentAcc = GetBrowsingAgent().did;
+    if(typeof currentAcc != 'undefined'){
+        await GetBrowsingAgent().app.bsky.graph.block.delete(
+            {
+                repo:currentAcc,
+                rkey:blockRkey
+            }
+        );
+    }
+}
+
+/**
+ * Blocks/unblocks a specific account. Can only be used when logged in. When used, scans entire
+ * FeedList to sync account "block/unblock" state.
+ * @param authorData The current state of the ProfileView associated with the account that needs to be blocked/unblocked.
+ * @param throwOnError Optional. Determines if a promise will be rejected (error "thrown") if an error is caught
+ * during the block/unblock process. Default value is false.
+ */
+export async function toggleBlock(authorData:ProfileView|ProfileViewBasic|ProfileViewDetailed, throwOnError:boolean=false){
+    if(!AppState.checkIfLoggedIn('block an Account')) return;
+    if(typeof authorData.viewer != 'undefined' && typeof authorData.viewer.blocking == 'undefined'){
+        let currentAccDid = GetBrowsingAgent().did;
+        if(typeof currentAccDid == 'undefined') currentAccDid = ''; //allows block method to be called but will fail
+        await BlockUser(currentAccDid,authorData.did)
+        .then(res => {
+            if(typeof authorData.viewer != 'undefined'){
+                authorData.viewer.blocking = res.uri;
+                AppState.UpdateAccountsInFeedList(authorData);
+                AppState.UpdateAccountsInUserFocusModalState(authorData);
+            }
+            toast.add({summary:"Account Blocked", detail:`Blocked account - ${authorData.handle}`, severity:'info', group:'tr', life:3000});
+        })
+        .catch(err => {
+            toast.add({summary:"Error", detail:`${err} Issue blocking account - ${authorData.handle}`, severity:'error', group:'tr', life:3000});
+            if(throwOnError) return Promise.reject(`${err} Issue blocking account - ${authorData.handle}`);
+        });
+    }
+    else{
+        let blockRecord = authorData.viewer?.blocking;
+        if(typeof blockRecord == 'undefined') blockRecord = '';//allows block method to be called but will fail
+        else blockRecord = new AtUri(blockRecord).rkey;
+        await UnblockUser(blockRecord)
+        .then(() => {
+            if(typeof authorData.viewer != 'undefined'){
+                authorData.viewer.blocking = undefined;
+                AppState.UpdateAccountsInFeedList(authorData);
+                AppState.UpdateAccountsInUserFocusModalState(authorData);
+            }
+            toast.add({summary:"Account Unblocked", detail:`Unblocked account - ${authorData.handle}`, severity:'info', group:'tr', life:3000});
+        })
+        .catch(err => {
+            toast.add({summary:"Error", detail:`${err} Issue unblocking account - ${authorData.handle}`, severity:'error', group:'tr', life:3000});
+            if(throwOnError) return Promise.reject(`${err} Issue unblocking account - ${authorData.handle}`);
         });
     }
 }
