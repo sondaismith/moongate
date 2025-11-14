@@ -106,10 +106,10 @@
                                         <div class="text-xs">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '@'+UserFocusModalState.GetCurrentHistoryData().ProfileData.handle : '@handle'}}</div>
                                     </div>
                                     <div class="relative flex items-center mt-1 gap-2 h-9">
-                                        <Transition name="smooth">
+                                        <!-- <Transition name="smooth"> -->
                                             <FollowUser v-if="!awaitingProfileData && !isAccountBlocked" class="px-4" :is-user-followed="isUserFollowed"
-                                            :user-did="UserFocusModalState.GetCurrentHistoryData().ProfileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
-                                        </Transition>
+                                            :user-did="UserFocusModalState.GetCurrentHistoryData().ProfileData.did" :is-disabled="!AppState.isAuthBrowsing || isAccountBlocked"/>
+                                        <!-- </Transition> -->
                                         <PillButton @click="showUserOptionsMenu($event,UserFocusModalState.GetCurrentHistoryData().ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
                                         focus-visible:bg-btnHover">...</PillButton>
                                     </div>
@@ -398,8 +398,6 @@ export default defineComponent({
             isPFPFullscreen:false,
             /**Is the User's Profile Banner being shown fullscreen? */
             isBannerFullscreen:false,
-            /**Is the currently viewed account blocked? */
-            isAccountBlocked:false,
         }
     },
     components:{
@@ -433,7 +431,10 @@ export default defineComponent({
                     UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s timeline`)));
+                .catch(err => {
+                    // toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s timeline`));
+                    toast.add({summary:"Error getting Posts", detail:`${err}`, severity:'error', group:'tr', life:3000});
+                });
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -587,13 +588,12 @@ export default defineComponent({
                     console.log(UserFocusModalState.GetCurrentHistoryData().ProfileData);
                 })
                 .catch(err => {
-                    //Account is probably blocked - Display Profile, but no posts
-                    UserFocusModalState.navigationHistory.push({FeedData:{data:[],cursor:undefined},ProfileData:userProfile.data,scrollPos:0});
                     if((err as string).includes('block')){
-                        this.isAccountBlocked = true;
                         toast.add({summary:"Account Blocked", detail:`This account is currently blocked. You will be unable to view or interact with any of this account's content until it is unblocked.`, severity:'info', group:'tr', life:3000});
                     }
                     else toast.add({summary:"Error", detail:`${err}`, severity:'error', group:'tr', life:3000});
+                    //Account is probably blocked - Display Profile, but no posts
+                    UserFocusModalState.navigationHistory.push({FeedData:{data:[],cursor:undefined},ProfileData:userProfile.data,scrollPos:0});
                 });
                 this.awaitingProfileData = false;
 
@@ -691,6 +691,12 @@ export default defineComponent({
             }, 1);
         },
         /**
+         * "Refreshes" page by navigating to "Feed" tab and getting the latest data.
+         */
+        async refreshCurrentPage(){
+            await this.viewFeed();
+        },
+        /**
          * Method that updates the currently viewed "Navigation History" object's
          * `scrollPos`. Used to keep track of the scroll position the user was in
          * the feed before navigating forward or backwards.
@@ -772,6 +778,14 @@ export default defineComponent({
             this.isAwaitingAccountBlockAction = true;
             await toggleBlock(UserFocusModalState.GetCurrentHistoryData().ProfileData)
             .finally(() => {this.isAwaitingAccountBlockAction = false});
+            if(!this.isAccountBlocked){
+                let curState = UserFocusModalState.GetCurrentHistoryData();
+                curState.FeedData.data = []; //clear content
+                curState.FeedData.cursor = '';
+                setTimeout(() => { //Allow for unblock to be processed before attempting refresh
+                    this.refreshCurrentPage();
+                }, 50);
+            }
         },
         showPFPFullscreen(){
             this.isPFPFullscreen = true;
@@ -794,7 +808,8 @@ export default defineComponent({
          * component above.
          */
         isUserFollowed(){
-            if(UserFocusModalState.GetCurrentHistoryData().ProfileData.viewer && UserFocusModalState.GetCurrentHistoryData().ProfileData.viewer.following){
+            let viewer = UserFocusModalState.GetCurrentHistoryData().ProfileData.viewer;
+            if(typeof viewer != 'undefined' && viewer.following){
                 return true;
             }
             return false;

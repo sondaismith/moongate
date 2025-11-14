@@ -162,6 +162,14 @@ export const AppState = reactive({
         return this.isAuthBrowsing;
     },
     /**
+     * Method that displays the `LoginModal` on the "select account" or "enter credentials"
+     * page.
+     */
+    showLoginAccountSelect(){
+        this.loginModalStartPage = 1;
+        this.isLoggingIntoAccount = true;
+    },
+    /**
      * Returns the `Agent` to access the Bluesky API with based on
      * the current browsing mode the app is in.
      */

@@ -106,7 +106,7 @@ export default defineComponent({
         },
         /**Is the viewed account muted by the logged in User? */
         isAccountMuted(){
-            return typeof AccountPeekState.profileData.viewer != 'undefined' && typeof AccountPeekState.profileData.viewer.muted != 'undefined' && typeof AccountPeekState.profileData.viewer.muted;
+            return typeof AccountPeekState.profileData.viewer != 'undefined' && typeof AccountPeekState.profileData.viewer.muted != 'undefined' && AccountPeekState.profileData.viewer.muted;
         },
         /**Is the viewed account blocked by the logged in User? */
         isAccountBlocked(){

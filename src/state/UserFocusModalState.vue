@@ -6,8 +6,7 @@ import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/act
 interface INavigationHistory{
     FeedData: IFeedReturnedPostResults,
     ProfileData:ProfileViewDetailed,
-    scrollPos:number
-
+    scrollPos:number,
 }
 
 export default{

@@ -117,10 +117,17 @@
                                     </div>
                                     <!-- <InLaInput text-label="Tag Blacklist" :model-value="SetttingData.Options.PostFilters.data.tagBlacklist"/> -->
                                 </div>
-                                <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SettingData.Options)[2]"
+                                <div v-if="AppState.isAuthBrowsing && selectedCategoryIndex == Object.keys(SettingData.Options)[2]"
                                 class="relative flex flex-col w-full h-full overflow-y-autos pr-2">
-                                    <!-- <div class="italic">Account Settings are still not supported. Check back later!</div> -->
                                     <AccountSettingsPanel></AccountSettingsPanel>
+                                </div>
+                                <div v-else-if="selectedCategoryIndex == Object.keys(SettingData.Options)[2]" class="flex items-center gap-1">
+                                    <div>You must</div>
+                                    <button @click="AppState.showLoginAccountSelect" class="cursor-pointer text-blueskyBlue rounded-none hover:bg-primary/10
+                                    hover:border-transparent focus-visible:underline shadow-none">
+                                        Login
+                                    </button>
+                                    <div>to view these options.</div>
                                 </div>
                                 <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SettingData.Options)[3]"
                                 class="relative flex flex-col w-full h-full overflow-y-auto pr-2">
