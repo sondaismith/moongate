@@ -27,6 +27,7 @@ declare module 'vue' {
     FeedOptionsMenu: typeof import('./src/components/Feed/FeedOptionsMenu.vue')['default']
     FeedOrderModal: typeof import('./src/components/Feed/FeedOrderModal.vue')['default']
     FeedPost: typeof import('./src/components/Feed/FeedPost.vue')['default']
+    FilterBar: typeof import('./src/components/Utilities/FilterBar.vue')['default']
     FilterSelect: typeof import('./src/components/Utilities/FilterSelect.vue')['default']
     FocusFeedPost: typeof import('./src/components/Feed/FocusFeedPost.vue')['default']
     FollowUser: typeof import('./src/components/Utilities/FollowUser.vue')['default']

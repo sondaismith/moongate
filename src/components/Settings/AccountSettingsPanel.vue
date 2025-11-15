@@ -16,9 +16,8 @@
             </RadioBarButton>
         </div>
         <div v-if="isViewingMutedAccounts" class="flex flex-col gap-2 h-full overflow-hidden">
-            <div class="p-1">
-                <input type="text" placeholder="Filter results..." v-model="mutedAccountFilter" class="w-full h-10 px-2 rounded bg-white border-outline text-black"/>
-            </div>
+            <FilterBar :filter-vmodel="mutedAccountFilter" :show-clear-button="mutedAccountFilter.trim().length>0" @clear-filter-clicked="clearFilterText"
+            @update:filter-vmodel="newValue => mutedAccountFilter = newValue" :disabled="isAwaitingMutedAccountData"/>
             <div v-if="!isAwaitingMutedAccountData && mutedAccountFilter.trim() == ''" class="text-sm text-secondary">{{ filteredMutedAccounts.length }} muted account(s) loaded</div>
             <div v-else-if="mutedAccountFilter.trim() != ''" class="text-sm text-secondary">{{ filteredMutedAccounts.length }} muted account(s) found</div>
             <div class="flex flex-col gap-2 overflow-y-auto preload-gutter">
@@ -63,9 +62,8 @@
             </div>
         </div>
         <div v-if="isViewingBlockedAccounts" class="flex flex-col gap-2 h-full overflow-hidden">
-            <div class="p-1">
-                <input type="text" placeholder="Filter results..." v-model="blockedAccountFilter" class="w-full h-10 px-2 rounded bg-white border-outline text-black"/>
-            </div>
+            <FilterBar :filter-vmodel="blockedAccountFilter" :show-clear-button="blockedAccountFilter.trim().length>0" @clear-filter-clicked="clearFilterText"
+            @update:filter-vmodel="newValue => blockedAccountFilter = newValue" :disabled="isAwaitingBlockedAccountData"/>
             <div v-if="!isAwaitingMutedAccountData && blockedAccountFilter.trim() == ''" class="text-sm text-secondary">{{ filteredBlockedAccounts.length }} blocked account(s) loaded</div>
             <div v-else-if="blockedAccountFilter.trim() != ''" class="text-sm text-secondary">{{ filteredBlockedAccounts.length }} blocked account(s) found</div>
             <div class="flex flex-col gap-2 overflow-y-auto preload-gutter">
@@ -126,11 +124,13 @@ import { GetBrowsingAgent } from '../../lib/api.vue';
 import RadioBarButton from '../Utilities/RadioBarButton.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import FilterBar from '../Utilities/FilterBar.vue';
 
 export default defineComponent({
     components:{
         RadioBarButton,
         CustomFeedButtonPlaceholder,
+        FilterBar,
     },
     data(){
         return{
@@ -252,12 +252,14 @@ export default defineComponent({
             this.isAwaitingAdditionalMutedAccountData = false;
             this.mutedAccountData = [];
             this.mutedAccountDataCursor = '';
+            this.mutedAccountFilter = '';
             //Blocks
             this.isViewingBlockedAccounts = false;
             this.isAwaitingBlockedAccountData = false;
             this.isAwaitingAdditionalBlockedAccountData = false;
             this.blockedAccountData = [];
             this.mutedAccountDataCursor = '';
+            this.blockedAccountFilter = '';
         },
         /**
          * Get initial list of muted accounts for currently logged in User. If User
@@ -379,6 +381,11 @@ export default defineComponent({
                 this.blockedAccountData[index].isAwaitingUnmute = false;
             })
         },
+        /**Clears the filter used on the lists of Muted and Blocked accounts. */
+        clearFilterText(){
+            this.mutedAccountFilter = '';
+            this.blockedAccountFilter = '';
+        }
     },
     computed:{
         noSubMenusSelected(){
