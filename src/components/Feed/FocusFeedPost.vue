@@ -1,5 +1,16 @@
 <template>
-    <div v-if="postToShow && isViewBlocked(postToShow)">
+    <div v-if="isAccountBlocked" class="flex flex-col items-center p-1 py-2 text-primary bg-primary/10">
+        <div class="text-base">Account blocked</div>
+        <!-- <div>{{ postToShow.author.displayName }}</div> -->
+        <div class="text-xs">{{ postToShow.author.handle }}</div>
+        <button class="flex items-center gap-1 rounded px-1 cursor-pointer hover:bg-primary/10 shadow-none"
+        @click="requestToggleBlock" title="Undo account block">
+            <i-solar:undo-left-round-bold v-if="!isAwaitingAccountBlockAction"/>
+            <i-mingcute:loading-fill v-else class="spinner"/>
+            <div class="text-blueskyBlue">Undo?</div>
+        </button>
+    </div>
+    <div v-else-if="postToShow && isViewBlocked(postToShow)">
         <div class="flex rounded-lg p-2 gap-1 border border-outline items-center">
             <i-mingcute:information-line class="size-4"/>
             <div>Blocked</div>
@@ -156,6 +167,7 @@ import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { toggleBlock } from '../../lib/api/User.vue';
 
 export default defineComponent({
     components:{
@@ -210,6 +222,8 @@ export default defineComponent({
              * first if it exists and `postData` second.
              */
             postToShow: {author:{did:'',handle:''},cid:'',indexedAt:'',record:{},uri:''} as PostView,
+            /**Are we currently waiting for an action relating to blocking or unblocking a User account to finish? */
+            isAwaitingAccountBlockAction:false,
         }
     },
     emits:{
@@ -269,6 +283,18 @@ export default defineComponent({
         emitThreadReplyClicked(newThreadURI:string, mediaIndex:number=0){
             if(newThreadURI.trim() != '')
                 this.$emit('threadReplyClicked',newThreadURI,mediaIndex);
+        },
+        /**
+         * Method used to attempt to block/unblock the account associated with the
+         * Post that was interacted with.
+         */
+        async requestToggleBlock(){
+            if(this.isAwaitingAccountBlockAction) return;
+            if(typeof this.postData != 'undefined'){
+                this.isAwaitingAccountBlockAction = true;
+                await toggleBlock(this.postData.author)
+                .finally(() => {this.isAwaitingAccountBlockAction = false});
+            }
         }
     },
     computed:{
@@ -468,6 +494,10 @@ export default defineComponent({
         isPostReply(){
             if(this.reply && isPostView(this.reply.parent)) return true;
             return false;
+        },
+        /**Is the account associated with the currently displayed Post blocked by the logged in User? */
+        isAccountBlocked():boolean{
+            return typeof this.postToShow.author.viewer != 'undefined' && typeof this.postToShow.author.viewer.blocking != 'undefined';
         }
     },
     created(){

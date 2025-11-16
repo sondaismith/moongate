@@ -193,6 +193,10 @@
                 hover:border-transparent active:border-transparent focus-visible:outline focus-visible:outline-searchbarFocusHightlight">
                     Login to view Notifications
                 </button>
+                <div v-else-if="isFeedOwnerBlocked"
+                class="flex rounded justify-center p-1 bg-postMsg border border-outlineLighter text-disabled select-none">
+                    Account Blocked
+                </div>
                 <button v-else-if="feedData.description.feedType != FeedEnums.Types.Tag &&
                 feedData.description.feedType != FeedEnums.Types.Notifications &&
                 feedData?.description.feedType != FeedEnums.Types.Trending &&
@@ -603,6 +607,13 @@ export default defineComponent({
                 default:
                     return false;
             }
+        },
+        isFeedOwnerBlocked(){
+            let authorPost:FeedViewPost|undefined;
+            if(typeof this.feedData != 'undefined' && this.feedData.description.feedType == FeedEnums.Types.User){
+                authorPost = this.feedData.data.find(x => (x as FeedViewPost).post.author.did == this.feedData?.description.feedSourceDID) as FeedViewPost;
+            }
+            return typeof authorPost != 'undefined' && typeof authorPost.post.author.viewer != 'undefined' && typeof authorPost.post.author.viewer.blocking != 'undefined';
         }
     },
     mounted(){

@@ -784,7 +784,7 @@ export default defineComponent({
                 curState.FeedData.cursor = '';
                 setTimeout(() => { //Allow for unblock to be processed before attempting refresh
                     this.refreshCurrentPage();
-                }, 50);
+                }, 150);
             }
         },
         showPFPFullscreen(){
