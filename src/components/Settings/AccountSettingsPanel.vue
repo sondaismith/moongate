@@ -40,6 +40,21 @@
                                     <i-mingcute:loading-fill v-if="mutedAccount.isAwaitingUnmute" class="spinner"/>
                                     <div>Unmute</div>
                                 </button>
+                                <button title="Account Options" class="px-1 rounded bg-checkedButtonBG hover:bg-checkedButtonBGHover
+                                border border-outlineLighter shadow-none mr-1"
+                                @click="e => showOptionsMenu(e, mutedAccount.account.did)">...</button>
+                            </div>
+                            <div class="flex gap-1">
+                                <div v-if="isAccountMuted(mutedAccount.account)" title="You have muted this account."
+                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
+                                    <i-mdi:eye-off/>
+                                    <div>Account Muted</div>
+                                </div>
+                                <div v-if="isAccountBlocked(mutedAccount.account)" title="You have blocked this account."
+                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
+                                    <i-mdi:user-off/>
+                                    <div>Account Blocked</div>
+                                </div>
                             </div>
                             <div class="text-sm">{{ mutedAccount ? mutedAccount.account.description : 'Please supply the `:feed-generator-view` prop' }}</div>
                         </div>
@@ -68,7 +83,8 @@
             <div v-else-if="blockedAccountFilter.trim() != ''" class="text-sm text-secondary">{{ filteredBlockedAccounts.length }} blocked account(s) found</div>
             <div class="flex flex-col gap-2 overflow-y-auto preload-gutter">
                 <div v-if="!isAwaitingBlockedAccountData && blockedAccountData.length>0" class="flex flex-col gap-2">
-                    <div v-for="(blockedAccount,index) in filteredBlockedAccounts" class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
+                    <div v-for="(blockedAccount,index) in filteredBlockedAccounts"
+                    class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover active:bg-transparent rounded select-none">
                         <div class="flex flex-col gap-2 w-full overflow-hidden">
                             <div class="flex gap-1 items-center">
                                 <div class="flex bg-blueskyBlue aspect-square rounded-full shrink-0 w-8 items-center justify-center overflow-hidden">
@@ -79,13 +95,28 @@
                                     <div class="text-base leading-4 text-nowrap overflow-hidden text-ellipsis">{{ blockedAccount.account.displayName ? blockedAccount.account.displayName : '\n' }}</div>
                                     <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">@{{ blockedAccount.account.handle ? blockedAccount.account.handle : 'PROP MISSING' }}</div>
                                 </div>
-                                <button @click="unBlockAccount(blockedAccount.account,index)" :title="'Remove &quot;'+blockedAccount?.account.displayName+'&quot; Feed'"
+                                <button @click="unBlockAccount(blockedAccount.account,index)" :title="'Unblock &quot;'+blockedAccount?.account.displayName+'&quot;'"
                                 class=" flex items-center gap-1 self-center ml-auto mr-0.5 rounded p-1 border bg-deleteBtnBG active:bg-deleteBtnBGActive
                                 text-xs text-white hover:border-primary disabled:bg-disabledBG disabled:text-disabled disabled:border-transparent shadow-none"
                                 :disabled="blockedAccount.isAwaitingUnmute">
                                     <i-mingcute:loading-fill v-if="blockedAccount.isAwaitingUnmute" class="spinner"/>
                                     <div>Unblock</div>
                                 </button>
+                                <button title="Account Options" class="px-1 rounded bg-checkedButtonBG hover:bg-checkedButtonBGHover
+                                border border-outlineLighter shadow-none mr-1"
+                                @click="e => showOptionsMenu(e, blockedAccount.account.did)">...</button>
+                            </div>
+                            <div class="flex gap-1">
+                                <div v-if="isAccountMuted(blockedAccount.account)" title="You have muted this account."
+                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
+                                    <i-mdi:eye-off/>
+                                    <div>Account Muted</div>
+                                </div>
+                                <div v-if="isAccountBlocked(blockedAccount.account)" title="You have blocked this account."
+                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
+                                    <i-mdi:user-off/>
+                                    <div>Account Blocked</div>
+                                </div>
                             </div>
                             <div class="text-sm">{{ blockedAccount ? blockedAccount.account.description : 'Please supply the `:feed-generator-view` prop' }}</div>
                         </div>
@@ -115,6 +146,7 @@
 import MdiHandFrontRight from '~icons/mdi/hand-front-right';
 import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
+import MingcuteProfileFill from '~icons/mingcute/profile-fill';
 
 import { defineComponent } from 'vue'
 import { IAccountSettingsMenuItem, IUnmuteAccountItem } from '../../interfaces/SettingsInterfaces'
@@ -125,6 +157,16 @@ import RadioBarButton from '../Utilities/RadioBarButton.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import FilterBar from '../Utilities/FilterBar.vue';
+import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
+import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+
+/**Displays specified User's profile in the `UserFocusModal` component. */
+function ShowUserProfile(userDid:string){
+    if(userDid.trim() != ''){
+        AppState.ShowUserFocusModal(userDid);
+        AppState.HideSettingsPanel();
+    }
+}
 
 export default defineComponent({
     components:{
@@ -160,48 +202,48 @@ export default defineComponent({
                     ],
                     action:(bc:number[])=>{bc.push(0)}
                 },
-                {
-                    label:'Privacy and Security',
-                    testId:'privacy-and-security',
-                    selected:false,
-                    submenu:[
-                        {
-                            label:'A test option under privacy',
-                            icon: MingcuteVolumeMuteFill,
-                            testId:'test-under-privacy',
-                            selected:false,
-                            submenu:[{
-                                label:'further sub option',
-                                testId:'further-sub-option',
-                                selected:false,
-                                action:(bc:number[])=>{bc.push(0)}
-                            }],
-                            action:(bc:number[])=>{bc.push(0)}
-                        },
-                        {
-                            label:'2nd test option under privacy',
-                            icon: MingcuteVolumeMuteFill,
-                            testId:'second-test-option-under-privacy',
-                            selected:false,
-                            submenu:[{
-                                label:'another option',
-                                testId:'another-option',
-                                selected:false,
-                                action:(bc:number[])=>{bc.push(0)}
-                            }],
-                            action:(bc:number[])=>{bc.push(1)}
-                        },
-                    ],
-                    action:(bc:number[])=>{bc.push(1)}
-                },
-                {
-                    label:'Accessibility',
-                    icon:undefined,
-                    testId:'accessibility',
-                    selected:false,
-                    submenu:undefined,
-                    action:(bc:number[])=>{bc.push(2)}
-                }
+                // {
+                //     label:'Privacy and Security',
+                //     testId:'privacy-and-security',
+                //     selected:false,
+                //     submenu:[
+                //         {
+                //             label:'A test option under privacy',
+                //             icon: MingcuteVolumeMuteFill,
+                //             testId:'test-under-privacy',
+                //             selected:false,
+                //             submenu:[{
+                //                 label:'further sub option',
+                //                 testId:'further-sub-option',
+                //                 selected:false,
+                //                 action:(bc:number[])=>{bc.push(0)}
+                //             }],
+                //             action:(bc:number[])=>{bc.push(0)}
+                //         },
+                //         {
+                //             label:'2nd test option under privacy',
+                //             icon: MingcuteVolumeMuteFill,
+                //             testId:'second-test-option-under-privacy',
+                //             selected:false,
+                //             submenu:[{
+                //                 label:'another option',
+                //                 testId:'another-option',
+                //                 selected:false,
+                //                 action:(bc:number[])=>{bc.push(0)}
+                //             }],
+                //             action:(bc:number[])=>{bc.push(1)}
+                //         },
+                //     ],
+                //     action:(bc:number[])=>{bc.push(1)}
+                // },
+                // {
+                //     label:'Accessibility',
+                //     icon:undefined,
+                //     testId:'accessibility',
+                //     selected:false,
+                //     submenu:undefined,
+                //     action:(bc:number[])=>{bc.push(2)}
+                // }
             ] as IAccountSettingsMenuItem[],
             /**Array holding the index of each menu item selected. Used to figure out what menu to display. */
             breadcrumbs:[] as number[],
@@ -385,7 +427,26 @@ export default defineComponent({
         clearFilterText(){
             this.mutedAccountFilter = '';
             this.blockedAccountFilter = '';
-        }
+        },
+        /**Check if a profile is muted by the currently logged in User. */
+        isAccountMuted(profile:ProfileView){
+            return typeof profile.viewer != 'undefined' && profile.viewer.muted;
+        },
+        /**Check if a profile is blocked by the currently logged in User. */
+        isAccountBlocked(profile:ProfileView){
+            return typeof profile.viewer != 'undefined' && typeof profile.viewer.blocking != 'undefined';
+        },
+        /**
+         * Shows Options Menu allowing user to perform different actions
+         * relating to the selected Account.
+         */
+        showOptionsMenu(e:MouseEvent, userDID:string){
+            e.preventDefault();
+            OptionsMenuState.currentMenuItems = [
+                {Icon:MingcuteProfileFill,Label:'View Profile (Closes Settings)',Action:function(){ShowUserProfile(userDID)}},
+            ] as IOptionMenuItem[];
+            OptionsMenuState.showOptionMenu(e);;
+        },
     },
     computed:{
         noSubMenusSelected(){

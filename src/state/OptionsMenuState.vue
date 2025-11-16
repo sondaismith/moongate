@@ -36,7 +36,7 @@ export const OptionsMenuState = reactive({
      * Returns the safe position to place the Options Menu so that it does not
      * extend beyond the app window boundaries.
      * */
-    getSafeMenuPosition(event:MouseEvent){
+    getSafeMenuPosition(event:PointerEvent){
         var menu = document.getElementById('options-btn-menu');//important
         var appViewport = document.getElementById('app-viewport');
         if(!menu || !appViewport) return; //do not continue if we do not find elements
@@ -46,6 +46,8 @@ export const OptionsMenuState = reactive({
         var viewportWidth = appViewport.offsetWidth;
         var menuSafePos = {x:0,y:0};
         menuSafePos = {x:event.clientX, y:event.clientY};
+        let clickTargetRect = (event.target as Element).getBoundingClientRect();
+        if(event.pointerType == '') menuSafePos = {x:clickTargetRect.x,y:clickTargetRect.y};
         var xTarget = menuSafePos.x;
         var yTarget = menuSafePos.y;
         var menuYClearence = viewportHeight - (menuHeight+yTarget);
