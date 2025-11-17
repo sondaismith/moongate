@@ -33,6 +33,12 @@
                     class="text-2xl"
                     :class="[{'text-disabled' : !hasNextNavRecords}]"/>
                 </SquareButton>
+                <SquareButton
+                title="Refresh page" :is-disabled="awaitingProfileData || isAwaitingTabSwitchData" @click="refreshPage"
+                class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
+                focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
+                    <i-mingcute:refresh-3-fill class="text-2xl"/>
+                </SquareButton>
                 <SquareButton @click="closeModal" title="Close User Feed Modal"
                 class="ml-auto bg-btn hover:bg-red-600 focus-visible:bg-red-600">
                     <i-mingcute:close-fill class="text-2xl"/>
@@ -682,9 +688,24 @@ export default defineComponent({
             }, 1);
         },
         /**
-         * "Refreshes" page by navigating to "Feed" tab and getting the latest data.
+         * Refreshes displayed Feed data by navigating to "Feed" tab and getting the latest data.
          */
-        async refreshCurrentPage(){
+        async refreshFeedData(){
+            await this.viewFeed();
+        },
+        /**
+         * Refreshes currently displayed account page.
+         */
+        async refreshPage(){
+            this.awaitingProfileData = true;
+            this.scrollToModalPos(0);
+            await GetBrowsingAgent().getProfile({
+                actor:UserFocusModalState.GetCurrentHistoryData().ProfileData.did
+            })
+            .then(res => {
+                UserFocusModalState.GetCurrentHistoryData().ProfileData = res.data;
+            });
+            this.awaitingProfileData = false;
             await this.viewFeed();
         },
         /**
@@ -774,7 +795,7 @@ export default defineComponent({
                 curState.FeedData.data = []; //clear content
                 curState.FeedData.cursor = '';
                 setTimeout(() => { //Allow for unblock to be processed before attempting refresh
-                    this.refreshCurrentPage();
+                    this.refreshFeedData();
                 }, 150);
             }
         },
