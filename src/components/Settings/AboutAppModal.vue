@@ -30,16 +30,72 @@
                     </div>
                 </a>
             </div>
-            <div class="px-4 text-xl font-semibold">Changelog:</div>
-            <div class="flex flex-col gap-1 h-full px-4 overflow-y-scroll divide-outline divide-y">
-                <div class="font-semibold">October 7th 2025</div>
-                <ul class="list-disc list-inside h-full py-1 text-sm">
-                    <li>Added "About" page.</li>
-                    <li>Added application logo.</li>
-                    <li>Added ability to reorder tabs on mobile/touch-screen devices.</li>
-                    <li>Updated UI for "Post Focus" modal. Viewing on mobile/small-width screens should now be more user-friendly.</li>
-                    <!-- <a href="#" class="text-xs text-blue-500 cursor-pointer">See more</a> -->
-                </ul>
+            <div class="flex flex-col overflow-y-auto">
+                <div class="px-4 text-xl font-semibold">Changelog:</div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">November 17th 2025</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Added ability to Mute and Block Accounts.</li>
+                        <li>Added "Account Settings" tab to Settings Panel.</li>
+                        <li>Added "Moderation" options under "Account Settings". There are 2 available options:
+                            <ul class="list-disc list-inside h-full text-sm">
+                                <li>View Muted Accounts</li>
+                                <li>View Blocked Accounts</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">November 8th 2025</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Various Fixes:
+                            <ul class="list-disc list-inside h-full text-sm">
+                                <li>Feed Generator avatars are now displayed on Feed Buttons.</li>
+                                <li>Fixed issue preventing "Trending Topic" Feeds from being created.</li>
+                                <li>Fixed issue where placeholder account banner image was not accessible by application.</li>
+                                <li>UI Updates.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">November 5th 2025</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Added ability to create "Feed Generator" Feeds.</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">October 30th 2025</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Updated Post creation process:
+                            <ul class="list-disc list-inside h-full text-sm">
+                                <li>Thread Gates can now be applied to Posts, limiting who can interact.</li>
+                                <li>Posts can have images attached. Content labels can be applied, and ALT text can be added as well.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">October 18th 2025</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Updated Account Login process and account management:
+                            <ul class="list-disc list-inside h-full text-sm">
+                                <li>Used Account handles are now remembered and can be selected to quickly login again. (Password stil must be provided.)</li>
+                                <li>The application now remembers if a Guest or an Authorized account was used last. If Guest was used last it will automatically be selected and used when returning.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">October 10th 2025</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Added "About" page.</li>
+                        <li>Added application logo.</li>
+                        <li>Added ability to reorder tabs on mobile/touch-screen devices.</li>
+                        <li>Updated UI for "Post Focus" modal. Viewing on mobile/small-width screens should now be more user-friendly.</li>
+                        <!-- <a href="#" class="text-xs text-blue-500 cursor-pointer">See more</a> -->
+                    </ul>
+                </div>
             </div>
             <div class="flex gap-1 px-4 py-2 text-xs">
                 <div>Any issues? Report</div>
@@ -130,4 +186,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
+ul ul {
+  @apply pl-4 list-disc
+}
 </style>

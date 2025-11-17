@@ -277,7 +277,7 @@ export default defineComponent({
                             isShowingBlockedUsers:false,
                         },
                         /**Indicates if the option should only be available in Dev mode. */
-                        devOnly:true,
+                        devOnly:false,
                     },
                     Developer:{
                         name:'Dev Options',
