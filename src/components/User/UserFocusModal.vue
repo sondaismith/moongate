@@ -139,18 +139,7 @@
                             </div>
                             <!-- <RichPostText v-else :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/> -->
                             <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory && !isAccountBlocked" :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
-                            <div class="flex gap-1 my-1">
-                                <div v-if="isAccountMuted" title="You have muted this account."
-                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
-                                    <i-mdi:eye-off/>
-                                    <div>Account Muted</div>
-                                </div>
-                                <div v-if="isAccountBlocked" title="You have blocked this account."
-                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
-                                    <i-mdi:user-off/>
-                                    <div>Account Blocked</div>
-                                </div>
-                            </div>
+                            <AccountModerationLabel :is-muted="isAccountMuted" :is-blocked="isAccountBlocked"/>
                         </div>
                         <div v-if="!isAccountBlocked" id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
                         :style="{'top':userSummaryBottomPos+'px'}">
@@ -348,6 +337,7 @@ import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
+import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
 
 /**
  * Used to create a HTTP URL link To the currently view User's profile.
@@ -415,6 +405,7 @@ export default defineComponent({
         VerifiedBadge,
         ToContainerTop,
         SquareButton,
+        AccountModerationLabel,
     },
     methods:{
         /**Prepares and displays data when the "Posts" tab is clicked. */

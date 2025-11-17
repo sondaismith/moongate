@@ -12,16 +12,7 @@
                     <FollowUser v-if="!AccountPeekState.awaitingAPIResponse && !isAccountBlocked"
                     :is-user-followed="isFollowingUser"
                     :user-did="AccountPeekState.profileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
-                    <div v-if="isAccountMuted" title="You have muted this account."
-                    class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-primary text-sm select-none">
-                        <i-mdi:eye-off/>
-                        <div class="whitespace-nowrap">Account Muted</div>
-                    </div>
-                    <div v-if="isAccountBlocked" title="You have blocked this account."
-                    class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-primary text-sm select-none">
-                        <i-mdi:user-off/>
-                        <div class="whitespace-nowrap">Account Blocked</div>
-                    </div>
+                    <AccountModerationLabel :is-muted="isAccountMuted" :is-blocked="isAccountBlocked" :column-display="true"/>
                 </div>
             </div>
             <div class="flex flex-col gap-1 grow-0 shrink-0 py-1 bg-green-400s">
@@ -54,6 +45,7 @@ import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import FollowUser from './FollowUser.vue';
 import { AppState } from '../../state/AppState.vue';
 import VerifiedBadge from './VerifiedBadge.vue';
+import AccountModerationLabel from './AccountModerationLabel.vue';
 
 export default defineComponent({
     name:'Account Peek',
@@ -61,6 +53,7 @@ export default defineComponent({
         RichPostText,
         VerifiedBadge,
         FollowUser,
+        AccountModerationLabel,
     },
     data(){
         return{

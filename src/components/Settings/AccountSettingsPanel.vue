@@ -44,18 +44,7 @@
                                 border border-outlineLighter shadow-none mr-1"
                                 @click="e => showOptionsMenu(e, mutedAccount.account.did)">...</button>
                             </div>
-                            <div class="flex gap-1">
-                                <div v-if="isAccountMuted(mutedAccount.account)" title="You have muted this account."
-                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
-                                    <i-mdi:eye-off/>
-                                    <div>Account Muted</div>
-                                </div>
-                                <div v-if="isAccountBlocked(mutedAccount.account)" title="You have blocked this account."
-                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
-                                    <i-mdi:user-off/>
-                                    <div>Account Blocked</div>
-                                </div>
-                            </div>
+                            <AccountModerationLabel :is-muted="isAccountMuted(mutedAccount.account)" :is-blocked="isAccountBlocked(mutedAccount.account)"/>
                             <div class="text-sm">{{ mutedAccount ? mutedAccount.account.description : 'Please supply the `:feed-generator-view` prop' }}</div>
                         </div>
                     </div>
@@ -106,18 +95,7 @@
                                 border border-outlineLighter shadow-none mr-1"
                                 @click="e => showOptionsMenu(e, blockedAccount.account.did)">...</button>
                             </div>
-                            <div class="flex gap-1">
-                                <div v-if="isAccountMuted(blockedAccount.account)" title="You have muted this account."
-                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
-                                    <i-mdi:eye-off/>
-                                    <div>Account Muted</div>
-                                </div>
-                                <div v-if="isAccountBlocked(blockedAccount.account)" title="You have blocked this account."
-                                class="flex items-center gap-1 rounded-full px-2 bg-accountMuteLabelBG text-sm select-none">
-                                    <i-mdi:user-off/>
-                                    <div>Account Blocked</div>
-                                </div>
-                            </div>
+                            <AccountModerationLabel :is-muted="isAccountMuted(blockedAccount.account)" :is-blocked="isAccountBlocked(blockedAccount.account)"/>
                             <div class="text-sm">{{ blockedAccount ? blockedAccount.account.description : 'Please supply the `:feed-generator-view` prop' }}</div>
                         </div>
                     </div>
@@ -159,6 +137,7 @@ import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs'
 import FilterBar from '../Utilities/FilterBar.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
 
 /**Displays specified User's profile in the `UserFocusModal` component. */
 function ShowUserProfile(userDid:string){
@@ -173,6 +152,7 @@ export default defineComponent({
         RadioBarButton,
         CustomFeedButtonPlaceholder,
         FilterBar,
+        AccountModerationLabel,
     },
     data(){
         return{
