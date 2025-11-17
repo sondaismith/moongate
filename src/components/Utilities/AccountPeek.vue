@@ -8,17 +8,21 @@
                 <div class="flex shrink-0 rounded-full bg-blue-500 size-14 items-center justify-center
                     bg-contain" :style="'background-image: url('+(AccountPeekState.profileData.avatar ? AccountPeekState.profileData.avatar : '')+')'">
                 </div>
-                <FollowUser v-if="!AccountPeekState.awaitingAPIResponse" :is-user-followed="isFollowingUser"
-                :user-did="AccountPeekState.profileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
+                <div class="flex flex-col gap-1 ml-auto self-center">
+                    <FollowUser v-if="!AccountPeekState.awaitingAPIResponse && !isAccountBlocked"
+                    :is-user-followed="isFollowingUser"
+                    :user-did="AccountPeekState.profileData.did" :is-disabled="!AppState.isAuthBrowsing"/>
+                    <AccountModerationLabel :is-muted="isAccountMuted" :is-blocked="isAccountBlocked" :column-display="true"/>
+                </div>
             </div>
-            <div class="flex flex-col gap-1 grow-0 shrink-0">
+            <div class="flex flex-col gap-1 grow-0 shrink-0 py-1 bg-green-400s">
                 <div class="flex flex-wrap items-center *:leading-5 leading-5 gap-1">
                     <div class="inline text-primary font-medium">{{ AccountPeekState.profileData.displayName }}</div>
                     <VerifiedBadge v-if="isUserVerified" class="size-4"/>
                 </div>
                 <div class="text-secondary leading-3">@{{ AccountPeekState.profileData.handle }}</div>
             </div>
-            <div class="flex text-sm text-primary mt-2 mb-1 gap-1 grow-0 shrink-0">
+            <div v-if="!isAccountBlocked" class="flex text-sm text-primary gap-1 grow-0 shrink-0">
                 <div class="flex hover:underline cursor-pointer">
                     <div>{{ AccountPeekState.profileData.followersCount }}</div>
                     <div class="text-secondary whitespace-pre"> Followers</div>
@@ -28,7 +32,7 @@
                     <div class="text-secondary whitespace-pre"> Following</div>
                 </div>
             </div>
-            <RichPostText class="text-sm overflow-auto grow shrink break-words"
+            <RichPostText v-if="!isAccountBlocked" class="text-sm overflow-auto grow shrink break-words"
             :post-text="AccountPeekState.profileData.description"/>
         </div>
     </div>
@@ -41,6 +45,7 @@ import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import FollowUser from './FollowUser.vue';
 import { AppState } from '../../state/AppState.vue';
 import VerifiedBadge from './VerifiedBadge.vue';
+import AccountModerationLabel from './AccountModerationLabel.vue';
 
 export default defineComponent({
     name:'Account Peek',
@@ -48,6 +53,7 @@ export default defineComponent({
         RichPostText,
         VerifiedBadge,
         FollowUser,
+        AccountModerationLabel,
     },
     data(){
         return{
@@ -91,6 +97,14 @@ export default defineComponent({
                 return true;
             return false;
         },
+        /**Is the viewed account muted by the logged in User? */
+        isAccountMuted(){
+            return typeof AccountPeekState.profileData.viewer != 'undefined' && typeof AccountPeekState.profileData.viewer.muted != 'undefined' && AccountPeekState.profileData.viewer.muted;
+        },
+        /**Is the viewed account blocked by the logged in User? */
+        isAccountBlocked(){
+            return typeof AccountPeekState.profileData.viewer != 'undefined' && typeof AccountPeekState.profileData.viewer.blocking != 'undefined';
+        }
     },
 })
 </script>

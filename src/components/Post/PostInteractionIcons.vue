@@ -41,6 +41,16 @@
 </template>
 
 <script lang="ts">
+//Option Menu icons
+import MingcuteLinkLine from '~icons/mingcute/link-line';
+import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
+import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
+import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
+import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
+import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
+import MdiPersonBlock from '~icons/mdi/person-block';
+import MdiUserCheck from '~icons/mdi/user-check';
+
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { CreateBskyWeblink, getCompactNumberValue } from '../../helpers/converters';
@@ -51,14 +61,9 @@ import { AppState, toast } from '../../state/AppState.vue';
 import { PostActions } from '../../enums/PostEnums';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import { DeletePost } from '../../lib/api/Post.vue';
-
-//Option Menu icons
-import MingcuteLinkLine from '~icons/mingcute/link-line';
-import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
-import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
-import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
 import { AppBskyFeedThreadgate } from '@atproto/api';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
+import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 
 function CopyPostLink(postUri:string, handle:string=""){
     let link = CreateBskyWeblink(postUri, handle);
@@ -122,6 +127,10 @@ export default defineComponent({
             isAwaitingLikeUpdate:false,
             isAwaitingRepostUpdate:false,
             isAwaitingPostDelete:false,
+            /**Are we currently waiting for an action relating to muting or unmuting a User account to finish? */
+            isAwaitingAccountMuteAction:false,
+            /**Are we currently waiting for an action relating to blocking or unblocking a User account to finish? */
+            isAwaitingAccountBlockAction:false,
         }
     },
     methods:{
@@ -134,6 +143,16 @@ export default defineComponent({
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteLinkLine,Label:'Copy link to Post',Action:function(){CopyPostLink(postURI, handle)}},
             ] as IOptionMenuItem[]
+            if(AppState.isAuthBrowsing && GetBrowsingAgent().did != this.postData.author.did){
+                if(!this.isAccountMuted)
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute});
+                else
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.requestToggleMute});
+                if(!this.isAccountBlocked)
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:this.requestToggleBlock});
+                else
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiUserCheck,Label:'Unblock Account',Action:this.requestToggleBlock});
+            }
             //Only show "delete post" option if the User is logged in and this is one of their Posts
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did == this.postData.author.did){
                 OptionsMenuState.currentMenuItems.push({
@@ -306,6 +325,26 @@ export default defineComponent({
                 toast.add({summary:"Error", detail:`${err} Issue deleting post by ${this.postData.author.handle}`, severity:'error', group:'tr', life:3000});
                 this.isAwaitingPostDelete = false;
             })
+        },
+        /**
+         * Method used to attempt to mute/unmute the account associated with the
+         * Post that was interacted with.
+         */
+        async requestToggleMute(){
+            if(this.isAwaitingAccountMuteAction) return;
+            this.isAwaitingAccountMuteAction = true;
+            await toggleMute(this.postData.author)
+            .finally(() => {this.isAwaitingAccountMuteAction = false});
+        },
+        /**
+         * Method used to attempt to block/unblock the account associated with the
+         * Post that was interacted with.
+         */
+        async requestToggleBlock(){
+            if(this.isAwaitingAccountBlockAction) return;
+            this.isAwaitingAccountBlockAction = true;
+            await toggleBlock(this.postData.author)
+            .finally(() => {this.isAwaitingAccountBlockAction = false});
         }
     },
     computed:{
@@ -337,6 +376,12 @@ export default defineComponent({
             }
             return status;
         },
+        isAccountMuted(){
+            return (typeof this.postData.author.viewer != 'undefined' && typeof this.postData.author.viewer.muted != 'undefined' && this.postData.author.viewer.muted);
+        },
+        isAccountBlocked(){
+            return (typeof this.postData.author.viewer != 'undefined' && typeof this.postData.author.viewer.blocking != 'undefined');
+        }
     }
 })
 </script>

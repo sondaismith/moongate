@@ -39,6 +39,9 @@ function CreateUserFeed(userDid:string,userHandle:string){
     })
     .then(res => {
         AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false);
+    })
+    .catch(err => {
+        toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
     });
 }
 

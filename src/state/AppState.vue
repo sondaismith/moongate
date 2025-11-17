@@ -9,9 +9,11 @@ import { UserFocusModalState } from './UserFocusModalState.vue';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { postDetails } from './PostDetails.vue';
 import { FeedState } from './FeedList.vue';
-import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { FeedViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppSettingsState } from './AppSettingsState.vue';
 import { LoginState } from '../interfaces/AccountInterfaces';
+import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { FeedEnums } from '../enums/FeedEnums';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -160,6 +162,14 @@ export const AppState = reactive({
         return this.isAuthBrowsing;
     },
     /**
+     * Method that displays the `LoginModal` on the "select account" or "enter credentials"
+     * page.
+     */
+    showLoginAccountSelect(){
+        this.loginModalStartPage = 1;
+        this.isLoggingIntoAccount = true;
+    },
+    /**
      * Returns the `Agent` to access the Bluesky API with based on
      * the current browsing mode the app is in.
      */
@@ -292,6 +302,43 @@ export const AppState = reactive({
                 }
             });
             console.log(`Updated Posts in ${feedUpdates} Feed(s).`);
+    },
+    /**
+     * Method used to update "author view" records for the account that was interacted with (mute/unmute,
+     * block, etc.) in all visible Feeds. Used to keep the state of the Account consistent throughout the app.
+     * @param accountProfileView ProfileView of account that was just updated (muted/unmute, block, etc.)
+     */
+    UpdateAccountsInFeedList(accountProfileView:ProfileViewBasic|ProfileView|ProfileViewDetailed){
+        let feedUpdates = 0;
+        FeedState.FeedList.forEach(feed => {
+            if(feed.description.feedType != FeedEnums.Types.Trending && feed.description.feedType != FeedEnums.Types.Mentions &&
+            feed.description.feedType != FeedEnums.Types.Notifications){
+                let matchingPosts = feed.data.filter(x=> (x as FeedViewPost).post.author.did == accountProfileView.did) as FeedViewPost[];
+                if(matchingPosts.length>0){
+                    feedUpdates++;
+                    matchingPosts.forEach(feedPost => {
+                        feedPost.post.author.viewer = {...feedPost.post.author.viewer, ...accountProfileView.viewer};
+                    });
+                }
+            }
+        })
+        console.log(`Updated Posts in ${feedUpdates} Feed(s).`);
+    },
+    /**
+     * Method used to update "author view" records for the account that was interacted with (mute/unmute,
+     * block, etc.) in all "navigation history" records. Used to keep the state of the Account consistant
+     * throughout the app.
+     * @param accountProfileView ProfileView of account that was just updated (muted/unmute, block, etc.)
+     */
+    UpdateAccountsInUserFocusModalState(accountProfileView:ProfileView|ProfileViewBasic|ProfileViewDetailed){
+        let navHistoryUpdates = 0;
+        UserFocusModalState.navigationHistory.forEach(navHistory => {
+            if(navHistory.ProfileData.did == accountProfileView.did){
+                navHistory.ProfileData = {...navHistory.ProfileData,viewer:accountProfileView.viewer};
+                navHistoryUpdates++;
+            }
+        })
+        console.log(`Updated Profiles in ${navHistoryUpdates} UserFocusModal NavHistory record(s).`);
     },
     //#region Post Deletion
     /**

@@ -24,7 +24,7 @@
                 </div>
                 <div class="relative grow p-2 w-full h-full overflow-hidden">
                     <div class="relative p-2 rounded border border-outline w-full h-full overflow-hidden">
-                        <div class="relative w-full h-full overflow-hidden">
+                        <div class="relative w-full h-full overflow-hiddens">
                             <TransitionGroup>
                                 <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[0]" class="h-full">
                                     <div class="flex flex-col gap-1 h-full">
@@ -96,7 +96,7 @@
                                     <div class="relative flex flex-col gap-1 bg-red-500s h-full"
                                     :class="{'text-disabled' : langControlsDisabled}">
                                         <div>Selected Languages:</div>
-                                        <div class="flex flex-wrap bg-pink-400s grows items-start gap-1 select-none overflow-y-scroll">
+                                        <div class="flex flex-wrap bg-pink-400s grows items-start gap-1 select-none overflow-y-auto">
                                             <div v-for="n in AppSettingsState.Settings.selectedLanguages"
                                             @click="toggleLanguageOption(n)"
                                             class="relative group flex justify-center items-center rounded-full px-2 py-0.5 bg-btn hover:bg-btnHover
@@ -117,8 +117,17 @@
                                     </div>
                                     <!-- <InLaInput text-label="Tag Blacklist" :model-value="SetttingData.Options.PostFilters.data.tagBlacklist"/> -->
                                 </div>
-                                <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SettingData.Options)[2]">
-                                    <div class="italic">Account Settings are still not supported. Check back later!</div>
+                                <div v-if="AppState.isAuthBrowsing && selectedCategoryIndex == Object.keys(SettingData.Options)[2]"
+                                class="relative flex flex-col w-full h-full overflow-y-autos pr-2">
+                                    <AccountSettingsPanel></AccountSettingsPanel>
+                                </div>
+                                <div v-else-if="selectedCategoryIndex == Object.keys(SettingData.Options)[2]" class="flex items-center gap-1">
+                                    <div>You must</div>
+                                    <button @click="AppState.showLoginAccountSelect" class="cursor-pointer text-blueskyBlue rounded-none hover:bg-primary/10
+                                    hover:border-transparent focus-visible:underline shadow-none">
+                                        Login
+                                    </button>
+                                    <div>to view these options.</div>
                                 </div>
                                 <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SettingData.Options)[3]"
                                 class="relative flex flex-col w-full h-full overflow-y-auto pr-2">
@@ -210,6 +219,8 @@ import { IFeedDBData } from '../../interfaces/FeedInterfaces';
 import { isTauri } from '@tauri-apps/api/core';
 import { RemoveFeedByIndex } from '../../state/FeedList.vue';
 import AboutAppModal from './AboutAppModal.vue';
+import RadioBarButton from '../Utilities/RadioBarButton.vue';
+import AccountSettingsPanel from './AccountSettingsPanel.vue';
 
 /**
  * Asks the User if they're sure they would like to delete the selected
@@ -258,10 +269,15 @@ export default defineComponent({
                     Account:{
                         name:'Account',
                         data:{
-                            TBA:true
+                            options:[
+                                {label:"View Muted Accounts"},
+                                {label:"View Blocked Accounts"}
+                            ],
+                            isShowingMutedUsers:false,
+                            isShowingBlockedUsers:false,
                         },
                         /**Indicates if the option should only be available in Dev mode. */
-                        devOnly:true,
+                        devOnly:false,
                     },
                     Developer:{
                         name:'Dev Options',
@@ -315,7 +331,9 @@ export default defineComponent({
         CheckBox,
         ToggleButton,
         SquareButton,
-        AboutAppModal
+        AboutAppModal,
+        RadioBarButton,
+        AccountSettingsPanel,
     },
     methods:{
         closeModal(){

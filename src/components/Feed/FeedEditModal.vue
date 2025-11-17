@@ -92,16 +92,11 @@
                         </div>
                         <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex h-full">
                             <div class="flex flex-col gap-1 w-full">
-                                <div class="flex border border-outline rounded-sm p-1 gap-1 focus-within:border-blue-500">
-                                    <input type="text" autocomplete="off" placeholder="Search Feeds..." v-model="feedFilters.feedGenerator.searchTerm" @keyup.enter="searchForFeedGenerators"
-                                    class="h-full w-full px-2 py-1 bg-transparent rounded-sm outline-none shadow-none">
-                                    <button v-if="viewingFeedGenSearchResults" @click="getCustomFeeds"
-                                    class="flex gap-1 items-center shadow-none px-2 rounded hover:border-transparent
-                                    active:border-transparent bg-gray-400 hover:bg-gray-500 active:bg-gray-600 text-white">
-                                        <div class="text-nowrap">Remove Filter</div>
-                                        <i-mingcute:close-circle-line/>
-                                    </button>
-                                </div>
+                                <FilterBar :filter-vmodel="feedFilters.feedGenerator.searchTerm" :show-clear-button="viewingFeedGenSearchResults"
+                                placeholder-text="Search Feeds..."
+                                :disabled="awaitingInitialCustomFeedData || awaitingSearchCustomFeedData"
+                                @update:filter-vmodel="newValue => feedFilters.feedGenerator.searchTerm = newValue"
+                                @clear-filter-clicked="getCustomFeeds" @enter-key-up="searchForFeedGenerators"/>
                                 <div v-if="selectedFeedItems.length>0" class="pt-1 w-full max-h-16 min-h-16 border-b pb-1 border-outline overflow-y-auto">
                                     <div class="flex gap-1">
                                         <div tabindex="-1" class="flex flex-wrap gap-1 w-full items-start">
@@ -336,6 +331,7 @@ import { IFeedCreationStatus, IFeedGeneratorSelection } from '../../interfaces/F
 import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
 import { AppBskyFeedDefs } from '@atproto/api/dist/client';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
+import FilterBar from '../Utilities/FilterBar.vue';
 
 export default defineComponent({
     components:{
@@ -346,6 +342,7 @@ export default defineComponent({
         CheckBox,
         CustomFeedButton,
         CustomFeedButtonPlaceholder,
+        FilterBar,
     },
     data(){
         return{
@@ -878,6 +875,8 @@ export default defineComponent({
                     case FeedEnums.Types.FeedGenerator:
                         return this.selectedFeedItems.length>0;
                     case FeedEnums.Types.Trending:
+                    case FeedEnums.Types.Following:
+                    case FeedEnums.Types.Mentions:
                         return true;
                     default:
                         return false;

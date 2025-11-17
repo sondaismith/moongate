@@ -1,8 +1,32 @@
+import { FunctionalComponent } from "vue";
 import { IAppAccountState, LoginState } from "./AccountInterfaces";
+import { AppBskyActorDefs } from "@atproto/api/dist/client";
 
 export interface LangCode{
     name:string,
     code:string
+}
+
+export interface IAccountSettingsMenuItem{
+    /**Text representing the settings option. Usually displayed to the User. */
+    label:string,
+    /**Iconify icon associated with the option. Optional. */
+    icon:FunctionalComponent|undefined
+    /**Used to identify menu item when running Unit tests. */
+    testId:string,
+    /**Whether or not this option has been selected. Not required - if provided usually means this option is togglable. */
+    selected:boolean
+    /**Any submenu options this option has. */
+    submenu:IAccountSettingsMenuItem[]
+    /**What action to perform when option is interacted with. Not required - if provided usually means this option is for displaying another menu. */
+    action:Function|undefined
+}
+
+export interface IAccountModerationItem{
+    /**The Profile data associated with muted account. */
+    account: AppBskyActorDefs.ProfileView
+    /**Is this account waiting for an action request to complete? */
+    isAwaitingAction: boolean
 }
 
 /**
