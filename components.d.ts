@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AboutAppModal: typeof import('./src/components/Settings/AboutAppModal.vue')['default']
+    AccountListing: typeof import('./src/components/Utilities/AccountListing.vue')['default']
     AccountModerationLabel: typeof import('./src/components/Utilities/AccountModerationLabel.vue')['default']
     AccountPeek: typeof import('./src/components/Utilities/AccountPeek.vue')['default']
     AccountSettingsPanel: typeof import('./src/components/Settings/AccountSettingsPanel.vue')['default']

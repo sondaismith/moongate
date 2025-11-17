@@ -22,11 +22,11 @@ export interface IAccountSettingsMenuItem{
     action:Function|undefined
 }
 
-export interface IUnmuteAccountItem{
+export interface IAccountModerationItem{
     /**The Profile data associated with muted account. */
     account: AppBskyActorDefs.ProfileView
-    /**Is this account waiting for an unmute request to complete? */
-    isAwaitingUnmute: boolean
+    /**Is this account waiting for an action request to complete? */
+    isAwaitingAction: boolean
 }
 
 /**

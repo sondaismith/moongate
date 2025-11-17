@@ -22,32 +22,8 @@
             <div v-else-if="mutedAccountFilter.trim() != ''" class="text-sm text-secondary">{{ filteredMutedAccounts.length }} muted account(s) found</div>
             <div class="flex flex-col gap-2 overflow-y-auto preload-gutter">
                 <div v-if="!isAwaitingMutedAccountData && mutedAccountData.length>0" class="flex flex-col gap-2">
-                    <div v-for="(mutedAccount,index) in filteredMutedAccounts" class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
-                        <div class="flex flex-col gap-2 w-full overflow-hidden">
-                            <div class="flex gap-1 items-center">
-                                <div class="flex bg-blueskyBlue aspect-square rounded-full shrink-0 w-8 items-center justify-center overflow-hidden">
-                                    <img v-if="mutedAccount?.account.avatar" :src="mutedAccount?.account.avatar"/>
-                                    <i-mingcute:radar-2-fill v-else class="text-white h-6 w-6"/>
-                                </div>
-                                <div class="flex flex-col overflow-hidden">
-                                    <div class="text-base leading-4 text-nowrap overflow-hidden text-ellipsis">{{ mutedAccount.account.displayName ? mutedAccount.account.displayName : '\n' }}</div>
-                                    <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">@{{ mutedAccount.account.handle ? mutedAccount.account.handle : 'PROP MISSING' }}</div>
-                                </div>
-                                <button @click="unmuteAccount(mutedAccount.account,index)" :title="'Remove &quot;'+mutedAccount?.account.displayName+'&quot; Feed'"
-                                class=" flex items-center gap-1 self-center ml-auto mr-0.5 rounded p-1 border bg-deleteBtnBG active:bg-deleteBtnBGActive
-                                text-xs text-white hover:border-primary disabled:bg-disabledBG disabled:text-disabled disabled:border-transparent shadow-none"
-                                :disabled="mutedAccount.isAwaitingUnmute">
-                                    <i-mingcute:loading-fill v-if="mutedAccount.isAwaitingUnmute" class="spinner"/>
-                                    <div>Unmute</div>
-                                </button>
-                                <button title="Account Options" class="px-1 rounded bg-checkedButtonBG hover:bg-checkedButtonBGHover
-                                border border-outlineLighter shadow-none mr-1"
-                                @click="e => showOptionsMenu(e, mutedAccount.account.did)">...</button>
-                            </div>
-                            <AccountModerationLabel :is-muted="isAccountMuted(mutedAccount.account)" :is-blocked="isAccountBlocked(mutedAccount.account)"/>
-                            <div class="text-sm">{{ mutedAccount ? mutedAccount.account.description : 'Please supply the `:feed-generator-view` prop' }}</div>
-                        </div>
-                    </div>
+                    <AccountListing v-for="(mutedAccount,index) in filteredMutedAccounts" :key="mutedAccount.account.did" :mod-item="mutedAccount" action-text="Unmute"
+                    @action-clicked="unmuteAccount(mutedAccount.account,index)" @options-clicked="e => showOptionsMenu(e, mutedAccount.account.did)"/>
                 </div>
                 <div v-else-if="isAwaitingMutedAccountData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
                     <CustomFeedButtonPlaceholder v-for="n in 5" :hide-toggle="true" :hide-liked-by="true" :use-rounded-pfp="true" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
@@ -72,33 +48,8 @@
             <div v-else-if="blockedAccountFilter.trim() != ''" class="text-sm text-secondary">{{ filteredBlockedAccounts.length }} blocked account(s) found</div>
             <div class="flex flex-col gap-2 overflow-y-auto preload-gutter">
                 <div v-if="!isAwaitingBlockedAccountData && blockedAccountData.length>0" class="flex flex-col gap-2">
-                    <div v-for="(blockedAccount,index) in filteredBlockedAccounts"
-                    class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover active:bg-transparent rounded select-none">
-                        <div class="flex flex-col gap-2 w-full overflow-hidden">
-                            <div class="flex gap-1 items-center">
-                                <div class="flex bg-blueskyBlue aspect-square rounded-full shrink-0 w-8 items-center justify-center overflow-hidden">
-                                    <img v-if="blockedAccount?.account.avatar" :src="blockedAccount?.account.avatar"/>
-                                    <i-mingcute:radar-2-fill v-else class="text-white h-6 w-6"/>
-                                </div>
-                                <div class="flex flex-col overflow-hidden">
-                                    <div class="text-base leading-4 text-nowrap overflow-hidden text-ellipsis">{{ blockedAccount.account.displayName ? blockedAccount.account.displayName : '\n' }}</div>
-                                    <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">@{{ blockedAccount.account.handle ? blockedAccount.account.handle : 'PROP MISSING' }}</div>
-                                </div>
-                                <button @click="unBlockAccount(blockedAccount.account,index)" :title="'Unblock &quot;'+blockedAccount?.account.displayName+'&quot;'"
-                                class=" flex items-center gap-1 self-center ml-auto mr-0.5 rounded p-1 border bg-deleteBtnBG active:bg-deleteBtnBGActive
-                                text-xs text-white hover:border-primary disabled:bg-disabledBG disabled:text-disabled disabled:border-transparent shadow-none"
-                                :disabled="blockedAccount.isAwaitingUnmute">
-                                    <i-mingcute:loading-fill v-if="blockedAccount.isAwaitingUnmute" class="spinner"/>
-                                    <div>Unblock</div>
-                                </button>
-                                <button title="Account Options" class="px-1 rounded bg-checkedButtonBG hover:bg-checkedButtonBGHover
-                                border border-outlineLighter shadow-none mr-1"
-                                @click="e => showOptionsMenu(e, blockedAccount.account.did)">...</button>
-                            </div>
-                            <AccountModerationLabel :is-muted="isAccountMuted(blockedAccount.account)" :is-blocked="isAccountBlocked(blockedAccount.account)"/>
-                            <div class="text-sm">{{ blockedAccount ? blockedAccount.account.description : 'Please supply the `:feed-generator-view` prop' }}</div>
-                        </div>
-                    </div>
+                    <AccountListing v-for="(blockedAccount,index) in filteredBlockedAccounts" :key="blockedAccount.account.did" :mod-item="blockedAccount" action-text="Unblock"
+                    @action-clicked="unBlockAccount(blockedAccount.account,index)" @options-clicked="e => showOptionsMenu(e, blockedAccount.account.did)"/>
                 </div>
                 <div v-else-if="isAwaitingBlockedAccountData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
                     <CustomFeedButtonPlaceholder v-for="n in 5" :hide-toggle="true" :hide-liked-by="true" :use-rounded-pfp="true" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
@@ -127,7 +78,7 @@ import MdiPersonBlock from '~icons/mdi/person-block';
 import MingcuteProfileFill from '~icons/mingcute/profile-fill';
 
 import { defineComponent } from 'vue'
-import { IAccountSettingsMenuItem, IUnmuteAccountItem } from '../../interfaces/SettingsInterfaces'
+import { IAccountSettingsMenuItem, IAccountModerationItem } from '../../interfaces/SettingsInterfaces'
 import { AppState, toast } from '../../state/AppState.vue';
 import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
@@ -138,6 +89,7 @@ import FilterBar from '../Utilities/FilterBar.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
+import AccountListing from '../Utilities/AccountListing.vue';
 
 /**Displays specified User's profile in the `UserFocusModal` component. */
 function ShowUserProfile(userDid:string){
@@ -153,6 +105,7 @@ export default defineComponent({
         CustomFeedButtonPlaceholder,
         FilterBar,
         AccountModerationLabel,
+        AccountListing,
     },
     data(){
         return{
@@ -234,7 +187,7 @@ export default defineComponent({
             /**Are we waiting for additional muted account data to be returned by the API? (Load more clicked) */
             isAwaitingAdditionalMutedAccountData:false,
             /**Collection of muted accounts returned from API. */
-            mutedAccountData:[] as IUnmuteAccountItem[],
+            mutedAccountData:[] as IAccountModerationItem[],
             /**
              * String cursor used to paginate requested muted account results.
              * Also determines if end of "muted account" list is reached - if
@@ -250,7 +203,7 @@ export default defineComponent({
             /**Are we waiting for additional blocked account data to be returned by the API? (Load more clicked) */
             isAwaitingAdditionalBlockedAccountData:false,
             /**Collection of blocked accounts returned from API. */
-            blockedAccountData:[] as IUnmuteAccountItem[],
+            blockedAccountData:[] as IAccountModerationItem[],
             /**
              * String cursor used to paginate requested blocked account results.
              * Also determines if end of "blocked account" list is reached - if
@@ -294,7 +247,7 @@ export default defineComponent({
             GetBrowsingAgent().app.bsky.graph.getMutes({cursor:this.mutedAccountDataCursor})
             .then(res => {
                 res.data.mutes.forEach(account => {
-                    this.mutedAccountData.push({account:account,isAwaitingUnmute:false});
+                    this.mutedAccountData.push({account:account,isAwaitingAction:false});
                 });
                 this.mutedAccountDataCursor = res.data.cursor;
             })
@@ -313,7 +266,7 @@ export default defineComponent({
             GetBrowsingAgent().app.bsky.graph.getMutes({cursor:this.mutedAccountDataCursor})
             .then(res => {
                 res.data.mutes.forEach(mute => {
-                    this.mutedAccountData.push({account:mute,isAwaitingUnmute:false})
+                    this.mutedAccountData.push({account:mute,isAwaitingAction:false})
                 });
                 this.mutedAccountDataCursor = res.data.cursor;
             })
@@ -327,10 +280,10 @@ export default defineComponent({
          * Unmutes specified account. Is expected to be used via an arrangement that displays the
          * contents of {@link mutedAccountData} in a list.
          * @param profile The ProfileView of the account to unmute.
-         * @param index The index that points to where the provided ProfileView is stored inside {@link mutedAccountData}.
+         * @param index The index that points to where the provided ProfileView is stored inside {@link mutedAccountData}. DO NOT USE to remove from list, as the list filtering makes the index unusable.
          */
         async unmuteAccount(profile:ProfileView, index:number){
-            this.mutedAccountData[index].isAwaitingUnmute = true;
+            this.mutedAccountData[index].isAwaitingAction = true;
             await toggleMute(profile,true)
             .then(()=>{
                 //remove item from displayed list
@@ -340,7 +293,7 @@ export default defineComponent({
                 }
             })
             .catch(()=>{
-                this.mutedAccountData[index].isAwaitingUnmute = false;
+                this.mutedAccountData[index].isAwaitingAction = false;
             })
         },
         /**
@@ -354,7 +307,7 @@ export default defineComponent({
             GetBrowsingAgent().app.bsky.graph.getBlocks({cursor:this.blockedAccountDataCursor})
             .then(res => {
                 res.data.blocks.forEach(account => {
-                    this.blockedAccountData.push({account:account,isAwaitingUnmute:false});
+                    this.blockedAccountData.push({account:account,isAwaitingAction:false});
                 });
                 this.blockedAccountDataCursor = res.data.cursor;
             })
@@ -373,7 +326,7 @@ export default defineComponent({
             GetBrowsingAgent().app.bsky.graph.getBlocks({cursor:this.blockedAccountDataCursor})
             .then(res => {
                 res.data.blocks.forEach(block => {
-                    this.blockedAccountData.push({account:block,isAwaitingUnmute:false})
+                    this.blockedAccountData.push({account:block,isAwaitingAction:false})
                 });
                 this.blockedAccountDataCursor = res.data.cursor;
             })
@@ -387,10 +340,10 @@ export default defineComponent({
          * Unblocks specified account. Is expected to be used via an arrangement that displays the
          * contents of {@link blockedAccountData} in a list.
          * @param profile The ProfileView of the account to unblock.
-         * @param index The index that points to where the provided ProfileView is stored inside {@link blockedAccountData}.
+         * @param index The index that points to where the provided ProfileView is stored inside {@link blockedAccountData}. DO NOT USE to remove from list, as the list filtering makes the index unusable.
          */
         async unBlockAccount(profile:ProfileView, index:number){
-            this.blockedAccountData[index].isAwaitingUnmute = true;
+            this.blockedAccountData[index].isAwaitingAction = true;
             await toggleBlock(profile,true)
             .then(()=>{
                 //remove item from displayed list
@@ -400,7 +353,7 @@ export default defineComponent({
                 }
             })
             .catch(()=>{
-                this.blockedAccountData[index].isAwaitingUnmute = false;
+                this.blockedAccountData[index].isAwaitingAction = false;
             })
         },
         /**Clears the filter used on the lists of Muted and Blocked accounts. */
@@ -474,7 +427,7 @@ export default defineComponent({
             }
             return menu;
         },
-        filteredMutedAccounts():IUnmuteAccountItem[]{
+        filteredMutedAccounts():IAccountModerationItem[]{
             let result = this.mutedAccountData;
             if(this.mutedAccountFilter.trim() != ''){
                 result = this.mutedAccountData.filter(x=>x.account.displayName?.toLowerCase().includes(this.mutedAccountFilter) ||
@@ -482,7 +435,7 @@ export default defineComponent({
             }
             return result;
         },
-        filteredBlockedAccounts():IUnmuteAccountItem[]{
+        filteredBlockedAccounts():IAccountModerationItem[]{
             let result = this.blockedAccountData;
             if(this.blockedAccountFilter.trim() != ''){
                 result = this.blockedAccountData.filter(x=>x.account.displayName?.toLowerCase().includes(this.blockedAccountFilter) ||
