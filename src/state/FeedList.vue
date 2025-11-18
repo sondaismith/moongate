@@ -764,6 +764,7 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
                 feed.description.newPosts = newPosts.length;
                 feed.description.latestPostDate = latestPost ? GetRecordsFeedTimestamp(latestPost) : '';
                 feed.description.latestPostCID = latestPost ? GetRecordsUniqueID(latestPost) : '';
+                feed.cursor = res.cursor;
                 feed.isAwaitingFeedData = false;
             }
             else if(feed && feed.description.feedType == FeedEnums.Types.Notifications){

@@ -497,7 +497,8 @@ export default defineComponent({
         },
         /**Is the account associated with the currently displayed Post blocked by the logged in User? */
         isAccountBlocked():boolean{
-            return typeof this.postToShow.author.viewer != 'undefined' && typeof this.postToShow.author.viewer.blocking != 'undefined';
+            //author has to be checked in case the Post Records is a `viewNotFound` or similar
+            return typeof this.postToShow.author != 'undefined' && typeof this.postToShow.author.viewer != 'undefined' && typeof this.postToShow.author.viewer.blocking != 'undefined';
         }
     },
     created(){

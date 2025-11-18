@@ -31,7 +31,6 @@ import { GetBrowsingAgent, LogoutAgent } from '../../lib/api.vue';
 import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { HandleAPIError } from '../../helpers/errors';
-import ToastEventBus from 'primevue/toasteventbus';
 
 //Options menu icons
 import MingcuteProfileFill from '~icons/mingcute/profile-fill';
@@ -40,6 +39,7 @@ import MingcuteExitDoorLine from '~icons/mingcute/exit-door-line';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { LoginState } from '../../interfaces/AccountInterfaces';
+import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
 
 let optionsMenu:IOptionMenuItem[] = [
     {Icon:MingcuteProfileFill,Label:'View Profile',Action:displayCurrentUsersAccount},
@@ -92,6 +92,10 @@ async function logoutOfAccount(){
         }
         AccountPeekState.lastMouseEvent = new MouseEvent('logout');
         AccountPeekState.profileData = {did:'',handle:''};
+        //Refresh displayed Feeds after logout
+        FeedState.FeedList.forEach(feed => {
+            RefreshFeed(feed.description.feedId,new Date(),10);
+        });
     })
     .catch(err => toast.add(HandleAPIError(err, 'Error logging out')));
 }
