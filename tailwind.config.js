@@ -93,6 +93,9 @@ export default {
         submitBtnBGHover: "oklch(from var(--color-submit-btn-bg-hover) l c h / <alpha-value>)",
         submitBtnBGActive: "oklch(from var(--color-submit-btn-bg-active) l c h / <alpha-value>)",
         accountMuteLabelBG: "oklch(from var(--color-account-mute-label-bg) l c h / <alpha-value>)",
+        postBookmark: "oklch(from var(--color-post-bookmark) l c h / <alpha-value>)",
+        postBookmarkHover: "oklch(from var(--color-post-bookmark-hover) l c h / <alpha-value>)",
+        postBookmarkActive: "oklch(from var(--color-post-bookmark-active) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

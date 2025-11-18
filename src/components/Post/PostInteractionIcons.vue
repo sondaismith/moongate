@@ -1,42 +1,48 @@
 <template>
-    <div :class="textColorClass" class="flex flex-wrap -mt-1 bg-red-300s text-secondary gap-1 justify-around
-     *:p-1">
-        <div data-test="postInteraction-reply-button" class="flex rounded-full items-center"
+    <div :class="textColorClass" class="flex flex-wrap -mt-1 text-secondary gap-1 justify-around justify-betweens
+     *:p-1 *:bg-red-600s">
+        <div data-test="postInteraction-reply-button" class="flex gap-0.5 rounded-full items-center"
         :class="canUserReply ? 'group cursor-pointer hover:bg-btnSubtle' : 'text-disabled select-none'"
         @click="canUserReply && replyToPost()" :title="postDetails.whoCanReply(postData)">
-            <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-600"/>
-            <div v-if="!AppSettingsState.Settings.isHidingComments" class="pl-1" :title="postData.replyCount?.toString()">{{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}</div>
+            <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-600 group-active:text-yellow-700"/>
+            <div v-if="!AppSettingsState.Settings.isHidingComments" :title="postData.replyCount?.toString()">
+                {{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}
+            </div>
         </div>
-        <div class="group flex rounded-full items-center cursor-pointer gap-1 hover:bg-btnSubtle"
+        <div class="group flex rounded-full items-center cursor-pointer gap-0.5 hover:bg-btnSubtle"
         title="Repost"
         @click="showRepostOptionsMenu($event, postData)">
-            <i-mingcute:repeat-line
+            <i-mingcute:repeat-line class="group-active:text-blue-700"
             :class="[isPostRepostedByUser ? 'text-blue-500' : 'group-hover:text-blue-500']"/>
-            <div v-if="!isAwaitingRepostUpdate" :title="postData.repostCount?.toString()" :class="[{'hidden' : AppSettingsState.Settings.isHidingShares}]">{{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}</div>
+            <div v-if="!isAwaitingRepostUpdate" :title="postData.repostCount?.toString()" :class="[{'hidden' : AppSettingsState.Settings.isHidingShares}]">
+                {{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}
+            </div>
             <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
         </div>
         <div @click="toggleLike" class="group flex rounded-full items-center cursor-pointer
-        gap-1 hover:bg-btnSubtle"
+        gap-0.5 hover:bg-btnSubtle"
         title="Like Post">
-            <i-mingcute:heart-fill
+            <i-mingcute:heart-fill class="group-active:text-red-700"
             :class="[isPostLikedByUser ? 'text-red-500' : 'group-hover:text-red-500']"/>
             <div v-if="!isAwaitingLikeUpdate":title="postData.likeCount?.toString()" :class="[{'hidden' : AppSettingsState.Settings.isHidingLikes}]">
                 {{ getCompactNumberValue(postData.likeCount ? postData.likeCount : 0) }}
             </div>
             <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
         </div>
-        <!-- <div v-if="!noShareButton" class="group flex items-center cursor-pointer hover:text-slate-300"
-        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}">
-            <i-solar:share-bold class="pointer-events-none group-hover:text-blue-500"/>
-        </div> -->
-        <div @click="showOptionsMenu($event, postData.uri, postData.author.handle)"
-        title="More Actions"
-        class="group flex rounded-full items-center cursor-pointer hover:bg-btnSubtle">
-            <i-mdi:dots-horizontal class="pointer-events-none group-hover:text-primary"/>
+        <div class="flex !p-0 *:px-1.5 min-h-[28px]">
+            <!-- <div @click="" class="group flex rounded-full items-center cursor-pointer
+            gap-1 hover:bg-btnSubtle"
+            title="Save Post">
+                <i-mingcute:bookmark-fill class="group-active:text-green-700"
+                :class="[isPostLikedByUser ? 'text-green-500' : 'group-hover:text-green-500']"/>
+                <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate" class="text-primary spinner self-center size-3"/>
+            </div> -->
+            <div @click="showOptionsMenu($event, postData.uri, postData.author.handle)"
+            title="More Actions"
+            class="group flex rounded-full items-center cursor-pointer hover:bg-btnSubtle">
+                <i-mdi:dots-horizontal class="pointer-events-none group-hover:text-primary"/>
+            </div>
         </div>
-        <!-- <div @click="postDetails.showPostOptionsMenu" class="group flex items-center cursor-pointer hover:text-slate-300">
-            <i-mdi:dots-horizontal class="pointer-events-none group-hover:text-primary"/>
-        </div> -->
     </div>
 </template>
 
@@ -126,6 +132,7 @@ export default defineComponent({
             postThread: {} as ThreadViewPost,
             isAwaitingLikeUpdate:false,
             isAwaitingRepostUpdate:false,
+            // isAwaitingBookmarkUpdate:false,
             isAwaitingPostDelete:false,
             /**Are we currently waiting for an action relating to muting or unmuting a User account to finish? */
             isAwaitingAccountMuteAction:false,

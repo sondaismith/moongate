@@ -109,7 +109,7 @@
                 <div class="flex items-center gap-2">
                     <AvatarRound v-if="!isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"
                     @avatar-clicked="callFocusPostAvatarClicked(postToShow.author.did)"/>
-                    <div class="flex overflow-hidden" :class="[isReplyStyle ? 'gap-1 items-center' : 'flex-col']">
+                    <div class="flex overflow-hidden self-starts" :class="[isReplyStyle ? 'gap-1 items-center' : 'flex-col']">
                         <div class="flex items-center gap-1 overflow-hidden">
                             <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postToShow.author.displayName">
                                 {{ postToShow.author.displayName }}
@@ -118,8 +118,17 @@
                         </div>
                         <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postToShow.author.handle">@{{ postToShow.author.handle }}</div>
                     </div>
-                    <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
-                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
+                    <div class="self-start ml-auto">
+                        <button @click="" class="group flex items-center rounded-none cursor-pointer
+                        gap-1 hover:bg-btnSubtles text-secondary shadow-none hover:border-transparent active:bg-transparent active:border-transparent"
+                        :title="isPostBookmarked ? 'Remove Bookmark' : 'Save Post'">
+                            <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate" class="text-primary spinner self-center size-3"/>
+                            <i-mingcute:bookmark-line v-if="!isPostBookmarked" class="group-active:text-postBookmarkActive group-hover:text-postBookmarkHover"/>
+                            <i-mingcute:bookmark-fill v-else class="text-postBookmark group-hover:text-postBookmarkHover group-active:text-postBookmarkActive"/>
+                        </button>
+                    </div>
+                    <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-autos" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
+                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-autos" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
@@ -224,6 +233,8 @@ export default defineComponent({
             postToShow: {author:{did:'',handle:''},cid:'',indexedAt:'',record:{},uri:''} as PostView,
             /**Are we currently waiting for an action relating to blocking or unblocking a User account to finish? */
             isAwaitingAccountBlockAction:false,
+            /**Are we currently waiting for an action relating to saving/removing a Post bookmark to finish? */
+            isAwaitingBookmarkUpdate:false,
         }
     },
     emits:{
@@ -499,7 +510,11 @@ export default defineComponent({
         isAccountBlocked():boolean{
             //author has to be checked in case the Post Records is a `viewNotFound` or similar
             return typeof this.postToShow.author != 'undefined' && typeof this.postToShow.author.viewer != 'undefined' && typeof this.postToShow.author.viewer.blocking != 'undefined';
-        }
+        },
+        /**Checks if this Post has been bookmarked by the current User. */
+        isPostBookmarked(){
+            return typeof this.postToShow.viewer != 'undefined' && typeof this.postToShow.viewer.bookmarked != 'undefined' && this.postToShow.viewer.bookmarked;
+        },
     },
     created(){
         // console.log(this.postData); //DEBUG - missing object/variable catching

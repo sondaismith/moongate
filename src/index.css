@@ -92,6 +92,9 @@
         --color-submit-btn-bg-hover:theme(colors.blue.800);
         --color-submit-btn-bg-active:theme(colors.blue.900);
         --color-account-mute-label-bg:theme(colors.slate.600);
+        --color-post-bookmark:theme(colors.orange.500);
+        --color-post-bookmark-hover:theme(colors.orange.400);
+        --color-post-bookmark-active:theme(colors.orange.600);
     }
 }
 
@@ -184,4 +187,7 @@
     --color-submit-btn-bg-hover:theme(colors.blue.400);
     --color-submit-btn-bg-active:theme(colors.blue.600);
     --color-account-mute-label-bg:theme(colors.slate.300);
+    --color-post-bookmark:theme(colors.orange.500);
+    --color-post-bookmark-hover:theme(colors.orange.400);
+    --color-post-bookmark-active:theme(colors.orange.600);
 }
