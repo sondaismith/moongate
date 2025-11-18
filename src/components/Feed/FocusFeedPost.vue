@@ -119,16 +119,16 @@
                         <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postToShow.author.handle">@{{ postToShow.author.handle }}</div>
                     </div>
                     <div class="self-start ml-auto">
-                        <button @click="" class="group flex items-center rounded-none cursor-pointer
-                        gap-1 hover:bg-btnSubtles text-secondary shadow-none hover:border-transparent active:bg-transparent active:border-transparent"
+                        <button @click="toggleBookmark" :disabled="isAwaitingBookmarkUpdate" class="group flex items-center rounded-none cursor-pointer
+                        gap-1 hover:bg-btnSubtles text-secondary shadow-none hover:border-transparent active:bg-transparent active:border-transparent disabled:cursor-not-allowed disabled:text-disabled"
                         :title="isPostBookmarked ? 'Remove Bookmark' : 'Save Post'">
                             <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate" class="text-primary spinner self-center size-3"/>
                             <i-mingcute:bookmark-line v-if="!isPostBookmarked" class="group-active:text-postBookmarkActive group-hover:text-postBookmarkHover"/>
-                            <i-mingcute:bookmark-fill v-else class="text-postBookmark group-hover:text-postBookmarkHover group-active:text-postBookmarkActive"/>
+                            <i-mingcute:bookmark-fill v-else class="text-postBookmark group-hover:text-postBookmarkHover group-active:text-postBookmarkActive group-disabled:text-disabled"/>
                         </button>
                     </div>
-                    <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-autos" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
-                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-autos" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
+                    <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
+                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
@@ -177,6 +177,8 @@ import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/typ
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { toggleBlock } from '../../lib/api/User.vue';
+import { BookmarkPost, RemoveBookmark } from '../../lib/api/Post.vue';
+import { AppState, toast } from '../../state/AppState.vue';
 
 export default defineComponent({
     components:{
@@ -305,6 +307,41 @@ export default defineComponent({
                 this.isAwaitingAccountBlockAction = true;
                 await toggleBlock(this.postData.author)
                 .finally(() => {this.isAwaitingAccountBlockAction = false});
+            }
+        },
+        /**
+         * Toggles the "Bookmark" status of a Post. Requires login.
+         */
+        async toggleBookmark(){
+            if(!AppState.checkIfLoggedIn('bookmark a Post')) return;
+            this.isAwaitingBookmarkUpdate = true;
+            if(this.isPostBookmarked){
+                await RemoveBookmark(this.postToShow)
+                .then(() => {
+                    if(typeof this.postToShow.viewer != 'undefined') this.postToShow.viewer.bookmarked = false;
+                    toast.add({summary:'Success',detail:`Bookmarked Removed`,severity:'success',group:'tr',life:3000});
+                })
+                .catch(err => {
+                    toast.add({summary:'Error',detail:`${err}`,severity:'error',group:'tr',life:3000});
+                    console.log(err);
+                })
+                .finally(() => {
+                    this.isAwaitingBookmarkUpdate = false;
+                })
+            }
+            else{
+                await BookmarkPost(this.postToShow)
+                .then(() => {
+                    if(typeof this.postToShow.viewer != 'undefined') this.postToShow.viewer.bookmarked = true;
+                    toast.add({summary:'Success',detail:`Post Bookmarked`,severity:'success',group:'tr',life:3000});
+                })
+                .catch(err => {
+                    toast.add({summary:'Error',detail:`${err}`,severity:'error',group:'tr',life:3000});
+                    console.log(err);
+                })
+                .finally(() => {
+                    this.isAwaitingBookmarkUpdate = false;
+                })
             }
         }
     },

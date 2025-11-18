@@ -284,4 +284,20 @@ selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined,allowQuotePos
 export async function DeletePost(postData:PostView):Promise<void>{
     GetBrowsingAgent().deletePost(postData.uri);
 }
+
+/**
+ *
+ * @param postData PostView of the Post to Bookmark/Save.
+ */
+export async function BookmarkPost(postData:PostView):Promise<void>{
+    await GetBrowsingAgent().app.bsky.bookmark.createBookmark({cid:postData.cid,uri:postData.uri});
+}
+
+/**
+ *
+ * @param postData PostView of the Post to remove from Bookmarks.
+ */
+export async function RemoveBookmark(postData:PostView):Promise<void>{
+    await GetBrowsingAgent().app.bsky.bookmark.deleteBookmark({uri:postData.uri});
+}
 </script>
