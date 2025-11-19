@@ -119,7 +119,7 @@
                         <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postToShow.author.handle">@{{ postToShow.author.handle }}</div>
                     </div>
                     <div class="self-start ml-auto">
-                        <button @click="toggleBookmark" :disabled="isAwaitingBookmarkUpdate" class="group flex items-center rounded-none cursor-pointer
+                        <button v-if="isPostBookmarked" @click="toggleBookmark" :disabled="isAwaitingBookmarkUpdate" class="group flex items-center rounded-none cursor-pointer
                         gap-1 hover:bg-btnSubtles text-secondary shadow-none hover:border-transparent active:bg-transparent active:border-transparent disabled:cursor-not-allowed disabled:text-disabled"
                         :title="isPostBookmarked ? 'Remove Bookmark' : 'Save Post'">
                             <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate" class="text-primary spinner self-center size-3"/>

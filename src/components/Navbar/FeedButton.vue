@@ -248,7 +248,7 @@ export default defineComponent({
                 //     menuOptions.push({Icon:MingcuteEdit4Line,Label:'Edit Feed',Action:function(){UpdateFeed()}})
                 // }
                 menuOptions = [...menuOptions,
-                    {Icon:SolarTrashBinTrashBold,Label:'Remove Feed',Action:function(){DeleteFeed()}},
+                    {Icon:SolarTrashBinTrashBold,Label:'Remove Feed',Action:function(){DeleteFeed()},Type:ItemType.Option} as IOptionMenuItem,
                 ] as IOptionMenuItem[]
                 OptionsMenuState.currentMenuItems = menuOptions;
                 OptionsMenuState.showOptionMenu(e);

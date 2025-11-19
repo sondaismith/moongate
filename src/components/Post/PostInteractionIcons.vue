@@ -29,7 +29,7 @@
             </div>
             <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
         </div>
-        <div class="flex !p-0 *:px-1.5 min-h-[28px]">
+        <div class="flex !p-0 min-h-[28px]">
             <!-- <div @click="" class="group flex rounded-full items-center cursor-pointer
             gap-1 hover:bg-btnSubtle"
             title="Save Post">
@@ -39,8 +39,10 @@
             </div> -->
             <div @click="showOptionsMenu($event, postData.uri, postData.author.handle)"
             title="More Actions"
-            class="group flex rounded-full items-center cursor-pointer hover:bg-btnSubtle">
-                <i-mdi:dots-horizontal class="pointer-events-none group-hover:text-primary"/>
+            class="group flex px-1.5 rounded-full items-center cursor-pointer hover:bg-btnSubtle">
+                <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate || isAwaitingAccountBlockAction || isAwaitingAccountMuteAction"
+                class="text-primary spinner self-center size-3"/>
+                <i-mdi:dots-horizontal v-else class="pointer-events-none group-hover:text-primary"/>
             </div>
         </div>
     </div>
@@ -52,6 +54,8 @@ import MingcuteLinkLine from '~icons/mingcute/link-line';
 import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
 import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
+import MingcuteBookmarkLine from '~icons/mingcute/bookmark-line';
+import MingcuteBookmarkFill from '~icons/mingcute/bookmark-fill';
 import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
@@ -66,7 +70,7 @@ import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsk
 import { AppState, toast } from '../../state/AppState.vue';
 import { PostActions } from '../../enums/PostEnums';
 import { GetBrowsingAgent } from '../../lib/api.vue';
-import { DeletePost } from '../../lib/api/Post.vue';
+import { BookmarkPost, DeletePost, RemoveBookmark } from '../../lib/api/Post.vue';
 import { AppBskyFeedThreadgate } from '@atproto/api';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
@@ -134,6 +138,8 @@ export default defineComponent({
             isAwaitingRepostUpdate:false,
             // isAwaitingBookmarkUpdate:false,
             isAwaitingPostDelete:false,
+            /**Are we currently waiting for an action relating to saving/removing a Post bookmark to finish? */
+            isAwaitingBookmarkUpdate:false,
             /**Are we currently waiting for an action relating to muting or unmuting a User account to finish? */
             isAwaitingAccountMuteAction:false,
             /**Are we currently waiting for an action relating to blocking or unblocking a User account to finish? */
@@ -150,7 +156,13 @@ export default defineComponent({
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteLinkLine,Label:'Copy link to Post',Action:function(){CopyPostLink(postURI, handle)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
+            OptionsMenuState.currentMenuItems.push({Icon:MingcuteBookmarkFill,Label:'',Action:()=>{},Type:ItemType.Splitter});
+            if(this.isPostBookmarked)
+                OptionsMenuState.currentMenuItems.push({Icon:MingcuteBookmarkFill,IconStyle:'text-postBookmarkActive',Label:'Remove Bookmark',Action:this.toggleBookmark,Type:ItemType.Option});
+            else
+                OptionsMenuState.currentMenuItems.push({Icon:MingcuteBookmarkLine,Label:'Bookmark Post',Action:this.toggleBookmark,Type:ItemType.Option});
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did != this.postData.author.did){
+                OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute,Type:ItemType.Splitter});
                 if(!this.isAccountMuted)
                     OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute,Type:ItemType.Option});
                 else
@@ -162,6 +174,7 @@ export default defineComponent({
             }
             //Only show "delete post" option if the User is logged in and this is one of their Posts
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did == this.postData.author.did){
+                OptionsMenuState.currentMenuItems.push({Icon:MingcuteDelete2Line,Label:'',Action:()=>{},Type:ItemType.Splitter});
                 OptionsMenuState.currentMenuItems.push({
                     Icon:MingcuteDelete2Line,
                     Label:'Delete Post',
@@ -353,6 +366,41 @@ export default defineComponent({
             this.isAwaitingAccountBlockAction = true;
             await toggleBlock(this.postData.author)
             .finally(() => {this.isAwaitingAccountBlockAction = false});
+        },
+        /**
+         * Toggles the "Bookmark" status of a Post. Requires login.
+         */
+        async toggleBookmark(){
+            if(!AppState.checkIfLoggedIn('bookmark a Post')) return;
+            this.isAwaitingBookmarkUpdate = true;
+            if(this.isPostBookmarked){
+                await RemoveBookmark(this.postData)
+                .then(() => {
+                    if(typeof this.postData.viewer != 'undefined') this.postData.viewer.bookmarked = false;
+                    toast.add({summary:'Success',detail:`Bookmarked Removed`,severity:'success',group:'tr',life:3000});
+                })
+                .catch(err => {
+                    toast.add({summary:'Error',detail:`${err}`,severity:'error',group:'tr',life:3000});
+                    console.log(err);
+                })
+                .finally(() => {
+                    this.isAwaitingBookmarkUpdate = false;
+                })
+            }
+            else{
+                await BookmarkPost(this.postData)
+                .then(() => {
+                    if(typeof this.postData.viewer != 'undefined') this.postData.viewer.bookmarked = true;
+                    toast.add({summary:'Success',detail:`Post Bookmarked`,severity:'success',group:'tr',life:3000});
+                })
+                .catch(err => {
+                    toast.add({summary:'Error',detail:`${err}`,severity:'error',group:'tr',life:3000});
+                    console.log(err);
+                })
+                .finally(() => {
+                    this.isAwaitingBookmarkUpdate = false;
+                })
+            }
         }
     },
     computed:{
@@ -383,6 +431,10 @@ export default defineComponent({
                 if(typeof tgRecord.allow != 'undefined' && tgRecord.allow.length == 0) status = false;
             }
             return status;
+        },
+        /**Checks if the current Post has been bookmarked by the current User. */
+        isPostBookmarked(){
+            return typeof this.postData.viewer != 'undefined' && typeof this.postData.viewer.bookmarked != 'undefined' && this.postData.viewer.bookmarked;
         },
         isAccountMuted(){
             return (typeof this.postData.author.viewer != 'undefined' && typeof this.postData.author.viewer.muted != 'undefined' && this.postData.author.viewer.muted);
