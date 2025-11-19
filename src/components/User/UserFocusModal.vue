@@ -340,7 +340,7 @@ import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { getAuthorFeed, getAuthorLikes, getAuthorPostsOnly, getAuthorRepliesOnly } from '../../lib/api/Feed.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
@@ -757,17 +757,17 @@ export default defineComponent({
         showUserOptionsMenu(e:MouseEvent, handle:string=""){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteLinkLine,Label:'Copy link to Profile Page',Action:function(){CopyPostLink(handle)}},
+                {Icon:MingcuteLinkLine,Label:'Copy link to Profile Page',Action:function(){CopyPostLink(handle)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did != UserFocusModalState.currentUserAccountDID){
                 if(!this.isAccountMuted)
-                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute});
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute,Type:ItemType.Option});
                 else
-                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.requestToggleMute});
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.requestToggleMute,Type:ItemType.Option});
                 if(!this.isAccountBlocked)
-                    OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:this.requestToggleBlock});
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:this.requestToggleBlock,Type:ItemType.Option});
                 else
-                    OptionsMenuState.currentMenuItems.push({Icon:MdiUserCheck,Label:'Unblock Account',Action:this.requestToggleBlock});
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiUserCheck,Label:'Unblock Account',Action:this.requestToggleBlock,Type:ItemType.Option});
             }
             OptionsMenuState.showOptionMenu(e);
         },

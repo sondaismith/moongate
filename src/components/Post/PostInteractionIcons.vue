@@ -61,7 +61,7 @@ import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { CreateBskyWeblink, getCompactNumberValue } from '../../helpers/converters';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppState, toast } from '../../state/AppState.vue';
 import { PostActions } from '../../enums/PostEnums';
@@ -148,17 +148,17 @@ export default defineComponent({
         showOptionsMenu(e:MouseEvent, postURI:string, handle:string=""){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteLinkLine,Label:'Copy link to Post',Action:function(){CopyPostLink(postURI, handle)}},
+                {Icon:MingcuteLinkLine,Label:'Copy link to Post',Action:function(){CopyPostLink(postURI, handle)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did != this.postData.author.did){
                 if(!this.isAccountMuted)
-                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute});
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute,Type:ItemType.Option});
                 else
-                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.requestToggleMute});
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.requestToggleMute,Type:ItemType.Option});
                 if(!this.isAccountBlocked)
-                    OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:this.requestToggleBlock});
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:this.requestToggleBlock,Type:ItemType.Option});
                 else
-                    OptionsMenuState.currentMenuItems.push({Icon:MdiUserCheck,Label:'Unblock Account',Action:this.requestToggleBlock});
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiUserCheck,Label:'Unblock Account',Action:this.requestToggleBlock,Type:ItemType.Option});
             }
             //Only show "delete post" option if the User is logged in and this is one of their Posts
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did == this.postData.author.did){
@@ -166,6 +166,7 @@ export default defineComponent({
                     Icon:MingcuteDelete2Line,
                     Label:'Delete Post',
                     Action:this.askAboutDelete,
+                    Type:ItemType.Option,
                     IconStyle:'text-red-400',
                     LabelStyle:'text-red-400'
                 });
@@ -181,12 +182,12 @@ export default defineComponent({
             let isReposted = this.isPostRepostedByUser
             if(!AppState.checkIfLoggedIn('repost/quote post')) return;
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteRepeatLine,Label:(isReposted ? 'Undo Repost' : 'Repost'),Action:this.toggleRepost},
-                {Icon:MingcuteQuoteRightFill,Label:'Quote post',Action:function(){QuotePost(post)}},
+                {Icon:MingcuteRepeatLine,Label:(isReposted ? 'Undo Repost' : 'Repost'),Action:this.toggleRepost,Type:ItemType.Option},
+                {Icon:MingcuteQuoteRightFill,Label:'Quote post',Action:function(){QuotePost(post)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             //if the current user cannot quote post the interacted with post, "disable" the quote post button
             if(typeof post.viewer != 'undefined' && typeof post.viewer.embeddingDisabled != undefined && post.viewer.embeddingDisabled){
-                OptionsMenuState.currentMenuItems[1] = {Icon:MingcuteQuoteRightFill,Label:'Quote Posts disabled',Action:()=>{},disabled:true}
+                OptionsMenuState.currentMenuItems[1] = {Icon:MingcuteQuoteRightFill,Label:'Quote Posts disabled',Action:()=>{},Type:ItemType.Option,disabled:true}
             }
             OptionsMenuState.showOptionMenu(e);
         },

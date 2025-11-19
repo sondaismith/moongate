@@ -118,7 +118,7 @@ import { isTauri } from '@tauri-apps/api/core';
 import { defineComponent } from 'vue'
 import { AppState, CopyTextToClipboard, TrapFocus } from '../../state/AppState.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import AppLogo from '../SVG/AppLogo.vue';
 import { GetVersion, IVersionDetails } from '../../lib/api/VersionService';
@@ -170,8 +170,8 @@ export default defineComponent({
         showOptionsMenu(e:MouseEvent, linkURL:string){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)}},
-                {Icon:MingcuteCopyLine,Label:'Copy link to clipboard',Action:function(){CopyTextToClipboard(linkURL,'link')}},
+                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)},Type:ItemType.Option},
+                {Icon:MingcuteCopyLine,Label:'Copy link to clipboard',Action:function(){CopyTextToClipboard(linkURL,'link')},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },

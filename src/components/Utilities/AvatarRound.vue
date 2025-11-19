@@ -15,7 +15,7 @@ import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { isDid } from '@atproto/api';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { IOptionMenuItem } from './OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 
 //Option Menu Icons
 import MingcuteAddCircleLine from '~icons/mingcute/add-circle-line';
@@ -83,7 +83,7 @@ export default defineComponent({
         showOptionsMenu(e:MouseEvent, userDid:string, userHandle:string){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteAddCircleLine,Label:'Create new User Feed',Action:function(){CreateUserFeed(userDid,userHandle)}},
+                {Icon:MingcuteAddCircleLine,Label:'Create new User Feed',Action:function(){CreateUserFeed(userDid,userHandle)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },

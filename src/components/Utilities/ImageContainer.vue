@@ -50,7 +50,7 @@ import { postDetails } from '../../state/PostDetails.vue';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { Label } from '@atproto/api/dist/client/types/com/atproto/label/defs';
 import SpoilerOverlay from './SpoilerOverlay.vue';
-import { IOptionMenuItem } from './OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { AppState } from '../../state/AppState.vue';
 
@@ -166,9 +166,9 @@ export default defineComponent({
             // if(isTauri()){
                 e.preventDefault();
                 OptionsMenuState.currentMenuItems = [
-                    {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,author,postText)}},
+                    {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,author,postText)},Type:ItemType.Option},
                 ] as IOptionMenuItem[];
-                if(!isTauri()) OptionsMenuState.currentMenuItems.push({Icon:MdiOpenInNew,Label:'Open Image in New Tab',Action:function(){OpenImageInNewTab(image)}})
+                if(!isTauri()) OptionsMenuState.currentMenuItems.push({Icon:MdiOpenInNew,Label:'Open Image in New Tab',Action:function(){OpenImageInNewTab(image)},Type:ItemType.Option})
                 OptionsMenuState.showOptionMenu(e);
             // }
         },

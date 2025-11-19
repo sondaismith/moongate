@@ -25,9 +25,15 @@ export interface IOptionMenuItem{
     Icon: FunctionalComponent,
     Label: string,
     Action: Function,
+    Type:ItemType,
     IconStyle?: string,
     LabelStyle?: string,
     disabled?: boolean
+}
+
+export enum ItemType{
+    Option,
+    Splitter
 }
 
 export default defineComponent({
