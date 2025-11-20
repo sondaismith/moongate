@@ -30,7 +30,7 @@ import { getUserProfile } from '../../lib/api/User.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { IFeedDescription } from '../../interfaces/FeedInterfaces';
 import { FeedEnums } from '../../enums/FeedEnums';
 
@@ -241,14 +241,14 @@ export default defineComponent({
                 UpdateSelectedFeed(this.feedDescription.feedId);
                 let menuOptions = [] as IOptionMenuItem[];
                 if(typeof feedSourceDID != "undefined" && feedSourceDID.trim() != '' && this.feedDescription.feedType == FeedEnums.Types.User){
-                    menuOptions.push({Icon:MingcuteProfileFill,Label:'View Profile',Action:function(){ShowUserProfile(feedSourceDID)}})
+                    menuOptions.push({Icon:MingcuteProfileFill,Label:'View Profile',Action:function(){ShowUserProfile(feedSourceDID)},Type:ItemType.Option})
                 }
                 //Need to update "feed edit" functionality, so removing this for now.
                 // if(this.feedDescription.feedType != FeedEnums.Types.FeedGenerator){
                 //     menuOptions.push({Icon:MingcuteEdit4Line,Label:'Edit Feed',Action:function(){UpdateFeed()}})
                 // }
                 menuOptions = [...menuOptions,
-                    {Icon:SolarTrashBinTrashBold,Label:'Remove Feed',Action:function(){DeleteFeed()}},
+                    {Icon:SolarTrashBinTrashBold,Label:'Remove Feed',Action:function(){DeleteFeed()},Type:ItemType.Option} as IOptionMenuItem,
                 ] as IOptionMenuItem[]
                 OptionsMenuState.currentMenuItems = menuOptions;
                 OptionsMenuState.showOptionMenu(e);

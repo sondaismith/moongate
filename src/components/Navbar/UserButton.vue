@@ -28,7 +28,7 @@
 import { defineComponent } from 'vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { GetBrowsingAgent, LogoutAgent } from '../../lib/api.vue';
-import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { HandleAPIError } from '../../helpers/errors';
 
@@ -42,9 +42,9 @@ import { LoginState } from '../../interfaces/AccountInterfaces';
 import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
 
 let optionsMenu:IOptionMenuItem[] = [
-    {Icon:MingcuteProfileFill,Label:'View Profile',Action:displayCurrentUsersAccount},
-    {Icon:MdiUserSwitch,Label:'Switch User',Action:AppState.ToggleLoginModal},
-    {Icon:MingcuteExitDoorLine,Label:'Log Out',Action:confirmLogout,LabelStyle:'text-red-500'},
+    {Icon:MingcuteProfileFill,Label:'View Profile',Action:displayCurrentUsersAccount,Type:ItemType.Option},
+    {Icon:MdiUserSwitch,Label:'Switch User',Action:AppState.ToggleLoginModal,Type:ItemType.Option},
+    {Icon:MingcuteExitDoorLine,Label:'Log Out',Action:confirmLogout,Type:ItemType.Option,LabelStyle:'text-red-500'},
 ]
 
 /**

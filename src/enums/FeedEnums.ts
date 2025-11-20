@@ -35,4 +35,13 @@ export namespace FeedEnums{
         Medium = 444,
         Large = 600
     }
+    /**Collection of Tabs that can be displayed in `UserFocusModal`. */
+    export enum UserFeedTabs{
+        Feed,
+        Posts,
+        Replies,
+        Media,
+        Likes,
+        Bookmarks
+    }
 }

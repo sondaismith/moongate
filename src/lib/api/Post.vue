@@ -199,7 +199,7 @@ selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined,allowQuotePos
                     let postToShow:PostView = (newPostRes.data.thread as ThreadViewPost).post;
                     //If the created Post has a parent (it's a reply) show the parent Post
                     if((newPostRes.data.thread as ThreadViewPost).parent) postToShow = ((newPostRes.data.thread as ThreadViewPost).parent as ThreadViewPost).post
-                    showFocusModal({post: postToShow},0);
+                    showFocusModal(postToShow.uri,0);
                     // postDetails.currentPostData.replyCount++;//This is probably no longer needed, since the latest version of the Post is retrieved when the modal is displayed
                     AppState.UpdatePostsInFeedList(postDetails.currentPostData);
                 }
@@ -283,5 +283,21 @@ selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined,allowQuotePos
  */
 export async function DeletePost(postData:PostView):Promise<void>{
     GetBrowsingAgent().deletePost(postData.uri);
+}
+
+/**
+ *
+ * @param postData PostView of the Post to Bookmark/Save.
+ */
+export async function BookmarkPost(postData:PostView):Promise<void>{
+    await GetBrowsingAgent().app.bsky.bookmark.createBookmark({cid:postData.cid,uri:postData.uri});
+}
+
+/**
+ *
+ * @param postData PostView of the Post to remove from Bookmarks.
+ */
+export async function RemoveBookmark(postData:PostView):Promise<void>{
+    await GetBrowsingAgent().app.bsky.bookmark.deleteBookmark({uri:postData.uri});
 }
 </script>

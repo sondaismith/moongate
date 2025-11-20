@@ -1,16 +1,20 @@
 <template>
     <div class="absolute flex w-full h-full" @contextmenu.prevent @keyup="handleKeyup" @keydown="(e) => TrapFocus($el,e)">
         <div id="options-btn-menu" :tabindex="-1"
-        class="absolute flex flex-col rounded z-[100] p-1 bg-slate-800 border
-        border-slate-600 *:divide-slate-500 text-xs space-y-1 drop-shadow-md-harder top-[-1000px] focus-visible:outline-none">
-            <button v-for="mi in OptionsMenuState.currentMenuItems" @click="performAction(mi.Action)" @contextmenu.prevent
-            class="flex rounded-sm py-0.5 px-1 divide-x-[1px] items-center hover:bg-btnHover shadow-none cursor-pointer
-            focus-visible:border-searchbarFocusHightlight disabled:text-disabled disabled:hover:bg-transparent
-            disabled:hover:border-transparent disabled:cursor-default"
-            :disabled="mi.disabled">
-                <div class="pr-1 text-base" :class="mi.IconStyle"><component :is="mi.Icon"/></div>
-                <div class="pl-2" :class="mi.LabelStyle">{{ mi.Label }}</div>
-            </button>
+        class="absolute flex flex-col gap-1 rounded z-[100] p-1 bg-slate-800 border
+        border-slate-600 *:divide-slate-500 text-xs text-slate-100 drop-shadow-md-harder top-[-1000px] focus-visible:outline-none">
+            <template v-for="mi in OptionsMenuState.currentMenuItems">
+                <button v-if="mi.Type == ItemType.Option" @click="performAction(mi.Action)" @contextmenu.prevent
+                class="flex rounded-sm py-0.5 px-1 divide-x-[1px] items-center hover:bg-btnHover shadow-none cursor-pointer
+                focus-visible:border-searchbarFocusHightlight disabled:text-disabled disabled:hover:bg-transparent
+                disabled:hover:border-transparent disabled:cursor-default"
+                :disabled="mi.disabled">
+                    <div class="pr-1 text-base" :class="mi.IconStyle"><component :is="mi.Icon"/></div>
+                    <div class="pl-2" :class="mi.LabelStyle">{{ mi.Label }}</div>
+                </button>
+                <div v-if="mi.Type ==ItemType.Splitter" class="bg-outline h-[1px]">
+                </div>
+            </template>
         </div>
         <div @click="hideMenu" @contextmenu="hideMenu" class="z-[90] w-full h-full"></div>
     </div>
@@ -25,9 +29,15 @@ export interface IOptionMenuItem{
     Icon: FunctionalComponent,
     Label: string,
     Action: Function,
+    Type:ItemType,
     IconStyle?: string,
     LabelStyle?: string,
     disabled?: boolean
+}
+
+export enum ItemType{
+    Option,
+    Splitter
 }
 
 export default defineComponent({
@@ -35,6 +45,7 @@ export default defineComponent({
         return{
             OptionsMenuState,
             TrapFocus,
+            ItemType,
         }
     },
     methods:{

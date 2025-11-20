@@ -1,42 +1,50 @@
 <template>
-    <div :class="textColorClass" class="flex flex-wrap -mt-1 bg-red-300s text-secondary gap-1 justify-around
-     *:p-1">
-        <div data-test="postInteraction-reply-button" class="flex rounded-full items-center"
+    <div :class="textColorClass" class="flex flex-wrap -mt-1 text-secondary gap-1 justify-around justify-betweens
+     *:p-1 *:bg-red-600s">
+        <div data-test="postInteraction-reply-button" class="flex gap-0.5 rounded-full items-center"
         :class="canUserReply ? 'group cursor-pointer hover:bg-btnSubtle' : 'text-disabled select-none'"
         @click="canUserReply && replyToPost()" :title="postDetails.whoCanReply(postData)">
-            <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-600"/>
-            <div v-if="!AppSettingsState.Settings.isHidingComments" class="pl-1" :title="postData.replyCount?.toString()">{{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}</div>
+            <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-600 group-active:text-yellow-700"/>
+            <div v-if="!AppSettingsState.Settings.isHidingComments" :title="postData.replyCount?.toString()">
+                {{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}
+            </div>
         </div>
-        <div class="group flex rounded-full items-center cursor-pointer gap-1 hover:bg-btnSubtle"
+        <div class="group flex rounded-full items-center cursor-pointer gap-0.5 hover:bg-btnSubtle"
         title="Repost"
         @click="showRepostOptionsMenu($event, postData)">
-            <i-mingcute:repeat-line
+            <i-mingcute:repeat-line class="group-active:text-blue-700"
             :class="[isPostRepostedByUser ? 'text-blue-500' : 'group-hover:text-blue-500']"/>
-            <div v-if="!isAwaitingRepostUpdate" :title="postData.repostCount?.toString()" :class="[{'hidden' : AppSettingsState.Settings.isHidingShares}]">{{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}</div>
+            <div v-if="!isAwaitingRepostUpdate" :title="postData.repostCount?.toString()" :class="[{'hidden' : AppSettingsState.Settings.isHidingShares}]">
+                {{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}
+            </div>
             <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
         </div>
         <div @click="toggleLike" class="group flex rounded-full items-center cursor-pointer
-        gap-1 hover:bg-btnSubtle"
+        gap-0.5 hover:bg-btnSubtle"
         title="Like Post">
-            <i-mingcute:heart-fill
+            <i-mingcute:heart-fill class="group-active:text-red-700"
             :class="[isPostLikedByUser ? 'text-red-500' : 'group-hover:text-red-500']"/>
             <div v-if="!isAwaitingLikeUpdate":title="postData.likeCount?.toString()" :class="[{'hidden' : AppSettingsState.Settings.isHidingLikes}]">
                 {{ getCompactNumberValue(postData.likeCount ? postData.likeCount : 0) }}
             </div>
             <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
         </div>
-        <!-- <div v-if="!noShareButton" class="group flex items-center cursor-pointer hover:text-slate-300"
-        :class="{'pointer-events-none' : !AppState.isAuthBrowsing}">
-            <i-solar:share-bold class="pointer-events-none group-hover:text-blue-500"/>
-        </div> -->
-        <div @click="showOptionsMenu($event, postData.uri, postData.author.handle)"
-        title="More Actions"
-        class="group flex rounded-full items-center cursor-pointer hover:bg-btnSubtle">
-            <i-mdi:dots-horizontal class="pointer-events-none group-hover:text-primary"/>
+        <div class="flex !p-0 min-h-[28px]">
+            <!-- <div @click="" class="group flex rounded-full items-center cursor-pointer
+            gap-1 hover:bg-btnSubtle"
+            title="Save Post">
+                <i-mingcute:bookmark-fill class="group-active:text-green-700"
+                :class="[isPostLikedByUser ? 'text-green-500' : 'group-hover:text-green-500']"/>
+                <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate" class="text-primary spinner self-center size-3"/>
+            </div> -->
+            <button @click="showOptionsMenu($event, postData.uri, postData.author.handle)"
+            :disabled="isAwaitingBookmarkUpdate || isAwaitingAccountBlockAction || isAwaitingAccountMuteAction"
+            title="More Actions" class="group flex px-1.5 min-w-[28px] rounded-full items-center border-0 hover:bg-btnSubtle disabled:bg-disabledBG disabled:text-disabled disabled:cursor-not-allowed shadow-none">
+                <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate || isAwaitingAccountBlockAction || isAwaitingAccountMuteAction"
+                class="text-primary spinner self-center p-0.5"/>
+                <i-mdi:dots-horizontal v-else class="pointer-events-none group-hover:text-primary group-disabled:text-disabled"/>
+            </button>
         </div>
-        <!-- <div @click="postDetails.showPostOptionsMenu" class="group flex items-center cursor-pointer hover:text-slate-300">
-            <i-mdi:dots-horizontal class="pointer-events-none group-hover:text-primary"/>
-        </div> -->
     </div>
 </template>
 
@@ -46,6 +54,8 @@ import MingcuteLinkLine from '~icons/mingcute/link-line';
 import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
 import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
+import MingcuteBookmarkLine from '~icons/mingcute/bookmark-line';
+import MingcuteBookmarkFill from '~icons/mingcute/bookmark-fill';
 import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
@@ -55,12 +65,12 @@ import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { CreateBskyWeblink, getCompactNumberValue } from '../../helpers/converters';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppState, toast } from '../../state/AppState.vue';
 import { PostActions } from '../../enums/PostEnums';
 import { GetBrowsingAgent } from '../../lib/api.vue';
-import { DeletePost } from '../../lib/api/Post.vue';
+import { BookmarkPost, DeletePost, RemoveBookmark } from '../../lib/api/Post.vue';
 import { AppBskyFeedThreadgate } from '@atproto/api';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
@@ -126,7 +136,10 @@ export default defineComponent({
             postThread: {} as ThreadViewPost,
             isAwaitingLikeUpdate:false,
             isAwaitingRepostUpdate:false,
+            // isAwaitingBookmarkUpdate:false,
             isAwaitingPostDelete:false,
+            /**Are we currently waiting for an action relating to saving/removing a Post bookmark to finish? */
+            isAwaitingBookmarkUpdate:false,
             /**Are we currently waiting for an action relating to muting or unmuting a User account to finish? */
             isAwaitingAccountMuteAction:false,
             /**Are we currently waiting for an action relating to blocking or unblocking a User account to finish? */
@@ -141,24 +154,32 @@ export default defineComponent({
         showOptionsMenu(e:MouseEvent, postURI:string, handle:string=""){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteLinkLine,Label:'Copy link to Post',Action:function(){CopyPostLink(postURI, handle)}},
+                {Icon:MingcuteLinkLine,Label:'Copy link to Post',Action:function(){CopyPostLink(postURI, handle)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
+            OptionsMenuState.currentMenuItems.push({Icon:MingcuteBookmarkFill,Label:'',Action:()=>{},Type:ItemType.Splitter});
+            if(this.isPostBookmarked)
+                OptionsMenuState.currentMenuItems.push({Icon:MingcuteBookmarkFill,IconStyle:'text-postBookmarkActive',Label:'Remove Bookmark',Action:this.toggleBookmark,Type:ItemType.Option});
+            else
+                OptionsMenuState.currentMenuItems.push({Icon:MingcuteBookmarkLine,Label:'Bookmark Post',Action:this.toggleBookmark,Type:ItemType.Option});
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did != this.postData.author.did){
+                OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute,Type:ItemType.Splitter});
                 if(!this.isAccountMuted)
-                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute});
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute,Type:ItemType.Option});
                 else
-                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.requestToggleMute});
+                    OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeFill,Label:'Unmute Account',Action:this.requestToggleMute,Type:ItemType.Option});
                 if(!this.isAccountBlocked)
-                    OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:this.requestToggleBlock});
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiPersonBlock,Label:'Block Account',Action:this.requestToggleBlock,Type:ItemType.Option});
                 else
-                    OptionsMenuState.currentMenuItems.push({Icon:MdiUserCheck,Label:'Unblock Account',Action:this.requestToggleBlock});
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiUserCheck,Label:'Unblock Account',Action:this.requestToggleBlock,Type:ItemType.Option});
             }
             //Only show "delete post" option if the User is logged in and this is one of their Posts
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did == this.postData.author.did){
+                OptionsMenuState.currentMenuItems.push({Icon:MingcuteDelete2Line,Label:'',Action:()=>{},Type:ItemType.Splitter});
                 OptionsMenuState.currentMenuItems.push({
                     Icon:MingcuteDelete2Line,
                     Label:'Delete Post',
                     Action:this.askAboutDelete,
+                    Type:ItemType.Option,
                     IconStyle:'text-red-400',
                     LabelStyle:'text-red-400'
                 });
@@ -174,12 +195,12 @@ export default defineComponent({
             let isReposted = this.isPostRepostedByUser
             if(!AppState.checkIfLoggedIn('repost/quote post')) return;
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteRepeatLine,Label:(isReposted ? 'Undo Repost' : 'Repost'),Action:this.toggleRepost},
-                {Icon:MingcuteQuoteRightFill,Label:'Quote post',Action:function(){QuotePost(post)}},
+                {Icon:MingcuteRepeatLine,Label:(isReposted ? 'Undo Repost' : 'Repost'),Action:this.toggleRepost,Type:ItemType.Option},
+                {Icon:MingcuteQuoteRightFill,Label:'Quote post',Action:function(){QuotePost(post)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             //if the current user cannot quote post the interacted with post, "disable" the quote post button
             if(typeof post.viewer != 'undefined' && typeof post.viewer.embeddingDisabled != undefined && post.viewer.embeddingDisabled){
-                OptionsMenuState.currentMenuItems[1] = {Icon:MingcuteQuoteRightFill,Label:'Quote Posts disabled',Action:()=>{},disabled:true}
+                OptionsMenuState.currentMenuItems[1] = {Icon:MingcuteQuoteRightFill,Label:'Quote Posts disabled',Action:()=>{},Type:ItemType.Option,disabled:true}
             }
             OptionsMenuState.showOptionMenu(e);
         },
@@ -345,6 +366,41 @@ export default defineComponent({
             this.isAwaitingAccountBlockAction = true;
             await toggleBlock(this.postData.author)
             .finally(() => {this.isAwaitingAccountBlockAction = false});
+        },
+        /**
+         * Toggles the "Bookmark" status of a Post. Requires login.
+         */
+        async toggleBookmark(){
+            if(!AppState.checkIfLoggedIn('bookmark a Post')) return;
+            this.isAwaitingBookmarkUpdate = true;
+            if(this.isPostBookmarked){
+                await RemoveBookmark(this.postData)
+                .then(() => {
+                    if(typeof this.postData.viewer != 'undefined') this.postData.viewer.bookmarked = false;
+                    toast.add({summary:'Success',detail:`Bookmarked Removed`,severity:'success',group:'tr',life:3000});
+                })
+                .catch(err => {
+                    toast.add({summary:'Error',detail:`${err}`,severity:'error',group:'tr',life:3000});
+                    console.log(err);
+                })
+                .finally(() => {
+                    this.isAwaitingBookmarkUpdate = false;
+                })
+            }
+            else{
+                await BookmarkPost(this.postData)
+                .then(() => {
+                    if(typeof this.postData.viewer != 'undefined') this.postData.viewer.bookmarked = true;
+                    toast.add({summary:'Success',detail:`Post Bookmarked`,severity:'success',group:'tr',life:3000});
+                })
+                .catch(err => {
+                    toast.add({summary:'Error',detail:`${err}`,severity:'error',group:'tr',life:3000});
+                    console.log(err);
+                })
+                .finally(() => {
+                    this.isAwaitingBookmarkUpdate = false;
+                })
+            }
         }
     },
     computed:{
@@ -375,6 +431,10 @@ export default defineComponent({
                 if(typeof tgRecord.allow != 'undefined' && tgRecord.allow.length == 0) status = false;
             }
             return status;
+        },
+        /**Checks if the current Post has been bookmarked by the current User. */
+        isPostBookmarked(){
+            return typeof this.postData.viewer != 'undefined' && typeof this.postData.viewer.bookmarked != 'undefined' && this.postData.viewer.bookmarked;
         },
         isAccountMuted(){
             return (typeof this.postData.author.viewer != 'undefined' && typeof this.postData.author.viewer.muted != 'undefined' && this.postData.author.viewer.muted);

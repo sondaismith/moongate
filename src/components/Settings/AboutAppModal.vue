@@ -33,6 +33,17 @@
             <div class="flex flex-col overflow-y-auto">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">November 20th 2025</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Added ability to Bookmark posts.
+                            <ul class="list-disc list-inside h-full text-sm">
+                                <li>The logged in User can view their Bookmarks by visiting their profile and selecting the "Saved" tab.</li>
+                            </ul>
+                        </li>
+                        <li>Option Menus now have their items organized into groups.</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">November 17th 2025</div>
                     <ul class="list-disc list-inside h-full py-1 text-sm">
                         <li>Added ability to Mute and Block Accounts.</li>
@@ -118,7 +129,7 @@ import { isTauri } from '@tauri-apps/api/core';
 import { defineComponent } from 'vue'
 import { AppState, CopyTextToClipboard, TrapFocus } from '../../state/AppState.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import AppLogo from '../SVG/AppLogo.vue';
 import { GetVersion, IVersionDetails } from '../../lib/api/VersionService';
@@ -170,8 +181,8 @@ export default defineComponent({
         showOptionsMenu(e:MouseEvent, linkURL:string){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)}},
-                {Icon:MingcuteCopyLine,Label:'Copy link to clipboard',Action:function(){CopyTextToClipboard(linkURL,'link')}},
+                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)},Type:ItemType.Option},
+                {Icon:MingcuteCopyLine,Label:'Copy link to clipboard',Action:function(){CopyTextToClipboard(linkURL,'link')},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },

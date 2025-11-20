@@ -1,5 +1,5 @@
 <script lang="ts">
-import { AppBskyActorSearchActors, AppBskyFeedGetActorLikes, AppBskyFeedGetAuthorFeed, AppBskyFeedGetTimeline, AppBskyFeedSearchPosts } from "@atproto/api/dist/client";
+import { AppBskyActorSearchActors, AppBskyBookmarkGetBookmarks, AppBskyFeedGetActorLikes, AppBskyFeedGetAuthorFeed, AppBskyFeedGetTimeline, AppBskyFeedSearchPosts } from "@atproto/api/dist/client";
 import { GetBrowsingAgent } from "../api.vue";
 import { AppSettingsState } from "../../state/AppSettingsState.vue";
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
@@ -183,6 +183,15 @@ export async function getAuthorLikes(did:string,cursor:string='',postsToGet:numb
     })
     console.log(`Returning ${result.data.feed.length} posts liked by this User`);
     return result;
+}
+
+/**
+ * Method used to return the logged in User's Saved/Bookmarked Posts.
+ * NOTE:Currently pagination is handled in `UserFocusModal` do to how the tabs are set up. Probably should change that...
+ * @param cursor Used when requesting posts from a certain point (pagination).
+ */
+export async function getAuthorBookmarks(cursor:string='',limit:number=30):Promise<AppBskyBookmarkGetBookmarks.Response>{
+    return await GetBrowsingAgent().app.bsky.bookmark.getBookmarks({limit:limit,cursor:cursor});
 }
 
 /**

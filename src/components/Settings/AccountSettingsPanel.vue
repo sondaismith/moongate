@@ -87,7 +87,7 @@ import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import FilterBar from '../Utilities/FilterBar.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
 import AccountListing from '../Utilities/AccountListing.vue';
 
@@ -376,7 +376,7 @@ export default defineComponent({
         showOptionsMenu(e:MouseEvent, userDID:string){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteProfileFill,Label:'View Profile (Closes Settings)',Action:function(){ShowUserProfile(userDID)}},
+                {Icon:MingcuteProfileFill,Label:'View Profile (Closes Settings)',Action:function(){ShowUserProfile(userDID)},Type:ItemType.Option},
             ] as IOptionMenuItem[];
             OptionsMenuState.showOptionMenu(e);;
         },

@@ -58,10 +58,10 @@
             </div>
             <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mb-8 p-2 h-16 animate-pulse text-sm bg-slate-500/30"></div>
             <div v-else-if="hasEmbededImagesWithAltText" class="flex rounded-lg mx-8 mb-8 p-2 text-sm bg-slate-500/20">
-                <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ getEmbededImageAltText }}</div>
+                <div class="flex min-[300px]:max-h-20 grow text-slate-100 overflow-auto">{{ getEmbededImageAltText }}</div>
             </div>
             <div v-else-if="hasEmbededVideoWithAltText" class="flex rounded-lg mx-8 mb-8 p-2 text-sm bg-slate-500/20">
-                <div class="flex min-[300px]:max-h-20 grow overflow-auto">{{ postDetails.currentThreadView.post.embed?.alt }}</div>
+                <div class="flex min-[300px]:max-h-20 grow text-slate-100 overflow-auto">{{ postDetails.currentThreadView.post.embed?.alt }}</div>
             </div>
             <div v-else class="h-10 w-full shrink-0"></div>
             {{ void "Post Details" }}

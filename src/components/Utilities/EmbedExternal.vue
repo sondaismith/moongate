@@ -70,7 +70,7 @@ import ImageContainer from './ImageContainer.vue';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { isTauri } from '@tauri-apps/api/core';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { IOptionMenuItem } from './OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { CopyTextToClipboard } from '../../state/AppState.vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
 
@@ -154,9 +154,9 @@ export default defineComponent({
         showOptionsMenu(e:MouseEvent, linkURL:string){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)}},
+                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)},Type:ItemType.Option},
                 // {Icon:MingcuteIncognitoModeLine,Label:'Open in Default Browser (Private/Incognito)',Action:function(){alert(`Opened '${linkURL}'' secretly!`)}},
-                {Icon:MingcuteCopyLine,Label:'Copy link to clipboard',Action:function(){CopyTextToClipboard(linkURL,'link')}},
+                {Icon:MingcuteCopyLine,Label:'Copy link to clipboard',Action:function(){CopyTextToClipboard(linkURL,'link')},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },

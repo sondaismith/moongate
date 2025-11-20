@@ -92,7 +92,7 @@
                 {{ convertToShortTimestamp(postReason.indexedAt) }}
             </div>
         </div>
-        <div v-else-if="postToShow && isPostReply" @click="openFocusDetailsPost(reply?.parent as PostView)"
+        <div v-else-if="postToShow && isPostReply" @click="openPostReply(getReplyParentURI)"
         title="Open Reply Parent"
         class="flex self-start py-0.5 px-2 rounded-md text-[10px] leading-3 text-primary
         bg-btn hover:bg-btnHover cursor-pointer select-none">
@@ -109,7 +109,7 @@
                 <div class="flex items-center gap-2">
                     <AvatarRound v-if="!isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"
                     @avatar-clicked="callFocusPostAvatarClicked(postToShow.author.did)"/>
-                    <div class="flex overflow-hidden" :class="[isReplyStyle ? 'gap-1 items-center' : 'flex-col']">
+                    <div class="flex overflow-hidden self-starts" :class="[isReplyStyle ? 'gap-1 items-center' : 'flex-col']">
                         <div class="flex items-center gap-1 overflow-hidden">
                             <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="postToShow.author.displayName">
                                 {{ postToShow.author.displayName }}
@@ -118,8 +118,17 @@
                         </div>
                         <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="postToShow.author.handle">@{{ postToShow.author.handle }}</div>
                     </div>
-                    <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
-                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start ml-auto" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
+                    <div class="self-start ml-auto">
+                        <button v-if="isPostBookmarked" @click="toggleBookmark" :disabled="isAwaitingBookmarkUpdate" class="group flex items-center rounded-none cursor-pointer
+                        gap-1 hover:bg-btnSubtles text-secondary shadow-none hover:border-transparent active:bg-transparent active:border-transparent disabled:cursor-not-allowed disabled:text-disabled"
+                        :title="isPostBookmarked ? 'Remove Bookmark' : 'Save Post'">
+                            <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate" class="text-primary spinner self-center size-3"/>
+                            <i-mingcute:bookmark-line v-if="!isPostBookmarked" class="group-active:text-postBookmarkActive group-hover:text-postBookmarkHover"/>
+                            <i-mingcute:bookmark-fill v-else class="text-postBookmark group-hover:text-postBookmarkHover group-active:text-postBookmarkActive group-disabled:text-disabled"/>
+                        </button>
+                    </div>
+                    <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
+                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
@@ -166,8 +175,10 @@ import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
-import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { isMain, Main, Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { toggleBlock } from '../../lib/api/User.vue';
+import { BookmarkPost, RemoveBookmark } from '../../lib/api/Post.vue';
+import { AppState, toast } from '../../state/AppState.vue';
 
 export default defineComponent({
     components:{
@@ -224,6 +235,8 @@ export default defineComponent({
             postToShow: {author:{did:'',handle:''},cid:'',indexedAt:'',record:{},uri:''} as PostView,
             /**Are we currently waiting for an action relating to blocking or unblocking a User account to finish? */
             isAwaitingAccountBlockAction:false,
+            /**Are we currently waiting for an action relating to saving/removing a Post bookmark to finish? */
+            isAwaitingBookmarkUpdate:false,
         }
     },
     emits:{
@@ -267,12 +280,12 @@ export default defineComponent({
                 if(postDetails.isFocusVisible)
                     this.emitThreadReplyClicked(this.postToShow.uri);
                 else
-                    showFocusModal({post: this.postToShow}, mediaIndex);
+                    showFocusModal(this.postToShow.uri, mediaIndex);
             }
         },
-        openFocusDetailsPost(post:PostView, mediaIndex:number=0){
-            if(this.postToShow){
-                showFocusModal({post: post}, mediaIndex);
+        openPostReply(postURI:string|undefined, mediaIndex:number=0){
+            if(typeof this.postToShow != 'undefined' && typeof postURI != 'undefined'){
+                showFocusModal(postURI, mediaIndex);
             }
         },
         /**
@@ -294,6 +307,41 @@ export default defineComponent({
                 this.isAwaitingAccountBlockAction = true;
                 await toggleBlock(this.postData.author)
                 .finally(() => {this.isAwaitingAccountBlockAction = false});
+            }
+        },
+        /**
+         * Toggles the "Bookmark" status of a Post. Requires login.
+         */
+        async toggleBookmark(){
+            if(!AppState.checkIfLoggedIn('bookmark a Post')) return;
+            this.isAwaitingBookmarkUpdate = true;
+            if(this.isPostBookmarked){
+                await RemoveBookmark(this.postToShow)
+                .then(() => {
+                    if(typeof this.postToShow.viewer != 'undefined') this.postToShow.viewer.bookmarked = false;
+                    toast.add({summary:'Success',detail:`Bookmarked Removed`,severity:'success',group:'tr',life:3000});
+                })
+                .catch(err => {
+                    toast.add({summary:'Error',detail:`${err}`,severity:'error',group:'tr',life:3000});
+                    console.log(err);
+                })
+                .finally(() => {
+                    this.isAwaitingBookmarkUpdate = false;
+                })
+            }
+            else{
+                await BookmarkPost(this.postToShow)
+                .then(() => {
+                    if(typeof this.postToShow.viewer != 'undefined') this.postToShow.viewer.bookmarked = true;
+                    toast.add({summary:'Success',detail:`Post Bookmarked`,severity:'success',group:'tr',life:3000});
+                })
+                .catch(err => {
+                    toast.add({summary:'Error',detail:`${err}`,severity:'error',group:'tr',life:3000});
+                    console.log(err);
+                })
+                .finally(() => {
+                    this.isAwaitingBookmarkUpdate = false;
+                })
             }
         }
     },
@@ -492,14 +540,28 @@ export default defineComponent({
          * is a `PostView` as well.
          */
         isPostReply(){
+            //ThreadViewPost that is reply (seen in Feed)
             if(this.reply && isPostView(this.reply.parent)) return true;
+            //Standalone PostView that is reply (likely seen as bookmark)
+            else if(isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined' && isPostView(this.postToShow)) return true;
             return false;
+        },
+        /**Return the URI pointing to the Parent of this Post, if it exists. */
+        getReplyParentURI():string|undefined{
+            if(this.isPostReply){
+                if(typeof this.reply != 'undefined' && isPostView(this.reply.parent)) return this.reply.parent.uri;
+                else if(isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined') return (this.postToShow.record as Main).reply?.parent.uri;
+            }
         },
         /**Is the account associated with the currently displayed Post blocked by the logged in User? */
         isAccountBlocked():boolean{
             //author has to be checked in case the Post Records is a `viewNotFound` or similar
             return typeof this.postToShow.author != 'undefined' && typeof this.postToShow.author.viewer != 'undefined' && typeof this.postToShow.author.viewer.blocking != 'undefined';
-        }
+        },
+        /**Checks if this Post has been bookmarked by the current User. */
+        isPostBookmarked(){
+            return typeof this.postToShow.viewer != 'undefined' && typeof this.postToShow.viewer.bookmarked != 'undefined' && this.postToShow.viewer.bookmarked;
+        },
     },
     created(){
         // console.log(this.postData); //DEBUG - missing object/variable catching
