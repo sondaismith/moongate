@@ -33,6 +33,17 @@
             <div class="flex flex-col overflow-y-auto">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">November 20th 2025</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Added ability to Bookmark posts.
+                            <ul class="list-disc list-inside h-full text-sm">
+                                <li>The logged in User can view their Bookmarks by visiting their profile and selecting the "Saved" tab.</li>
+                            </ul>
+                        </li>
+                        <li>Option Menus now have their items organized into groups.</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">November 17th 2025</div>
                     <ul class="list-disc list-inside h-full py-1 text-sm">
                         <li>Added ability to Mute and Block Accounts.</li>
