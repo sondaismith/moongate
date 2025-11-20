@@ -174,6 +174,11 @@
                                 <div class="pt-2 pb-1">Likes</div>
                                 <div v-if="isViewingLikes" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
                             </div>
+                            <div v-if="isThisCurrentUserAccount" @click="viewBookmarks" class="w-full hover:bg-btnHover cursor-pointer"
+                            title="View Your Saved Posts">
+                                <div class="pt-2 pb-1">Saved</div>
+                                <div v-if="isViewingBookmarks" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
+                            </div>
                         </div>
                         {{ void "General Posts" }}
                         <div v-if="(isViewingFeed || isViewingPosts || isViewingReplies || isViewingLikes) && !isAccountBlocked"
@@ -241,6 +246,73 @@
                                     <div>Load more</div>
                                 </div>
                             </SquareButton>
+                        </div>
+                        {{ void "Bookmarks" }}
+                        <div v-if="isViewingBookmarks" class="flex flex-col flex-wrap items-start py-2 px-4 gap-2 max-w-[30rem] w-full">
+                            {{ void "Placeholder Post" }}
+                            <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
+                                <div class="flex h-10 gap-2">
+                                    <div class="rounded-full size-10 bg-slate-500"></div>
+                                    <div class="flex flex-col gap-1 overflow-hidden">
+                                        <div class="h-5 w-24 rounded bg-slate-500"></div>
+                                        <div class="h-4 w-20 rounded bg-slate-500"></div>
+                                    </div>
+                                    <div class="h-3 w-20 rounded bg-slate-500 ml-auto"></div>
+                                </div>
+                                <div class="flex flex-col w-full gap-1 mt-1">
+                                    <div class="h-5 w-3/5 rounded bg-slate-500"></div>
+                                    <div class="h-5 w-4/5 rounded bg-slate-500"></div>
+                                    <div class="h-5 w-2/5 rounded bg-slate-500"></div>
+                                </div>
+                                <div class="h-48 rounded-lg p-2 border border-slate-600">
+                                    <div class="w-full h-full rounded bg-slate-500"></div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else-if="!awaitingProfileData && !isNavigatingHistory" class="flex flex-col w-full gap-2">
+                                <div v-for="b in UserFocusModalState.GetCurrentHistoryData().Bookmarks">
+                                    <FocusFeedPost @focus-post-avatar-clicked="updateDisplayedData" v-if="isPostView(b.item)" :post-data="b.item"></FocusFeedPost>
+                                </div>
+                                <div v-if="!awaitingProfileData && hasEndOfBookmarksBeenReached"
+                                class="flex justify-center rounded p-1 gap-1 w-full items-center
+                                border border-outline bg-disabled select-none">
+                                    <i-mdi:block/>
+                                    <div>End of Saved Posts</div>
+                                </div>
+                                <SquareButton v-else-if="!awaitingProfileData && typeof UserFocusModalState.GetCurrentHistoryData().FeedData.cursor != 'undefined'"
+                                @click="loadOlderPosts"
+                                focus-padding="[1px]"
+                                class="rounded h-8 p-1 w-full items-center cursor-pointer
+                                border border-outline bg-btn hover:bg-btnHover"
+                                :title="isViewingLikes ? 'NOTE: Currently loading likes is broken - cannot currently identify end of stream' : 'Click to load older posts'">
+                                    <div class="flex items-center gap-1">
+                                        <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
+                                        <i-mingcute:plus-fill v-else/>
+                                        <div>Load more</div>
+                                    </div>
+                                </SquareButton>
+                            </div>
                         </div>
                         {{ void "Media Posts" }}
                         <div v-if="isViewingMedia" class="py-4 w-full">
@@ -313,13 +385,12 @@ import { defineComponent } from 'vue'
 import PillButton from '../Utilities/PillButton.vue';
 import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { FeedViewPost, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { FeedViewPost, isPostView, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppBskyActorGetProfile, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
 import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { GenerateTagLinkText } from '../../helpers/parsers';
 import Hashtag from '../Utilities/Hashtag.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
-import { HandleAPIError } from '../../helpers/errors';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
@@ -337,7 +408,7 @@ import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
 import { MediaType } from '../../enums/PostEnums';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
-import { getAuthorFeed, getAuthorLikes, getAuthorPostsOnly, getAuthorRepliesOnly } from '../../lib/api/Feed.vue';
+import { getAuthorBookmarks, getAuthorFeed, getAuthorLikes, getAuthorPostsOnly, getAuthorRepliesOnly } from '../../lib/api/Feed.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
@@ -363,6 +434,7 @@ export default defineComponent({
             MediaType,
             isImage,
             isReasonRepost,
+            isPostView,
             GenerateTagLinkText,
             convertToShortTimestamp,
             convertToLongTimestamp,
@@ -376,6 +448,7 @@ export default defineComponent({
             isViewingReplies:false,
             isViewingMedia:false,
             isViewingLikes:false,
+            isViewingBookmarks:false,
             awaitingProfileData:false,
             isAwaitingTabSwitchData:false,
             isAwaitingLoadMorePosts:false,
@@ -418,18 +491,17 @@ export default defineComponent({
         async viewFeed(){
             if(!this.awaitingProfileData){
                 this.repositionScrollOnTabSwitch();
+                this.deselectAllTabs();
                 this.isViewingFeed = true;
-                this.isViewingPosts = this.isViewingReplies = this.isViewingMedia = this.isViewingLikes = false;
+                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                historyData.currentTab = FeedEnums.UserFeedTabs.Feed;
                 this.isAwaitingTabSwitchData = true;
                 await getAuthorFeed(UserFocusModalState.currentUserAccountDID)
                 .then(res => {
-                    // this.currentUserAccountTimelineData.data = res.data.feed;
-                    // this.currentUserAccountTimelineData.cursor = res.data.cursor;
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                    historyData.FeedData.data = res.data.feed;
+                    historyData.FeedData.cursor = res.data.cursor;
                 })
                 .catch(err => {
-                    // toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s timeline`));
                     toast.add({summary:"Error getting Posts", detail:`${err}`, severity:'error', group:'tr', life:3000});
                 });
                 this.isAwaitingTabSwitchData = false;
@@ -439,15 +511,17 @@ export default defineComponent({
         async viewPosts(){
             if(!this.awaitingProfileData){
                 this.repositionScrollOnTabSwitch();
+                this.deselectAllTabs();
                 this.isViewingPosts = true;
-                this.isViewingFeed = this.isViewingReplies = this.isViewingMedia = this.isViewingLikes = false;
+                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                historyData.currentTab = FeedEnums.UserFeedTabs.Posts;
                 this.isAwaitingTabSwitchData = true;
                 await getAuthorPostsOnly(UserFocusModalState.currentUserAccountDID)
                 .then(res => {
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                    historyData.FeedData.data = res.data.feed;
+                    historyData.FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s posts`)));
+                .catch(err => toast.add({summary:`Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s Posts`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -455,15 +529,17 @@ export default defineComponent({
         async viewReplies(){
             if(!this.awaitingProfileData){
                 this.repositionScrollOnTabSwitch();
+                this.deselectAllTabs();
                 this.isViewingReplies = true;
-                this.isViewingFeed = this.isViewingPosts = this.isViewingMedia = this.isViewingLikes = false;
+                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                historyData.currentTab = FeedEnums.UserFeedTabs.Replies;
                 this.isAwaitingTabSwitchData = true;
                 await getAuthorRepliesOnly(UserFocusModalState.currentUserAccountDID)
                 .then(res => {
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                    historyData.FeedData.data = res.data.feed;
+                    historyData.FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s replies`)));
+                .catch(err => toast.add({summary:`Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s Replies`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -471,8 +547,10 @@ export default defineComponent({
         async viewMedia(){
             if(!this.awaitingProfileData){
                 this.repositionScrollOnTabSwitch();
+                this.deselectAllTabs();
                 this.isViewingMedia = true;
-                this.isViewingFeed = this.isViewingPosts = this.isViewingReplies = this.isViewingLikes = false;
+                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                historyData.currentTab = FeedEnums.UserFeedTabs.Media;
                 this.isAwaitingTabSwitchData = true;
                 //Get media posts
                 await GetBrowsingAgent().getAuthorFeed({
@@ -480,10 +558,10 @@ export default defineComponent({
                     filter:'posts_with_media',
                 })
                 .then(res => {
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                    historyData.FeedData.data = res.data.feed;
+                    historyData.FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s media`)));
+                .catch(err => toast.add({summary:`Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s media`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -491,16 +569,37 @@ export default defineComponent({
         async viewLikes(){
             if(!this.awaitingProfileData){
                 this.repositionScrollOnTabSwitch();
+                this.deselectAllTabs();
                 this.isViewingLikes = true;
-                this.isViewingFeed = this.isViewingPosts = this.isViewingReplies = this.isViewingMedia = false;
+                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                historyData.currentTab = FeedEnums.UserFeedTabs.Likes;
                 this.isAwaitingTabSwitchData = true;
                 //Get liked posts
                 await getAuthorLikes(UserFocusModalState.currentUserAccountDID)
                 .then(res => {
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.data = res.data.feed;
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                    historyData.FeedData.data = res.data.feed;
+                    historyData.FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s likes`)));
+                .catch(err => toast.add({summary:`Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s Likes`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
+                this.isAwaitingTabSwitchData = false;
+            }
+        },
+        /**Prepares and displays data when the "Saved" tab is clicked. */
+        async viewBookmarks(){
+            if(!this.awaitingProfileData){
+                this.repositionScrollOnTabSwitch();
+                this.deselectAllTabs();
+                this.isViewingBookmarks = true;
+                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                historyData.currentTab = FeedEnums.UserFeedTabs.Bookmarks;
+                this.isAwaitingTabSwitchData = true;
+                //Get liked posts
+                await getAuthorBookmarks(undefined,10)
+                .then(res => {
+                    historyData.Bookmarks = res.data.bookmarks;
+                    historyData.FeedData.cursor = res.data.cursor;
+                })
+                .catch(err => toast.add({summary:`Error getting your Bookmarks`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -514,7 +613,7 @@ export default defineComponent({
                     });
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
+                .catch(err => toast.add({summary:`Error loading more posts`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
             }
             else if(this.isViewingLikes){
                 let agent = GetBrowsingAgent();
@@ -525,7 +624,21 @@ export default defineComponent({
                     });
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
+                .catch(err => toast.add({summary:`Error loading more posts`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
+            }
+            else if(this.isViewingBookmarks){
+                await getAuthorBookmarks(UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
+                .then(res => {
+                    let bList = UserFocusModalState.GetCurrentHistoryData().Bookmarks;
+                    if(typeof bList != 'undefined' && res.data.bookmarks.length>0){
+                        res.data.bookmarks.forEach(b => {
+                            bList.push(b);
+                        });
+                        UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                    }
+                    else UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = '';
+                })
+                .catch(err => toast.add({summary:`Error loading more Bookmarks`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
             }
             else if(this.isViewingPosts){
                 await getAuthorPostsOnly(UserFocusModalState.currentUserAccountDID, UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
@@ -535,7 +648,7 @@ export default defineComponent({
                     });
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
+                .catch(err => toast.add({summary:`Error loading more posts`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
             }
             else if(this.isViewingReplies){
                 await getAuthorRepliesOnly(UserFocusModalState.currentUserAccountDID, UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
@@ -545,16 +658,20 @@ export default defineComponent({
                     });
                     UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add(HandleAPIError(err, `Error loading more posts`)));
+                .catch(err => toast.add({summary:`Error loading more posts`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
             }
             this.isAwaitingLoadMorePosts = false;
+        },
+        /**Deselects all the "Post type" tabs. */
+        deselectAllTabs(){
+            this.isViewingFeed = this.isViewingPosts = this.isViewingReplies = this.isViewingMedia = this.isViewingLikes = this.isViewingBookmarks = false;
         },
         closeModal(){
             AppState.HideUserFocusModal();
         },
         showMediaContent(post:FeedViewPost){
             postDetails.isFocusVisible = true;
-            showFocusModal(post,0);
+            showFocusModal(post.post.uri,0);
         },
         async updateDisplayedData(){
             if(isDid(UserFocusModalState.currentUserAccountDID)){
@@ -575,7 +692,7 @@ export default defineComponent({
                     //all of the items in front of the current index
                     if(UserFocusModalState.currentNavIndex < UserFocusModalState.navigationHistory.length-1) UserFocusModalState.navigationHistory.splice(UserFocusModalState.currentNavIndex+1);
                     //Add the latest User Account page to the history array
-                    UserFocusModalState.navigationHistory.push({FeedData:{data:res.data.feed,cursor:res.data.cursor},ProfileData:userProfile.data,scrollPos:0});
+                    UserFocusModalState.navigationHistory.push({FeedData:{data:res.data.feed,cursor:res.data.cursor},ProfileData:userProfile.data,scrollPos:0,currentTab:FeedEnums.UserFeedTabs.Feed});
                     //Move to the newly added User account - will not occur if there is only one item (initial state)
                     if(UserFocusModalState.navigationHistory.length > 1) this.goToNextNavHistory(false);
                     // setTimeout(() => {
@@ -590,7 +707,7 @@ export default defineComponent({
                     }
                     else toast.add({summary:"Error", detail:`${err}`, severity:'error', group:'tr', life:3000});
                     //Account is probably blocked - Display Profile, but no posts
-                    UserFocusModalState.navigationHistory.push({FeedData:{data:[],cursor:undefined},ProfileData:userProfile.data,scrollPos:0});
+                    UserFocusModalState.navigationHistory.push({FeedData:{data:[],cursor:undefined},ProfileData:userProfile.data,scrollPos:0,currentTab:FeedEnums.UserFeedTabs.Feed});
                 });
                 this.awaitingProfileData = false;
 
@@ -670,6 +787,7 @@ export default defineComponent({
             this.isNavigatingHistory = true;
             UserFocusModalState.PrevNavHistory();
             setTimeout(() => {
+                this.restoreTabAfterNavHistoryChange(UserFocusModalState.GetCurrentHistoryData().currentTab);
                 this.restoreScrollPosAfterNavHistoryChange();
                 this.isNavigatingHistory = false;
             }, 1);
@@ -683,6 +801,7 @@ export default defineComponent({
             this.isNavigatingHistory = true;
             UserFocusModalState.NextNavHistory();
             setTimeout(() => {
+                this.restoreTabAfterNavHistoryChange(UserFocusModalState.GetCurrentHistoryData().currentTab);
                 this.restoreScrollPosAfterNavHistoryChange();
                 this.isNavigatingHistory = false;
             }, 1);
@@ -726,6 +845,37 @@ export default defineComponent({
             setTimeout(() => {
                 this.scrollToModalPos(UserFocusModalState.GetCurrentHistoryData().scrollPos);
             }, 100);
+        },
+        /**
+         * Method that restores the last tab the "Navigation History" object was displaying.
+         * Called when navigating forwards and backwards through the history.
+         * @param lastTab
+         */
+        restoreTabAfterNavHistoryChange(lastTab:FeedEnums.UserFeedTabs){
+            this.deselectAllTabs();
+            switch (lastTab) {
+                case FeedEnums.UserFeedTabs.Feed:
+                    this.isViewingFeed = true;
+                    break;
+                case FeedEnums.UserFeedTabs.Posts:
+                    this.isViewingPosts = true;
+                    break;
+                case FeedEnums.UserFeedTabs.Replies:
+                    this.isViewingReplies = true;
+                    break;
+                case FeedEnums.UserFeedTabs.Media:
+                    this.isViewingMedia = true;
+                    break;
+                case FeedEnums.UserFeedTabs.Likes:
+                    this.isViewingLikes = true;
+                    break;
+                case FeedEnums.UserFeedTabs.Bookmarks:
+                    this.isViewingBookmarks = true;
+                    break;
+                default:
+                    this.isViewingFeed = true;
+                    break;
+            }
         },
         /**
          * Method used to navigate through the modal navigation history
@@ -873,6 +1023,16 @@ export default defineComponent({
                 result = (typeof profile != 'undefined' && typeof profile.viewer != 'undefined' && typeof profile.viewer.blocking != 'undefined');
             }
             return result;
+        },
+        /**
+         * Has end of Bookmarks "Feed" been reached. This is to be used for the Bookmarks content
+         * only - currently when the end of the list is reached a cursor is still returned with an
+         * empty `bookmarks` collection, so in `loadOlderPosts()` we set the cursor to '' if an empty
+         * `bookmarks` collection is returned.
+         */
+        hasEndOfBookmarksBeenReached():boolean{
+            let fd = UserFocusModalState.GetCurrentHistoryData().FeedData;
+            return typeof fd.cursor == 'undefined' || fd.cursor.trim() == '';
         }
     },
     async created() {

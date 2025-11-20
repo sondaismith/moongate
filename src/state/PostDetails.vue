@@ -378,10 +378,10 @@ export async function showDetailModal(postToShow:FeedViewPost){
  * in right sidebar. This is the live version that pulls data through
  * the Bluesky API.
  */
-export async function showFocusModal(postToShow:FeedViewPost, mediaIndex:number){
+export async function showFocusModal(postToShowURI:string, mediaIndex:number){
     postDetails.isAwaitingFocusData = true;
     postDetails.isFocusVisible = true;
     postDetails.clickedMediaIndex = mediaIndex;
-    postDetails.uriOfPostToShow = postToShow.post.uri;
+    postDetails.uriOfPostToShow = postToShowURI;
 }
 </script>

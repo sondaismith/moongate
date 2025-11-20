@@ -92,7 +92,7 @@
                 {{ convertToShortTimestamp(postReason.indexedAt) }}
             </div>
         </div>
-        <div v-else-if="postToShow && isPostReply" @click="openFocusDetailsPost(reply?.parent as PostView)"
+        <div v-else-if="postToShow && isPostReply" @click="openPostReply(getReplyParentURI)"
         title="Open Reply Parent"
         class="flex self-start py-0.5 px-2 rounded-md text-[10px] leading-3 text-primary
         bg-btn hover:bg-btnHover cursor-pointer select-none">
@@ -175,7 +175,7 @@ import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
-import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { isMain, Main, Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { toggleBlock } from '../../lib/api/User.vue';
 import { BookmarkPost, RemoveBookmark } from '../../lib/api/Post.vue';
 import { AppState, toast } from '../../state/AppState.vue';
@@ -280,12 +280,12 @@ export default defineComponent({
                 if(postDetails.isFocusVisible)
                     this.emitThreadReplyClicked(this.postToShow.uri);
                 else
-                    showFocusModal({post: this.postToShow}, mediaIndex);
+                    showFocusModal(this.postToShow.uri, mediaIndex);
             }
         },
-        openFocusDetailsPost(post:PostView, mediaIndex:number=0){
-            if(this.postToShow){
-                showFocusModal({post: post}, mediaIndex);
+        openPostReply(postURI:string|undefined, mediaIndex:number=0){
+            if(typeof this.postToShow != 'undefined' && typeof postURI != 'undefined'){
+                showFocusModal(postURI, mediaIndex);
             }
         },
         /**
@@ -540,8 +540,18 @@ export default defineComponent({
          * is a `PostView` as well.
          */
         isPostReply(){
+            //ThreadViewPost that is reply (seen in Feed)
             if(this.reply && isPostView(this.reply.parent)) return true;
+            //Standalone PostView that is reply (likely seen as bookmark)
+            else if(isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined' && isPostView(this.postToShow)) return true;
             return false;
+        },
+        /**Return the URI pointing to the Parent of this Post, if it exists. */
+        getReplyParentURI():string|undefined{
+            if(this.isPostReply){
+                if(typeof this.reply != 'undefined' && isPostView(this.reply.parent)) return this.reply.parent.uri;
+                else if(isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined') return (this.postToShow.record as Main).reply?.parent.uri;
+            }
         },
         /**Is the account associated with the currently displayed Post blocked by the logged in User? */
         isAccountBlocked():boolean{

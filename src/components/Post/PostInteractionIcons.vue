@@ -37,13 +37,13 @@
                 :class="[isPostLikedByUser ? 'text-green-500' : 'group-hover:text-green-500']"/>
                 <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate" class="text-primary spinner self-center size-3"/>
             </div> -->
-            <div @click="showOptionsMenu($event, postData.uri, postData.author.handle)"
-            title="More Actions"
-            class="group flex px-1.5 rounded-full items-center cursor-pointer hover:bg-btnSubtle">
+            <button @click="showOptionsMenu($event, postData.uri, postData.author.handle)"
+            :disabled="isAwaitingBookmarkUpdate || isAwaitingAccountBlockAction || isAwaitingAccountMuteAction"
+            title="More Actions" class="group flex px-1.5 min-w-[28px] rounded-full items-center border-0 hover:bg-btnSubtle disabled:bg-disabledBG disabled:text-disabled disabled:cursor-not-allowed shadow-none">
                 <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate || isAwaitingAccountBlockAction || isAwaitingAccountMuteAction"
-                class="text-primary spinner self-center size-3"/>
-                <i-mdi:dots-horizontal v-else class="pointer-events-none group-hover:text-primary"/>
-            </div>
+                class="text-primary spinner self-center p-0.5"/>
+                <i-mdi:dots-horizontal v-else class="pointer-events-none group-hover:text-primary group-disabled:text-disabled"/>
+            </button>
         </div>
     </div>
 </template>
