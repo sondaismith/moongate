@@ -10,19 +10,25 @@
             <div class="text-blueskyBlue">Undo?</div>
         </button>
     </div>
-    <div v-else-if="postToShow && isViewBlocked(postToShow)">
+    <div v-else-if="typeof postToShow != 'undefined' && isViewBlocked(postToShow)">
         <div class="flex rounded-lg p-2 gap-1 border border-outline items-center">
             <i-mingcute:information-line class="size-4"/>
             <div>Blocked</div>
         </div>
     </div>
-    <div v-else-if="postToShow && isViewNotFound(postToShow)">
+    <div v-else-if="typeof postToShow != 'undefined' && isViewNotFound(postToShow)">
         <div class="flex rounded-lg p-2 gap-1 border border-outline items-center">
             <i-mingcute:information-line class="size-4"/>
             <div>Deleted</div>
         </div>
     </div>
-    <div v-else-if="postToShow && isListView(postToShow)">
+    <div v-else-if="typeof postToShow != 'undefined' && isViewDetached(postToShow)">
+        <div class="flex rounded-lg p-2 gap-1 border border-outline items-center">
+            <i-mingcute:information-line class="size-4"/>
+            <div>Removed by author</div>
+        </div>
+    </div>
+    <div v-else-if="typeof postToShow != 'undefined' && isListView(postToShow)">
         <div class="flex flex-col rounded-lg p-2 gap-1 border border-outline overflow-hidden select-none"
         title="Lists are not yet supported">
             <div class="flex gap-2">
@@ -36,7 +42,7 @@
             <div class="flex text-sm leading-4">{{ postToShow.description }}</div>
         </div>
     </div>
-    <div v-else-if="postToShow && isStarterPackViewBasic(postToShow)">
+    <div v-else-if="typeof postToShow != 'undefined' && isStarterPackViewBasic(postToShow)">
         <div class="flex flex-col rounded-lg p-2 gap-1 border border-outline overflow-hidden select-none"
         title="Starter Packs are not yet supported">
             <div class="flex gap-2">
@@ -52,7 +58,7 @@
             <div class="flex text-sm leading-4">{{ postToShow.record.description }}</div>
         </div>
     </div>
-    <div v-else-if="postToShow && isGeneratorView(postToShow)">
+    <div v-else-if="typeof postToShow != 'undefined' && isGeneratorView(postToShow)">
         <div class="flex flex-col rounded-lg p-2 gap-1 border border-outline overflow-hidden
         select-none hover:bg-btnSubtle cursor-not-allowed"
         title="Generator views are not yet supported">
@@ -68,7 +74,7 @@
             <div class="text-sm font-semibold leading-4s">Liked by {{ postToShow.likeCount }} users</div>
         </div>
     </div>
-    <div v-else-if="postToShow" class="flex flex-col rounded-lg border border-slate-600 text-primary w-full"
+    <div v-else-if="typeof postToShow != 'undefined'" class="flex flex-col rounded-lg border border-slate-600 text-primary w-full"
     :class="[$attrs.class, isReasonPin(postReason) ? 'pt-2' : '', isReplyStyle ? 'border-0' : 'gap-2 p-3 pb-1.5',
         isFeedPostStyle ? 'p-1.5' : ''
     ]">
@@ -163,7 +169,7 @@ import { isGeneratorView, isPostView, isReasonPin, isReasonRepost, PostView, Rea
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
-import { isViewBlocked, isViewNotFound, isViewRecord, ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { isViewBlocked, isViewDetached, isViewNotFound, isViewRecord, ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
@@ -217,6 +223,7 @@ export default defineComponent({
             isViewRecord,
             isViewBlocked,
             isViewNotFound,
+            isViewDetached,
             isListView,
             isStarterPackViewBasic,
             isGeneratorView,
