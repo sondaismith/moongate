@@ -1,12 +1,6 @@
 # Moongate 🌕
 
-This project is a Dekstop Client App for Bluesky, built using Tauri + Vue. The goal is to create a lightweight, feature-filled app that is responsive and easy to use.
-
-## Early Features
-
-- ~~Create~~, View, ~~Update and Remove~~ multiple Feeds using a single-page view.
-- ~~Create Posts~~.
-- ~~Send Replies~~.
+This project is a Desktop Client App for Bluesky, built using Tauri + Vue. The goal is to create a lightweight, feature-filled app that is responsive and easy to use.
 
 ## Coming Soon
 
