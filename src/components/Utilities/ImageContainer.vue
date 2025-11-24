@@ -168,7 +168,10 @@ export default defineComponent({
                 OptionsMenuState.currentMenuItems = [
                     {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,author,postText)},Type:ItemType.Option},
                 ] as IOptionMenuItem[];
-                if(!isTauri()) OptionsMenuState.currentMenuItems.push({Icon:MdiOpenInNew,Label:'Open Image in New Tab',Action:function(){OpenImageInNewTab(image)},Type:ItemType.Option})
+                if(!isTauri()){
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiOpenInNew,Label:'Splitter',Action:()=>{},Type:ItemType.Splitter});
+                    OptionsMenuState.currentMenuItems.push({Icon:MdiOpenInNew,Label:'Open Image in New Tab',Action:function(){OpenImageInNewTab(image)},Type:ItemType.Option});
+                }
                 OptionsMenuState.showOptionMenu(e);
             // }
         },
