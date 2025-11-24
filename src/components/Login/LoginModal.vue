@@ -211,7 +211,7 @@ export default defineComponent({
             /**Indicates whether or not the Login attemot was successful. */
             let loginError = false;
             this.attemptingLogin = true;
-            toast.add({summary:"Test", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
+            toast.add({summary:"Logging in...", detail:`Hello ${this.enteredUsername}, attempting to login...`, severity:'info', group:'bc', life:1500});
             var handleAddress = `${this.enteredUsername}.${this.defaultHostProvider}`;
             var accountDID = '';
             await LoginBskyAccount(handleAddress, this.enteredPassword)

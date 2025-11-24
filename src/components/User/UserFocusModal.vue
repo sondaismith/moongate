@@ -64,12 +64,16 @@
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
                             :style="`mask: url(./assets/placeholder/no_banner_pattern.svg)`">
                             </div>
-                            <div @click="showPFPFullscreen" class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
+                            <div v-if="hasProfileAvatar" @click="showPFPFullscreen" class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
                             items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
                             cursor-pointer transition-colors hover:border-hover overflow-hidden">
-                                <img v-if="typeof UserFocusModalState.GetCurrentHistoryData().ProfileData != 'undefined'" :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar"
-                                class="scale-150" :class="{'blur':isAccountBlocked}"/>
-                                <div v-else>PFP</div>
+                                <img :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar"
+                                :class="{'blur scale-150':isAccountBlocked}"/>
+                            </div>
+                            <div v-else class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
+                            items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
+                            transition-colors overflow-hidden">
+                                <i-mingcute:butterfly-2-fill class="h-full w-full bg-slate-300 p-2 text-blue-600"/>
                             </div>
                         </div>
                         {{ void "User Details Content" }}
@@ -1002,7 +1006,11 @@ export default defineComponent({
         },
         /**Does this User Profile have a Banner image? */
         hasProfileBanner(){
-            return UserFocusModalState.GetCurrentHistoryData().ProfileData.banner != undefined;
+            return typeof UserFocusModalState.GetCurrentHistoryData().ProfileData.banner != 'undefined';
+        },
+        /**Does this User Profile have am Avatar image? */
+        hasProfileAvatar(){
+            return typeof UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar != 'undefined';
         },
         /**Is the currently displayed account muted by the logged in User? */
         isAccountMuted():boolean{

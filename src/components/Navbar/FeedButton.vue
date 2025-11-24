@@ -241,14 +241,15 @@ export default defineComponent({
                 UpdateSelectedFeed(this.feedDescription.feedId);
                 let menuOptions = [] as IOptionMenuItem[];
                 if(typeof feedSourceDID != "undefined" && feedSourceDID.trim() != '' && this.feedDescription.feedType == FeedEnums.Types.User){
-                    menuOptions.push({Icon:MingcuteProfileFill,Label:'View Profile',Action:function(){ShowUserProfile(feedSourceDID)},Type:ItemType.Option})
+                    menuOptions.push({Icon:MingcuteProfileFill,Label:'View Profile',Action:function(){ShowUserProfile(feedSourceDID)},Type:ItemType.Option});
+                    menuOptions.push({Icon:MingcuteProfileFill,Label:'',Action:()=>{},Type:ItemType.Splitter});
                 }
                 //Need to update "feed edit" functionality, so removing this for now.
                 // if(this.feedDescription.feedType != FeedEnums.Types.FeedGenerator){
                 //     menuOptions.push({Icon:MingcuteEdit4Line,Label:'Edit Feed',Action:function(){UpdateFeed()}})
                 // }
                 menuOptions = [...menuOptions,
-                    {Icon:SolarTrashBinTrashBold,Label:'Remove Feed',Action:function(){DeleteFeed()},Type:ItemType.Option} as IOptionMenuItem,
+                    {Icon:SolarTrashBinTrashBold,Label:'Remove Feed',Action:function(){DeleteFeed()},Type:ItemType.Option,LabelStyle:'text-red-500'} as IOptionMenuItem,
                 ] as IOptionMenuItem[]
                 OptionsMenuState.currentMenuItems = menuOptions;
                 OptionsMenuState.showOptionMenu(e);

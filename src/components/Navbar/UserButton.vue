@@ -43,6 +43,7 @@ import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
 
 let optionsMenu:IOptionMenuItem[] = [
     {Icon:MingcuteProfileFill,Label:'View Profile',Action:displayCurrentUsersAccount,Type:ItemType.Option},
+    {Icon:MingcuteProfileFill,Label:'Splitter',Action:()=>{},Type:ItemType.Splitter},
     {Icon:MdiUserSwitch,Label:'Switch User',Action:AppState.ToggleLoginModal,Type:ItemType.Option},
     {Icon:MingcuteExitDoorLine,Label:'Log Out',Action:confirmLogout,Type:ItemType.Option,LabelStyle:'text-red-500'},
 ]
