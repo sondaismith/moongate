@@ -139,7 +139,7 @@ export const AppState = reactive({
         //If the user cannot currently browse, have them select
         //how they would like to browse
         if(!this.canBrowse){
-            toast.add({summary:"Error", detail:`Please choose how you would like to browse.`, severity:'error', group:'tr', life:3000})
+            toast.add({summary:"Browsing mode", detail:`Please choose how you would like to browse.`, severity:'info', group:'tr', life:3000})
             this.isLoggingIntoAccount = true;
             return this.canBrowse;
         }
@@ -154,7 +154,7 @@ export const AppState = reactive({
      */
     checkIfLoggedIn(action:string){
         if(!this.isAuthBrowsing){
-            toast.add({summary:"Error", detail:`In order to ${action} you must be logged in.`, severity:'error', group:'tr', life:3000});
+            toast.add({summary:"Requires login", detail:`In order to ${action} you must be logged in.`, severity:'info', group:'tr', life:3000});
             this.loginModalStartPage = 1;
             this.isLoggingIntoAccount = true;
             return this.isAuthBrowsing;

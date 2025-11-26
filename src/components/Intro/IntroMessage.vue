@@ -1,12 +1,12 @@
 <template>
     <div class="p-2 text-primary min-w-[18rem] sm:w-[30rem] h-full overflow-y-scroll bg-green-600s">
         <div class="flex flex-col rounded p-1 border-2 border-outline text-sm h-fulls overflow-y-scrolls">
-            <div class="flex gap-x-1 mb-1 text-xs self-end items-center text-messageDismiss
-            hover:text-hover transition-colors cursor-pointer"
+            <button class="flex gap-x-1 mb-1 text-xs self-end items-center text-messageDismiss
+            hover:text-hover transition-colors cursor-pointer border-none rounded-none shadow-none active:bg-primary/10"
             @click="hideIntroMessage">
                 <div>Dismiss message</div>
                 <i-mingcute:close-fill/>
-            </div>
+            </button>
             <div class="h-[1px] w-full bg-secondary"></div>
             <div class="flex flex-col gap-y-2">
                 <div class="text-2xl mt-2">Getting Started</div>
