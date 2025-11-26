@@ -136,6 +136,11 @@
                                 :isPasswordInput="true" :fillContainer="true"/>
                         </div>
                         <div class="text-sm text-red-500 whitespace-pre-line">{{ validationErrorMessage }}</div>
+                        <div class="flex text-sm text-primary">
+                            <div>Dont have an account? Create one using the</div>
+                            <a href="https://bsky.app/" target="_blank" class="ml-1 text-blueskyBlue hover:underline">official client</a>
+                            <div>.</div>
+                        </div>
                     </div>
                 </div>
             </Transition>
