@@ -1,6 +1,9 @@
 import { FunctionalComponent } from "vue"
 import { FeedEnums } from "../enums/FeedEnums"
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs"
+import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications"
+import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs"
+import { AppBskyFeedDefs } from "@atproto/api/dist/client"
 
 // interface IFeedCollection{
 //     feedName: string
@@ -45,8 +48,18 @@ interface IFeedDescription{
     feedType: FeedEnums.Types,
     /**The Icon used alongside the feed title. */
     feedIcon: FeedEnums.Icons,
+    /**URL string pointing to the avatar used by this Feed. */
+    feedAvatar: string,
     /**Number of unread posts. */
     newPosts: number,
+    /**
+     * Value marking the most recent Post displayed in Feed. Used to determine how
+     * many "new posts" have been retrieved when refreshing or loading up the
+     * application again.
+     */
+    latestPostDate: string,
+    /**Unique identifier of the most Recent Post loaded into Feed. */
+    latestPostCID:string
     /**The total number of posts that are part of the feed. */
     totalPosts: number,
     /**
@@ -65,14 +78,19 @@ interface IFeedDescription{
 interface IFeedListing{
     /**Object that hold values that help summarize a Feed's contents, as well as the `FeedColumn` settings. */
     description : IFeedDescription,
-    /**Collection of Posts that are part of the Feed. */
-    data : FeedViewPost[],
+    /**Collection of "records" that will be displayed in the Feed. */
+    data : FeedViewPost[] | Notification[] | TrendView[],
     /**
      * Value used to indicate the point at which the current data collection ends, in
      * relation to data held on Bluesky.
      * Used when requesting additional Posts, or "paginating" through Posts.
      */
     cursor?: string,
+    /**
+     * Value used to indicate when the displayed Notifications were seen.
+     * Only used when the {@link data} element holds {@link Notification} objects.
+     */
+    seenAt?: string,
     /**Value indicating if application is waiting for an API response related to Feed data.*/
     isAwaitingFeedData: boolean,
 }
@@ -82,13 +100,18 @@ interface IFeedListing{
  */
 interface IFeedReturnedPostResults{
     /**Collection of Posts that are part of the Feed. */
-    data : FeedViewPost[],
+    data : FeedViewPost[] | Notification[] | TrendView[],
     /**
      * Value used to indicate the point at which the current data collection ends, in
      * relation to data held on Bluesky.
      * Used when requesting additional Posts, or "paginating" through Posts.
      */
     cursor?: string,
+    /**
+     * Value used to indicate when the displayed Notifications were seen.
+     * Only used when the {@link data} element holds {@link Notification} objects.
+     */
+    seenAt?: string,
 }
 
 interface IFeedColumnSettings{
@@ -112,7 +135,11 @@ interface IFeedDBData{
     /**The icon used by this Feed. */
     icon:FeedEnums.Icons,
     /**Settings used by the `FeedColumn` component that displays this Feed. */
-    settings:IFeedColumnSettings
+    settings:IFeedColumnSettings,
+    /**Date string of the most recent Post loaded into Feed. */
+    latestPostDate:string,
+    /**Unique identifier of the most Recent Post loaded into Feed. */
+    latestPostCID:string
 }
 
 interface IFeedIconTypes{
@@ -120,4 +147,20 @@ interface IFeedIconTypes{
     icon : FunctionalComponent
 }
 
-export type {IFeedDescription, IFeedListing, IFeedReturnedPostResults, IFeedColumnSettings, IFeedDBData, IFeedIconTypes}
+/**
+ * Describes the shape of data used to allow Users to specify
+ * which Feed Generators they would like to add to their Feed List.
+ */
+interface IFeedGeneratorSelection{
+    generator:AppBskyFeedDefs.GeneratorView,
+    selected:boolean
+}
+
+interface IFeedCreationStatus{
+    message:string,
+    attempted:boolean,
+    success:boolean
+}
+
+export type {IFeedDescription, IFeedListing, IFeedReturnedPostResults, IFeedColumnSettings,
+IFeedDBData, IFeedIconTypes, IFeedGeneratorSelection, IFeedCreationStatus}

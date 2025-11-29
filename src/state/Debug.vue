@@ -1,6 +1,10 @@
 <script lang="ts">
 import { reactive } from 'vue'
 
+export default{
+    name:"Debug State"
+}
+
 interface IDebugFlags{
     showFeedScrollStats: Boolean,
     showFeedViewportCenter: Boolean,

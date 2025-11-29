@@ -94,7 +94,7 @@ export default defineComponent({
         openFocusDetails(mediaIndex:number){
             if(this.postData){
                 // postDetails.showFocusModal(this.postData, mediaIndex);
-                showFocusModal(this.postData, mediaIndex);
+                showFocusModal(this.postData.post.uri, mediaIndex);
                 //update `PostDetailIcons` in `Post` State
                 postDetails.updatePostDetailIconValues(this.postData.post.replyCount.toString(),this.postData.post.repostCount.toString(),this.postData.post.likeCount.toString());
             }

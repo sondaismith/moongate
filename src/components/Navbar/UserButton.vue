@@ -1,52 +1,51 @@
 <template>
-    <a @click="onUserButtonClick" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
-        @contextmenu.prevent
-        class="group cursor-pointer relative flex justify-center
-        rounded-full drop-shadow-md bg-blue-200 border
-        border-blue-200 transition-[border] hover:border-gray-800
-        aspect-square overflow-hidden">
-        <Transition>
-            <!-- <i-mingcute:user-1-line v-if="!AppState.canBrowse || !isVisible" class=" absolute h-full text-xl text-slate-800"/> -->
-            <i-mingcute:lock-fill v-if="!AppState.canBrowse || !isVisible" class=" absolute h-full text-2xl text-slate-800"/>
-            <div v-else-if="AppState.canBrowse || isVisible" class="absolute flex h-full w-full justify-center">
-                {{ void "User initial - show if logged in" }}
-                <div v-if="AppState.isAuthBrowsing" class="absolute flex h-full w-full text-[2rem]
-                    font-black text-slate-700 items-center justify-center select-none z-[2]">
-                    {{ AppState.currentUsername[0] }}
+    <div @click="onUserButtonClick" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
+        @contextmenu.prevent class="relative cursor-pointer">
+        <div class="absolute z-10 border-[3px] border-sidebar w-3 -left-1 box-content aspect-square rounded-full" :class="GetLoginStateColor"
+        :title="GetLoginStateText"></div>
+        <a class="group relative flex justify-center aspect-square
+            rounded-full bg-gray-00 border-[3px]
+            border-outline transition-[border] hover:border-loginHighlight overflow-hidden">
+            <Transition>
+                <i-mingcute:key-2-line v-if="!AppState.canBrowse || !isVisible" class=" absolute h-full text-2xl transition-colors text-primary group-hover:text-loginHighlight"/>
+                <div v-else-if="AppState.canBrowse || isVisible" class="absolute flex h-full w-full justify-center">
+                    {{ void "User PFP" }}
+                    <div v-if="AppState.isAuthBrowsing" class="absolute flex h-full w-full rounded-full bg-contain"
+                        :style="`background-image: url(${AppState.currentPFP});`">
+                    </div>
+                    <div v-if="AppState.isAuthBrowsing && AppState.currentPFP == ''" class="flex items-center text-primary text-2xl">
+                        <i-mingcute:loading-fill class="spinner"/>
+                    </div>
+                    {{ void "Guest Icon" }}
+                    <i-mingcute:user-question-fill v-if="AppState.isGuestBrowsing" class="absolute h-full text-2xl transition-colors text-primary group-hover:text-loginHighlight z-[1]"/>
                 </div>
-                {{ void "Color Overlay for visibility" }}
-                <div v-if="AppState.isAuthBrowsing" class="absolute flex h-full w-full bg-blue-400/60 z-[1]"></div>
-                {{ void "User PFP/Guest Icon" }}
-                <div v-if="AppState.isAuthBrowsing" class="absolute flex h-full w-full rounded-full"
-                    style="background-image: url('src/assets/test-media/posts/image04.png');">
-                </div>
-                {{ void "Guest Icon" }}
-                <i-mdi:account-off v-if="AppState.isGuestBrowsing" class="absolute h-full text-2xl text-slate-800 z-[1]"/>
-                <div v-if="AppState.isGuestBrowsing" class="absolute flex h-full w-full rounded-full bg-blue-500"></div>
-            </div>
-        </Transition>
-    </a>
+            </Transition>
+        </a>
+    </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { GetBrowsingAgent, LogoutAgent } from '../../lib/api.vue';
-import { IOptionMenuItem } from '../Utilities/OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { HandleAPIError } from '../../helpers/errors';
-import ToastEventBus from 'primevue/toasteventbus';
 
 //Options menu icons
 import MingcuteProfileFill from '~icons/mingcute/profile-fill';
 import MdiUserSwitch from '~icons/mdi/user-switch';
 import MingcuteExitDoorLine from '~icons/mingcute/exit-door-line';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
+import { LoginState } from '../../interfaces/AccountInterfaces';
+import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
 
 let optionsMenu:IOptionMenuItem[] = [
-    {Icon:MingcuteProfileFill,Label:'View Profile',Action:displayCurrentUsersAccount},
-    {Icon:MdiUserSwitch,Label:'Switch User',Action:()=>void 0},
-    {Icon:MingcuteExitDoorLine,Label:'Log Out',Action:confirmLogout,LabelStyle:'text-red-500'},
+    {Icon:MingcuteProfileFill,Label:'View Profile',Action:displayCurrentUsersAccount,Type:ItemType.Option},
+    {Icon:MingcuteProfileFill,Label:'Splitter',Action:()=>{},Type:ItemType.Splitter},
+    {Icon:MdiUserSwitch,Label:'Switch User',Action:AppState.ToggleLoginModal,Type:ItemType.Option},
+    {Icon:MingcuteExitDoorLine,Label:'Log Out',Action:confirmLogout,Type:ItemType.Option,LabelStyle:'text-red-500'},
 ]
 
 /**
@@ -87,8 +86,17 @@ async function logoutOfAccount(){
     .then(() => {
         AppState.canBrowse = AppState.isGuestBrowsing = AppState.isAuthBrowsing = false;
         AppState.currentUsername = "Login Here";
+        AppSettingsState.Settings.savedAccountState = {
+            ...AppSettingsState.Settings.savedAccountState,
+            currentAccount:-1,
+            state:LoginState.Unset
+        }
         AccountPeekState.lastMouseEvent = new MouseEvent('logout');
         AccountPeekState.profileData = {did:'',handle:''};
+        //Refresh displayed Feeds after logout
+        FeedState.FeedList.forEach(feed => {
+            RefreshFeed(feed.description.feedId,new Date(),10);
+        });
     })
     .catch(err => toast.add(HandleAPIError(err, 'Error logging out')));
 }
@@ -143,6 +151,18 @@ export default defineComponent({
             e.preventDefault();
             OptionsMenuState.currentMenuItems = optionsMenu;
             OptionsMenuState.showOptionMenu(e);
+        }
+    },
+    computed:{
+        GetLoginStateColor():string{
+            if(AppState.isGuestBrowsing) return 'bg-gray-400';
+            else if(AppState.isAuthBrowsing) return 'bg-green-500';
+            return 'bg-red-500'
+        },
+        GetLoginStateText():string{
+            if(AppState.isGuestBrowsing) return 'Guest Browsing';
+            else if(AppState.isAuthBrowsing) return 'Logged In/Active';
+            return 'Currently Not Logged In'
         }
     },
     setup (props) {

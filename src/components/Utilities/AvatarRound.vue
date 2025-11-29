@@ -2,7 +2,7 @@
     <div @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,did?did:'',handle?handle:'')"
     @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
     @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="rounded-full bg-slate-300 aspect-square
-    border border-primary box-content size-10 bg-contain hover:border-hover
+    border border-outline box-content size-10 bg-contain hover:border-hover
     transition-[border-color] ease-linear duration-200 cursor-pointer"
     :style="{'background-image' : 'url('+avatar+')'}">
         <i-mingcute:butterfly-2-fill v-if="!avatar" class="text-2xl h-full w-full p-1 text-blue-600"/>
@@ -15,7 +15,7 @@ import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { isDid } from '@atproto/api';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { IOptionMenuItem } from './OptionsMenu.vue';
+import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 
 //Option Menu Icons
 import MingcuteAddCircleLine from '~icons/mingcute/add-circle-line';
@@ -38,7 +38,10 @@ function CreateUserFeed(userDid:string,userHandle:string){
         name:''
     })
     .then(res => {
-        AddFeedToList(res.description,res.data,res.cursor);
+        AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false);
+    })
+    .catch(err => {
+        toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
     });
 }
 
@@ -66,11 +69,12 @@ export default defineComponent({
          * Opens the `UserFocusModal` component to the currently selected
          * user's profile.
          */
-        displaySelectedUserAccount(){
+        displaySelectedUserAccount(e:Event){
             //Cancel displaying `AccountPeek`
             AccountPeekState.cancelUserPeek(true);
             AppState.ShowUserFocusModal(this.did);
             this.$emit('avatarClicked',this.did);
+            e.stopPropagation();//Prevent click "bubbling"
         },
         /**
          * Shows Options Menu allowing user to perform different actions
@@ -79,7 +83,7 @@ export default defineComponent({
         showOptionsMenu(e:MouseEvent, userDid:string, userHandle:string){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteAddCircleLine,Label:'Create new User Feed',Action:function(){CreateUserFeed(userDid,userHandle)}},
+                {Icon:MingcuteAddCircleLine,Label:'Create new User Feed',Action:function(){CreateUserFeed(userDid,userHandle)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },

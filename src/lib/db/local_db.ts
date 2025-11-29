@@ -2,6 +2,8 @@ import { Monitor, PhysicalPosition, PhysicalSize } from "@tauri-apps/api/window"
 import { BaseDirectory, exists, remove } from "@tauri-apps/plugin-fs";
 import Database, { QueryResult } from "@tauri-apps/plugin-sql";
 import { IFeedDBData, IFeedListing } from "../../interfaces/FeedInterfaces";
+import { isTauri } from "@tauri-apps/api/core";
+import { web_db } from "./web_db";
 
 const APPLICATION_DB = "sqlite:moongate_app.db";
 
@@ -155,48 +157,54 @@ export async function createAppSettingTable(){
 }
 
 /**
- * Method that attempts to create the `user_accounts` table.
+ * Method that attempts to create the `user_accounts` table. Will only
+ * run on the Desktop version of the application.
  * @returns Result of trying to create the `user_accounts` table. Will be
  * a string starting with "ERROR:" if something went wrong.
  */
 export async function createUserAccountsTable(){
-    const db = await Database.load(APPLICATION_DB);
     var result;
-    try{
-        const newTableQuery = 'CREATE TABLE user_accounts (id INTEGER PRIMARY KEY,name TEXT NOT NULL,'
-        +'handle TEXT NOT NULL,did TEXT NOT NULL,pfp TEXT)';
-        result = await db.execute(newTableQuery);
+    if(isTauri()){//On Desktop
+        const db = await Database.load(APPLICATION_DB);
+        try{
+            const newTableQuery = 'CREATE TABLE user_accounts (id INTEGER PRIMARY KEY,name TEXT NOT NULL,'
+            +'handle TEXT NOT NULL,did TEXT NOT NULL,pfp TEXT)';
+            result = await db.execute(newTableQuery);
+        }
+        catch(error){
+            result = error;
+        }
+        await db.close(); //close connection
     }
-    catch(error){
-        result = error;
-    }
-    await db.close(); //close connection
     return checkIfError(result);
 }
 
 /**
- * Method that attempts to create the `saved_feeds` table.
+ * Method that attempts to create the `saved_feeds` table. Will only
+ * run on the Desktop version of the application.
  * @returns Result of trying to create the `saved_feeds` table. WIll be
  * a string starting with "ERROR:" if something went wrong.
  */
 export async function createSavedFeedsTable() {
-    const db = await Database.load(APPLICATION_DB);
     var result;
-    try{
-        const newTableQuery = 'CREATE TABLE saved_feeds (id INTEGER PRIMARY KEY,data TEXT NOT NULL)';
-        result = await db.execute(newTableQuery);
+    if(isTauri()){//On Desktop
+        const db = await Database.load(APPLICATION_DB);
+        try{
+            const newTableQuery = 'CREATE TABLE saved_feeds (id INTEGER PRIMARY KEY,data TEXT NOT NULL)';
+            result = await db.execute(newTableQuery);
+        }
+        catch(error){
+            result = error;
+        }
+        try {
+            const initialRecordQuery = 'INSERT INTO saved_feeds (data) VALUES("")';
+            result = await db.execute(initialRecordQuery);
+        }
+        catch(error){
+            result = error;
+        }
+        await db.close(); //close connection
     }
-    catch(error){
-        result = error;
-    }
-    try {
-        const initialRecordQuery = 'INSERT INTO saved_feeds (data) VALUES("")';
-        result = await db.execute(initialRecordQuery);
-    }
-    catch(error){
-        result = error;
-    }
-    await db.close(); //close connection
     return checkIfError(result);
 }
 
@@ -333,28 +341,31 @@ export async function checkIfAppSettingsTableExists(){
 
 /**
  * Method that checks if the `user_accounts` table exists, and if there's
- * at least one record row in it.
+ * at least one record row in it. Will only run on the Desktop version of
+ * the application.
  * @returns True (1) if table exists, False (0) if not.
  */
 export async function checkIfUserAccountsTableExists(){
     var result;
-    try{
-        const db = await Database.load(APPLICATION_DB);
-        var tableExists = await db.select("SELECT EXISTS (SELECT * FROM sqlite_master WHERE type='table' AND name='user_accounts')");
-        //returned object key is query text and result is value, the array indexes below extract the values
-        var tableResult = Boolean(Object.values(tableExists[0])[0]);
-        result = tableResult;
-        await db.close();
-        console.log("does `user_accounts` table exist: "+result);
-    }
-    catch(error){
-        result = error; //Make sure to handle returned error object wherever
+    if(isTauri()){
+        try{
+            const db = await Database.load(APPLICATION_DB);
+            var tableExists = await db.select("SELECT EXISTS (SELECT * FROM sqlite_master WHERE type='table' AND name='user_accounts')");
+            //returned object key is query text and result is value, the array indexes below extract the values
+            var tableResult = Boolean(Object.values(tableExists[0])[0]);
+            result = tableResult;
+            await db.close();
+            console.log("does `user_accounts` table exist: "+result);
+        }
+        catch(error){
+            result = error; //Make sure to handle returned error object wherever
+        }
     }
     return checkIfError(result);
 }
 
 /**
- * Method that checks if the `user_accounts` table exists, and if there's
+ * Method that checks if the `saved_feeds` table exists, and if there's
  * at least one record row in it.
  * @returns True (1) if table exists, False (0) if not.
  */
@@ -376,47 +387,82 @@ export async function checkIfSavedFeedsTableExists(){
 }
 
 /**
- * Method that allows the updating of the values held in the `saved_feeds` table.
+ * Method that allows the updating of the values held in the `saved_feeds` SQLite table.
  * @param newValues The values to update the `saved_feeds` table with.
- * @returns Promise<> if success, false if action has failed.
+ * @returns Promise<{@link QueryResult}> with action result.
  */
-export async function updateSavedFeedsTable(newValues:SavedFeeds){
+export async function updateSavedFeedsTable(newValues:SavedFeeds):Promise<QueryResult>{
     const db = await Database.load(APPLICATION_DB);
-    var result;
-    var updateQueryResult;
-
-    try{
+    var result:QueryResult;
+    return new Promise<QueryResult>(async (resolve, reject) => {
         var query = createQueryString(QueryAction.UPDATE, newValues, DBTable.saved_feeds);
-        if(query == undefined) updateQueryResult = "ERROR: Creation of 'update' query failed";
-        else
-            updateQueryResult = await db.execute(query,Object.values(newValues));
-        result = updateQueryResult;
-    }
-    catch (error){
-        result = error;
-    }
-    await db.close(); //close connection
-    return checkIfError(result);
+        await db.execute(query ? query : '',Object.values(newValues))
+        .then(res => {
+            result = res;
+        })
+        .catch(async (err) => {
+            await db.close();
+            reject(new Error(err));
+        })
+        await db.close(); //close connection
+        resolve(result);
+    });
 }
 
 /**
- * Method the returns all the records currently held in the `saved_feeds` table.
+ * Method the returns all the records currently held in the "Saved Feeds" table.
+ * The table is stored in a different medium depending on the current app platform -
+ * this method automatically loads from the correct one.
  * @returns Result of trying to grab all the records held in the `saved_feeds` table.
  */
-export async function loadSavedFeedsRecords():Promise<SavedFeeds|Boolean|undefined|unknown>{
-    var result;
-    try{
-        const db = await Database.load(APPLICATION_DB);
-        result = await db.select('SELECT * FROM saved_feeds') as SavedFeeds;
-        await db.close();
-    }
-    catch(error){
-        result = error;
-    }
-    return checkIfError(result);
+export async function loadSavedFeedsRecords():Promise<SavedFeeds[]|Error>{
+    var result:SavedFeeds[]|Error;
+    return new Promise<SavedFeeds[]|Error>(async (resolve, reject) => {
+        if(isTauri()){//If on Desktop
+            const db = await Database.load(APPLICATION_DB);
+            await db.select('SELECT * FROM saved_feeds')
+            .then(res => {
+                result = res as SavedFeeds[];
+            })
+            .catch(async (err) => {
+                await db.close();
+                reject(new Error(err));
+            })
+            await db.close();
+        }
+        else{//On web-based platform - use Dexie.js to load SavedFeeds
+            await web_db.savedFeeds.toArray()
+            .then(res =>{
+                if(res.length>0){
+                    result = res as SavedFeeds[];
+                }
+            })
+            .catch(err => {
+                reject(new Error(err));
+            })
+        }
+        resolve(result as SavedFeeds[]);
+    });
 }
 
 /**
+ * Method that clears the `savedFeeds` table held in the `web_db` IndexedDB
+ * database.
+ */
+export async function DeleteIndexedDBSavedFeeds(){
+    console.log('Clearing savedFeed in IndexedDB - current value:');
+    await web_db.savedFeeds.toArray().then(res => {
+        console.log(res);
+    })
+    await web_db.savedFeeds.clear();
+    console.log('Cleared savedFeed in IndexedDB - current value:');
+    await web_db.savedFeeds.toArray().then(res => {
+        console.log(res);
+    })
+}
+
+/**
+ * DO NOT USE - use {@link AppSettingsState.loadSettingsFromStore()}.
  * Method the returns all the records currently held in the `app_settings` table.
  * @returns Result of trying to grab all the records held in the `app_settings` table.
  */
@@ -438,13 +484,24 @@ export async function loadAppSettingsRecords(){
  * saved to the `saved_feeds` table.
  * @param data List of Feeds to stringify.
  */
-export function stringifyFeedListData(data:IFeedListing[]):string{
+export function stringifyFeedListData(data:IFeedListing[]|IFeedDBData[]):string{
     var t:IFeedDBData[]= [];
     // FeedState.FeedList.forEach(e => {
-    data.forEach(e => {
-        t.push({id:e.description.feedId,userId:e.description.userId,did:e.description.feedSourceDID,tags:e.description.feedTags,type:e.description.feedType,icon:e.description.feedIcon,settings:e.description.feedColumnSettings});
-    });
-    console.log(JSON.stringify(t));
+    if(data.length>0 && (data as IFeedListing[])[0].description != undefined){
+        (data as IFeedListing[]).forEach(e => {
+            t.push({id:e.description.feedId,userId:e.description.userId,did:e.description.feedSourceDID,
+                tags:e.description.feedTags,type:e.description.feedType,icon:e.description.feedIcon,settings:e.description.feedColumnSettings,
+                latestPostDate:e.description.latestPostDate,latestPostCID:e.description.latestPostCID});
+        });
+    }
+    else{
+        (data as IFeedDBData[]).forEach(e => {
+            t.push({id:e.id,userId:e.userId,did:e.did,
+                tags:e.tags,type:e.type,icon:e.icon,settings:e.settings,
+                latestPostDate:e.latestPostDate,latestPostCID:e.latestPostCID});
+        });
+    }
+    // console.log(JSON.stringify(t));
     return JSON.stringify(t);
 }
 

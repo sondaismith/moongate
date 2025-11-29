@@ -17,6 +17,13 @@ import MdiNewspaperVariantMultiple from '~icons/mdi/newspaper-variant-multiple';
 import MingcuteQuestionLine from '~icons/mingcute/question-line';
 import MingcuteMusicLine from '~icons/mingcute/music-line';
 import SolarHashtagChatBold from '~icons/solar/hashtag-chat-bold';
+import MingcuteBellRingingFill from '~icons/mingcute/bell-ringing-fill';
+import MingcuteTrendingUpFill from '~icons/mingcute/trending-up-fill';
+import MingcuteDanmakuLine from '~icons/mingcute/danmaku-line';
+import MingcuteUser3Line from '~icons/mingcute/user-3-line';
+import MingcuteTag2Line from '~icons/mingcute/tag-2-line';
+import SolarWidgetAddOutline from '~icons/solar/widget-add-outline';
+import SolarWidgetAddBoldDuotone from '~icons/solar/widget-add-bold-duotone';
 
 import { defineComponent, FunctionalComponent } from 'vue'
 import { FeedEnums } from '../../enums/FeedEnums';
@@ -28,11 +35,17 @@ var FeedIconTypes : IFeedIconTypes[] = [
     { name: FeedEnums.Icons.AddList, icon: MdiPlaylistAdd },
     { name: FeedEnums.Icons.RemoveList, icon: MdiPlaylistRemove },
     { name: FeedEnums.Icons.CreatePost, icon: MdiPencilPlus },
+    { name: FeedEnums.Icons.User, icon: MingcuteUser3Line },
+    { name: FeedEnums.Icons.Tag, icon: MingcuteTag2Line },
     { name: FeedEnums.Icons.Friends, icon: MingcuteGroup3Fill },
     { name: FeedEnums.Icons.News, icon: MdiNewspaperVariantMultiple },
     { name: FeedEnums.Icons.Art, icon: MdiPaintOutline },
     { name: FeedEnums.Icons.Music, icon: MingcuteMusicLine },
     { name: FeedEnums.Icons.Hashtag, icon: SolarHashtagChatBold },
+    { name: FeedEnums.Icons.Notifications, icon: MingcuteBellRingingFill },
+    { name: FeedEnums.Icons.Trending, icon: MingcuteTrendingUpFill },
+    { name: FeedEnums.Icons.Following, icon: MingcuteDanmakuLine },
+    { name: FeedEnums.Icons.FeedGenerator, icon: SolarWidgetAddBoldDuotone },
 ]
 
 export default defineComponent({

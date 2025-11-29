@@ -1,10 +1,18 @@
 <template>
-    <div class="rounded p-2 cursor-pointer text-center transition-colors"
-    :class="[$attrs.class ? $attrs.class : 'bg-sky-500 hover:bg-sky-700 hover:border-sky-700',
-        isDisabled ? '!bg-gray-600 text-gray-400 pointer-events-none select-none' : ''
-    ]">
-        <slot></slot>
-    </div>
+    <button class="relative group !border-transparent outline-none flex rounded cursor-pointer
+    justify-center items-center gap-1 transition-colors"
+    :class="[$attrs.class ? $attrs.class : 'bg-sky-500 hover:bg-sky-700 hover:border-sky-700 h-10',
+        isDisabled || isAwaitingResponse ? '!bg-disabledBG !text-disabled pointer-events-nones select-none !cursor-not-allowed' : '',
+        `p-${focusPadding}`
+    ]"
+    :disabled="isDisabled || isAwaitingResponse">
+        <div v-if="!isAwaitingResponse" class="flex items-center justify-center w-full h-full rounded border-2 border-transparent
+        group-focus-visible:border-feedtypeBtnFocusHighlight"
+        :class="`p-${buttonPadding}`">
+            <slot></slot>
+        </div>
+        <i-mingcute:loading-fill v-else class="spinner"/>
+    </button>
 </template>
 
 <script lang="ts">
@@ -13,13 +21,35 @@ import { defineComponent } from 'vue'
 export default defineComponent({
     name:"SquareButton",
     props:{
+        /**Is the button disabled? */
         isDisabled:{
             type:Boolean
         },
+        /**Is the Button awaiting a response? (disables interaction while true) */
+        isAwaitingResponse:{
+            type:Boolean,
+            default:false
+        },
+        /**
+         * The padding to use between the `focus-visible:` highlight and the button content.
+         * Default is 1 (applies 'p-1').
+         * Note that a padding of 0.5(0.125rem, 2px) is already applied for the focus-visible:
+         * highlight by default, but that can be changed using `focusPadding`. There is also a
+         * default border width of 2px to keep in mind, but that can be changed via CSS.
+         */
+        buttonPadding:{
+            type:String,
+            default:'1'
+        },
+        /**
+         * The padding to use between the edge of the button and the focus-visible: highlight.
+         * Default is 0.5 (applies 'p-0.5').
+         */
+        focusPadding:{
+            type:String,
+            default:'0.5'
+        }
     },
-    setup () {
-        return {}
-    }
 })
 </script>
 

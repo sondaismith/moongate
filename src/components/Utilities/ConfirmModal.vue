@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute z-20 flex flex-col w-full h-full">
+    <div class="absolute z-50 flex flex-col w-full h-full">
         <div :class="$attrs.class" class="absolute w-full h-full bg-slate-900/50 backdrop-blur-sm"></div>
         <div class="relative flex flex-col rounded bg-slate-800 m-auto p-4 gap-2 drop-shadow">
             <div>{{ AppState.currentConfirmationTask.Message }}</div>

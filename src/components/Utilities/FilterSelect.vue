@@ -12,9 +12,10 @@
             <div v-if="isOptionsVisible" class="relative z-[1] w-full h-full overflow-hiddens">
                 <div class="absolute w-full bg-focusBG border border-t-0 border-outline">
                     <div class="flex p-2 gap-2 border-b border-outline">
-                        <input type="checkbox" :checked="isAllVisibleSelected" title="Select all visible"
-                        @change="toggleAllVisibleOptions"/>
-                        <input v-model="filterText" type="text" class="w-full px-2 py-1 bg-postFocusBG border border-outline"
+                        <!-- <input type="checkbox" :checked="isAllVisibleSelected" title="Select all visible"
+                        @change="toggleAllVisibleOptions"/> -->
+                        <CheckBox :model-value="isAllVisibleSelected" @value-toggled="toggleAllVisibleOptions"/>
+                        <input @input="(e) => updateFilterText(e)" type="text" class="w-full px-2 py-1 bg-postFocusBG border border-outline"
                         placeholder="Filter">
                     </div>
                     <div class="p-2 max-h-32 h-fulls overflow-y-scroll ">
@@ -22,34 +23,30 @@
                         transition-colors hover:bg-btnHover cursor-pointer"
                         :class="{'text-green-600' : item.selected}"
                         @click="toggleSelectedOption(item)">
-                            <input type="checkbox" :checked="item.selected"/>
+                            <!-- <input type="checkbox" :checked="item.selected"/> -->
+                            <CheckBox :model-value="item.selected" class="text-primary"/>
                             <div>{{ valueKey ? (item.option as IIndexable)[valueKey] : item.option.name }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </Transition>
-        <!-- <div>Selected Options</div>
-        <div class="flex flex-wrap gap-2 h-full overflow-hidden">
-            <div v-for="item in heldOptions.filter(x => x.selected)"
-                title="Remove Item"
-            class="rounded-full px-2 p-1 bg-slate-600 hover:bg-hover cursor-pointer"
-            @click="toggleSelectedOption(item)">
-                {{ valueKey ? (item.option as IIndexable)[valueKey] : item.option }}
-            </div>
-        </div> -->
     </div>
 </template>
 
 <script lang="ts" generic="T">
 import { defineComponent, PropType } from 'vue'
 import { AppSettingsState, LangCode, OptionHolder } from '../../state/AppSettingsState.vue';
+import CheckBox from '../Utilities/CheckBox.vue';
 
 //Thanks to Roberto - https://stackoverflow.com/questions/34727936/typescript-bracket-notation-property-access#comment109883263_55108590
 /**Interface used to access object properties via bracket notation. */
 interface IIndexable<T = any> { [key: string]: T }
 
 export default defineComponent({
+    components:{
+        CheckBox
+    },
     props:{
         modelValue:Array,
         /**The values that will be displayed and held by the control. */
@@ -86,14 +83,17 @@ export default defineComponent({
         /**Toggles the visibility of the options drop-down list.*/
         toggleOptions(){
             this.isOptionsVisible = !this.isOptionsVisible;
+            if(this.isOptionsVisible != false) this.filterText = ''; //clear on close
         },
         /**
          * Toggles all of the visible options - if the list has been
          * filtered only the visible options will be selected.
          */
-        toggleAllVisibleOptions(event:Event){
+        // toggleAllVisibleOptions(event:Event){
+        toggleAllVisibleOptions(state:boolean){
             this.filteredOptions.forEach(i => {
-                i.selected = (event.target as HTMLInputElement).checked;
+                // i.selected = (event.target as HTMLInputElement).checked;
+                i.selected = state;
             });
             this.$emit('selectedOptionsChanged',this.selectedOptions);
         },
@@ -113,6 +113,9 @@ export default defineComponent({
                 match.selected = !match.selected;
                 this.$emit('selectedOptionsChanged',this.selectedOptions);
             }
+        },
+        updateFilterText(e:Event){
+            this.filterText = (e.target as HTMLInputElement).value;
         }
     },
     emits:{
@@ -127,7 +130,7 @@ export default defineComponent({
          */
         filteredOptions(){
             if(this.filterText.trim().length > 0){
-                return this.heldOptions.filter((item) => (item.option as IIndexable)[this.valueKey ? this.valueKey : '0'].toLowerCase().startsWith(this.filterText.trim()));
+                return this.heldOptions.filter((item) => (item.option as IIndexable)[this.valueKey ? this.valueKey : '0'].toLowerCase().startsWith(this.filterText.toLowerCase().trim()));
                 // return this.dataList.filter((record) => new RegExp(`^${this.debouncedSearchTerm}${/[a-zA-Z]*/.source}`, "gi").test(record.name));
             }
             return this.heldOptions;

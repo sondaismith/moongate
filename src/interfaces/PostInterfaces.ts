@@ -1,6 +1,7 @@
 import { FunctionalComponent } from "vue";
 import * as PostEnums from "../enums/PostEnums";
 import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { AspectRatio } from "@atproto/api/dist/client/types/app/bsky/embed/defs";
 
 interface IPostDetails{
     userName: String,
@@ -73,4 +74,21 @@ interface IOptionIcon{
     icon: FunctionalComponent
 }
 
-export type {IPostDetails, IPostDetailsList, IDetailIcon, IOptionIcon}
+interface IUploadedFile{
+    blobURI:string,
+    fileName:string,
+    alt:string,
+    aspectRatio:AspectRatio,
+    type:string,
+    uploaded:boolean,
+    uploadInProgress:boolean
+}
+
+interface INestedPostOptions{
+    name:string,
+    selected:boolean,
+    options: INestedPostOptions[]|[],
+    value?:string
+}
+
+export type {IPostDetails, IPostDetailsList, IDetailIcon, IOptionIcon, IUploadedFile, INestedPostOptions}

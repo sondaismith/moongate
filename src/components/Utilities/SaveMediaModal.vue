@@ -2,8 +2,8 @@
     <div class="absolute flex z-50 w-full h-full">
         <div @click="closeModal" class="absolute w-full h-full bg-slate-800/60 backdrop-blur-sm"></div>
         <div class="relative flex flex-col max-w-[48rem] w-4/5 m-auto z-50
-        rounded bg-slate-700 border border-slate-800 overflow-hidden">
-            <div class="px-2 py-1 bg-slate-800 border-b border-slate-500">Save as</div>
+        rounded bg-savemodalBG border border-slate-800 overflow-hidden">
+            <div class="px-2 py-1 bg-banner border-b border-slate-500">Save as</div>
             <div class="flex flex-col gap-2 p-3 overflow-hidden">
                 <div v-if="!AppState.saveMedia.uri" class="self-start rounded h-32 bg-slate-500 overflow-hidden"
                 :style="`aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}`">
@@ -12,10 +12,15 @@
                 <div v-else class="self-start rounded size-32 bg-slate-500 overflow-hidden" @contextmenu.prevent>
                     <div class="h-full bg-contain bg-no-repeat bg-center" :style="`background-image: url(${AppState.saveMedia.uri})`"></div>
                 </div>
-                <div class="flex">
-                    <InLaInput class="h-10 text-[12px] rounded-r-none grow" text-label="Filename" :model-value="AppState.fileSaveDetails.full" @update:model-value="updateFileName"/>
+                <div class="flex h-10 text-primary">
+                    <InLaInput v-if="isTauri()" class="h-full text-[12px] rounded-r-none grow"
+                    text-label="Filename" :model-value="AppState.fileSaveDetails.full"
+                    @update:model-value="updateFileName" title="Edit filename"/>
+                    <InLaInput v-else class="h-full text-[12px] rounded-r-none grow" text-label="Click to Copy Filename"
+                    :model-value="AppState.fileSaveDetails.full" @update:model-value="updateFileName"
+                    :is-text-copy-control="true"/>
                     <div class="flex items-end rounded-r px-2 py-1
-                    text-sm text-slate-400 bg-slate-800 border border-l-0 border-slate-500
+                    text-sm text-searchbarBorder bg-savemodalFileExtBG border border-l-0 border-slate-500
                     select-none">
                     {{ AppState.fileSaveDetails.extension }}
                     </div>
@@ -26,15 +31,23 @@
                     cursor-pointer"></div>
                     <InLaInput :is-disabled="true" text-label="Save Folder" :model-value="AppState.lastMediaSaveDirectory.trim() != '' ? AppState.lastMediaSaveDirectory : 'Please select save folder'"/>
                 </div>
-                <div v-else class="text-xs">Currently on web/mobile you'll need to copy and use the filename yourself😔</div>
                 <div v-show="!isFileNameValid" class="text-xs text-red-500">Invalid file name</div>
                 <div v-show="isFileNameTaken" class="text-xs text-orange-300">File already exists, will be overwritten</div>
                 <div v-if="isTauri()" class="rounded h-3 overflow-hidden bg-slate-400 border border-slate-800">
                     <div class="rounded bg-blue-500 h-full w-0"
                     :style="{'width' : downloadProgress+'%', 'transition':'width 0.4s ease'}"></div>
                 </div>
-                <SquareButton v-if="isTauri()" @click="saveImage" :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading">Save Image</SquareButton>
-                <SquareButton v-else @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton>
+                <SquareButton v-if="isTauri()" @click="saveImage" title="Save Image"
+                :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading">
+                    Save Image
+                </SquareButton>
+                <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
+                <SquareButton v-else :is-disabled="isDownloading"
+                @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full)"
+                title="Download Image">
+                    <div>Save Image</div>
+                    <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
+                </SquareButton>
             </div>
         </div>
     </div>
@@ -42,7 +55,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { AppState } from '../../state/AppState.vue';
+import { AppState, toast } from '../../state/AppState.vue';
 import { download } from '@tauri-apps/plugin-upload';
 import InLaInput from './InLaInput.vue';
 import SquareButton from './SquareButton.vue';
@@ -51,6 +64,7 @@ import { exists } from '@tauri-apps/plugin-fs';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { invoke, isTauri } from '@tauri-apps/api/core';
+import { CreateBskyMediaDownloadURL } from '../../helpers/converters';
 
 export default defineComponent({
     components:{
@@ -109,6 +123,9 @@ export default defineComponent({
                         description:AppState.fileSaveDetails.postText
                     }));
                 }
+            }).catch(err=>{
+                toast.add({summary:'Error',detail:err,severity:'error', group:'tr', life:3000});
+                this.isDownloading = false;
             })
         },
         /**
@@ -168,7 +185,57 @@ export default defineComponent({
          */
         closeModal(){
             if(!this.isDownloading) AppState.isSavingMediaModalVisible = false;
-        }
+        },
+        /**
+         * Method that attempts to initiate download of specified file.
+         * Code is from https://muhimasri.com/blogs/how-to-save-files-in-javascript/#download-and-save-a-file-using-the-fetch-api
+         * @param url The URL of the file to download.
+         * @param filename The string to use as the default/starting file name.
+         */
+        saveFile(url:string, filename:string) {
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename || "file-name";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        },
+        /**
+         * Used to download media from Bluesky.
+         * Code is modified from https://muhimasri.com/blogs/how-to-save-files-in-javascript/#download-and-save-a-file-using-the-fetch-api
+         * @param url The URL of the file to download. Should begin with 'https://cdn.bsky.app'.
+         * @param filename The string to use as the default/starting file name.
+         */
+        async downloadFileFromBskyCDN(url:string, filename:string) {
+            const target = `${import.meta.env.VITE_BSKY_MEDIA_DOWNLOAD_PROXY_TARGET}`;
+            if(!url.includes(target)){
+                toast.add({summary:'Error', detail:`URL provided to download must be link to Bluesky CDN`, severity:'error', group:'tr', life:3000});
+                console.log(`Provided URL was: ${url}`);
+            }
+            else{
+                this.isDownloading = true;
+                await fetch(CreateBskyMediaDownloadURL(url),{
+                    headers:{
+                        Accept:
+                        "image/png, image/jpeg, image/*",
+                    },
+                })
+                .then(async res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    const blob = await res.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    this.saveFile(blobUrl, filename);
+                    URL.revokeObjectURL(blobUrl);
+                    this.isDownloading = false;
+                })
+                .catch(err => {
+                    console.error("Error in fetching and downloading file:", err);
+                    this.isDownloading = false;
+                })
+            }
+        },
     },
     computed:{
         downloadProgress(){

@@ -2,12 +2,19 @@
 import { reactive } from 'vue'
 import { IFeedReturnedPostResults } from '../interfaces/FeedInterfaces';
 import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { BookmarkView } from '@atproto/api/dist/client/types/app/bsky/bookmark/defs';
+import { FeedEnums } from '../enums/FeedEnums'
 
 interface INavigationHistory{
     FeedData: IFeedReturnedPostResults,
     ProfileData:ProfileViewDetailed,
-    scrollPos:number
+    scrollPos:number,
+    currentTab:FeedEnums.UserFeedTabs,
+    Bookmarks?:BookmarkView[]
+}
 
+export default{
+    name:"UserFocusModalState"
 }
 
 export const UserFocusModalState = reactive({

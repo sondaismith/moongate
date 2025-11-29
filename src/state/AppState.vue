@@ -7,12 +7,87 @@ import { Agent } from '@atproto/api';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { UserFocusModalState } from './UserFocusModalState.vue';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import { postDetails } from './PostDetails.vue';
+import { FeedState } from './FeedList.vue';
+import { FeedViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppSettingsState } from './AppSettingsState.vue';
+import { LoginState } from '../interfaces/AccountInterfaces';
+import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { FeedEnums } from '../enums/FeedEnums';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
     removeGroup: (group) => ToastEventBus.emit('remove-group', group),
     removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
 };
+
+/**
+ * Copies the passed in text value to the User's clipboard.
+ * @param textToCopy The text to copy.
+ * @param copyAction Affects the message displayed when copying is successful.
+ * Default is 'text' (e.g. Text Copied).
+ */
+export function CopyTextToClipboard(textToCopy:string, copyAction:'text'|'link' = 'text'){
+    if(navigator.clipboard){//Modern method - requires app to serve page(s) over HTTPS
+        try{
+            navigator.clipboard.writeText(textToCopy ? textToCopy : '');
+            toast.add({summary:`${copyAction[0].toUpperCase()+copyAction.substring(1)} Copied`,
+                severity:'success', group:'bc', life:1000});
+        }
+        catch(err){
+            console.error('Unable to copy to clipboard', err);
+            toast.add({summary:`Error copying ${copyAction}`,severity:'error', group:'bc', life:1000});
+        }
+    }
+    else{
+        //Unsecured text copy
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy ? textToCopy : '';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try{
+            document.execCommand('copy');
+            toast.add({summary:`${copyAction[0].toUpperCase()+copyAction.substring(1)} Copied`,
+                severity:'success', group:'bc', life:1000});
+        }
+        catch(err){
+            console.error('Unable to copy to clipboard', err);
+            toast.add({summary:`Error copying ${copyAction}`,severity:'error', group:'bc', life:1000});
+        }
+        document.body.removeChild(textArea);
+    }
+}
+
+/**
+ * Method used to trap tab focus to an element, preventing
+ * unwanted selection of elements behind it.
+ * Thanks to Ben Nadel at
+ * https://www.bennadel.com/blog/4096-trapping-focus-within-an-element-using-tab-key-navigation-in-javascript.htm.
+ * @param el The element to trap focus in.
+ * @param e The Keydown KeyboardEvent that the method is called with.
+ */
+export function TrapFocus(el:HTMLElement, e: KeyboardEvent){
+    let tabbable = el.querySelectorAll("button:not([disabled]), input, select, textarea, [href], [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
+    let target = e.target;
+    if(e.key.toLowerCase() !== 'tab') return; //cancel further actions
+    if(e.shiftKey){
+        if(target == el || target == tabbable[0]){
+            e.preventDefault();
+            tabbable[tabbable.length-1].focus();
+        }
+    }
+    else{
+        if(target == tabbable[tabbable.length-1]){
+            e.preventDefault();
+            tabbable[0].focus();
+        }
+    }
+}
+
+export default{
+    name:"AppState"
+}
 
 /**
  * Object that defines the current App state. Controls values such
@@ -27,6 +102,22 @@ export const AppState = reactive({
      * posts. NOTE: if this is true, `isAuthBrowsing` must be false.
      */
     isGuestBrowsing: false,
+    /**
+     * Method used to switch browsing mode to "Guest Mode".
+     * Updates `AppSettingsState` and prints toast message.
+     */
+    browseAsGuest(){
+        AppState.isAuthBrowsing = false;
+        AppState.isGuestBrowsing = true;
+        AppState.currentUsername = "Guest";
+        AppState.canBrowse = true;
+        AppSettingsState.Settings.savedAccountState = {
+            ...AppSettingsState.Settings.savedAccountState,
+            currentAccount:-1,
+            state:LoginState.Guest
+        }
+        toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
+    },
     /**
      * Is the user browsing Bluesky with a user account. NOTE: if this is
      * true, `isGuestBrowsing` must be false.
@@ -48,7 +139,7 @@ export const AppState = reactive({
         //If the user cannot currently browse, have them select
         //how they would like to browse
         if(!this.canBrowse){
-            toast.add({summary:"Error", detail:`Please choose how you would like to browse.`, severity:'error', group:'tr', life:3000})
+            toast.add({summary:"Browsing mode", detail:`Please choose how you would like to browse.`, severity:'info', group:'tr', life:3000})
             this.isLoggingIntoAccount = true;
             return this.canBrowse;
         }
@@ -63,11 +154,20 @@ export const AppState = reactive({
      */
     checkIfLoggedIn(action:string){
         if(!this.isAuthBrowsing){
-            toast.add({summary:"Error", detail:`In order to ${action} you must be logged in.`, severity:'error', group:'tr', life:3000});
+            toast.add({summary:"Requires login", detail:`In order to ${action} you must be logged in.`, severity:'info', group:'tr', life:3000});
+            this.loginModalStartPage = 1;
             this.isLoggingIntoAccount = true;
             return this.isAuthBrowsing;
         }
         return this.isAuthBrowsing;
+    },
+    /**
+     * Method that displays the `LoginModal` on the "select account" or "enter credentials"
+     * page.
+     */
+    showLoginAccountSelect(){
+        this.loginModalStartPage = 1;
+        this.isLoggingIntoAccount = true;
     },
     /**
      * Returns the `Agent` to access the Bluesky API with based on
@@ -86,14 +186,17 @@ export const AppState = reactive({
      * This variable might belong in another State.
      */
     currentUsername: "Login Here",
+    currentPFP: '',
     /**Is the user currently trying to create a new Feed to add to the
-     * view.
+     * view (is `FeedEditModal` open?).
      */
     isCreatingFeed: false,
     /**Is the user currently editing an existing Feed. */
     isUpdatingFeed: false,
     /**Is the LoginModal currently open. */
     isLoggingIntoAccount: false,
+    /**What page to open login modal to when displayed. Should be reset to -1 after opening. */
+    loginModalStartPage:-1,
     /**Is the UserFocusModal currently open. */
     isViewingUserAccount: false,
     /**Toggles display of `FeedEditModal` component. */
@@ -150,7 +253,157 @@ export const AppState = reactive({
     /**Sets `CreatePost` to be hidden. */
     hideCreatePost(){
         this.isCreatingNewPost = false;
+        postDetails.isReplyingToPost = postDetails.isQuotingPost = false;
     },
+    //#region Reply creation
+    /**
+     * Method that adds 1 to the displayed `replyCount` of a reply's parent post.
+     * Checks every Post in each currently displayed Feed.
+     * @param replyParentCid The CID of the parent post of the reply.
+     * @param currentReplyCount The current value of the parent post's `replyCount` variable.
+     */
+    updateReplyParentsInLists(replyParentCid:string, currentReplyCount:number){
+        let feedUpdates = 0;
+        //Update Feeds that may hold the post that was replied to
+        FeedState.FeedList.forEach(feed => {
+            //find all Posts in feed that match the parent of the reply
+            let postsThatWereRepliedTo = feed.data.filter(x=>x.post.cid == replyParentCid);
+            if(postsThatWereRepliedTo.length>0){
+                feedUpdates++;
+                postsThatWereRepliedTo.forEach(feedPost => {
+                    feedPost.post.replyCount = currentReplyCount;//increase the reply count for each matching Post
+                });
+            }
+            // postDetails.currentThreadView.post.replyCount = currentReplyCount+1;
+        });
+        // postDetails.currentThreadView.post.replyCount = currentReplyCount+1;
+        console.log(`Updated reply count in ${feedUpdates} Feed(s).`);
+    },
+    //#endregion
+    /**
+     * Method that updates any other instances of the Post that was interacted with (replied to, reposted
+     * or liked) in all visible Feeds. Used to keep the state of the Post consistent throughout the app.
+     * @param updatedPostData The PostView object holding the data of the Post that was just interacted with.
+     */
+    UpdatePostsInFeedList(updatedPostData:PostView){
+        let feedUpdates = 0;
+            //Update Feeds that may hold the post that was replied to/reposted/liked
+            FeedState.FeedList.forEach(feed => {
+                //find all Posts in feeds that match
+                let matchingPosts = feed.data.filter(x=>x.post.cid == updatedPostData.cid);
+                if(matchingPosts.length>0){
+                    feedUpdates++;
+                    matchingPosts.forEach(feedPost => {
+                        feedPost.post.replyCount = updatedPostData.replyCount;//increase the reply count
+                        feedPost.post.repostCount = updatedPostData.repostCount;//increase the repost count
+                        feedPost.post.likeCount = updatedPostData.likeCount;//increase the like count
+                        feedPost.post.viewer = updatedPostData.viewer//add updated Reply/Repost/Like URI data to `post.viewer`
+                    });
+                }
+            });
+            console.log(`Updated Posts in ${feedUpdates} Feed(s).`);
+    },
+    /**
+     * Method used to update "author view" records for the account that was interacted with (mute/unmute,
+     * block, etc.) in all visible Feeds. Used to keep the state of the Account consistent throughout the app.
+     * @param accountProfileView ProfileView of account that was just updated (muted/unmute, block, etc.)
+     */
+    UpdateAccountsInFeedList(accountProfileView:ProfileViewBasic|ProfileView|ProfileViewDetailed){
+        let feedUpdates = 0;
+        FeedState.FeedList.forEach(feed => {
+            if(feed.description.feedType != FeedEnums.Types.Trending && feed.description.feedType != FeedEnums.Types.Mentions &&
+            feed.description.feedType != FeedEnums.Types.Notifications){
+                let matchingPosts = feed.data.filter(x=> (x as FeedViewPost).post.author.did == accountProfileView.did) as FeedViewPost[];
+                if(matchingPosts.length>0){
+                    feedUpdates++;
+                    matchingPosts.forEach(feedPost => {
+                        feedPost.post.author.viewer = {...feedPost.post.author.viewer, ...accountProfileView.viewer};
+                    });
+                }
+            }
+        })
+        console.log(`Updated Posts in ${feedUpdates} Feed(s).`);
+    },
+    /**
+     * Method used to update "author view" records for the account that was interacted with (mute/unmute,
+     * block, etc.) in all "navigation history" records. Used to keep the state of the Account consistant
+     * throughout the app.
+     * @param accountProfileView ProfileView of account that was just updated (muted/unmute, block, etc.)
+     */
+    UpdateAccountsInUserFocusModalState(accountProfileView:ProfileView|ProfileViewBasic|ProfileViewDetailed){
+        let navHistoryUpdates = 0;
+        UserFocusModalState.navigationHistory.forEach(navHistory => {
+            if(navHistory.ProfileData.did == accountProfileView.did){
+                navHistory.ProfileData = {...navHistory.ProfileData,viewer:accountProfileView.viewer};
+                navHistoryUpdates++;
+            }
+        })
+        console.log(`Updated Profiles in ${navHistoryUpdates} UserFocusModal NavHistory record(s).`);
+    },
+    //#region Post Deletion
+    /**
+     * Method that removes all references of a specific Post from every component that
+     * might hold a reference to it. Currently checks `FeedState.FeedList` and
+     * `postDetails.currentThreadView`.
+     * @param deleteCid The CID of the Post to be removed from visible components.
+     */
+    removeDeletedPostFromLists(deleteCid:string){
+        let feedDeletions = 0;
+        //Update Feeds that may hold the post that was deleted
+        FeedState.FeedList.forEach(feed => {
+            if(feed.data.length != feed.data.filter(x=>x.post.cid != deleteCid).length){
+                feedDeletions++;
+            }
+            feed.data = feed.data.filter(x=>x.post.cid != deleteCid);
+        });
+        console.log(`Removed deleted Post from ${feedDeletions} Feed(s).`);
+        //Update Post thread view that may hold deleted Post
+        //Check root post
+        if(postDetails.currentThreadView.post.cid == deleteCid){
+            postDetails.hideFocusModal();//close component if the deleted post is the one shown
+            console.log(`Deleted post was being shown as focused Post in PostFocusModal - closed modal.`);
+            return;
+        }
+        //Check replies
+        else if(postDetails.currentThreadView.replies){
+            let updatedThreadView = [];
+            let isDeletedPostFound = false;
+            for (let i = 0; i < postDetails.currentThreadView.replies.length; i++) {
+                //Will remove deleted post if it is a direct reply
+                if((postDetails.currentThreadView.replies[i] as ThreadViewPost).post.cid != deleteCid){
+                    //add "parent" reply
+                    updatedThreadView.push((postDetails.currentThreadView.replies[i] as ThreadViewPost));
+                    if(!isDeletedPostFound){
+                        //add replies to the reply if there are any (and haven't been deleted)
+                        let numReplies = (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies ? (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies.length : 0;
+                        for (let j = 0; j < numReplies; j++) {
+                            if(((postDetails.currentThreadView.replies[i] as ThreadViewPost).replies[j] as ThreadViewPost).post.cid == deleteCid){
+                                updatedThreadView[i].replies?.splice(j,1) //= (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies?.splice(j,1);
+                                //remove 1 reply count from parent
+                                if(updatedThreadView[i].post.replyCount) updatedThreadView[i].post.replyCount--;
+                                j = numReplies; //end search early
+                                isDeletedPostFound = true;
+                            }
+                        }
+                    }
+                }
+                else{
+                    //we deleted a Post that was a reply to the "focused" Post - decrease its reply count
+                    if(postDetails.currentThreadView.post.replyCount) postDetails.currentThreadView.post.replyCount--;
+                    //Update reply count for parent posts of deleted post in each Feed
+                    FeedState.FeedList.forEach(feed => {
+                        //Find every instance of parent post in Feed
+                        feed.data.filter(x=>x.post.cid == postDetails.currentThreadView.post.cid).forEach(parent => {
+                            parent.post.replyCount--;
+                        });
+                    });
+                }
+            }
+            //update display with deleted Post removed
+            postDetails.currentThreadView.replies = updatedThreadView;
+        }
+    },
+    //#endregion
     /**
      * Value used to determine if modal for saving Post media
      * is currently visible.
@@ -204,6 +457,23 @@ export const AppState = reactive({
             //there's no modal/overlay open, focus whatever is useful in the
             //main application window
         }
-    }
+    },
+    /**
+     * Value used to indicate if the "Feed Order Change" modal
+     * is currently visible.
+     */
+    isUpdatingFeedPosition:false,
+    /**Method that causes the "Feed Order Change" modal to be displayed. */
+    showFeedOrderModal(){ this.isUpdatingFeedPosition = true; },
+    /**Method that causes the "Feed Order Change" modal to be hidden. */
+    hideFeedOrderModal(){ this.isUpdatingFeedPosition = false; },
+    /**Value used to indicate if App is currently running on a device with touchscreen support. */
+    isAppOnMobileTouchscreenDevice:false,
+    /**Variable that indicates if the "About App" modal is visible or not. */
+    isAboutAppModalVisible: false,
+    /**Method that causes the "About App" modal to be displayed. */
+    ShowAboutAppModal(){ this.isAboutAppModalVisible = true;},
+    /**Method that causes the "About App" modal to be hidden. */
+    HideAboutAppModal(){ this.isAboutAppModalVisible = false;},
 })
 </script>

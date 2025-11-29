@@ -1,8 +1,12 @@
 <script lang="ts">
 import { reactive } from 'vue'
-import { IPostDetails, IPostDetailsList } from '../interfaces/PostInterfaces';
-import { IconTypes } from '../enums/PostEnums';
-import { emptyPostModalData, emptyPostThread } from '../fake-data/dumPostData';
+import { IPostDetails } from '../interfaces/PostInterfaces';
+import { IconTypes, PostActions } from '../enums/PostEnums';
+import { emptyPostThread, emptyPostView } from '../fake-data/dumPostData';
+import { FeedViewPost, isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { getPostThread } from '../lib/api/Post.vue';
+import { toast } from './AppState.vue';
+import { HandleAPIError } from '../helpers/errors';
 
 //DetailIcon Icons
 import SolarChatDotsOutline from '~icons/solar/chat-dots-outline';
@@ -10,10 +14,12 @@ import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import MingcuteHeartFill from '~icons/mingcute/heart-fill';
 import SolarShareBold from '~icons/solar/share-bold';
 import MdiDotsHorizontal from '~icons/mdi/dots-horizontal';
-import { FeedViewPost, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { getPostThread } from '../lib/api/Post.vue';
-import { toast } from './AppState.vue';
-import { HandleAPIError } from '../helpers/errors';
+import { AppBskyFeedThreadgate } from '@atproto/api';
+import { ArrToString } from '../helpers/formaters';
+
+export default{
+    name:"PostDetails State"
+}
 
 // export const postDetails : IPostDetailsList = reactive({
 export const postDetails = reactive({
@@ -25,54 +31,130 @@ export const postDetails = reactive({
      */
     isAwaitingFocusData:false,
     clickedMediaIndex: 0,
-    getClickedMediaIndex() {
-        return this.clickedMediaIndex;
-    },
-    setClickedMediaIndex(newVal:number) {
-        this.clickedMediaIndex = newVal;
-    },
+    // getClickedMediaIndex() {
+    //     return this.clickedMediaIndex;
+    // },
+    // setClickedMediaIndex(newVal:number) {
+    //     this.clickedMediaIndex = newVal;
+    // },
     menuClickPos: [0, -500],
-    postData: emptyPostModalData,
-    postThread : emptyPostThread,
+    /**
+     * Holds data relating to the most recently interacted-with Post.
+     */
+    currentPostData: emptyPostView,
+    /**
+     * Holds reference to the currently displayed Post thread context. Updated with values
+     * held in the thread navigation history array - `threadNavHistory`.
+     */
     currentThreadView : emptyPostThread,
-    setCurrentThreadView(cid: string) {
-        var result = findThreadView(cid,this.postThread);
+    /**
+     * Holds record of the Thread associated with the Post the User last
+     * interacted with. Currently just used to find the "root" Post of last
+     * interacted Post.
+     */
+    currentPostThreadData: {} as ThreadViewPost|undefined,
+    uriOfPostToShow:'',
+    /**
+     * Indicates that we are waiting for a reference to the thread associated
+     * with the Post being intereacted with. Mainly used with `CreatePost`
+     * component.
+     */
+    isAwaitingPostThreadData:false,
+    /**
+     * Updates the reference to the Post that will have actions
+     * performed to it (likes, reply, quote post, delete). Also
+     * sets variable indicating what action is going to be performed.
+     * @param post The Post that you wish to perform actions on.
+     * @param action The type of Post that is being created.
+     */
+    async prepareForPostAction(post:PostView, action:PostActions=PostActions.Post){
+        this.isAwaitingPostThreadData = true;
+        this.currentPostAction = action;
+        if(post && post.uri && post.uri.trim() != ''){
+            this.currentPostData = post;
+            await getPostThread(post.uri)
+            //only will work with ThreadViewPost - no NotFoundPost or BlockedPost
+            .then(res => this.currentPostThreadData = isThreadViewPost(res.data.thread) ? res.data.thread : undefined)
+            .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread details')));
+        }
+        else{
+            this.currentPostData = emptyPostView;
+            this.currentPostThreadData = undefined;
+        }
+        this.isAwaitingPostThreadData = false;
+    },
+    currentPostAction:PostActions.Post,
+    /**Boolean indicating that we are replying to a Post. */
+    isReplyingToPost:false,
+    /**Boolean indicating that we are quote posting a Post. */
+    isQuotingPost:false,
+    /**
+     * Recursive method that attempts to find the "root" Post of a specified
+     * Post/comment. Checks to see if the Post has a `parent` value. Returns itself
+     * if it cannot be found.
+     * @param post The Post you wish to find the "root" Post of.
+     */
+    getPostThreadRoot(post:ThreadViewPost):ThreadViewPost{
+        if(post.parent && isThreadViewPost(post.parent)){
+            return this.getPostThreadRoot(post.parent)
+        }
+        else{ return post; }
+    },
+    /**
+     * Holds details of the "Thread" of the initial Post that was opened up in the Focus modal.
+     * Should not be modified once set except to be cleared.
+     */
+    postThread : emptyPostThread,
+    /**
+     * Method that searches a `ThreadViewPost` object for a Post that
+     * matches a passed in CID value. Initially made to be used when you need
+     * to update the state of Posts held in `PostFocusModal`.
+     * @param postCid The CID of the Post to find.
+     */
+    searchThreadViewForMatchingPost(postCid:string, threadToSearch:ThreadViewPost){
+        /**Holds list of immediate replies to the focused Post. */
+        let rootReplies = [] as ThreadViewPost[];
+        if(threadToSearch.replies) rootReplies = threadToSearch.replies as ThreadViewPost[];
+        // if(postDetails.currentThreadView.replies) rootReplies = postDetails.currentThreadView.replies as ThreadViewPost[];//old version tied to `currentThreadView`
+        /**Has the Post been found. */
+        let isPostFound = false;
+        /**Indicates if the matching Post is the Root Post of the thread.*/
+        let isPostRoot = false;
+        /**Index position in currentThreadView where the matching Post is located.*/
+        let postPosition = [0,0];
+        /**The found ThreadViewPost Post data. */
+        let foundPostThread = emptyPostThread;
 
-        if(result){
-            this.currentThreadView = result;
+        //first check if parent Post is what we're looking for
+        if(threadToSearch.post.cid == postCid){
+            isPostRoot = isPostFound = true;
+            foundPostThread = threadToSearch;
         }
-        else{
-            //go back to Post origin ThreadView
-            console.log('Finding Post ThreadView failed :(');
-            this.currentThreadView = this.postThread;
+        //if not parent post, check immediate replies and their replies
+        for (let i = 0; i < rootReplies.length; i++){
+            //If post is a direct reply to a reply, we add it to the list and increase the parent post's replyCount
+            if((rootReplies[i] as ThreadViewPost).post.cid == postCid){
+                i = rootReplies.length;//end search
+                foundPostThread = rootReplies[i];
+                postPosition = [i,0];
+                isPostFound = true;
+            }
+            //check each reply's list of replies
+            /**Holds list of replies to the focused Post's immediate replies. */
+            let replyReplies = [] as ThreadViewPost[];
+            if(rootReplies[i].replies) replyReplies = rootReplies[i].replies as ThreadViewPost[];
+            if(!isPostFound){
+                for (let j = 0; j < replyReplies.length; j++){
+                    if(replyReplies[j].post.cid == postCid){
+                        j = replyReplies.length; //end search
+                        foundPostThread = replyReplies[j];
+                        postPosition = [i,j];
+                        isPostFound = true;
+                    }
+                }
+            }
         }
-        this.updateCurrentBreadcrumbs();
-    },
-    /**
-     * Method that resets the current ThreadView back to the Post
-     * origin.
-     */
-    returnToThreadOrigin() {
-        this.currentThreadView = this.postThread;
-        this.updateCurrentBreadcrumbs();
-    },
-    currentBreadcrumb : [{userName:"Origin",postCID:"this_cid_is_unset"}],
-    /**
-     * Method that updates currently displayed reply breadcrumb labels.
-     * Should be called any time the currentThreadView is changed.
-     */
-    updateCurrentBreadcrumbs(){
-        //If there the reply object containing the parent ref does not exist
-        if(!postDetails.currentThreadView.post.record.reply){
-            postDetails.currentBreadcrumb.splice(0, postDetails.currentBreadcrumb.length, ...[{userName:"Origin",postCID:"root"}]);
-        }
-        else{
-            //reset breadcrumbs
-            postDetails.currentBreadcrumb.splice(0, postDetails.currentBreadcrumb.length, ...[]);
-            discoverBreadcrumbs(this.currentThreadView.post.cid, this.currentThreadView);
-            //add origin "home button" to start of breadcrumbs
-            postDetails.currentBreadcrumb.unshift({userName:"Origin",postCID:"this_cid_is_unset"});
-        }
+        return {postFound:isPostFound,foundPostThreadView:foundPostThread,isRoot:isPostRoot,postPosIndex:postPosition};
     },
     createPostData(data) {
         var postData = data.post;
@@ -96,7 +178,7 @@ export const postDetails = reactive({
     showModalPost(postToShow:FeedViewPost){
         this.isVisible = true;
         // this.postData = updatePostDetails(postToShow);
-        this.postData = postToShow;
+        this.currentPostData = postToShow;
     },
     hideModal(){
         this.isVisible = false;
@@ -112,13 +194,15 @@ export const postDetails = reactive({
     //     this.postData = updatePostDetails(postToShow)
     // },
     /**
+     * DO NOT USE
+     * ---------------
      * Method that shows "Focus" modal - media on left with comments
      * in right sidebar. This is the live version that accesses the
      * Bluesky API
      */
     showFocusModalIndex(mediaIndex:number){
-        postDetails.isFocusVisible = true;
-        this.clickedMediaIndex = mediaIndex;
+        // postDetails.isFocusVisible = true;
+        // this.clickedMediaIndex = mediaIndex;
     },
     /**
      * Method that hides "Focus" modal - media on left with comments
@@ -126,6 +210,10 @@ export const postDetails = reactive({
      */
     hideFocusModal(){
         postDetails.isFocusVisible = false;
+        //Clear URI of Post Thread to show
+        this.uriOfPostToShow = '';
+        // this.threadNavIndex = 0; //Clear thread navigation history
+        // this.threadNavHistory = [emptyPostThread];
     },
     isPostOptionsMenuVisible: false,
     /**
@@ -173,6 +261,36 @@ export const postDetails = reactive({
             el.style.top = '-500px';
             this.isPostOptionsMenuVisible = false;
         }
+    },
+    /**
+     * Method that returns a string describing what type of Users can reply to the current post.
+     * To be used wherever that info needs to be communicated to the User (`PostFocusModal`, `PostInteractionIcons`).
+     */
+    whoCanReply(postToCheck:PostView):String{
+        let replyString = 'Everybody can Reply';
+        if(typeof postToCheck.threadgate != 'undefined' && typeof postToCheck.threadgate.record != 'undefined'){
+            let tgRecord = postToCheck.threadgate.record as AppBskyFeedThreadgate.Record;
+            if(typeof tgRecord.allow != 'undefined'){
+                if(tgRecord.allow.length>0){
+                    let rules:string[] = [];
+                    for (let i = 0; i < tgRecord.allow.length; i++){
+                        if(AppBskyFeedThreadgate.isMentionRule(tgRecord.allow[i])) rules.push("Mentioned")
+                        else if(AppBskyFeedThreadgate.isFollowingRule(tgRecord.allow[i])) rules.push("Followed By")
+                        else if(AppBskyFeedThreadgate.isFollowerRule(tgRecord.allow[i])) rules.push("Following")
+                        else if(AppBskyFeedThreadgate.isListRule(tgRecord.allow[i])) rules.push("Listed")
+                    }
+                    replyString = ArrToString(rules) + ' Users may Reply';
+                }
+                else replyString = 'Replies Disabled';
+            }
+        }
+        else if(typeof postToCheck.viewer != 'undefined'){//For replies
+            let rules:string[] = [];
+            if(typeof postToCheck.viewer.replyDisabled != 'undefined' && postToCheck.viewer.replyDisabled) rules.push('Replies')
+            if(typeof postToCheck.viewer.embeddingDisabled != 'undefined' && postToCheck.viewer.embeddingDisabled) rules.push('Quote Posts')
+            if(rules.length>0) replyString = ArrToString(rules)+' Disabled';
+        }
+        return replyString;
     },
     clickedElement: document.children[0].children[1].children[1] as HTMLElement,
     postDetailIconValues: [
@@ -247,7 +365,7 @@ function discoverBreadcrumbs(parentCID:string, currentPostThread:ThreadViewPost)
  */
 export async function showDetailModal(postToShow:FeedViewPost){
     postDetails.isVisible = true;
-    await getPostThread(postToShow)
+    await getPostThread(postToShow.post.uri)
     .then(res => {
         postDetails.postThread = res.data.thread as ThreadViewPost
         postDetails.currentThreadView = res.data.thread as ThreadViewPost;
@@ -260,16 +378,10 @@ export async function showDetailModal(postToShow:FeedViewPost){
  * in right sidebar. This is the live version that pulls data through
  * the Bluesky API.
  */
-export async function showFocusModal(postToShow:FeedViewPost, mediaIndex:number){
+export async function showFocusModal(postToShowURI:string, mediaIndex:number){
     postDetails.isAwaitingFocusData = true;
     postDetails.isFocusVisible = true;
     postDetails.clickedMediaIndex = mediaIndex;
-    await getPostThread(postToShow)
-    .then(res => {
-        postDetails.postThread = res.data.thread as ThreadViewPost;
-        postDetails.currentThreadView = res.data.thread as ThreadViewPost;
-        postDetails.isAwaitingFocusData = false;
-    })
-    .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')));
+    postDetails.uriOfPostToShow = postToShowURI;
 }
 </script>

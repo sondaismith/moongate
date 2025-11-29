@@ -1,35 +1,53 @@
 <template>
-    <div data-test="app-viewport" id="app-viewport" class="flex flex-row h-screen w-screen"
+    <div data-test="app-viewport" id="app-viewport" class="flex flex-row absolute h-full w-screen"
     :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
         {{ void "sidebar" }}
-        <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar min-w-16 items-center">
+        <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar w-16 shrink-0 items-center">
             {{ void "App Logo" }}
-            <div class="w-full border-b border-gray-700 p-2 flex-none">
-                <UserButton tooltip="[logo here]"/>
+            <div class="flex w-full border-b border-outline p-1">
+                <AppLogo @click="showAboutAppModal"/>
             </div>
             <div class="w-full flex flex-col flex-shrink overflow-hidden">
                 {{ void "Feed List + Add btn" }}
                 <div class="flex flex-col h-full">
                     <div class="flex-shrink preload-gutter overflow-x-hidden">
-                        <div class="space-y-2 py-2 pl-2 pr-1">
-                            <FeedButton :icon="FeedEnums.Icons.Home" tooltip="Home"/>
+                        <div class="space-y-2 p-2">
+                            <!-- <FeedButton :icon="FeedEnums.Icons.Home" tooltip="Home"/> -->
                             <TransitionGroup name="feedbutton">
                                 <!-- <FeedButton v-for="feeds in feedListing.feedList" :key="feeds.feedId" :feedId="feeds.feedId" :type="feeds.feedType" :tooltip="feeds.feedName" :newPosts="feeds.newPosts"/> -->
-                                <FeedButton v-for="feed in FeedState.FeedList" :key="feed" :feedId="feed.description.feedId" :icon="feed.description.feedIcon" :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts" :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"/>
+                                <!-- <FeedButton v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
+                                :feedId="feed.description.feedId" :icon="feed.description.feedIcon"
+                                :tooltip="feed.description.feedName" :newPosts="feed.description.newPosts"
+                                :user-did="feed.description.feedType == FeedEnums.Types.User ? feed.description.feedSourceDID : ''"
+                                :class="{'drag-start' : index === oldIndex, 'drag-over' : index === newIndex}"
+                                draggable="true"
+                                @dragstart="handleDragstart($event,index)" @dragover.prevent="handleDragover(index)"
+                                @drop="handleDrop" @dragend="handleDragend"/> -->
+
+                                <FeedButton v-if="!AppState.isAppOnMobileTouchscreenDevice" v-for="(feed,index) in FeedState.FeedList" :key="feed.description.feedId"
+                                :tooltip="feed.description.feedName" :is-awaiting-new-post-data="feed.isAwaitingFeedData"
+                                :feed-description="feed.description"
+                                :button-being-dragged="isDraggingButton"
+                                @pointerdown="handleFeedButtonLongpress($event,index)" @pointerup="handleFeedButtonMouseup"
+                                @pointerover="handleFeedButtonMouseover($event,index)" @pointerleave="handleFeedButtonMouseLeave"
+                                class="draggable"/>
+                                <FeedButton v-else v-for="(feed) in FeedState.FeedList" :key="feed.description.feedId+'_mobile'"
+                                :tooltip="feed.description.feedName":is-awaiting-new-post-data="feed.isAwaitingFeedData"
+                                :feed-description="feed.description"
+                                :button-being-dragged="isDraggingButton"/>
                             </TransitionGroup>
                         </div>
                     </div>
                     <div class="border-t border-gray-700 space-y-2 px-2 py-2 flex-none">
-                        <FeedButton :icon="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
-                        <FeedButton :icon="FeedEnums.Icons.RemoveList" tooltip="Remove Feed" @click="removeFeed"/>
-                        <FeedButton :icon="FeedEnums.Icons.CreatePost" tooltip="Create New Post" @click="createNewPost"/>
+                        <SidebarButton data-testid="add-feed-button" :icon="FeedEnums.Icons.AddList" tooltip="Add Feed" @click="addFeed"/>
+                        <SidebarButton data-testid="create-post-button" :icon="FeedEnums.Icons.CreatePost" tooltip="Create New Post" @click="createNewPost"/>
                     </div>
                 </div>
             </div>
             {{ void "Navbar Footer" }}
             <div class="w-full flex-none !mt-auto">
                 <div class="p-2 space-y-2">
-                    <FeedButton :icon="FeedEnums.Icons.Settings" tooltip="App Settings" @click="showSettingsPanel"/>
+                    <SidebarButton data-testid="app-settings-button" :icon="FeedEnums.Icons.Settings" tooltip="App Settings" @click="showSettingsPanel"/>
                     <UserButton :tooltip="AppState.currentUsername"/>
                 </div>
             </div>
@@ -37,11 +55,16 @@
         </div>
         {{ void "main content" }}
         <div data-test="feed-viewport" :onscroll="showScrollXPos" id="feedcolumnDisplay"
-            class="flex w-full bg-slate-700 overflow-y-hidden" >
+            class="flex w-full bg-viewportBG overflow-y-hidden" >
             <div class="flex">
                 <TransitionGroup name="feedcolumn">
+                    <IntroMessage v-cloak key="intro_message-a12u2uss1w" v-if="AppSettingsState.isSettingsLoaded && AppSettingsState.Settings.isShowingIntroMessage"/>
                     <!-- <FeedColumn v-for="feed in feedListing.feedList" :key="feed" :feedData="feed"/> -->
-                    <FeedColumn v-for="feed in FeedState.FeedList" :key="feed.description.feedId" :feedData="feed"/>
+                    <FeedColumn v-for="(feed, index) in FeedState.FeedList" :list-index="index"
+                    :key="feed.description.feedId" :feedData="feed"
+                    @pointerover="handleFeedColumnMouseover($event,index+1)"
+                    @pointerleave="handleFeedColumnMouseLeave"
+                    class="draggable"/>
                 </TransitionGroup>
                 <div v-if="DebugFlags.showFeedScrollStats" id="debug-feedViewportStats" class="absolute bottom-3 p-2 bg-blue-800/90">
                     <div>X Pos: {{ scrollXPos }}</div>
@@ -66,7 +89,7 @@
             <FeedPost/>
         </div>
         <Transition name="modal">
-            <LoginModal v-if="AppState.isLoggingIntoAccount"/>
+            <LoginModal data-testid="login-modal" v-if="AppState.isLoggingIntoAccount"/>
         </Transition>
         <Toast position="bottom-center" group="bc"/>
         <!-- <Toast position="bottom-center" group="bc":pt="{
@@ -91,9 +114,11 @@
         <Transition name="modal">
             <SaveMediaModal v-if="AppState.isSavingMediaModalVisible"/>
         </Transition>
-        <PostDetailModal/>
         <Transition>
-            <PostFocusModal v-if="postDetails.isFocusVisible"/>
+            <PostFocusModal v-if="postDetails.isFocusVisible" :initial-thread-uri="postDetails.uriOfPostToShow" :clicked-media-index="postDetails.clickedMediaIndex"/>
+        </Transition>
+        <Transition name="modal">
+            <FeedOrderModal v-if="AppState.isUpdatingFeedPosition" :feed-id-to-update="FeedState.selectedFeed"/>
         </Transition>
         <Transition name="modal">
             <FeedEditModal v-if="AppState.isCreatingFeed || AppState.isUpdatingFeed"/>
@@ -105,17 +130,20 @@
             <AccountPeek v-show="AccountPeekState.isUserPeeking"/>
         </Transition>
         <Transition name="modal">
-            <CreatePost v-if="AppState.isCreatingNewPost"/>
+            <CreatePost v-if="AppState.isCreatingNewPost" :post-ref="postDetails.currentPostData"/>
         </Transition>
         <Transition name="modal">
             <SettingsPanel v-if="AppState.isSettingsPanelVisible"/>
+        </Transition>
+        <Transition name="modal">
+            <AboutAppModal v-if="AppState.isAboutAppModalVisible"/>
         </Transition>
     </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { userFeedList, FeedState, AddFeedToList, createFeedDescription, AddSavedFeed } from "./state/FeedList.vue";
+import { FeedState, AddFeedToList, OLDcreateFeedDescription, AddSavedFeed, LoadFeedPostsAsync, SaveFeedChanges } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState, toast } from "./state/AppState.vue";
@@ -133,8 +161,8 @@ createSavedFeedsTable, updateSavedFeedsTable,
 loadSavedFeedsRecords,
 stringifyFeedListData,
 stringToJSON} from "./lib/db/local_db";
-import { invoke } from "@tauri-apps/api/core";
-import { currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize, Window } from "@tauri-apps/api/window";
+import { invoke, isTauri } from "@tauri-apps/api/core";
+import { Window } from "@tauri-apps/api/window";
 import { getUserHomeFeed } from "./lib/api/Feed.vue";
 import { FeedEnums } from "./enums/FeedEnums";
 import FeedEditModal from "./components/Feed/FeedEditModal.vue";
@@ -147,30 +175,37 @@ import FeedButton from "./components/Navbar/FeedButton.vue";
 import CreatePost from "./components/Post/CreatePost.vue"
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { HandleAPIError } from "./helpers/errors";
-import SaveMediaModal from "./components/Utilities/SaveMediaModal.vue";
 import PostFocusModal from "./components/Post/PostFocusModal.vue";
 import SettingsPanel from "./components/Settings/SettingsPanel.vue";
 import { AppSettingsState } from "./state/AppSettingsState.vue";
+import FeedColumn from "./components/Feed/FeedColumn.vue";
+import { IFeedDBData } from "./interfaces/FeedInterfaces";
+import IntroMessage from "./components/Intro/IntroMessage.vue";
+import SidebarButton from "./components/Navbar/SidebarButton.vue";
+import { isOnMobileTouchscreen } from "./helpers/states";
+import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
+import AppLogo from "./components/SVG/AppLogo.vue";
+import AboutAppModal from "./components/Settings/AboutAppModal.vue";
 
 
     export default defineComponent({
         name:'Sidebar',
         components:{
             FeedButton,
+            SidebarButton,
+            FeedColumn,
             FeedEditModal,
+            FeedOrderModal,
             PostFocusModal,
             UserFocusModal,
             CreatePost,
             SettingsPanel,
+            IntroMessage,
+            AppLogo,
+            AboutAppModal,
         },
         data(){
             return{
-                // feedList: [
-                //     {feedName:'Friends', feedType:'friends', newPosts: 3},
-                //     {feedName:'Local News', feedType:'news', newPosts: 5},
-                //     {feedName:'Artists', feedType:'art', newPosts: 7},
-                // ]
-                feedListing: userFeedList,
                 FeedState,
                 OptionsMenuState,
                 AccountPeekState,
@@ -184,7 +219,19 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 OptionIconList,
                 APIResponse: {},
                 DBResponse: {},
-                FeedEnums
+                FeedEnums,
+                oldFeedButtonIndex:-100,
+                newFeedButtonIndex:-100,
+                /**Holds the timeout object used to detect a longpress of a `FeedButton`. */
+                longpressTimeout:-1,
+                /**Holds a copy of the `FeedButton` element that is being dragged. */
+                draggedButton: undefined,
+                /**Indicates that one of the `FeedButton` components is being dragged. */
+                isDraggingButton:false,
+                /**Used to correctly position `FeedButton` when it is being dragged. */
+                dragButtonStartingY:0,
+                isOnMobileTouchscreen,
+                isTauri,
             }
         },
         methods: {
@@ -205,18 +252,22 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 this.showScrollXPos();
             },
             createNewPost(){
-                // if(!AppState.checkIfLoggedIn("post")) return;
+                if(!AppState.checkIfLoggedIn("post")) return;
                 AppState.showCreatePost();
             },
             showSettingsPanel(){
                 AppState.ShowSettingsPanel();
+            },
+            showAboutAppModal(){
+                AppState.ShowAboutAppModal();
+                if(document.activeElement instanceof HTMLElement) document.activeElement.blur();
             },
             /**
              * DEBUG - Displays the current x-axis scroll pos of the Feed Display.
              */
             showScrollXPos(){
                 const el = document.getElementById("feedcolumnDisplay");
-                this.scrollXPos = el.scrollLeft;
+                if(el) this.scrollXPos = el.scrollLeft;
                 this.getFeedDisplayViewWidth();
             },
             /**
@@ -292,7 +343,7 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 .then(res => {
                     homeFeed = res.data.feed
                     //FIX: NEED TO GET REAL CURRENT USER ID FROM APP STATE EVENTUALLY
-                    var feedDesc = createFeedDescription(1,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444}, homeFeed[0].post.author.did);
+                    var feedDesc = OLDcreateFeedDescription(1,'home','Home Timeline',FeedEnums.Types.Home, FeedEnums.Icons.Home,10,10, {width:444}, homeFeed[0].post.author.did);
                     AddFeedToList(feedDesc, homeFeed);
                 })
                 .catch(err => toast.add(HandleAPIError(err, 'Error getting Home timeline posts')));
@@ -301,46 +352,17 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
              * Called during creation of component.
              */
             async setUpListeners(){
-                var window = Window.getCurrent();
-
-                //Listen to any attempt to close the app window.
-                const unlisten = await window.onCloseRequested(async (event) => {
-                    var windowSize = (await getCurrentWindow().innerSize()).toJSON();
-                    var windowPos = (await getCurrentWindow().innerPosition()).toJSON();
-                    var monitor = (await currentMonitor())?.name;
-                    const confirmed = await confirm('Are you sure?');
-                    if (!confirmed) {
-                        // user did not confirm closing the window; let's prevent it
-                        event.preventDefault();
-                    }
-                    else{
-                        await updateAppSettings({lastWindowWidth:windowSize.width,
-                            lastWindowHeight:windowSize.height,
-                            lastWindowPosX:windowPos.x,
-                            lastWindowPosY:windowPos.y,
-                            lastMonitor:monitor} as AppSettings);
-
-                        await updateSavedFeedsTable({data:stringifyFeedListData(FeedState.FeedList)});
-                    }
-                });
-                // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
-            },
-            /**
-             * Method that ensures that the `app_settings` database and tables
-             * are set up. Called during creation of component.
-             */
-            async appSettingsDatabaseSetup(){
-                var dbExist = await checkIfAppSettingsDatabaseExists();
-                var tableExist = await checkIfAppSettingsTableExists();
-
-                if(!dbExist){
-                    console.log("db file missing - creating db file");
-                    await createAppSettingTable();
-                }
-                if(!tableExist){
-                    console.log("`app_settings` table missing - creating table");
-                    await createAppSettingTable();
-                    await initializeAppSettingsTable();
+                if(isTauri()){
+                    var window = Window.getCurrent();
+                    //Listen to any attempt to close the app window.
+                    const unlisten = await window.onCloseRequested(async (event) => {
+                        const confirmed = await confirm('Are you sure?');
+                        if (!confirmed) {
+                            // user did not confirm closing the window; let's prevent it
+                            event.preventDefault();
+                        }
+                    });
+                    // unlisten();//unlistens, removes listener - WILL PREVENT EXECUTION
                 }
             },
             /**
@@ -355,7 +377,7 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
                 }
             },
             /**
-             * Method that ensures that the `user_accounts` table exists.
+             * Method that ensures that the `saved_feeds` table exists.
              * Called during creation of component.
              */
              async savedFeedsDatabaseSetup(){
@@ -367,55 +389,170 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
             },
             /**
              * Method that loads the application settings saved in the
-             * `app_settings` database and applies them.
+             * `moongate_settings` store and applies them.
              */
             async loadAppConfig(){
-                var loadedWindowPosition = new PhysicalPosition(0,0);
-                var loadedWindowSize = new PhysicalSize(800,600);
-                var appSettings = await loadAppSettingsRecords() as AppSettings[];
-                //move window to correct monitor first
-                await invoke('position_on_monitor',{monitorName:appSettings[0].lastMonitor});
-                //then get monitor for positioning
-                var curMonitor = await currentMonitor();
-                loadedWindowPosition = new PhysicalPosition(appSettings[0].lastWindowPosX ? appSettings[0].lastWindowPosX:0,
-                    appSettings[0].lastWindowPosY ? appSettings[0].lastWindowPosY:0);
-                loadedWindowSize = new PhysicalSize(appSettings[0].lastWindowWidth ? appSettings[0].lastWindowWidth:0,
-                    appSettings[0].lastWindowHeight ? appSettings[0].lastWindowHeight:0);
-                loadedWindowPosition = validateWindowPosition(curMonitor,loadedWindowPosition,loadedWindowSize);
-                var curWindow = await getCurrentWindow();
-                curWindow.setPosition(loadedWindowPosition);
-                curWindow.setSize(loadedWindowSize);
-
                 //Load application settings
-                AppSettingsState.loadSettingsFromDB(appSettings[0].collection);
-
-                //Load saved Feeds
-                var lastOpenFeeds = await loadSavedFeedsRecords() as SavedFeeds[];
-                console.log(lastOpenFeeds);
-                //Ensure there is data to load before trying to display Feeds
-                if(lastOpenFeeds && lastOpenFeeds[0].data.length>0){
-                    var loadedFeeds = stringToJSON(lastOpenFeeds[0].data);
-                    console.log(loadedFeeds);
-                    //Set AppState to "loading feeds" - prevent interaction until
-                    //all data has been loaded
-                    for (let i = 0; i < loadedFeeds.length; i++) {
-                        await AddSavedFeed(loadedFeeds[i]);
-                    }
-                    //Set AppState "loading feeds" to false
+                await AppSettingsState.loadSettingsFromStore();
+                //Tauri - ensure databases exist
+                if(isTauri()){
+                    await this.userAccountsDatabaseSetup();
+                    await this.savedFeedsDatabaseSetup();
                 }
-                else{console.log('No saved Feeds to restore.')}
+                //Load saved Feeds
+                await loadSavedFeedsRecords()
+                .then(async (res) => {
+                    let feedResult = res as SavedFeeds[];
+                    if(feedResult && feedResult.length>0){
+                        let loadedFeeds:IFeedDBData[]|undefined = stringToJSON(feedResult[0].data);
+                        console.log('Loaded Feeds:');
+                        console.log(loadedFeeds);
+                        //Ensure there is data to load before trying to display Feeds
+                        if(loadedFeeds && loadedFeeds.length>0){
+                            //Set AppState to "loading feeds" - prevent interaction until
+                            //all data has been loaded
+                            for (let i = 0; i < loadedFeeds.length; i++) {
+                                await AddSavedFeed(loadedFeeds[i]);
+                            }
+                            for (let i = 0; i < FeedState.FeedList.length; i++) {
+                                await LoadFeedPostsAsync(FeedState.FeedList[i].description); //add await if you want these done sequentially
+                                // await new Promise((resolve) => setTimeout(resolve,200)) //use if you want to add a small delay between each API call
+                            }
+                            //Set AppState "loading feeds" to false
+                            //Update FeedDescription.latestPostDate value after Posts have been loaded
+                            SaveFeedChanges(true).catch(err => {
+                                toast.add(HandleAPIError(err, 'Error updating Feed position'));
+                            })
+                        }
+                        else{console.log('No saved Feeds to restore.')}
+                    }
+                })
+                .catch(err => {
+                    toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000})
+                });
             },
             async appStartupProcedure(){
-                await this.appSettingsDatabaseSetup();
-                await this.userAccountsDatabaseSetup();
-                await this.savedFeedsDatabaseSetup();
                 await this.setUpListeners();
-                this.loadAppConfig();
-                invoke('show_main_window');//unhide main window and focus it via Rust
+                await this.loadAppConfig();
+                if(isTauri()) invoke('show_main_window');//unhide main window and focus it via Rust
             },
+            /**
+             * Used to handle a "long press" on a {@link FeedButton}. Allows the User to drag
+             * and reposition the Feed item.
+             * @param e MouseDown/PointerDown `MouseEvent`.
+             * @param oldIndex The index of the {@link FeedButton} currently being long pressed.
+             */
+            handleFeedButtonLongpress(e:Event,oldIndex:number){
+                let pressedButton = (e.target as HTMLElement);
+                this.longpressTimeout = setTimeout(() => {
+                    this.isDraggingButton = true;
+                    pressedButton.classList.add('drag-start','dragging');
+                    this.oldFeedButtonIndex = oldIndex;
+                    this.dragButtonStartingY = pressedButton.offsetTop;
+                    document.addEventListener("mousemove", this.dragMoveFeedButton);//allows user to move button
+                    document.addEventListener("mousedown", this.dropFeedButton);//when user "drops" button
+                }, 800);
+            },
+            /**
+             * Used to cancel a long press. Will still allow the click action
+             * to be performed.
+             */
+            handleFeedButtonMouseup(){
+                clearTimeout(this.longpressTimeout);
+            },
+            /**
+             * Used to "drop" the currently selected Feed into its new position in the list.
+             */
+            dropFeedButton(){
+                clearTimeout(this.longpressTimeout);
+                let buttonBeingDropped = (document.getElementsByClassName('dragging')[0] as HTMLElement);
+
+                if(buttonBeingDropped.classList.contains('drag-start')){
+                    buttonBeingDropped.classList.remove('drag-start');
+                    //Smoothly transition element to location - top element unfortunately will not move smoothly
+                    buttonBeingDropped.style.transition = "top 0.3s ease";
+                    buttonBeingDropped.style.top = "0px";
+                    document.removeEventListener("mousemove", this.dragMoveFeedButton);
+                    //If position is new
+                    if(this.newFeedButtonIndex != this.oldFeedButtonIndex){
+                        // remove element from its oldIndex
+                        const elRemoved = FeedState.FeedList.splice(this.oldFeedButtonIndex, 1)[0];
+                        // insert it at its new index
+                        FeedState.FeedList.splice(this.newFeedButtonIndex, 0, elRemoved);
+                    }
+                    //delay removal of class to prevent click after longpress + let transition finish
+                    setTimeout(() => {
+                        buttonBeingDropped.style.removeProperty('top');
+                        buttonBeingDropped.style.removeProperty('transition');
+                        buttonBeingDropped.classList.remove('dragging');
+                        this.isDraggingButton = false;
+                    }, 300);
+                }
+                this.oldFeedButtonIndex = -100;
+                this.newFeedButtonIndex = -100;
+                document.removeEventListener("mousedown", this.dropFeedButton);
+            },
+            /**
+             * Called when the User's pointer enters a `FeedButton`. Used to determine where
+             * the dragged Feed will be repositioned to.
+             * @param e MouseOver `MouseEvent`.
+             * @param newIndex The index of the `FeedButton` that was hovered over.
+             */
+            handleFeedButtonMouseover(e:Event, newIndex:number){
+                if(!this.isDraggingButton) return;
+                if (newIndex !== this.oldFeedButtonIndex) {
+                    this.newFeedButtonIndex = newIndex;
+                }
+            },
+            /**
+             * Called when the User's pointer leaves a `FeedButton`. Used to cancel Feed
+             * repositioning.
+             */
+            handleFeedButtonMouseLeave(){
+                this.newFeedButtonIndex = this.oldFeedButtonIndex;
+            },
+            /**
+             * Method used to move the {@link FeedButton} that is being dragged in order
+             * to re-order the Feed list.
+             * @param e MouseEvent tracking User's pointer movement.
+             */
+            dragMoveFeedButton(e:MouseEvent){
+                let y = e.clientY;
+                let currentDraggedButton = document.getElementsByClassName('dragging')[0];
+                let scrollPos = currentDraggedButton.parentElement?.parentElement ? currentDraggedButton.parentElement.parentElement.scrollTop : 0;
+                // (currentDraggedButton as HTMLElement).style.top = `${y-20}px`;//absolute position version
+                (currentDraggedButton as HTMLElement).style.top = `${y-20-this.dragButtonStartingY+scrollPos}px`;
+            },
+            /**
+             * Called when the User's pointer enters a {@link FeedColumn}. Used to determine
+             * where the dragged Feed will be repositioned to.
+             * @param e `PointerEvent` of one Feed being dragged over another.
+             * @param newIndex The index of the `FeedButton` that was hovered over.
+             */
+            handleFeedColumnMouseover(e:PointerEvent, newIndex:number){
+                if(!FeedState.isGrabbingColumn) return;
+                if (newIndex !== FeedState.oldFeedColumnIndex) {
+                    FeedState.newFeedColumnIndex = newIndex;
+                }
+                (e.currentTarget as HTMLElement).querySelectorAll("[data-test='feedColumn-highlight']")[0].classList.add('feed-dropzone-highlight');
+            },
+            /**
+             * Called when the User's pointer leaves a `FeedColumn`. Used to cancel Feed
+             * repositioning.
+             */
+            handleFeedColumnMouseLeave(e:PointerEvent){
+                FeedState.newFeedColumnIndex = FeedState.oldFeedColumnIndex;
+                (e.currentTarget as HTMLElement).querySelectorAll("[data-test='feedColumn-highlight']")[0].classList.remove('feed-dropzone-highlight');
+            },
+        },
+        computed:{
+            onMobileTouchscreen(){
+                return isOnMobileTouchscreen();
+            }
         },
         created(){
             this.appStartupProcedure();
+            AppState.isAppOnMobileTouchscreenDevice = isOnMobileTouchscreen();
         },
         mounted(){
             this.getFeedDisplayViewWidth();
@@ -483,5 +620,26 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
 .peek-leave-to {
     opacity: 0 !important;
     transform: translateY(-5px);
+}
+
+/* `FeedButton` drag & drop helper classes */
+.draggable{
+    transition: scale 0.3s ease, transform 0.3s ease;
+}
+.dragging{
+    /* position: absolute; */
+    z-index: 1;
+    pointer-events: none;
+}
+.drag-start {
+	background-color: var(--color-btn-hover);
+	opacity: 85%; /* faded */
+    scale: 120%;
+    transform: rotate(10deg);
+    cursor: grabbing;
+}
+.drag-over {
+	outline: 2px dashed black;
+	background-color: rgba(100, 100, 100, 0.6); /* greyed out */
 }
 </style>

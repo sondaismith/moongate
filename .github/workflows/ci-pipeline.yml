@@ -1,0 +1,49 @@
+name: CI Pipeline to staging/production environment
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+  push:
+    branches:
+      - dev
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Setup, test, and build project
+    env:
+      PORT: 5001
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test application
+        run: npm test
+
+      - name: Build application
+        run: |
+          echo "Run command to build the application if present"
+          npm run build --if-present
+
+      - name: Show directory contents
+        run: |
+          cd ./dist
+          echo "current directory contents are:"
+          ls
+
+      # - name: SSH into Droplet
+      #   shell: bash
+      #   run: |
+      #     echo "creating test SSH Key file"
+      #     touch ~/.ssh/known_hosts
+      #     echo "blah blash blah" > ~/.ssh/known_hosts
+      #     echo "Looking for SSH keys directory"
+      #     ls ~/.ssh/
+      #     cat ~/.ssh/known_hosts
+      #     echo "SSH into dev Droplet"
+      #     echo "root@${{ secrets.DROPLET_HOST }}"
+      #     ssh ${{ secrets.USERNAME }}@${{ secrets.DROPLET_HOST }}

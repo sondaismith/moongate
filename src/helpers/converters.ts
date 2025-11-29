@@ -6,32 +6,34 @@ export function convertToShortTimestamp(ts:string = ""){
 
         var curDate = new Date();
 
+        var timeDiff = curDate.getTime() - date.getTime();
         var day = date.getDate();
         var year = date.getFullYear();
-        var month = date.getMonth()+1;
-        var hour = date.getUTCHours();
-        var minute = date.getUTCMinutes();
+        var dateFormat = "error - unset";
 
-        var isSameHour = (curDate.getTime() - date.getTime())<(1000*60*60);
-        var isSameDay = curDate.getUTCDate() == date.getUTCDate();
-        var isSameYear = curDate.getFullYear() == date.getFullYear();
-
-        var dateFormat = "";
-        if(isSameHour){
-            var diff = (curDate.getUTCMinutes() - date.getUTCMinutes());
-            dateFormat = (diff<0?diff+60:diff)+'m'; //if diff is negative, add 60(mins) to get real minutes
+        if(Math.abs(timeDiff) < 1000*60){
+            //under 1 min
+            dateFormat = Math.round(timeDiff/1000)+'sec';
         }
-        else if(isSameDay){
-            var diff = (curDate.getTime() - date.getTime())
-            //Avoids situations where 13:19-11:59 would return 2h
-            //Maybe we eventually choose to round up...
-            dateFormat = Math.floor(diff/(1000*60*60))+'h';
+        else if(Math.abs(timeDiff) < 1000*60*60){
+            //under 1 hour
+            dateFormat = Math.round(timeDiff/(1000*60))+'m';
         }
-        else if(isSameYear){
-            dateFormat = getMonthNameShort(date, 'en-US')+" "+day;
+        else if(Math.abs(timeDiff) < 1000*60*60*24){
+            //under 24 hours
+            dateFormat = Math.round(timeDiff/(1000*60*60))+'h';
+        }
+        else if(year != curDate.getFullYear()){
+            //different year
+            dateFormat = getMonthNameShort(date, 'en-US')+" "+day+" "+year;
+        }
+        else if(timeDiff<0){
+            //future date over 24 hours in future in same year
+            dateFormat = "(Future) "+getMonthNameShort(date, 'en-US')+" "+day;
         }
         else{
-            dateFormat = getMonthNameShort(date, 'en-US')+" "+day+" "+year;
+            //any other situation, same year
+            dateFormat = getMonthNameShort(date, 'en-US')+" "+day;
         }
 
         return dateFormat;
@@ -95,7 +97,8 @@ function getMonthNameShort(dateObj:Date, locale:string){
  * @param num Number to return a compact representation of.
  * @returns Compact representation of passed-in number.
  */
-export function getCompactNumberValue(num:number){
+export function getCompactNumberValue(num:number|undefined){
+    if(num == undefined) return 0;
     return num.toLocaleString('en-US', {
         notation:"compact",
         compactDisplay:"short",
@@ -146,4 +149,27 @@ export function CreateBskyWeblink(postUri:string, handle:string=""):string|undef
     const template = uriTemplates[parsedUri.collection];
     if (!template) return undefined;
     return template(parsedUri).link;
+}
+
+/**
+ * Method that is used to convert a normal link to media hosted on Bluesky's
+ * CDN servers into a URL that can be used to download/fetch the file.
+ * See {@link '../../vite.config.ts'} and {@link '../../.env'} for variables
+ * that make the whole thing work..
+ * @param mediaURL The URL to convert.
+ * @returns The URL to use to download media from Bluesky's servers via
+ * the application's proxy.
+ */
+export function CreateBskyMediaDownloadURL(mediaURL:string){
+    //If URL is empty string
+    if(mediaURL.trim() == '') throw new Error('Provided URL is empty.');
+    //Get environment variables
+    const target = `${import.meta.env.VITE_BSKY_MEDIA_DOWNLOAD_PROXY_TARGET}`;
+    const route = import.meta.env.VITE_BSKY_MEDIA_DOWNLOAD_PROXY_ROUTE_SCAN_URL;
+    var routeRegex = new RegExp(route);
+    //If URL does not follow expected format
+    if(!routeRegex.test(mediaURL)) throw new Error('Invalid URL');
+    //discard "target" part of URL
+    var proxyMediaURL = mediaURL.split(target)[1];
+    return `${proxyMediaURL}`;
 }

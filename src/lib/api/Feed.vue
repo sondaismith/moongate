@@ -1,8 +1,12 @@
 <script lang="ts">
-import { AppBskyActorSearchActors, AppBskyFeedGetAuthorFeed, AppBskyFeedGetTimeline, AppBskyFeedSearchPosts } from "@atproto/api/dist/client";
+import { AppBskyActorSearchActors, AppBskyBookmarkGetBookmarks, AppBskyFeedGetActorLikes, AppBskyFeedGetAuthorFeed, AppBskyFeedGetTimeline, AppBskyFeedSearchPosts } from "@atproto/api/dist/client";
 import { GetBrowsingAgent } from "../api.vue";
 import { AppSettingsState } from "../../state/AppSettingsState.vue";
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+
+export default{
+    name:"Feed API Methods"
+}
 
 export async function getUserHomeFeed():Promise<AppBskyFeedGetTimeline.Response>{
     let result = await GetBrowsingAgent().getTimeline();
@@ -26,18 +30,23 @@ export async function SearchForAccounts(searchTerm : string):Promise<AppBskyActo
 /**
  * Method that gets posts created by a specifc User.
  * @param did The unique DID identifier of the User you want to return Posts from.
+ * @param cursor Used when requesting posts from a certain point (pagination).
+ * @param postsToGet The number of Posts to return from the Author's Feed.
  * @returns Collection of posts from the User's feed if successful, an error if not.
  */
-export async function getAuthorFeed(did:string, cursor:string=''):Promise<AppBskyFeedGetAuthorFeed.Response>{
+export async function getAuthorFeed(did:string, cursor:string='', postsToGet:number=30):Promise<AppBskyFeedGetAuthorFeed.Response>{
     let result = await GetBrowsingAgent().getAuthorFeed(
         {
             actor:did,
             filter:"posts_no_replies",
-            limit:30,
+            limit:postsToGet,
             includePins:true,
             cursor:cursor
         }
     )
+    .catch(err => {
+        return Promise.reject(`${err}`);
+    })
     return result;
 }
 
@@ -159,11 +168,40 @@ export async function getAuthorPostsOnly(did:string,cursor:string=''):Promise<Ap
 }
 
 /**
+ * Method used to get a collection of liked Posts by a specific User. NOTE:
+ * The DID passed in must be the DID of the currently logged in User, otherwise
+ * no data will be returned.
+ * @param did The DID of the User that will have their liked Posts returned.
+ * @param cursor Used when requesting posts from a certain point (pagination).
+ * @param postsToGet The number of Posts to return.
+ */
+export async function getAuthorLikes(did:string,cursor:string='',postsToGet:number=20):Promise<AppBskyFeedGetActorLikes.Response>{
+    let result = await GetBrowsingAgent().getActorLikes({
+        actor:did,
+        limit:postsToGet,
+        cursor:cursor
+    })
+    console.log(`Returning ${result.data.feed.length} posts liked by this User`);
+    return result;
+}
+
+/**
+ * Method used to return the logged in User's Saved/Bookmarked Posts.
+ * NOTE:Currently pagination is handled in `UserFocusModal` do to how the tabs are set up. Probably should change that...
+ * @param cursor Used when requesting posts from a certain point (pagination).
+ */
+export async function getAuthorBookmarks(cursor:string='',limit:number=30):Promise<AppBskyBookmarkGetBookmarks.Response>{
+    return await GetBrowsingAgent().app.bsky.bookmark.getBookmarks({limit:limit,cursor:cursor});
+}
+
+/**
  * Method that gets Posts containing specific hashtags.
  * @param tags String of hashtags, space-separated.
+ * @param cursor Used when requesting posts from a certain point (pagination).
+ * @param postsToGet The number of Posts to return containing the submitted tags.
  * @returns Search results returned from the Bluesky API.
  */
-export async function getTagPosts(tags:string,cursor:string=''):Promise<AppBskyFeedSearchPosts.Response>{
+export async function getTagPosts(tags:string,cursor:string='',postsToGet:number=30):Promise<AppBskyFeedSearchPosts.Response>{
     if(!AppSettingsState.Settings.isAcceptingAllLanguages && AppSettingsState.Settings.selectedLanguages.length>0){
         console.log(`Here's a list of the currently selected languages:`);
         console.log(AppSettingsState.prepareSelectedLanguages());
@@ -178,6 +216,7 @@ export async function getTagPosts(tags:string,cursor:string=''):Promise<AppBskyF
     let result = await GetBrowsingAgent().app.bsky.feed.searchPosts(
         {
             q:`${tags}`,
+            limit:postsToGet,
             lang:langs,
             // cursor:cursor //as of April 3rd 2025 there's some sort of issue with `searchPosts` - disabling for now
         }
