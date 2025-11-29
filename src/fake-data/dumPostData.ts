@@ -27,7 +27,7 @@ import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MdiHideOutline from '~icons/mdi/hide-outline';
 import MdiBlock from '~icons/mdi/block';
 import { PostTypes } from "../enums/PostEnums";
-import { ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
 /**
  * Collection of all the options to display on the
@@ -63,7 +63,32 @@ var firstPostObject:IPostDetails[] = [
     }
 ]
 
-var emptyPostModalData:IPostDetails;
+// var emptyPostModalData:FeedViewPost = {
+//     post:{
+//         author:{
+//             did:'error',
+//             handle:'not-real',
+//         },
+//         cid:'error',
+//         indexedAt:'never',
+//         record:{
+//             text:'[No Text]'
+//         },
+//         uri:'going.nowhere',
+//     }
+// }
+var emptyPostView:PostView = {
+    author:{
+        did:'error',
+        handle:'not-real',
+    },
+    cid:'error',
+    indexedAt:'never',
+    record:{
+        text:'[No Text]'
+    },
+    uri:'going.nowhere',
+}
 var emptyPostThread:ThreadViewPost = {
     post:{
         author:{
@@ -77,4 +102,4 @@ var emptyPostThread:ThreadViewPost = {
     }
 }
 
-export { DetailIconList, OptionIconList, firstPostObject, emptyPostModalData, emptyPostThread }
+export { DetailIconList, OptionIconList, firstPostObject, emptyPostView, emptyPostThread }

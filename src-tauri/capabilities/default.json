@@ -8,11 +8,16 @@
   "permissions": [
     "core:default",
     "opener:default",
+    "opener:allow-open-url",
     "core:window:allow-close",
     "core:window:allow-destroy",
     {
-      "identifier":"fs:allow-remove",
-      "allow": [{"path": "$APPDATA/*"}]
+      "identifier": "fs:allow-remove",
+      "allow": [
+        {
+          "path": "$APPDATA/*"
+        }
+      ]
     },
     "core:window:allow-set-position",
     "core:window:allow-set-size",
@@ -23,7 +28,14 @@
     "fs:default",
     {
       "identifier": "fs:allow-exists",
-      "allow": [{"path": "$APPDATA/*"}]
-    }
+      "allow": [
+        {
+          "path": "$APPDATA/*"
+        }
+      ]
+    },
+    "dialog:default",
+    "upload:default",
+    "store:default"
   ]
 }

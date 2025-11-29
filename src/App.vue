@@ -1,36 +1,17 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
 import Sidebar from "./Sidebar.vue";
-import DemoSidebar from "./DemoSidebar.vue";
-
-const greetMsg = ref("");
-const name = ref("");
-
-async function greet() {
-  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  greetMsg.value = await invoke("greet", { name: name.value });
-}
 </script>
 
 <template>
   <Sidebar/>
   <!-- <DemoSidebar/> -->
 </template>
-0
-<style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
 
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
-}
-
-</style>
 <style>
+
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  /* font-family: 'Open Sans'; */
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
@@ -72,12 +53,7 @@ async function greet() {
 
 a {
   font-weight: 500;
-  color: #646cff;
   text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
 }
 
 h1 {
@@ -125,10 +101,6 @@ button {
     background-color: #2f2f2f;
   }
 
-  a:hover {
-    color: #24c8db;
-  }
-
   input,
   button {
     color: #ffffff;
@@ -144,22 +116,21 @@ button {
   height: 0.25rem;
   width: 0.25rem;
 }
-
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #8888883a;
+  background: var(--color-scrollbar-track);
   border-radius: 5px;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-    background: #ffffff5b;
+    background: var(--color-scrollbar-thumb);
     border-radius: 5px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #969696;
+  background: var(--color-scrollbar-thumb-hover);
 }
 
 
@@ -186,8 +157,38 @@ button {
 }
 
 .feed-highlight{
-  border-color: #eab308 !important;
-  /* border-color: #0ea5e9 !important; */
+  border-color: var(--color-feed-highlight) !important;
 }
 
+.feed-dropzone-highlight{
+  border-color: greenyellow !important;
+  background-color: rgba(112, 128, 144, 0.6) !important;
+  /* opacity: 0.7 !important; */
+  /* transition: background-color 0.3s ease, opacity 0.3s ease; */
+}
+
+.spinner{
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+ 0%{
+    transform: rotate(0deg);
+   }
+100%{
+    transform: rotate(360deg);
+   }
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  src: url(./../public/fonts/OpenSans-VariableFont_wdth\,wght.ttf);
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  src: url(./../public/fonts/OpenSans-Italic-VariableFont_wdth\,wght.ttf);
+  font-style: italic;
+}
 </style>

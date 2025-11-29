@@ -1,26 +1,51 @@
 <template>
-    <div class="pr-2">
-        <component :is="getFeedIcon()"/>
-    </div>
+    <!-- <div class="pr-2"> -->
+        <component :is="getFeedIcon()" :class="$attrs.class"/>
+    <!-- </div> -->
 </template>
 
 <script lang="ts">
 //Available Icons
+import MingcuteHome4Line from '~icons/mingcute/home-4-line';
+import MingcuteSettings2Line from '~icons/mingcute/settings-2-line';
+import MdiPlaylistAdd from '~icons/mdi/playlist-add';
+import MdiPlaylistRemove from '~icons/mdi/playlist-remove';
+import MdiPencilPlus from '~icons/mdi/pencil-plus';
 import MingcuteGroup3Fill from '~icons/mingcute/group-3-fill';
 import MdiPaintOutline from '~icons/mdi/paint-outline';
 import MdiNewspaperVariantMultiple from '~icons/mdi/newspaper-variant-multiple';
 import MingcuteQuestionLine from '~icons/mingcute/question-line';
 import MingcuteMusicLine from '~icons/mingcute/music-line';
+import SolarHashtagChatBold from '~icons/solar/hashtag-chat-bold';
+import MingcuteBellRingingFill from '~icons/mingcute/bell-ringing-fill';
+import MingcuteTrendingUpFill from '~icons/mingcute/trending-up-fill';
+import MingcuteDanmakuLine from '~icons/mingcute/danmaku-line';
+import MingcuteUser3Line from '~icons/mingcute/user-3-line';
+import MingcuteTag2Line from '~icons/mingcute/tag-2-line';
+import SolarWidgetAddOutline from '~icons/solar/widget-add-outline';
+import SolarWidgetAddBoldDuotone from '~icons/solar/widget-add-bold-duotone';
 
 import { defineComponent, FunctionalComponent } from 'vue'
 import { FeedEnums } from '../../enums/FeedEnums';
 import { IFeedIconTypes } from '../../interfaces/FeedInterfaces';
 
 var FeedIconTypes : IFeedIconTypes[] = [
-    { name: FeedEnums.Types.Friends, icon: MingcuteGroup3Fill },
-    { name: FeedEnums.Types.News, icon: MdiNewspaperVariantMultiple },
-    { name: FeedEnums.Types.Art, icon: MdiPaintOutline },
-    { name: FeedEnums.Types.Music, icon: MingcuteMusicLine },
+    { name: FeedEnums.Icons.Home, icon: MingcuteHome4Line },
+    { name: FeedEnums.Icons.Settings, icon: MingcuteSettings2Line },
+    { name: FeedEnums.Icons.AddList, icon: MdiPlaylistAdd },
+    { name: FeedEnums.Icons.RemoveList, icon: MdiPlaylistRemove },
+    { name: FeedEnums.Icons.CreatePost, icon: MdiPencilPlus },
+    { name: FeedEnums.Icons.User, icon: MingcuteUser3Line },
+    { name: FeedEnums.Icons.Tag, icon: MingcuteTag2Line },
+    { name: FeedEnums.Icons.Friends, icon: MingcuteGroup3Fill },
+    { name: FeedEnums.Icons.News, icon: MdiNewspaperVariantMultiple },
+    { name: FeedEnums.Icons.Art, icon: MdiPaintOutline },
+    { name: FeedEnums.Icons.Music, icon: MingcuteMusicLine },
+    { name: FeedEnums.Icons.Hashtag, icon: SolarHashtagChatBold },
+    { name: FeedEnums.Icons.Notifications, icon: MingcuteBellRingingFill },
+    { name: FeedEnums.Icons.Trending, icon: MingcuteTrendingUpFill },
+    { name: FeedEnums.Icons.Following, icon: MingcuteDanmakuLine },
+    { name: FeedEnums.Icons.FeedGenerator, icon: SolarWidgetAddBoldDuotone },
 ]
 
 export default defineComponent({

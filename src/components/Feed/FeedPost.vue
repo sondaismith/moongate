@@ -1,35 +1,51 @@
 <template>
-    {{ void "feed content" }}
-    <div class="w-full pb-2">
+    <div class="w-full">
         {{ void "feed post" }}
-        <div class="flex flex-col rounded bg-slate-400 p-1 w-full drop-shadow-md justify-between">
+        <div class="flex flex-col rounded bg-slate-400 p-1 pr-3 w-full drop-shadow-md justify-between">
+            <div v-if="isReasonPin(postData?.reason)" class="flex items-center text-slate-600 border-b
+            border-slate-500 pb-0.5 mb-1 select-none">
+                <i-mdi:pin class="text-xs"/>
+                <div class="font-bold text-xs">Pinned</div>
+            </div>
+            <div v-if="postData?.reason && isReasonRepost(postData.reason)"
+            class="flex text-xs font-medium mb-1 items-center p-0.5 rounded bg-slate-600">
+                <div class="flex grow-0 shrink-0 w-12 justify-end pr-1"><i-mdi:twitter-retweet/></div>
+                <div class="whitespace-nowrap overflow-hidden text-ellipsis">Reposted by {{ postData.reason.by.displayName }}</div>
+            </div>
             {{ void "post pfp" }}
             <div class="flex w-full">
-                <!-- <div class="w-1/6"> -->
                 <div>
-                    <div class="rounded-full bg-stone-500 aspect-square size-10">
-                        <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/>
+                    <div @click="displaySelectedUserAccount" @mouseover="AccountPeekState.waitBeforePeekingUser($event,postData?.post.author.did ? postData.post.author.did : '')"
+                    @mouseleave="AccountPeekState.cancelUserPeek" class="rounded-full bg-stone-500 aspect-square
+                    border box-content size-10 bg-contain hover:border-slate-600
+                    transition-[border-color] ease-linear duration-200 cursor-pointer"
+                    :style="{'background-image' : 'url('+postData?.post.author.avatar+')'}">
+                        <!-- <i-mingcute:butterfly-2-line class="text-2xl h-full w-full p-1"/> -->
                     </div>
                 </div>
                 {{ void "post content" }}
-                <div class="flex flex-col px-2 overflow-hidden">
+                <div class="flex flex-col pl-2 w-full overflow-hidden">
                     <div class="flex items-center">
-                        <div class="text-feedPostName font-semibold text-nowrap">{{ postData?.userName }}</div>
-                        <div class="text-feedTimestamp pl-1 truncate" title="@Random User hdahdhdaahd">@{{ postData?.userHandle }}</div>
-                        <div data-test="post-timestamp" class="text-feedTimestamp text-nowrap cursor-pointer ml-auto" @click="openPostDetails()">1 Jan 2024</div>
+                        <div class="text-feedPostName font-semibold max-w-36 shrink-0 truncate"
+                        :title="postData?.post.author.displayName">{{ postData?.post.author.displayName }}</div>
+                        <div class="text-[10px] pl-1 truncate" :title="`@${postData?.post.author.handle}`">@{{ postData?.post.author.handle }}</div>
+                        <div data-test="post-timestamp" class="text-[10px] text-nowrap cursor-pointer ml-auto pl-1" :title="convertToLongTimestamp(postData?.post.indexedAt)" @click="openPostDetails()">{{ convertToShortTimestamp(postData?.post.indexedAt) }}</div>
                     </div>
                     <div class="text-xs leading-4 pb-2">
-                        {{ postData?.postText }}
+                        <!-- {{ postData?.post.record.text }} -->
+                        <RichPostText :post-text="postData?.post.record.text" class="leading-5 text-sm"
+                        hash-tag-style="text-slate-900 hover:text-slate-700"
+                        user-link-style="!bg-slate-700 hover:!bg-slate-500 leading-5 p-[4px] text-[10px]"/>
                     </div>
-                    <!-- <div class="text-xs leading-4 pb-2">{{ postData?.postText }}</div> -->
                     {{ void "image-type media" }}
-                    <ImageContainer v-if="postData?.postType === 'image'"
-                    :imagesToDisplay="postData?.postMedia"
+                    <ImageContainer v-if="postData?.post.embed?.images"
+                    :imagesToDisplay="postData?.post.embed.images as ViewImage[]"
+                    :labels="postData.post.labels" :author="postData.post.author.handle"
                     @media-click="(i:number) => openFocusDetails(i)"/>
                     <div class="flex flex-row h-8">
                         <PostInteractionIcons class="text-slate-50 text-s" :noShareButton="true"
-                            :numComments="postData?.comments.length" :numShares="postData?.totalReposts"
-                            :numLikes="postData?.totalLikes"/>
+                            :numComments="postData?.post.replyCount" :numShares="postData?.post.repostCount"
+                            :numLikes="postData?.post.likeCount"/>
                     </div>
                 </div>
             </div>
@@ -39,36 +55,57 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { postDetails } from '../../state/PostDetails.vue';
-import { IPostDetails } from '../../interfaces/PostInterfaces';
+import { postDetails, showDetailModal, showFocusModal } from '../../state/PostDetails.vue';
+import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
+import { AppState } from '../../state/AppState.vue';
+import RichPostText from '../Utilities/RichPostText.vue';
+import { AccountPeekState } from '../../state/AccountPeekState.vue';
+import ImageContainer from '../Utilities/ImageContainer.vue';
+import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 
 export default defineComponent({
+    components:{
+        RichPostText,
+        ImageContainer,
+    },
     props:{
-        postData: Object as PropType<IPostDetails>
+        postData: Object as PropType<FeedViewPost>
     },
     data(){
         return{
             postDetails,
+            convertToShortTimestamp,
+            convertToLongTimestamp,
+            isReasonRepost,
+            isReasonPin,
+            AccountPeekState,
         }
     },
     methods:{
         openPostDetails(){
             if(this.postData){
-                postDetails.showModalPost(this.postData);
+                // postDetails.showModalPost(this.postData);
+                showDetailModal(this.postData);
                 //update `PostDetailIcons` in `Post` State
-                postDetails.updatePostDetailIconValues(this.postData.comments.length.toString(),this.postData.totalReposts.toString(),this.postData.totalLikes.toString());
+                // postDetails.updatePostDetailIconValues(this.postData.comments.length.toString(),this.postData.totalReposts.toString(),this.postData.totalLikes.toString());
             }
         },
         openFocusDetails(mediaIndex:number){
             if(this.postData){
-                postDetails.showFocusModal(this.postData, mediaIndex);
+                // postDetails.showFocusModal(this.postData, mediaIndex);
+                showFocusModal(this.postData.post.uri, mediaIndex);
                 //update `PostDetailIcons` in `Post` State
-                postDetails.updatePostDetailIconValues(this.postData.comments.length.toString(),this.postData.totalReposts.toString(),this.postData.totalLikes.toString());
+                postDetails.updatePostDetailIconValues(this.postData.post.replyCount.toString(),this.postData.post.repostCount.toString(),this.postData.post.likeCount.toString());
             }
+        },
+        /**
+         * Opens the `UserFocusModal` component to the currently selected
+         * user's profile.
+         */
+        displaySelectedUserAccount(){
+            AppState.ShowUserFocusModal(this.postData?.post.author.did);
         }
-    },
-    setup () {
-        return {}
     },
 })
 </script>

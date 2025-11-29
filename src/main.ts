@@ -1,5 +1,20 @@
 import { createApp } from "vue";
+// import { createApp } from "vue/dist/vue.esm-bundler";
 import App from "./App.vue";
 import './index.css';
+import PrimeVue from 'primevue/config';
+import Aura from "@primevue/themes/aura";
+import Toast from "primevue/toast";
+import ToastService from "primevue/toastservice";
 
-createApp(App).mount("#app");
+const app = createApp(App);
+app.use(PrimeVue, {
+    // theme:{ preset: PrimeVueCustomTheme },
+    theme:{ preset: Aura },
+    // theme: 'none',
+    // unstyled: true, //allows us to custom style components
+});
+app.use(ToastService);
+app.component("Toast", Toast);
+
+app.mount("#app");

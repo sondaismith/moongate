@@ -1,9 +1,47 @@
 export namespace FeedEnums{
-    export enum Types{
+    export enum Icons{
         Home = "home",
+        Settings = "settings",
+        AddList = "add_list",
+        RemoveList = "remove_list",
+        CreatePost = 'create_post',
+        User = 'user',
+        Tag = 'tag',
         Art = "art",
         News = "news",
         Friends = "friends",
-        Music = "art"
+        Music = "music",
+        Hashtag = "hashtag",
+        Following = "following",
+        Notifications = "notifications",
+        Trending = "trending",
+        FeedGenerator = "feed_generator"
+    }
+    export enum Types{
+        Home = "home",
+        User = "user",
+        Tag = "tag",
+        Following = "following",
+        Notifications = "notifications",
+        Mentions = "mentions",
+        Replies = "replies",
+        Messages = "messages",
+        Trending = "trending",
+        FeedGenerator = "feed_generator",
+        None = 'none'
+    }
+    export enum Widths{
+        Small = 288,
+        Medium = 444,
+        Large = 600
+    }
+    /**Collection of Tabs that can be displayed in `UserFocusModal`. */
+    export enum UserFeedTabs{
+        Feed,
+        Posts,
+        Replies,
+        Media,
+        Likes,
+        Bookmarks
     }
 }
