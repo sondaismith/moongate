@@ -131,6 +131,8 @@ declare module 'vue' {
     ReplyBreadcrumb: typeof import('./src/components/Post/ReplyBreadcrumb.vue')['default']
     RichPostText: typeof import('./src/components/Utilities/RichPostText.vue')['default']
     RichPostTextBsky: typeof import('./src/components/Utilities/RichPostTextBsky.vue')['default']
+    RouterLink: typeof import('vue-router')['RouterLink']
+    RouterView: typeof import('vue-router')['RouterView']
     SaveMediaModal: typeof import('./src/components/Utilities/SaveMediaModal.vue')['default']
     SettingsCategory: typeof import('./src/components/Settings/SettingsCategory.vue')['default']
     SettingsPanel: typeof import('./src/components/Settings/SettingsPanel.vue')['default']

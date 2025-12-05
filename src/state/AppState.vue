@@ -433,9 +433,9 @@ export const AppState = reactive({
     lastMediaSaveDirectory:'',
     /**Variable that indicates if the Settings Panel component is visible or not. */
     isSettingsPanelVisible: false,
-    /**Method that causes the Settings Panel to be displayed. */
+    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method that causes the Settings Panel to be displayed. */
     ShowSettingsPanel(){ this.isSettingsPanelVisible = true;},
-    /**Method that causes the Settings Panel to be hidden. */
+    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method that causes the Settings Panel to be hidden. */
     HideSettingsPanel(){ this.isSettingsPanelVisible = false;},
     /**
      * Method that handles focusing the most important component/element when
@@ -471,9 +471,9 @@ export const AppState = reactive({
     isAppOnMobileTouchscreenDevice:false,
     /**Variable that indicates if the "About App" modal is visible or not. */
     isAboutAppModalVisible: false,
-    /**Method that causes the "About App" modal to be displayed. */
+    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method that causes the "About App" modal to be displayed. */
     ShowAboutAppModal(){ this.isAboutAppModalVisible = true;},
-    /**Method that causes the "About App" modal to be hidden. */
+    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method that causes the "About App" modal to be hidden. */
     HideAboutAppModal(){ this.isAboutAppModalVisible = false;},
 })
 </script>

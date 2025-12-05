@@ -256,10 +256,10 @@ import AboutAppModal from "./components/Settings/AboutAppModal.vue";
                 AppState.showCreatePost();
             },
             showSettingsPanel(){
-                AppState.ShowSettingsPanel();
+                this.$router.push('/settings');
             },
             showAboutAppModal(){
-                AppState.ShowAboutAppModal();
+                this.$router.push('/about');
                 if(document.activeElement instanceof HTMLElement) document.activeElement.blur();
             },
             /**

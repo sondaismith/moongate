@@ -337,7 +337,7 @@ export default defineComponent({
     },
     methods:{
         closeModal(){
-            AppState.HideSettingsPanel();
+            this.$router.push('/');
         },
         toggleTheme(){
             AppSettingsState.Settings.isDarkMode = !AppSettingsState.Settings.isDarkMode;

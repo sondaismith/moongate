@@ -1,10 +1,22 @@
 <script setup lang="ts">
+import { RouterView } from "vue-router";
 import Sidebar from "./Sidebar.vue";
 </script>
 
 <template>
-  <Sidebar/>
+  <!-- <Sidebar/> -->
   <!-- <DemoSidebar/> -->
+   <nav>
+    <RouterLink to="/">Home</RouterLink>
+    <RouterLink to="/about">About</RouterLink>
+    <RouterLink to="/settings">Settings</RouterLink>
+  </nav>
+  <RouterView />
+  <RouterView name="modal" v-slot="{Component}">
+    <transition name="modal">
+      <component :is="Component" />
+    </transition>
+  </RouterView>
 </template>
 
 <style>
@@ -190,5 +202,17 @@ button {
   font-family: 'Open Sans';
   src: url(./../public/fonts/OpenSans-Italic-VariableFont_wdth\,wght.ttf);
   font-style: italic;
+}
+
+.modal-move,
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0 !important;
+    transform: translateY(-10px);
 }
 </style>

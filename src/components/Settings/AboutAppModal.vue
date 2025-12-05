@@ -172,7 +172,7 @@ export default defineComponent({
             return import.meta.env.VITE_VUE_APP_VERSION;
         },
         closeModal(){
-            AppState.HideAboutAppModal();
+            this.$router.push('/');
         },
         /**
          * Shows Options Menu allowing user to perform different actions
