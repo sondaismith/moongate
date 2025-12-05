@@ -10,6 +10,9 @@ import Sidebar from "./Sidebar.vue";
     <RouterLink to="/">Home</RouterLink>
     <RouterLink to="/about">About</RouterLink>
     <RouterLink to="/settings">Settings</RouterLink>
+    <RouterLink to="/profile/mega64official.bsky.social">Mega64</RouterLink>
+    <RouterLink to="/profile/jonbois.bsky.social">Jon Bois</RouterLink>
+    <RouterLink to="/profile/fang.3am.moe">Fang Guu</RouterLink>
   </nav>
   <RouterView />
   <RouterView name="modal" v-slot="{Component}">

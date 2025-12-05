@@ -10,6 +10,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import Sidebar from './Sidebar.vue';
 import AboutAppModal from './components/Settings/AboutAppModal.vue';
 import SettingsPanel from './components/Settings/SettingsPanel.vue';
+import UserFocusModal from './components/User/UserFocusModal.vue';
 
 //Thanks to @groenroos from https://medium.com/@groenroos/twitter-style-modals-in-vue-3-vue-router-4-ffcc15bd6841
 function keepDefaultView(to, from) {
@@ -24,12 +25,25 @@ const routes:RouteRecordRaw[] = [
     { path:'/',component: Sidebar },
     { path:'/about', components:{ modal:AboutAppModal }, beforeEnter:[keepDefaultView] },
     { path:'/settings', components:{ modal:SettingsPanel }, beforeEnter:[keepDefaultView] },
+    { path:'/profile/:handle', components:{ modal:UserFocusModal }, beforeEnter:[keepDefaultView], props:true },
     { path: '/:pathMatch(.*)*', redirect:'/' }, //catches all invalid routes
 ]
 
 export const router = createRouter({
     history: createWebHistory(),
-    routes: routes
+    routes: routes,
+    scrollBehavior(to, from, savedPosition) {
+        if(savedPosition){
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(savedPosition)
+                }, 500)
+            })
+        }
+        else{
+            return {top:0};
+        }
+    },
 })
 
 const app = createApp(App);

@@ -1,4 +1,9 @@
 
+import { IFeedReturnedPostResults } from '../interfaces/FeedInterfaces';
+import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { BookmarkView } from '@atproto/api/dist/client/types/app/bsky/bookmark/defs';
+import { FeedEnums } from '../enums/FeedEnums'
+
 /**
  * Describes shape of data saved to the `user_accounts` table in
  * `moongate_app.db`.
@@ -38,4 +43,12 @@ export interface IUserSearchResult{
      * Profile picture of User, if available.
      */
     pfp?:string,
+}
+
+export interface INavigationHistory{
+    FeedData: IFeedReturnedPostResults,
+    ProfileData:ProfileViewDetailed,
+    scrollPos:number,
+    currentTab:FeedEnums.UserFeedTabs,
+    Bookmarks?:BookmarkView[]
 }

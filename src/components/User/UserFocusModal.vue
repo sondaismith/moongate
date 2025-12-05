@@ -5,11 +5,11 @@
         <TransitionGroup>
             <div v-if="isPFPFullscreen" @click="hidePFPFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
             bg-black/90 sm:bg-black/70 bg-contain bg-center bg-no-repeat z-30">
-                <img :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar" class="max-h-full max-w-full"/>
+                <img :src="currentUserPageDetails.ProfileData.avatar" class="max-h-full max-w-full"/>
             </div>
             <div v-else-if="isBannerFullscreen" @click="hideBannerFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
             bg-black/90 sm:bg-black/70 bg-contain bg-center bg-no-repeat z-30">
-                <img :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.banner" class="max-h-full max-w-full"/>
+                <img :src="currentUserPageDetails.ProfileData.banner" class="max-h-full max-w-full"/>
             </div>
         </TransitionGroup>
         <div class="relative z-20 flex flex-col max-w-[40rem] w-full sm:w-2/3s h-[95%] sm:h-4/5
@@ -59,7 +59,7 @@
                             <div v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
                             bg-no-repeat bg-center bg-cover overflow-hidden"
                             :class="{'cursor-pointer' : hasProfileBanner}">
-                                <img :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.banner" :class="{'blur-lg':isAccountBlocked}"/>
+                                <img :src="currentUserPageDetails.ProfileData.banner" :class="{'blur-lg':isAccountBlocked}"/>
                             </div>
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
                             :style="`mask: url(./assets/placeholder/no_banner_pattern.svg)`">
@@ -67,7 +67,7 @@
                             <div v-if="hasProfileAvatar" @click="showPFPFullscreen" class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
                             items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
                             cursor-pointer transition-colors hover:border-hover overflow-hidden">
-                                <img :src="UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar"
+                                <img :src="currentUserPageDetails.ProfileData.avatar"
                                 :class="{'blur scale-150':isAccountBlocked}"/>
                             </div>
                             <div v-else class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
@@ -109,32 +109,32 @@
                                     <div class="overflow-hidden">
                                         <div class="flex flex-wrap items-center gap-1 *:leading-6s">
                                             <div class="flex text-2xl font-semibold overflow-hidden text-ellipsis">
-                                                {{UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.displayName : "Username Title"}}
+                                                {{currentUserPageDetails.ProfileData ? currentUserPageDetails.ProfileData.displayName : "Username Title"}}
                                             </div>
                                             <VerifiedBadge v-if="isUserVerified"/>
                                         </div>
-                                        <div class="text-xs">{{UserFocusModalState.GetCurrentHistoryData().ProfileData ? '@'+UserFocusModalState.GetCurrentHistoryData().ProfileData.handle : '@handle'}}</div>
+                                        <div class="text-xs">{{currentUserPageDetails.ProfileData ? '@'+currentUserPageDetails.ProfileData.handle : '@handle'}}</div>
                                     </div>
                                     <div class="relative flex items-center mt-1 gap-2 h-9">
                                         <!-- <Transition name="smooth"> -->
                                             <FollowUser v-if="!awaitingProfileData && !isAccountBlocked" class="px-4" :is-user-followed="isUserFollowed"
-                                            :user-did="UserFocusModalState.GetCurrentHistoryData().ProfileData.did" :is-disabled="!AppState.isAuthBrowsing || isAccountBlocked"/>
+                                            :user-did="currentUserPageDetails.ProfileData.did" :is-disabled="!AppState.isAuthBrowsing || isAccountBlocked"/>
                                         <!-- </Transition> -->
-                                        <PillButton @click="showUserOptionsMenu($event,UserFocusModalState.GetCurrentHistoryData().ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
+                                        <PillButton @click="showUserOptionsMenu($event,currentUserPageDetails.ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
                                         focus-visible:bg-btnHover">...</PillButton>
                                     </div>
                                 </div>
                                 <div v-if="!isAccountBlocked" class="flex mt-2">
                                     <div v-if="!AppSettingsState.Settings.isHidingFollowers" class="flex text-sm pr-2">
-                                        <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.followersCount : '1'}}</div>
+                                        <div class="font-bold pr-1">{{currentUserPageDetails ? currentUserPageDetails.ProfileData.followersCount : '1'}}</div>
                                         <div class="text-secondary">followers</div>
                                     </div>
                                     <div v-if="!AppSettingsState.Settings.isHidingFollowing" class="flex text-sm pr-2">
-                                        <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.followsCount : '33'}}</div>
+                                        <div class="font-bold pr-1">{{currentUserPageDetails ? currentUserPageDetails.ProfileData.followsCount : '33'}}</div>
                                         <div class="text-secondary">following</div>
                                     </div>
                                     <div class="flex text-sm pr-2">
-                                        <div class="font-bold pr-1">{{UserFocusModalState.GetCurrentHistoryData() ? UserFocusModalState.GetCurrentHistoryData().ProfileData.postsCount : '7'}}</div>
+                                        <div class="font-bold pr-1">{{currentUserPageDetails ? currentUserPageDetails.ProfileData.postsCount : '7'}}</div>
                                         <div class="text-secondary">posts</div>
                                     </div>
                                 </div>
@@ -147,8 +147,8 @@
                                 <div class="bg-slate-500 rounded h-4 w-2/3"></div>
                                 <div class="bg-slate-500 rounded h-4 w-3/5"></div>
                             </div>
-                            <!-- <RichPostText v-else :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/> -->
-                            <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory && !isAccountBlocked" :post-text="UserFocusModalState.GetCurrentHistoryData().ProfileData ? UserFocusModalState.GetCurrentHistoryData().ProfileData.description : 'No Description'"/>
+                            <!-- <RichPostText v-else :post-text="currentUserPageDetails.ProfileData ? currentUserPageDetails.ProfileData.description : 'No Description'"/> -->
+                            <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory && !isAccountBlocked" :post-text="currentUserPageDetails.ProfileData ? currentUserPageDetails.ProfileData.description : 'No Description'"/>
                             <AccountModerationLabel :is-muted="isAccountMuted" :is-blocked="isAccountBlocked"/>
                         </div>
                         <div v-if="!isAccountBlocked" id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
@@ -228,17 +228,17 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-else-if="!awaitingProfileData && !isNavigatingHistory" v-for="n in UserFocusModalState.GetCurrentHistoryData().FeedData.data as FeedViewPost[]"
+                            <div v-else-if="!awaitingProfileData && !isNavigatingHistory" v-for="n in currentUserPageDetails.FeedData.data as FeedViewPost[]"
                             class="w-full shrink-0s">
                                 <FocusFeedPost :post-data="n.post" :post-reason="n.reason" :reply="n.reply" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
-                            <div v-if="!awaitingProfileData && !UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
+                            <div v-if="!awaitingProfileData && !currentUserPageDetails.FeedData.cursor"
                             class="flex justify-center rounded p-1 gap-1 w-full items-center
                             border border-outline bg-disabled select-none">
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
-                            <SquareButton v-else-if="!awaitingProfileData && UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
+                            <SquareButton v-else-if="!awaitingProfileData && currentUserPageDetails.FeedData.cursor"
                             @click="loadOlderPosts"
                             focus-padding="[1px]"
                             class="rounded h-8 p-1 mt-4s w-full items-center cursor-pointer
@@ -295,7 +295,7 @@
                                 </div>
                             </div>
                             <div v-else-if="!awaitingProfileData && !isNavigatingHistory" class="flex flex-col w-full gap-2">
-                                <div v-for="b in UserFocusModalState.GetCurrentHistoryData().Bookmarks">
+                                <div v-for="b in currentUserPageDetails.Bookmarks">
                                     <FocusFeedPost @focus-post-avatar-clicked="updateDisplayedData" v-if="isPostView(b.item)" :post-data="b.item"></FocusFeedPost>
                                 </div>
                                 <div v-if="!awaitingProfileData && hasEndOfBookmarksBeenReached"
@@ -304,7 +304,7 @@
                                     <i-mdi:block/>
                                     <div>End of Saved Posts</div>
                                 </div>
-                                <SquareButton v-else-if="!awaitingProfileData && typeof UserFocusModalState.GetCurrentHistoryData().FeedData.cursor != 'undefined'"
+                                <SquareButton v-else-if="!awaitingProfileData && typeof currentUserPageDetails.FeedData.cursor != 'undefined'"
                                 @click="loadOlderPosts"
                                 focus-padding="[1px]"
                                 class="rounded h-8 p-1 w-full items-center cursor-pointer
@@ -328,8 +328,8 @@
                             <div v-else-if="!awaitingProfileData" class="grid gap-2 self-center
                             grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] justify-items-center
                             backdrop-blur-0 overflow-x-hiddens">
-                                <div v-for="n in UserFocusModalState.GetCurrentHistoryData().FeedData.data.filter(
-                                    x => x.post.embed && x.post.author.did == UserFocusModalState.currentUserAccountDID &&
+                                <div v-for="n in currentUserPageDetails.FeedData.data.filter(
+                                    x => x.post.embed && x.post.author.did == currentUserPageDetails.ProfileData.did &&
                                     (AppBskyEmbedImages.isView(x.post.embed) || AppBskyEmbedVideo.isView(x.post.embed)))"
                                     class="relative rounded aspect-square size-44 overflow-hidden border border-outlineLighter">
                                     <div v-if="n.post.embed.images && n.post.embed.images.length>1" class="select-none">
@@ -351,13 +351,13 @@
                                     <!-- <ImageContainer @click="showMediaContent(n)" :images-to-display="n.post.embed.images ? n.post.embed.images.slice(0,1) : [{alt:'',fullsize:n.post.embed?.thumbnail,thumb:n.post.embed?.thumbnail}]" :author="n.post.author.handle"/> -->
                                 </div>
                             </div>
-                            <div v-if="!UserFocusModalState.GetCurrentHistoryData().FeedData.cursor"
+                            <div v-if="!currentUserPageDetails.FeedData.cursor"
                             class="flex justify-center rounded p-1 gap-1 mt-4 w-full items-center
                             border border-outlineLighter bg-disabled select-none">
                                 <i-mdi:block/>
                                 <div>End of posts</div>
                             </div>
-                            <SquareButton v-else-if="UserFocusModalState.GetCurrentHistoryData().FeedData.cursor &&
+                            <SquareButton v-else-if="currentUserPageDetails.FeedData.cursor &&
                             !isAwaitingTabSwitchData" @click="loadOlderPosts"
                             focus-padding="[1px]"
                             class="rounded h-8 p-1 mt-4 mx-4 w-full items-center cursor-pointer
@@ -419,6 +419,7 @@ import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
+import { INavigationHistory } from '../../interfaces/UserInterfaces';
 
 /**
  * Used to create a HTTP URL link To the currently view User's profile.
@@ -430,6 +431,12 @@ function CopyPostLink(handle:string){
 }
 
 export default defineComponent({
+    props:{
+        handle:{
+            type:String,
+            required:true
+        }
+    },
     data(){
         return{
             AppState,
@@ -447,6 +454,7 @@ export default defineComponent({
             AppBskyEmbedRecord,
             AppBskyEmbedRecordWithMedia,
             AppBskyEmbedExternal,
+            currentUserPageDetails: {} as INavigationHistory,
             isViewingFeed:true,
             isViewingPosts:false,
             isViewingReplies:false,
@@ -497,10 +505,10 @@ export default defineComponent({
                 this.repositionScrollOnTabSwitch();
                 this.deselectAllTabs();
                 this.isViewingFeed = true;
-                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                let historyData = this.currentUserPageDetails;
                 historyData.currentTab = FeedEnums.UserFeedTabs.Feed;
                 this.isAwaitingTabSwitchData = true;
-                await getAuthorFeed(UserFocusModalState.currentUserAccountDID)
+                await getAuthorFeed(this.handle)
                 .then(res => {
                     historyData.FeedData.data = res.data.feed;
                     historyData.FeedData.cursor = res.data.cursor;
@@ -517,15 +525,15 @@ export default defineComponent({
                 this.repositionScrollOnTabSwitch();
                 this.deselectAllTabs();
                 this.isViewingPosts = true;
-                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                let historyData = this.currentUserPageDetails;
                 historyData.currentTab = FeedEnums.UserFeedTabs.Posts;
                 this.isAwaitingTabSwitchData = true;
-                await getAuthorPostsOnly(UserFocusModalState.currentUserAccountDID)
+                await getAuthorPostsOnly(this.currentUserPageDetails.ProfileData.did)
                 .then(res => {
                     historyData.FeedData.data = res.data.feed;
                     historyData.FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add({summary:`Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s Posts`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
+                .catch(err => toast.add({summary:`Error getting @${this.currentUserPageDetails.ProfileData.handle}'s Posts`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -535,15 +543,15 @@ export default defineComponent({
                 this.repositionScrollOnTabSwitch();
                 this.deselectAllTabs();
                 this.isViewingReplies = true;
-                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                let historyData = this.currentUserPageDetails;
                 historyData.currentTab = FeedEnums.UserFeedTabs.Replies;
                 this.isAwaitingTabSwitchData = true;
-                await getAuthorRepliesOnly(UserFocusModalState.currentUserAccountDID)
+                await getAuthorRepliesOnly(this.currentUserPageDetails.ProfileData.did)
                 .then(res => {
                     historyData.FeedData.data = res.data.feed;
                     historyData.FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add({summary:`Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s Replies`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
+                .catch(err => toast.add({summary:`Error getting @${this.currentUserPageDetails.ProfileData.handle}'s Replies`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -553,19 +561,19 @@ export default defineComponent({
                 this.repositionScrollOnTabSwitch();
                 this.deselectAllTabs();
                 this.isViewingMedia = true;
-                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                let historyData = this.currentUserPageDetails;
                 historyData.currentTab = FeedEnums.UserFeedTabs.Media;
                 this.isAwaitingTabSwitchData = true;
                 //Get media posts
                 await GetBrowsingAgent().getAuthorFeed({
-                    actor:UserFocusModalState.currentUserAccountDID,
+                    actor:this.currentUserPageDetails.ProfileData.did,
                     filter:'posts_with_media',
                 })
                 .then(res => {
                     historyData.FeedData.data = res.data.feed;
                     historyData.FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add({summary:`Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s media`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
+                .catch(err => toast.add({summary:`Error getting @${this.currentUserPageDetails.ProfileData.handle}'s media`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -575,16 +583,16 @@ export default defineComponent({
                 this.repositionScrollOnTabSwitch();
                 this.deselectAllTabs();
                 this.isViewingLikes = true;
-                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                let historyData = this.currentUserPageDetails;
                 historyData.currentTab = FeedEnums.UserFeedTabs.Likes;
                 this.isAwaitingTabSwitchData = true;
                 //Get liked posts
-                await getAuthorLikes(UserFocusModalState.currentUserAccountDID)
+                await getAuthorLikes(this.currentUserPageDetails.ProfileData.did)
                 .then(res => {
                     historyData.FeedData.data = res.data.feed;
                     historyData.FeedData.cursor = res.data.cursor;
                 })
-                .catch(err => toast.add({summary:`Error getting @${UserFocusModalState.GetCurrentHistoryData().ProfileData.handle}'s Likes`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
+                .catch(err => toast.add({summary:`Error getting @${this.currentUserPageDetails.ProfileData.handle}'s Likes`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
                 this.isAwaitingTabSwitchData = false;
             }
         },
@@ -594,7 +602,7 @@ export default defineComponent({
                 this.repositionScrollOnTabSwitch();
                 this.deselectAllTabs();
                 this.isViewingBookmarks = true;
-                let historyData = UserFocusModalState.GetCurrentHistoryData();
+                let historyData = this.currentUserPageDetails;
                 historyData.currentTab = FeedEnums.UserFeedTabs.Bookmarks;
                 this.isAwaitingTabSwitchData = true;
                 //Get liked posts
@@ -610,57 +618,57 @@ export default defineComponent({
         async loadOlderPosts(){
             this.isAwaitingLoadMorePosts = true;
             if(this.isViewingFeed || this.isViewingMedia){
-                await GetFeedDataForFeedType(FeedEnums.Types.User,UserFocusModalState.currentUserAccountDID,'', UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
+                await GetFeedDataForFeedType(FeedEnums.Types.User,this.currentUserPageDetails.ProfileData.did,'', this.currentUserPageDetails.FeedData.cursor)
                 .then(res => {
                     res.data.forEach(post => {
-                        UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
+                        this.currentUserPageDetails.FeedData.data.push(post);
                     });
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.cursor;
+                    this.currentUserPageDetails.FeedData.cursor = res.cursor;
                 })
                 .catch(err => toast.add({summary:`Error loading more posts`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
             }
             else if(this.isViewingLikes){
                 let agent = GetBrowsingAgent();
-                await getAuthorLikes(agent.assertDid,UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
+                await getAuthorLikes(agent.assertDid,this.currentUserPageDetails.FeedData.cursor)
                 .then(res => {
                     res.data.feed.forEach(post => {
-                        UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
+                        this.currentUserPageDetails.FeedData.data.push(post);
                     });
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                    this.currentUserPageDetails.FeedData.cursor = res.data.cursor;
                 })
                 .catch(err => toast.add({summary:`Error loading more posts`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
             }
             else if(this.isViewingBookmarks){
-                await getAuthorBookmarks(UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
+                await getAuthorBookmarks(this.currentUserPageDetails.FeedData.cursor)
                 .then(res => {
-                    let bList = UserFocusModalState.GetCurrentHistoryData().Bookmarks;
+                    let bList = this.currentUserPageDetails.Bookmarks;
                     if(typeof bList != 'undefined' && res.data.bookmarks.length>0){
                         res.data.bookmarks.forEach(b => {
                             bList.push(b);
                         });
-                        UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                        this.currentUserPageDetails.FeedData.cursor = res.data.cursor;
                     }
-                    else UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = '';
+                    else this.currentUserPageDetails.FeedData.cursor = '';
                 })
                 .catch(err => toast.add({summary:`Error loading more Bookmarks`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
             }
             else if(this.isViewingPosts){
-                await getAuthorPostsOnly(UserFocusModalState.currentUserAccountDID, UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
+                await getAuthorPostsOnly(this.currentUserPageDetails.ProfileData.did, this.currentUserPageDetails.FeedData.cursor)
                 .then(res => {
                     res.data.feed.forEach(post => {
-                        UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
+                        this.currentUserPageDetails.FeedData.data.push(post);
                     });
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                    this.currentUserPageDetails.FeedData.cursor = res.data.cursor;
                 })
                 .catch(err => toast.add({summary:`Error loading more posts`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
             }
             else if(this.isViewingReplies){
-                await getAuthorRepliesOnly(UserFocusModalState.currentUserAccountDID, UserFocusModalState.GetCurrentHistoryData().FeedData.cursor)
+                await getAuthorRepliesOnly(this.currentUserPageDetails.ProfileData.did, this.currentUserPageDetails.FeedData.cursor)
                 .then(res => {
                     res.data.feed.forEach(post => {
-                        UserFocusModalState.GetCurrentHistoryData().FeedData.data.push(post);
+                        this.currentUserPageDetails.FeedData.data.push(post);
                     });
-                    UserFocusModalState.GetCurrentHistoryData().FeedData.cursor = res.data.cursor;
+                    this.currentUserPageDetails.FeedData.cursor = res.data.cursor;
                 })
                 .catch(err => toast.add({summary:`Error loading more posts`, detail:`${err}`, severity:'error', group:'tr', life:3000}));
             }
@@ -671,51 +679,75 @@ export default defineComponent({
             this.isViewingFeed = this.isViewingPosts = this.isViewingReplies = this.isViewingMedia = this.isViewingLikes = this.isViewingBookmarks = false;
         },
         closeModal(){
-            AppState.HideUserFocusModal();
+            this.$router.push('/');
         },
         showMediaContent(post:FeedViewPost){
             postDetails.isFocusVisible = true;
             showFocusModal(post.post.uri,0);
         },
         async updateDisplayedData(){
-            if(isDid(UserFocusModalState.currentUserAccountDID)){
-                //Update the current navigation history item if we are navigating to a new
-                //user account after the initial starting one
-                if(UserFocusModalState.navigationHistory.length > 0) this.updateCurrentNavHistoryScrollPos();
-                this.awaitingProfileData = true;
-                var userProfile:AppBskyActorGetProfile.Response;
-                await GetBrowsingAgent().getProfile({
-                    actor:UserFocusModalState.currentUserAccountDID
-                })
-                .then(res => {
-                    userProfile = res
-                });
-                await getAuthorFeed(UserFocusModalState.currentUserAccountDID)
-                .then(res => {
-                    //If the current history index is not at the end of the array, drop
-                    //all of the items in front of the current index
-                    if(UserFocusModalState.currentNavIndex < UserFocusModalState.navigationHistory.length-1) UserFocusModalState.navigationHistory.splice(UserFocusModalState.currentNavIndex+1);
-                    //Add the latest User Account page to the history array
-                    UserFocusModalState.navigationHistory.push({FeedData:{data:res.data.feed,cursor:res.data.cursor},ProfileData:userProfile.data,scrollPos:0,currentTab:FeedEnums.UserFeedTabs.Feed});
-                    //Move to the newly added User account - will not occur if there is only one item (initial state)
-                    if(UserFocusModalState.navigationHistory.length > 1) this.goToNextNavHistory(false);
-                    // setTimeout(() => {
-                    //     this.setUserSummaryBottomPos();
-                    //     this.scrollToModalPos(0);
-                    // }, 10);
-                    console.log(UserFocusModalState.GetCurrentHistoryData().ProfileData);
-                })
-                .catch(err => {
-                    if((err as string).includes('block')){
-                        toast.add({summary:"Account Blocked", detail:`This account is currently blocked. You will be unable to view or interact with any of this account's content until it is unblocked.`, severity:'info', group:'tr', life:3000});
-                    }
-                    else toast.add({summary:"Error", detail:`${err}`, severity:'error', group:'tr', life:3000});
-                    //Account is probably blocked - Display Profile, but no posts
-                    UserFocusModalState.navigationHistory.push({FeedData:{data:[],cursor:undefined},ProfileData:userProfile.data,scrollPos:0,currentTab:FeedEnums.UserFeedTabs.Feed});
-                });
-                this.awaitingProfileData = false;
+            // if(isDid(this.currentUserPageDetails.ProfileData.did)){
+            //     //Update the current navigation history item if we are navigating to a new
+            //     //user account after the initial starting one
+            //     if(UserFocusModalState.navigationHistory.length > 0) this.updateCurrentNavHistoryScrollPos();
+            //     this.awaitingProfileData = true;
+            //     var userProfile:AppBskyActorGetProfile.Response;
+            //     await GetBrowsingAgent().getProfile({
+            //         actor:this.currentUserPageDetails.ProfileData.did
+            //     })
+            //     .then(res => {
+            //         userProfile = res
+            //     });
+            //     await getAuthorFeed(this.currentUserPageDetails.ProfileData.did)
+            //     .then(res => {
+            //         //If the current history index is not at the end of the array, drop
+            //         //all of the items in front of the current index
+            //         if(UserFocusModalState.currentNavIndex < UserFocusModalState.navigationHistory.length-1) UserFocusModalState.navigationHistory.splice(UserFocusModalState.currentNavIndex+1);
+            //         //Add the latest User Account page to the history array
+            //         UserFocusModalState.navigationHistory.push({FeedData:{data:res.data.feed,cursor:res.data.cursor},ProfileData:userProfile.data,scrollPos:0,currentTab:FeedEnums.UserFeedTabs.Feed});
+            //         //Move to the newly added User account - will not occur if there is only one item (initial state)
+            //         if(UserFocusModalState.navigationHistory.length > 1) this.goToNextNavHistory(false);
+            //         // setTimeout(() => {
+            //         //     this.setUserSummaryBottomPos();
+            //         //     this.scrollToModalPos(0);
+            //         // }, 10);
+            //         console.log(this.currentUserPageDetails.ProfileData);
+            //     })
+            //     .catch(err => {
+            //         if((err as string).includes('block')){
+            //             toast.add({summary:"Account Blocked", detail:`This account is currently blocked. You will be unable to view or interact with any of this account's content until it is unblocked.`, severity:'info', group:'tr', life:3000});
+            //         }
+            //         else toast.add({summary:"Error", detail:`${err}`, severity:'error', group:'tr', life:3000});
+            //         //Account is probably blocked - Display Profile, but no posts
+            //         UserFocusModalState.navigationHistory.push({FeedData:{data:[],cursor:undefined},ProfileData:userProfile.data,scrollPos:0,currentTab:FeedEnums.UserFeedTabs.Feed});
+            //     });
+            //     this.awaitingProfileData = false;
 
-            }
+            // }
+
+
+            console.log(this.handle);
+            this.awaitingProfileData = true;
+            await GetBrowsingAgent().getProfile({actor:this.handle})
+            .then(res => {
+                this.currentUserPageDetails.ProfileData = res.data;
+            })
+            .catch(err => {
+                console.log(err);
+            })
+            await getAuthorFeed(this.currentUserPageDetails.ProfileData.did)
+            .then(res => {
+                this.currentUserPageDetails.FeedData = {data:res.data.feed,cursor:res.data.cursor};
+            })
+            .catch(err => {
+                if((err as string).includes('block')){
+                    toast.add({summary:"Account Blocked", detail:`This account is currently blocked. You will be unable to view or interact with any of this account's content until it is unblocked.`, severity:'info', group:'tr', life:3000});
+                }
+                else toast.add({summary:"Error", detail:`${err}`, severity:'error', group:'tr', life:3000});
+                //Account is probably blocked - Display Profile, but no posts
+                this.currentUserPageDetails.FeedData = {data:[],cursor:undefined}
+            })
+            .finally(()=>{this.awaitingProfileData = false;})
 
             //check to see if user-summary height has changed
             //small delay to allow DOM to update
@@ -791,7 +823,7 @@ export default defineComponent({
             this.isNavigatingHistory = true;
             UserFocusModalState.PrevNavHistory();
             setTimeout(() => {
-                this.restoreTabAfterNavHistoryChange(UserFocusModalState.GetCurrentHistoryData().currentTab);
+                this.restoreTabAfterNavHistoryChange(this.currentUserPageDetails.currentTab);
                 this.restoreScrollPosAfterNavHistoryChange();
                 this.isNavigatingHistory = false;
             }, 1);
@@ -805,7 +837,7 @@ export default defineComponent({
             this.isNavigatingHistory = true;
             UserFocusModalState.NextNavHistory();
             setTimeout(() => {
-                this.restoreTabAfterNavHistoryChange(UserFocusModalState.GetCurrentHistoryData().currentTab);
+                this.restoreTabAfterNavHistoryChange(this.currentUserPageDetails.currentTab);
                 this.restoreScrollPosAfterNavHistoryChange();
                 this.isNavigatingHistory = false;
             }, 1);
@@ -823,10 +855,10 @@ export default defineComponent({
             this.awaitingProfileData = true;
             this.scrollToModalPos(0);
             await GetBrowsingAgent().getProfile({
-                actor:UserFocusModalState.GetCurrentHistoryData().ProfileData.did
+                actor:this.currentUserPageDetails.ProfileData.did
             })
             .then(res => {
-                UserFocusModalState.GetCurrentHistoryData().ProfileData = res.data;
+                this.currentUserPageDetails.ProfileData = res.data;
             });
             this.awaitingProfileData = false;
             await this.viewFeed();
@@ -838,7 +870,7 @@ export default defineComponent({
          */
         updateCurrentNavHistoryScrollPos(){
             let userFocusContainer = (document.getElementById('user-focus-container') as HTMLElement);
-            UserFocusModalState.GetCurrentHistoryData().scrollPos = userFocusContainer.scrollTop;
+            this.currentUserPageDetails.scrollPos = userFocusContainer.scrollTop;
         },
         /**
          * Method that restores the last scroll position the `UserFocusModal` had when
@@ -847,7 +879,7 @@ export default defineComponent({
          */
         restoreScrollPosAfterNavHistoryChange(){
             setTimeout(() => {
-                this.scrollToModalPos(UserFocusModalState.GetCurrentHistoryData().scrollPos);
+                this.scrollToModalPos(this.currentUserPageDetails.scrollPos);
             }, 100);
         },
         /**
@@ -913,7 +945,7 @@ export default defineComponent({
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteLinkLine,Label:'Copy link to Profile Page',Action:function(){CopyPostLink(handle)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
-            if(AppState.isAuthBrowsing && GetBrowsingAgent().did != UserFocusModalState.currentUserAccountDID){
+            if(AppState.isAuthBrowsing && GetBrowsingAgent().did != this.currentUserPageDetails.ProfileData.did){
                     OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'',Action:()=>{},Type:ItemType.Splitter});
                 if(!this.isAccountMuted)
                     OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'Mute Account',Action:this.requestToggleMute,Type:ItemType.Option});
@@ -933,7 +965,7 @@ export default defineComponent({
         async requestToggleMute(){
             if(this.isAwaitingAccountMuteAction) return;
             this.isAwaitingAccountMuteAction = true;
-            await toggleMute(UserFocusModalState.GetCurrentHistoryData().ProfileData)
+            await toggleMute(this.currentUserPageDetails.ProfileData)
             .finally(() => {this.isAwaitingAccountMuteAction = false});
         },
         /**
@@ -943,10 +975,10 @@ export default defineComponent({
         async requestToggleBlock(){
             if(this.isAwaitingAccountBlockAction) return;
             this.isAwaitingAccountBlockAction = true;
-            await toggleBlock(UserFocusModalState.GetCurrentHistoryData().ProfileData)
+            await toggleBlock(this.currentUserPageDetails.ProfileData)
             .finally(() => {this.isAwaitingAccountBlockAction = false});
             if(!this.isAccountBlocked){
-                let curState = UserFocusModalState.GetCurrentHistoryData();
+                let curState = this.currentUserPageDetails;
                 curState.FeedData.data = []; //clear content
                 curState.FeedData.cursor = '';
                 setTimeout(() => { //Allow for unblock to be processed before attempting refresh
@@ -975,7 +1007,7 @@ export default defineComponent({
          * component above.
          */
         isUserFollowed(){
-            let viewer = UserFocusModalState.GetCurrentHistoryData().ProfileData.viewer;
+            let viewer = this.currentUserPageDetails.ProfileData.viewer;
             if(typeof viewer != 'undefined' && viewer.following){
                 return true;
             }
@@ -985,14 +1017,14 @@ export default defineComponent({
          * Method used to see if the viewed User is verified.
          */
         isUserVerified(){
-            let profile = UserFocusModalState.GetCurrentHistoryData().ProfileData;
+            let profile = this.currentUserPageDetails.ProfileData;
             if(profile.verification && profile.verification.verifiedStatus == 'valid')
                 return true;
             return false;
         },
         isThisCurrentUserAccount(){
             if(AppState.isAuthBrowsing){
-                if(GetBrowsingAgent().assertDid == UserFocusModalState.currentUserAccountDID) return true;
+                if(GetBrowsingAgent().assertDid == this.currentUserPageDetails.ProfileData.did) return true;
             }
             return false;
         },
@@ -1006,16 +1038,16 @@ export default defineComponent({
         },
         /**Does this User Profile have a Banner image? */
         hasProfileBanner(){
-            return typeof UserFocusModalState.GetCurrentHistoryData().ProfileData.banner != 'undefined';
+            return typeof this.currentUserPageDetails != 'undefined' && typeof this.currentUserPageDetails.ProfileData.banner != 'undefined';
         },
         /**Does this User Profile have am Avatar image? */
         hasProfileAvatar(){
-            return typeof UserFocusModalState.GetCurrentHistoryData().ProfileData.avatar != 'undefined';
+            return typeof this.currentUserPageDetails != 'undefined' && typeof this.currentUserPageDetails.ProfileData.avatar != 'undefined';
         },
         /**Is the currently displayed account muted by the logged in User? */
         isAccountMuted():boolean{
             let result = false;
-            let data = UserFocusModalState.GetCurrentHistoryData(); //handle `UserFocusModal` being mounted
+            let data = this.currentUserPageDetails; //handle `UserFocusModal` being mounted
             if(typeof data != 'undefined'){
                 let profile = data.ProfileData;
                 result = (typeof profile != 'undefined' && typeof profile.viewer != 'undefined' && typeof profile.viewer.muted != 'undefined' && profile.viewer.muted);
@@ -1025,7 +1057,7 @@ export default defineComponent({
         /**Is the currently displayed account blocked by the logged in User? */
         isAccountBlocked():boolean{
             let result = false;
-            let data = UserFocusModalState.GetCurrentHistoryData(); //handle `UserFocusModal` being mounted
+            let data = this.currentUserPageDetails; //handle `UserFocusModal` being mounted
             if(typeof data != 'undefined'){
                 let profile = data.ProfileData;
                 result = (typeof profile != 'undefined' && typeof profile.viewer != 'undefined' && typeof profile.viewer.blocking != 'undefined');
@@ -1039,13 +1071,18 @@ export default defineComponent({
          * `bookmarks` collection is returned.
          */
         hasEndOfBookmarksBeenReached():boolean{
-            let fd = UserFocusModalState.GetCurrentHistoryData().FeedData;
+            let fd = this.currentUserPageDetails.FeedData;
             return typeof fd.cursor == 'undefined' || fd.cursor.trim() == '';
+        }
+    },
+    watch:{
+        handle(){
+            this.updateDisplayedData();
         }
     },
     async created() {
         await this.updateDisplayedData();
-        this.setUserSummaryBottomPos();
+        // this.setUserSummaryBottomPos();
     },
     mounted() {
         //Add keyboard shortcut listener

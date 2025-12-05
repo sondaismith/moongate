@@ -72,8 +72,7 @@ export default defineComponent({
         displaySelectedUserAccount(e:Event){
             //Cancel displaying `AccountPeek`
             AccountPeekState.cancelUserPeek(true);
-            AppState.ShowUserFocusModal(this.did);
-            this.$emit('avatarClicked',this.did);
+            this.$router.push(`/profile/${this.handle}`);
             e.stopPropagation();//Prevent click "bubbling"
         },
         /**

@@ -216,14 +216,14 @@ export const AppState = reactive({
             UserFocusModalState.currentUserAccountDID = userDID;
         }
     },
-    /**Method used to hide the `UserFocusModal`. */
+    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method used to show the `UserFocusModal`. */
     ShowUserFocusModal(userDID:string | undefined){
         if(userDID && userDID.trim() != ''){
             UserFocusModalState.currentUserAccountDID = userDID;
             AppState.isViewingUserAccount = true;
         }
     },
-    /**Method used to hide the `UserFocusModal`. */
+    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method used to hide the `UserFocusModal`. */
     HideUserFocusModal(){
         AppState.isViewingUserAccount = false;
     },
