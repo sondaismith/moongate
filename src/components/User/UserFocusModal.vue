@@ -17,7 +17,7 @@
             {{ void "Control Bar" }}
             <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8 shrink-0 w-full self-start
             border-b border-outlineLighter *:w-12 *:shadow-none *:rounded-none *:border-none">
-                <SquareButton :is-disabled="!hasPrevNavRecords"
+                <!-- <SquareButton :is-disabled="!hasPrevNavRecords"
                 title="Go to previous User Feed page" @click="goToPreviousNavHistory"
                 class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
                 focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
@@ -32,9 +32,9 @@
                     <i-mingcute:arrow-right-fill
                     class="text-2xl"
                     :class="[{'text-disabled' : !hasNextNavRecords}]"/>
-                </SquareButton>
+                </SquareButton> -->
                 <SquareButton
-                title="Refresh page" :is-disabled="awaitingProfileData || isAwaitingTabSwitchData" @click="refreshPage"
+                title="Refresh page" :is-disabled="awaitingProfileData || isAwaitingTabSwitchData || !isHandleValid" @click="refreshPage"
                 class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
                 focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
                     <i-mingcute:refresh-3-fill class="text-2xl"/>
@@ -45,7 +45,17 @@
                 </SquareButton>
             </div>
             {{ void "Main Container" }}
-            <div id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="0">
+            <div v-if="!isHandleValid" class="flex flex-col gap-1 items-center mx-auto py-4">
+                <i-mdi:alert-circle class="size-14"/>
+                <div class="text-center pb-2">
+                    <div class="font-bold bg-pink-300s">Unable to resolve handle</div>
+                    <div class="text-sm leading-[14px] bg-lime-500s">Account may not exist</div>
+                </div>
+                <button title="Account Options" class="px-1 rounded bg-checkedButtonBG hover:bg-checkedButtonBGHover
+                border border-outlineLighter shadow-none mr-1"
+                @click="updateDisplayedData">Try Again?</button>
+            </div>
+            <div v-else id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="0">
                 <div class="flex flex-col h-full">
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0s grow items-center">
@@ -455,6 +465,8 @@ export default defineComponent({
             AppBskyEmbedRecordWithMedia,
             AppBskyEmbedExternal,
             currentUserPageDetails: {} as INavigationHistory,
+            /**Variable that indicates if the passed in handle is a valid handle (can be resolved thru Bluesky's API). */
+            isHandleValid:true,
             isViewingFeed:true,
             isViewingPosts:false,
             isViewingReplies:false,
@@ -725,35 +737,41 @@ export default defineComponent({
 
             // }
 
-
-            console.log(this.handle);
+            // console.log(this.handle);//DEBUG
             this.awaitingProfileData = true;
+            this.isHandleValid = true;
             await GetBrowsingAgent().getProfile({actor:this.handle})
             .then(res => {
                 this.currentUserPageDetails.ProfileData = res.data;
             })
             .catch(err => {
-                console.log(err);
+                // console.log(err);
+                this.isHandleValid = false;
             })
-            await getAuthorFeed(this.currentUserPageDetails.ProfileData.did)
-            .then(res => {
-                this.currentUserPageDetails.FeedData = {data:res.data.feed,cursor:res.data.cursor};
-            })
-            .catch(err => {
-                if((err as string).includes('block')){
-                    toast.add({summary:"Account Blocked", detail:`This account is currently blocked. You will be unable to view or interact with any of this account's content until it is unblocked.`, severity:'info', group:'tr', life:3000});
-                }
-                else toast.add({summary:"Error", detail:`${err}`, severity:'error', group:'tr', life:3000});
-                //Account is probably blocked - Display Profile, but no posts
-                this.currentUserPageDetails.FeedData = {data:[],cursor:undefined}
-            })
-            .finally(()=>{this.awaitingProfileData = false;})
+            if(this.isHandleValid){//If provided handle is valid
+                await getAuthorFeed(this.currentUserPageDetails.ProfileData.did)
+                .then(res => {
+                    this.currentUserPageDetails.FeedData = {data:res.data.feed,cursor:res.data.cursor};
+                })
+                .catch(err => {
+                    if((err as string).includes('block')){
+                        toast.add({summary:"Account Blocked", detail:`This account is currently blocked. You will be unable to view or interact with any of this account's content until it is unblocked.`, severity:'info', group:'tr', life:3000});
+                    }
+                    else toast.add({summary:"Error", detail:`${err}`, severity:'error', group:'tr', life:3000});
+                    //Account is probably blocked - Display Profile, but no posts
+                    this.currentUserPageDetails.FeedData = {data:[],cursor:undefined}
+                })
+                .finally(()=>{this.awaitingProfileData = false;})
 
-            //check to see if user-summary height has changed
-            //small delay to allow DOM to update
-            setTimeout(() => {
-                this.setUserSummaryBottomPos();
-            }, 10);
+                //check to see if user-summary height has changed
+                //small delay to allow DOM to update
+                setTimeout(() => {
+                    this.setUserSummaryBottomPos();
+                }, 10);
+            }
+            else{
+                this.awaitingProfileData = false;
+            }
         },
         /**
          * Method that determines if a particular Post's media contains

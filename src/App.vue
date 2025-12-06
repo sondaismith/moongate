@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import { RouterView } from "vue-router";
 import Sidebar from "./Sidebar.vue";
+import { AppSettingsState } from "./state/AppSettingsState.vue";
 </script>
 
 <template>
   <!-- <Sidebar/> -->
   <!-- <DemoSidebar/> -->
-   <nav>
-    <RouterLink to="/">Home</RouterLink>
-    <RouterLink to="/about">About</RouterLink>
-    <RouterLink to="/settings">Settings</RouterLink>
-    <RouterLink to="/profile/mega64official.bsky.social">Mega64</RouterLink>
-    <RouterLink to="/profile/jonbois.bsky.social">Jon Bois</RouterLink>
-    <RouterLink to="/profile/fang.3am.moe">Fang Guu</RouterLink>
+   <nav class="flex gap-1 flex-wrap">
+      <RouterLink to="/">Home</RouterLink>
+      <RouterLink to="/about">About</RouterLink>
+      <RouterLink to="/settings">Settings</RouterLink>
+      <RouterLink to="/profile/mega64official.bsky.social">Mega64</RouterLink>
+      <RouterLink to="/profile/jonbois.bsky.social">Jon Bois</RouterLink>
+      <RouterLink to="/profile/fang.3am.moe">Fang Guu</RouterLink>
+      <RouterLink to="/profile/handle.will.fail">[Invalid Handle]</RouterLink>
   </nav>
   <RouterView />
-  <RouterView name="modal" v-slot="{Component}">
+  <RouterView name="modal" v-slot="{Component}" :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
     <transition name="modal">
       <component :is="Component" />
     </transition>
