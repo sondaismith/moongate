@@ -230,9 +230,9 @@ export default defineComponent({
         //     required: true
         // },
         /**
-         * URI that points to the initial Post Thread to show in modal.
+         * DID that points to the initial Post Thread to show in modal.
          */
-        initialThreadUri:{
+        postDid:{
             type: String,
             default:''
         },
@@ -242,7 +242,12 @@ export default defineComponent({
         clickedMediaIndex:{
             type: Number,
             default: 0
-        }
+        },
+        /**The handle of the creator of the Post to show. */
+        handle:{
+            type:String,
+        },
+
     },
     data(){
         return{
@@ -292,12 +297,15 @@ export default defineComponent({
         increaseCurrentMediaIndex(){
             if(this.currentMediaIndex+1 < this.imageCollection.length)
                 // postDetails.setClickedMediaIndex(postDetails.getClickedMediaIndex()+1);
-                this.currentMediaIndex = this.currentMediaIndex+1;
+                // this.currentMediaIndex = this.currentMediaIndex+1;
+                this.$router.push(`/profile/${postDetails.currentThreadView.post.author.handle}/post/${postDetails.currentThreadView.post.uri.split('/').pop()}/${this.currentMediaIndex+1}`);
         },
         decreaseCurrentMediaIndex(){
             if(this.currentMediaIndex-1 >= 0)
                 // postDetails.setClickedMediaIndex(postDetails.getClickedMediaIndex()-1);
-                this.currentMediaIndex = this.currentMediaIndex-1;
+                // this.currentMediaIndex = this.currentMediaIndex-1;
+                this.$router.push(`/profile/${postDetails.currentThreadView.post.author.handle}/post/${postDetails.currentThreadView.post.uri.split('/').pop()}/${this.currentMediaIndex-1}`);
+
         },
         showImageFullscreen(image:ViewImage|ViewExternal){
             this.fullscreenImage = image;
@@ -308,7 +316,8 @@ export default defineComponent({
             this.fullscreenImage = {} as ViewImage|ViewExternal;
         },
         hideModal(){
-            postDetails.hideFocusModal();
+            this.$router.push("/");
+            // postDetails.hideFocusModal();
             this.threadNavIndex = 0; //Clear thread navigation history
             this.threadNavHistory = [emptyPostThread];
         },
@@ -349,17 +358,20 @@ export default defineComponent({
          * context in other situations use {@link updateThreadContextFromPost}.
          */
         async getThreadData(){
-            await getPostThread(this.initialThreadUri)
+            postDetails.isAwaitingFocusData = true;
+            await getPostThread(this.postUri)
             .then(res => {
                 this.postThread = res.data.thread as ThreadViewPost;
                 // postDetails.currentThreadView = postDetails.threadNavHistory[0] = postDetails.postThread;
                 //Take Post Thread prop and update relevant variables
                 postDetails.currentThreadView = this.threadNavHistory[0] = this.postThread;
                 this.currentMediaIndex = this.clickedMediaIndex; //Set initial media item to show
-                postDetails.isAwaitingFocusData = false;
-                console.log(this.postThread);
+                console.log(this.clickedMediaIndex);
             })
-            .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')));
+            .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')))
+            .finally(()=>{
+                postDetails.isAwaitingFocusData = false;
+            });
         },
         setCurrentThreadView(cid: string) {
             var result = this.findThreadView(cid,this.postThread);
@@ -423,19 +435,33 @@ export default defineComponent({
          * Updates the Posts/Replies displayed in the PostFocusModal component.
          * Triggered by an emitted message coming from a child `FocusFeedPost`
          * timestamp being clicked.
-         * @param newThreadContextURI The URI pointing to the new Post Thread context to display.
+         * @param newThreadContext The new Post Thread context to display.
          * @param mediaIndex The Index of the media in the Post's collection to display.
          */
-        async updateThreadContextFromPost(newThreadContextURI:string,mediaIndex:number){
-            postDetails.isAwaitingFocusData = true;
-            // await getPostThread(newThreadContext.post.uri)
-            await getPostThread(newThreadContextURI)
-            .then(res => {
-                this.setThreadContext(res.data.thread as ThreadViewPost);
+        async updateThreadContextFromPost(newThreadContext:ThreadViewPost|undefined,mediaIndex:number){
+            if(typeof newThreadContext != 'undefined'){
+                // postDetails.isAwaitingFocusData = true;
+                // // await getPostThread(newThreadContext.post.uri)
+                // await getPostThread(this.createThreadPostUri(newThreadContext))
+                // .then(res => {
+                //     this.setThreadContext(res.data.thread as ThreadViewPost);
+                //     this.currentMediaIndex = mediaIndex;
+                // })
+                // .catch(err => toast.add(HandleAPIError(err, 'Error getting reply')))
+                // .finally(() => postDetails.isAwaitingFocusData = false);
+                console.log(mediaIndex);
+                this.$router.push(`/profile/${newThreadContext.post.author.handle}/post/${newThreadContext.post.uri.split('/').pop()}`);
                 this.currentMediaIndex = mediaIndex;
-            })
-            .catch(err => toast.add(HandleAPIError(err, 'Error getting reply')))
-            .finally(() => postDetails.isAwaitingFocusData = false);
+            }
+        },
+        /**
+         * Method used to create a "post URI" for the current thread context.
+         * Returns URI in the format of `at://[handle]/app.bsky.feed.post/[post DID]`.
+         * @param thread The `ThreadViewPost` thread context to create the URI for.
+         */
+        createThreadPostUri(thread:ThreadViewPost){
+            let postDid = thread.post.uri.split('/').pop();
+            return `at://${thread.post.author.handle}/app.bsky.feed.post/${postDid}`;
         },
         /**
          * Method that resets the current ThreadView back to the Post
@@ -648,7 +674,7 @@ export default defineComponent({
         canIncreaseMediaIndex(){
             let currentImages = this.getEmbededImageViewImageObjects;
             if(currentImages.length>0){
-                if(this.currentMediaIndex+1 != currentImages.length &&
+                if(this.currentMediaIndex+1 < currentImages.length &&
                 this.currentMediaIndex>=0)
                     return true;
             }
@@ -667,6 +693,21 @@ export default defineComponent({
         showThreadGateRules():boolean{
             //if NOT (viewing a reply while not logged in)
             return !(typeof postDetails.currentThreadView.parent != 'undefined' && !AppState.isAuthBrowsing);
+        },
+        postUri(){
+            return `at://${this.handle}/app.bsky.feed.post/${this.postDid}`;
+        }
+    },
+    watch:{
+        /**Updates thread context when Post DID changes (new post in thread is navigated to). */
+        postDid(newDid,oldDid){
+            if(newDid != oldDid)
+                this.getThreadData();
+        },
+        /**Updates the displayed post image when media index in route changes. */
+        clickedMediaIndex(newIndex,oldIndex){
+            if(newIndex != oldIndex)
+                this.currentMediaIndex = newIndex;
         }
     },
     created(){
@@ -679,6 +720,9 @@ export default defineComponent({
                 this.isScrollToTopVisible = true;
             }
         },200);
+        console.log(this.handle);
+        console.log(this.postDid);
+        this.getThreadData();
     },
     mounted(){
         //Add keyboard+mouse shortcut listener
@@ -686,7 +730,7 @@ export default defineComponent({
         this.$el.addEventListener('mouseup', this.onMouseShortcutEntered);
         (this.$el as HTMLElement).focus();
         //Get Post Thread data via Bsky API
-        if(this.initialThreadUri != '') this.getThreadData();
+        // if(this.initialThreadUri != '') this.getThreadData();
     },
     beforeUnmount() {
         console.log('Closing PostFocusModal...');

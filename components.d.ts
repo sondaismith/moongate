@@ -58,7 +58,6 @@ declare module 'vue' {
     'IMdi:photoLibrary': typeof import('~icons/mdi/photo-library')['default']
     'IMdi:pin': typeof import('~icons/mdi/pin')['default']
     'IMdi:playlistAdd': typeof import('~icons/mdi/playlist-add')['default']
-    'IMdi:smsFailed': typeof import('~icons/mdi/sms-failed')['default']
     'IMdi:smsFailedOutline': typeof import('~icons/mdi/sms-failed-outline')['default']
     'IMdi:spy': typeof import('~icons/mdi/spy')['default']
     'IMdi:twitterRetweet': typeof import('~icons/mdi/twitter-retweet')['default']

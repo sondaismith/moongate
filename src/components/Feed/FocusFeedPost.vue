@@ -133,8 +133,8 @@
                             <i-mingcute:bookmark-fill v-else class="text-postBookmark group-hover:text-postBookmarkHover group-active:text-postBookmarkActive group-disabled:text-disabled"/>
                         </button>
                     </div>
-                    <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
-                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
+                    <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
+                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
@@ -145,10 +145,10 @@
                     {{ void "Post Media" }}
                     <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
-                    @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '', i) : openFocusDetails(i)"/>
+                    @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"/>
                     <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
                     :labels="postToShow.labels" :author="postToShow.author.handle"/>
-                    <EmbedExternal v-if="postContainsExternalEmbed" :embed="getPostEmbed" @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '', i) : openFocusDetails(i)"/>
+                    <EmbedExternal v-if="postContainsExternalEmbed" :embed="getPostEmbed" @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"/>
                     {{ void "Reposts - ViewRecord and View" }}
                     <FocusFeedPost v-if="postToShow.embed?.record && postToShow.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postToShow.embed.record.record)"
                     :post-data="postToShow.embed.record.record" :post-reason="postReason"
@@ -258,13 +258,13 @@ export default defineComponent({
          * This emit travels from `FocusFeedPost` to `PostThreadView` to `PostFocusModal`.
          * QRT Posts will emit to the container `FocusFeedPost` and then continue up
          * the previously outlined route.
-         * @param postThreadURI The URI pointing to the new Post Thread context to display.
+         * @param postThread The the new Post Thread context to display.
          * @param mediaIndex The Index of the media in the Post's collection to display.
          */
-        threadReplyClicked:(postThreadURI:string,mediaIndex:number) => {
-            if(postThreadURI.trim() != '')
-                return {postThreadURI,mediaIndex};
-            else return false;
+        threadReplyClicked:(postThread:ThreadViewPost|undefined,mediaIndex:number) => {
+            // if(postThreadURI.trim() != '')
+                return {postThread: postThread,mediaIndex};
+            // else return false;
         }
     },
     methods:{
@@ -284,10 +284,17 @@ export default defineComponent({
             if(this.postToShow){
                 //Check if modal is already visible - if it is we are not showing it
                 //for the first time, the thread context is being updated
-                if(postDetails.isFocusVisible)
-                    this.emitThreadReplyClicked(this.postToShow.uri);
+                // if(postDetails.isFocusVisible)
+                //     this.emitThreadReplyClicked(this.postToShow.uri);
+                // else
+                //     showFocusModal(this.postToShow.uri, mediaIndex);
+                let postUri:string[] = this.postToShow.uri.split('/');
+                let postDid:string = postUri[postUri.length-1];
+                if(this.getPostImages.length>0)
+                    this.$router.push(`/profile/${this.postToShow.author.handle}/post/${postDid}/${mediaIndex}`);
                 else
-                    showFocusModal(this.postToShow.uri, mediaIndex);
+                    this.$router.push(`/profile/${this.postToShow.author.handle}/post/${postDid}`);
+                // this.$router.push({name:'postWithMedia', params:{handle: this.postToShow.author.handle, postDid:postDid, clickedMediaIndex:mediaIndex}});
             }
         },
         openPostReply(postURI:string|undefined, mediaIndex:number=0){
@@ -298,11 +305,11 @@ export default defineComponent({
         /**
          * Updates the Posts/Replies displayed in the PostFocusModal component.
          * Emits `threadReplyClicked` with URI of Post Thread to display.
-         * @param newThreadURI The URI pointing to the new Post Thread context to display.
+         * @param newThread The  new Post Thread context to display.
          */
-        emitThreadReplyClicked(newThreadURI:string, mediaIndex:number=0){
-            if(newThreadURI.trim() != '')
-                this.$emit('threadReplyClicked',newThreadURI,mediaIndex);
+        emitThreadReplyClicked(newThread:ThreadViewPost|undefined, mediaIndex:number=0){
+            // if(newThread.trim() != '')
+                this.$emit('threadReplyClicked',newThread,mediaIndex);
         },
         /**
          * Method used to attempt to block/unblock the account associated with the
