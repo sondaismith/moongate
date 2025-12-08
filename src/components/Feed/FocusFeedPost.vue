@@ -133,8 +133,10 @@
                             <i-mingcute:bookmark-fill v-else class="text-postBookmark group-hover:text-postBookmarkHover group-active:text-postBookmarkActive group-disabled:text-disabled"/>
                         </button>
                     </div>
-                    <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
-                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
+                    <!-- <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
+                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div> -->
+                    <RouterLink v-if="!isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-test="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</RouterLink>
+                    <RouterLink v-else-if="isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-test="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</RouterLink>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
@@ -143,9 +145,12 @@
                     <!-- Is Quoted Post -->
                     <RichPostTextBsky data-test="focusFeedPost-text" v-else :post-text="((postToShow as ViewRecord).value as Record).text" :post-facets="((postToShow as ViewRecord).value as Record).facets"/>
                     {{ void "Post Media" }}
+                    <!-- <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
+                    :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
+                    @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"/> -->
                     <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
-                    @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"/>
+                    @media-click="(i:number) => openFocusDetails(i)"/>
                     <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
                     :labels="postToShow.labels" :author="postToShow.author.handle"/>
                     <EmbedExternal v-if="postContainsExternalEmbed" :embed="getPostEmbed" @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"/>
@@ -288,14 +293,25 @@ export default defineComponent({
                 //     this.emitThreadReplyClicked(this.postToShow.uri);
                 // else
                 //     showFocusModal(this.postToShow.uri, mediaIndex);
-                let postUri:string[] = this.postToShow.uri.split('/');
-                let postDid:string = postUri[postUri.length-1];
+                let postDid:string|undefined = this.postToShow.uri.split('/').pop();
                 if(this.getPostImages.length>0)
                     this.$router.push(`/profile/${this.postToShow.author.handle}/post/${postDid}/${mediaIndex}`);
                 else
                     this.$router.push(`/profile/${this.postToShow.author.handle}/post/${postDid}`);
                 // this.$router.push({name:'postWithMedia', params:{handle: this.postToShow.author.handle, postDid:postDid, clickedMediaIndex:mediaIndex}});
             }
+        },
+        /**
+         * Method used to generate a route used to display the interacted with Post in the
+         * `PostFocusModal` component.
+         * @param mediaIndex The index of the Post image to display. Default is 0.
+         */
+        getGeneratedPostUri(mediaIndex:number=0):string{
+            let postDid = this.postToShow.uri.split('/').pop();
+            // if(this.getPostImages.length>0)
+            //     return `/profile/${this.postToShow.author.handle}/post/${postDid}/${mediaIndex}`;
+            // else
+                return `/profile/${this.postToShow.author.handle}/post/${postDid}`;
         },
         openPostReply(postURI:string|undefined, mediaIndex:number=0){
             if(typeof this.postToShow != 'undefined' && typeof postURI != 'undefined'){

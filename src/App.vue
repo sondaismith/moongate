@@ -17,6 +17,7 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
       <RouterLink to="/profile/handle.will.fail">[Invalid Handle]</RouterLink>
       <RouterLink to="/profile/jonbois.bsky.social/post/3m5u7c6woo22v">Jon Bois sunset skeet</RouterLink>
       <RouterLink to="/profile/margomarch.bsky.social/post/3ltruwgg7ms2z/2">Margo image link</RouterLink>
+      <RouterLink to="/profile/sad-machines.bsky.social/post/3lzrqulh7ic2l">sad-machines thread w/ multi-image posts</RouterLink>
   </nav>
   <RouterView />
   <RouterView name="modal" v-slot="{Component}" :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">

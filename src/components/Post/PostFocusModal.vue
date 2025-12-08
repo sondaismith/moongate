@@ -586,13 +586,13 @@ export default defineComponent({
          */
         hasEmbededImagesWithAltText(){
             //Image Post
-            if(postDetails.currentThreadView.post.embed &&
+            if(typeof postDetails.currentThreadView.post.embed != 'undefined' &&
             postDetails.currentThreadView.post.embed.images &&
             (postDetails.currentThreadView.post.embed.images as ViewImage[]).length > 0 &&
             (postDetails.currentThreadView.post.embed.images as ViewImage[])[this.currentMediaIndex].alt.trim() != '')
                 return true;
             //Image Post w/ QRT
-            else if(postDetails.currentThreadView.post.embed &&
+            else if(typeof postDetails.currentThreadView.post.embed != 'undefined' &&
             AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
             postDetails.currentThreadView.post.embed.media.images &&
             (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0 &&
