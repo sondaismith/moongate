@@ -237,9 +237,7 @@ import AboutAppModal from "./components/Settings/AboutAppModal.vue";
         methods: {
             addFeed(){
                 // addDummyFeed();
-                if(!AppState.checkIfCanBrowse()) return;
-                AppState.ToggleCreateFeedModal();
-                this.showScrollXPos();
+                this.$router.push(`/create/feed`);
             },
             removeFeed(){
                 // if(this.feedListing.feedList && this.feedListing.feedList.length>0){

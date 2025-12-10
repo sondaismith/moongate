@@ -11,6 +11,7 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
       <RouterLink to="/">Home</RouterLink>
       <RouterLink to="/about">About</RouterLink>
       <RouterLink to="/settings">Settings</RouterLink>
+      <RouterLink to="/create/feed">Create Feed</RouterLink>
       <RouterLink to="/profile/mega64official.bsky.social">Mega64</RouterLink>
       <RouterLink to="/profile/jonbois.bsky.social">Jon Bois</RouterLink>
       <RouterLink to="/profile/fang.3am.moe">Fang Guu</RouterLink>
@@ -21,6 +22,11 @@ import { AppSettingsState } from "./state/AppSettingsState.vue";
   </nav>
   <RouterView />
   <RouterView name="modal" v-slot="{Component}" :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
+    <transition name="modal">
+      <component :is="Component" />
+    </transition>
+  </RouterView>
+  <RouterView name="login" v-slot="{Component}" :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
     <transition name="modal">
       <component :is="Component" />
     </transition>

@@ -332,6 +332,7 @@ import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlacehol
 import { AppBskyFeedDefs } from '@atproto/api/dist/client';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 import FilterBar from '../Utilities/FilterBar.vue';
+import { PropType } from 'vue';
 
 export default defineComponent({
     components:{
@@ -343,6 +344,9 @@ export default defineComponent({
         CustomFeedButton,
         CustomFeedButtonPlaceholder,
         FilterBar,
+    },
+    props:{
+        feedType: Object as PropType<FeedEnums.Types>
     },
     data(){
         return{
@@ -779,7 +783,8 @@ export default defineComponent({
         },
         closeModal(){
             // AppState.ToggleCreateFeedModal();
-            AppState.HideEditFeedModal();
+            // AppState.HideEditFeedModal();
+            this.$router.push(`/`);
         }
     },
     computed:{
@@ -894,6 +899,15 @@ export default defineComponent({
         //         // this.getCustomFeeds();
         //     }
         // }
+    },
+    beforeRouteEnter(to, from, next){
+        next({path:'/login'});
+    },
+    async created(){
+        if(typeof this.feedType != 'undefined'){
+            this.selectedFeedType = this.feedType
+            this.currentPage = 1;
+        }
     },
     mounted(){
         if(AppState.isUpdatingFeed){

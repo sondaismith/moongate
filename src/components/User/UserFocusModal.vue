@@ -842,7 +842,8 @@ export default defineComponent({
         updateCurrentNavHistoryScrollPos(){
             let userFocusContainer = (document.getElementById('user-focus-container') as HTMLElement);
             // UserFocusModalState.currentUserPageDetails.scrollPos = userFocusContainer.scrollTop;
-            UserFocusModalState.updateScrollPosInNavHistory(this.lastHandle,userFocusContainer.scrollTop);
+            if(userFocusContainer != null)
+                UserFocusModalState.updateScrollPosInNavHistory(this.lastHandle,userFocusContainer.scrollTop);
             this.lastHandle = this.handle; //update lastHandle to reflect move to Profile has completed
         },
         /**
@@ -1056,10 +1057,12 @@ export default defineComponent({
         }
     },
     watch:{
-        handle(){
-            this.updateCurrentNavHistoryScrollPos();
-            this.updateDisplayedData();
-            this.restoreScrollPosAfterNavHistoryChange();
+        handle(newHandle:string, oldHandle:string){
+            if(typeof newHandle != 'undefined' && newHandle.trim() != ''){
+                this.updateCurrentNavHistoryScrollPos();
+                this.updateDisplayedData();
+                this.restoreScrollPosAfterNavHistoryChange();
+            }
         }
     },
     async created() {

@@ -285,7 +285,8 @@ export default defineComponent({
         browseAsGuest(){
             AppState.browseAsGuest();
             AppSettingsState.saveSettingsToStore();
-            AppState.ToggleLoginModal();
+            // AppState.ToggleLoginModal();
+            this.$router.go(-1);
         },
         /**Method called when User chooses to browse as guest. */
         asGuestClicked(){
@@ -379,7 +380,11 @@ export default defineComponent({
             this.isRemovingSavedAccount = !this.isRemovingSavedAccount;
         },
         closeModal(){
-            AppState.ToggleLoginModal();
+            // AppState.ToggleLoginModal();
+            console.log(window.history.state);
+            if(window.history.state.back != null && window.history.state.back.includes('/profile')) this.$router.go(-1);
+            else if(window.history.state.back == null) this.$router.push(`/`);
+            else this.$router.push(`/`);
         },
         /**
          * Method that refreshes all the displayed Feeds after the User logs in.

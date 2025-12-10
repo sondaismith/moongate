@@ -14,6 +14,7 @@ import { AppSettingsState } from './AppSettingsState.vue';
 import { LoginState } from '../interfaces/AccountInterfaces';
 import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { FeedEnums } from '../enums/FeedEnums';
+import { router } from '../main';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -140,7 +141,8 @@ export const AppState = reactive({
         //how they would like to browse
         if(!this.canBrowse){
             toast.add({summary:"Browsing mode", detail:`Please choose how you would like to browse.`, severity:'info', group:'tr', life:3000})
-            this.isLoggingIntoAccount = true;
+            // this.isLoggingIntoAccount = true;
+            // router.push(`/login`);
             return this.canBrowse;
         }
         return this.canBrowse;
@@ -156,7 +158,8 @@ export const AppState = reactive({
         if(!this.isAuthBrowsing){
             toast.add({summary:"Requires login", detail:`In order to ${action} you must be logged in.`, severity:'info', group:'tr', life:3000});
             this.loginModalStartPage = 1;
-            this.isLoggingIntoAccount = true;
+            // this.isLoggingIntoAccount = true;
+            router.push(`/login`);
             return this.isAuthBrowsing;
         }
         return this.isAuthBrowsing;

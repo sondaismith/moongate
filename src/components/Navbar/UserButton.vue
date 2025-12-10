@@ -137,7 +137,7 @@ export default defineComponent({
          */
         async onUserButtonClick(e:Event){
             if(!AppState.canBrowse || AppState.isGuestBrowsing){
-                AppState.ToggleLoginModal();
+                this.$router.push(`/login`);
             }
             else if(AppState.canBrowse && AppState.isAuthBrowsing){
                 this.showOptionsMenu(e);
