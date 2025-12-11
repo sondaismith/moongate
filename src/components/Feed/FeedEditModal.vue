@@ -902,7 +902,18 @@ export default defineComponent({
     },
     beforeRouteEnter(to, from, next){
         if(!AppState.canBrowse) next({path:'/login'});
-        else next();
+        else{
+            //Determine if Feed is being created or updated
+            if(to.path.includes('/create')){
+                AppState.isCreatingFeed = true;
+                AppState.isUpdatingFeed = false;
+            }
+            else{
+                AppState.isUpdatingFeed = true;
+                AppState.isCreatingFeed = false;
+            }
+            next();
+        }
     },
     async created(){
         if(typeof this.feedType != 'undefined'){
