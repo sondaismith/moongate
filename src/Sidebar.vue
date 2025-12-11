@@ -120,23 +120,11 @@
         <Transition name="modal">
             <FeedOrderModal v-if="AppState.isUpdatingFeedPosition" :feed-id-to-update="FeedState.selectedFeed"/>
         </Transition>
-        <Transition name="modal">
-            <FeedEditModal v-if="AppState.isCreatingFeed || AppState.isUpdatingFeed"/>
-        </Transition>
-        <Transition>
-            <UserFocusModal v-if="AppState.isViewingUserAccount"/>
-        </Transition>
         <Transition name="peek">
             <AccountPeek v-show="AccountPeekState.isUserPeeking"/>
         </Transition>
         <Transition name="modal">
             <CreatePost v-if="AppState.isCreatingNewPost" :post-ref="postDetails.currentPostData"/>
-        </Transition>
-        <Transition name="modal">
-            <SettingsPanel v-if="AppState.isSettingsPanelVisible"/>
-        </Transition>
-        <Transition name="modal">
-            <AboutAppModal v-if="AppState.isAboutAppModalVisible"/>
         </Transition>
     </div>
 </template>
@@ -390,8 +378,8 @@ import AboutAppModal from "./components/Settings/AboutAppModal.vue";
              * `moongate_settings` store and applies them.
              */
             async loadAppConfig(){
-                //Load application settings
-                await AppSettingsState.loadSettingsFromStore();
+                // //Load application settings
+                // await AppSettingsState.loadSettingsFromStore();
                 //Tauri - ensure databases exist
                 if(isTauri()){
                     await this.userAccountsDatabaseSetup();

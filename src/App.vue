@@ -2,6 +2,18 @@
 import { RouterView } from "vue-router";
 import Sidebar from "./Sidebar.vue";
 import { AppSettingsState } from "./state/AppSettingsState.vue";
+import { onBeforeMount } from "vue";
+import { router } from "./main";
+
+onBeforeMount(async () => {
+  console.log('App.vue onMounted()');
+  //Load application settings
+  router.beforeEach(async (to, from) => {
+    if(!AppSettingsState.isSettingsLoaded){
+      await AppSettingsState.loadSettingsFromStore();
+    }
+  })
+})
 </script>
 
 <template>

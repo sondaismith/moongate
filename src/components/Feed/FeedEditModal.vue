@@ -901,7 +901,8 @@ export default defineComponent({
         // }
     },
     beforeRouteEnter(to, from, next){
-        next({path:'/login'});
+        if(!AppState.canBrowse) next({path:'/login'});
+        else next();
     },
     async created(){
         if(typeof this.feedType != 'undefined'){

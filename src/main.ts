@@ -18,9 +18,10 @@ import FeedEditModal from './components/Feed/FeedEditModal.vue';
 //Thanks to @groenroos from https://medium.com/@groenroos/twitter-style-modals-in-vue-3-vue-router-4-ffcc15bd6841
 function keepDefaultView(to, from) {
     if (from.matched.length) {
-        to.matched[0].components.default = from.matched[0].components.default;
-        if(typeof from.matched[0].components.modal != 'undefined')
-            to.matched[0].components.modal = from.matched[0].components.modal; //if modal exists, keep showing
+        to.matched[0].components.default = from.matched[0].components.default;//always keep main view showing
+        //If prompted to login from `UserFocusModal`, keep showing the modal
+        if(typeof from.matched[0].components.modal != 'undefined' && to.path == '/login' && from.path.includes('/profile'))
+            to.matched[0].components.modal = from.matched[0].components.modal;
         //If we are navigating from the main view and trying to login, DO NOT SHOW any modal - discard
         if(to.path == '/login' && typeof to.matched[0].components.modal != 'undefined' && from.path == '/'){
             to.matched[0].components = {default:to.matched[0].components.default, login:LoginModal};

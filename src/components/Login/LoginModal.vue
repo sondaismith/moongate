@@ -227,7 +227,6 @@ export default defineComponent({
                 AppState.currentUsername = "Logged In";
                 accountDID = res.data.did;
                 AppState.canBrowse = true;
-                AppState.ToggleLoginModal();
                 AccountPeekState.lastMouseEvent = new MouseEvent('login');
                 AccountPeekState.profileData = {did:'',handle:''};
                 this.refreshFeeds();//Refresh feeds so we can get likes, blocks etc.
@@ -275,6 +274,7 @@ export default defineComponent({
                         AppSettingsState.Settings.savedAccountState.state = LoginState.Authorized;
                     }
                     AppSettingsState.saveSettingsToStore();
+                    this.closeModal();
                 })
                 .catch(err => {
                     toast.add(HandleAPIError(err, 'Error getting profile info'));
