@@ -1,6 +1,6 @@
 <template>
     <div :data-testid="`feedButton-${feedDescription.feedId}`" class="relative cursor-pointer" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
-    @click="highlightFeed" @contextmenu="(e) => showFeedOptionsMenu(e,getFeedSourceDID)">
+    @click="highlightFeed" @contextmenu="(e) => showFeedOptionsMenu(e,getFeedSourceHandle)">
         <button class="group relative flex justify-center items-center
             rounded-xl drop-shadow-md bg-feedBtn border border-outline outline-none transition-[border]
             hover:border-secondary aspect-square !w-full p-0.5 overflow-hidden">
@@ -33,6 +33,7 @@ import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { IFeedDescription } from '../../interfaces/FeedInterfaces';
 import { FeedEnums } from '../../enums/FeedEnums';
+import { router } from '../../main';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to
@@ -66,11 +67,12 @@ function DeleteFeed(){
 }
 /**
  * Displays specified User Profile in `UserFocusModal`.
- * @param userDid DID of the User Profile to display.
+ * @param userHandle Handle of the User Profile to display.
  */
-function ShowUserProfile(userDid:string){
-    if(userDid.trim() != '')
-        AppState.ShowUserFocusModal(userDid);
+function ShowUserProfile(userHandle:string){
+    if(userHandle.trim() != '')
+        // AppState.ShowUserFocusModal(userHandle);
+        router.push(`/profile/${userHandle}`);
 }
 
 export default defineComponent({
@@ -277,6 +279,9 @@ export default defineComponent({
         },
         getFeedSourceDID(){
             return this.feedDescription.feedType == FeedEnums.Types.User ? this.feedDescription.feedSourceDID : '';
+        },
+        getFeedSourceHandle(){
+            return this.feedDescription.feedType == FeedEnums.Types.User ? this.feedDescription.feedHandle : '';
         }
     },
     watch:{
