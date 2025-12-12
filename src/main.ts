@@ -33,9 +33,9 @@ function keepDefaultView(to, from) {
 }
 
 const routes:RouteRecordRaw[] = [
-    { path:'/',component: Sidebar },
-    { path:'/login', meta:{title:'Login'}, components:{ login:LoginModal }, beforeEnter:[keepDefaultView] },
-    { path:'/about', components:{ modal:AboutAppModal }, beforeEnter:[keepDefaultView] },
+    { path:'/', meta:{title:'Home | Moongate'},component: Sidebar },
+    { path:'/login', meta:{title:'Login | Moongate'}, components:{ login:LoginModal }, beforeEnter:[keepDefaultView] },
+    { path:'/about', meta:{title:'About | Moongate'}, components:{ modal:AboutAppModal }, beforeEnter:[keepDefaultView] },
     { path:'/settings', components:{ modal:SettingsPanel }, beforeEnter:[keepDefaultView] },
     { path:'/profile/:handle', components:{ modal:UserFocusModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/profile/:handle/post/:postDid', components:{ modal:PostFocusModal }, beforeEnter:[keepDefaultView], props:true },
@@ -45,6 +45,7 @@ const routes:RouteRecordRaw[] = [
     name:'postWithMedia'},
     { path:'/create/feed/', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/feed/:feedType', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
+    { path:'/create/feed/:feedType/:summary', name:'create feed summary', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
     { path: '/:pathMatch(.*)*', redirect:'/' }, //catches all invalid routes
 ]
 

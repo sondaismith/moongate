@@ -346,7 +346,9 @@ export default defineComponent({
         FilterBar,
     },
     props:{
-        feedType: Object as PropType<FeedEnums.Types>
+        feedType: Object as PropType<FeedEnums.Types>,
+        /**Used to show summary page for Feed creation - if value is not 'summary' navigation moves back to the start of the process. */
+        summary: String,
     },
     data(){
         return{
@@ -455,7 +457,12 @@ export default defineComponent({
                 this.selectedFeedType="";
             }
             else{
-                this.currentPage++
+                if(this.currentPage == 0 && this.selectedFeedType.trim() != '' && Object.values<string>(FeedEnums.Types).includes(this.selectedFeedType)){
+                    this.$router.push(`/create/feed/${this.selectedFeedType}`);
+                }
+                else if(this.currentPage == 1){
+                    this.$router.push(`/create/feed/${this.selectedFeedType}/summary`);
+                }
             }
             this.feedTypeSelected = true;
             if(this.customFeedData.length<1 && this.currentPage == 1 && this.selectedFeedType == FeedEnums.Types.FeedGenerator) this.getCustomFeeds();
@@ -468,7 +475,8 @@ export default defineComponent({
          */
         backOnePage(){
             if(this.currentPage-1 > -1){
-                this.currentPage--;
+                console.log(this.$route)
+                if(this.currentPage >= 1) this.$router.push(this.$route.path.substring(0, this.$route.path.lastIndexOf('/')));
                 this.feedTypeSelected = false;
                 this.feedSpecificationsSet = false;
             }
@@ -893,12 +901,18 @@ export default defineComponent({
         }
     },
     watch:{
-        // currentPage(){
-        //     //If User navigates to Feed Generator page start retrieving Feed Generator data
-        //     if(this.currentPage == 1 && this.selectedFeedType == FeedEnums.Types.FeedGenerator){
-        //         // this.getCustomFeeds();
-        //     }
-        // }
+        feedType(newType:string, oldType:string){
+            if(typeof newType == 'undefined') this.currentPage = 0;
+            else if(newType != oldType){
+                this.currentPage = 1;
+                this.selectedFeedType = newType;
+                if(newType = FeedEnums.Types.FeedGenerator) this.getCustomFeeds();
+            }
+        },
+        summary(newSummary:string,oldSummary:string){
+            if(typeof newSummary != 'undefined' && newSummary != oldSummary && newSummary.toLocaleLowerCase() == 'summary') this.currentPage = 2;
+            else if(typeof oldSummary != 'undefined' && newSummary != oldSummary && oldSummary.toLocaleLowerCase() == 'summary') this.currentPage = 1;
+        }
     },
     beforeRouteEnter(to, from, next){
         if(!AppState.canBrowse) next({path:'/login'});
@@ -912,13 +926,37 @@ export default defineComponent({
                 AppState.isUpdatingFeed = true;
                 AppState.isCreatingFeed = false;
             }
-            next();
+            //Prevent creating Following or Notification feeds if not logged in
+            if((to.path.includes('/following') || to.path.includes('/notification')) && !AppState.isAuthBrowsing){
+                next({path:'/create/feed'});
+            }
+            //Direct navigation to summary prevented
+            if(!from.path.includes('/create/feed/') && to.name == 'create feed summary'){
+                next({path:'/create/feed'});
+            }
+            //Prevent jump to summary if type is not the same
+            if(to.name == 'create feed summary' && !to.path.includes(from.path)){
+                return false;
+            }
+            else next();
+        }
+    },
+    beforeRouteUpdate(to, from, next){
+        //Prevent creating Following or Notification feeds if not logged in
+        if((to.path.includes('/following') || to.path.includes('/notification')) && !AppState.isAuthBrowsing){
+            next({path:'/create/feed'});
         }
     },
     async created(){
-        if(typeof this.feedType != 'undefined'){
+        if(typeof this.feedType != 'undefined' && Object.values(FeedEnums.Types).includes(this.feedType)){
             this.selectedFeedType = this.feedType
             this.currentPage = 1;
+            if(this.feedType == FeedEnums.Types.FeedGenerator){
+                this.getCustomFeeds();
+            }
+        }
+        else if(typeof this.feedType != 'undefined' && !Object.values(FeedEnums.Types).includes(this.feedType)){//invalid feed type
+            this.$router.replace('/create/feed');
         }
     },
     mounted(){
