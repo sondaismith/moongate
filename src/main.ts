@@ -14,6 +14,7 @@ import SettingsPanel from './components/Settings/SettingsPanel.vue';
 import UserFocusModal from './components/User/UserFocusModal.vue';
 import PostFocusModal from './components/Post/PostFocusModal.vue';
 import FeedEditModal from './components/Feed/FeedEditModal.vue';
+import CreatePost from './components/Post/CreatePost.vue';
 
 //Thanks to @groenroos from https://medium.com/@groenroos/twitter-style-modals-in-vue-3-vue-router-4-ffcc15bd6841
 function keepDefaultView(to, from) {
@@ -46,6 +47,7 @@ const routes:RouteRecordRaw[] = [
     { path:'/create/feed/', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/feed/:feedType', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/feed/:feedType/:summary', name:'create feed summary', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
+    { path:'/create/post/', components:{ modal:CreatePost }, beforeEnter:[keepDefaultView], props:true },
     { path: '/:pathMatch(.*)*', redirect:'/' }, //catches all invalid routes
 ]
 

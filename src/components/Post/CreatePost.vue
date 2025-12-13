@@ -1,10 +1,10 @@
 <template>
     <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-30 flex w-full h-full">
-        <div @click="confirmClose(canSubmitPost,isAwaitingPostConfirm)" class="absolute w-full h-full bg-slate-800/60"/>
+        <div @click="confirmClose(canSubmitPost,isAwaitingPostConfirm,previousURL)" class="absolute w-full h-full bg-slate-800/60"/>
         <div class="relative rounded-lg flex flex-col w-full sm:w-3/5 text-primary bg-focusBG border
         border-outlineLighter p-3 my-auto m-4 sm:m-auto gap-3 overflow-hidden">
             <div class="flex items-center justify-between">
-                <button @click="confirmClose(canSubmitPost,isAwaitingPostConfirm)" class="font-bold text-sky-500 hover:text-sky-300
+                <button @click="confirmClose(canSubmitPost,isAwaitingPostConfirm,previousURL)" class="font-bold text-sky-500 hover:text-sky-300
                 hover:border-transparent active:bg-transparent active:border-transparent active:text-sky-700 cursor-pointer focus-visible:outline
                 focus-visible:outline-searchbarFocusHightlight shadow-none">Cancel</button>
                 <PillButton data-test="create-post-button" :disabled="(!canSubmitPost || postDetails.isAwaitingFocusData)" @click="createNewPost"
@@ -318,6 +318,7 @@ import { GetBrowsingAgent } from '../../lib/api.vue';
 import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import {imageDimensionsFromData} from 'image-dimensions';
 import { AspectRatio } from '@atproto/api/dist/client/types/app/bsky/embed/defs';
+import { router } from '../../main';
 
 export default defineComponent({
     components:{
@@ -397,6 +398,8 @@ export default defineComponent({
             PostActions,
             isAwaitingPostConfirm:false,
             showsPostAfterCreation:false,
+            /**The previous page the User was at before choosing to create a new Post. Returned to when the `CreatePost` modal is closed. */
+            previousURL:'',
         }
     },
     methods:{
@@ -1035,6 +1038,17 @@ export default defineComponent({
             else return false;
         }
     },
+    beforeRouteEnter(to,from,next){
+        if(!AppState.checkIfLoggedIn("post")){
+            // next({path:'/'});
+            next();
+        }
+        else{
+            next(vm => {
+                vm.$data.previousURL = from.path
+            })
+        }
+    },
     mounted() {
         this.$el.focus();
     },
@@ -1044,21 +1058,22 @@ export default defineComponent({
     },
 })
 
-function confirmClose(postContentExists:boolean,awaitingPosting:boolean){
+function confirmClose(postContentExists:boolean,awaitingPosting:boolean,prevUrl:string){
     if(awaitingPosting){
         toast.add({summary:"Please wait", detail:`Post creation in progress, please wait`, severity:'info', group:'tr', life:1500});
         return;
     }
     if(postContentExists){
-        AppState.showConfirmModal('Are you sure you want to discard this post?',close);
+        AppState.showConfirmModal('Are you sure you want to discard this post?',() => {close(prevUrl)});
     }
     else{
-        close();
+        close(prevUrl);
     }
 }
 
-function close(){
-    AppState.hideCreatePost();
+function close(prevUrl:string){
+    if(typeof prevUrl != 'undefined') router.push(prevUrl);
+    else router.push('/');
 }
 </script>
 

@@ -123,9 +123,6 @@
         <Transition name="peek">
             <AccountPeek v-show="AccountPeekState.isUserPeeking"/>
         </Transition>
-        <Transition name="modal">
-            <CreatePost v-if="AppState.isCreatingNewPost" :post-ref="postDetails.currentPostData"/>
-        </Transition>
     </div>
 </template>
 

@@ -931,12 +931,12 @@ export default defineComponent({
                 next({path:'/create/feed'});
             }
             //Direct navigation to summary prevented
-            if(!from.path.includes('/create/feed/') && to.name == 'create feed summary'){
+            else if(!from.path.includes('/create/feed/') && to.name == 'create feed summary'){
                 next({path:'/create/feed'});
             }
             //Prevent jump to summary if type is not the same
-            if(to.name == 'create feed summary' && !to.path.includes(from.path)){
-                return false;
+            else if(to.name == 'create feed summary' && !to.path.includes(from.path)){
+                next({path:from.path,replace:true})
             }
             else next();
         }

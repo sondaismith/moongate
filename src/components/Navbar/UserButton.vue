@@ -55,8 +55,9 @@ let optionsMenu:IOptionMenuItem[] = [
 function displayCurrentUsersAccount(){
     var userToCheck;
     try{
-        userToCheck = GetBrowsingAgent().assertDid;
-        AppState.ShowUserFocusModal(userToCheck);
+        // userToCheck = GetBrowsingAgent().assertDid;
+        let accState = AppSettingsState.Settings.savedAccountState;
+        if(accState.currentAccount > -1) AppState.ShowUserFocusModal(accState.accounts[accState.currentAccount].handle);
     }
     catch(e){
         //The code below plus the ToastEventBus import allow us to send

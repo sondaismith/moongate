@@ -237,13 +237,13 @@ export default defineComponent({
          * existing Feed. Current options are Edit and Delete.
          * @param e The MouseEvent fired after context clicking the FeedButton.
          */
-        showFeedOptionsMenu(e:MouseEvent, feedSourceDID:string){
+        showFeedOptionsMenu(e:MouseEvent, feedSourceHandle:string){
             e.preventDefault();
             if(this.feedDescription.feedId){
                 UpdateSelectedFeed(this.feedDescription.feedId);
                 let menuOptions = [] as IOptionMenuItem[];
-                if(typeof feedSourceDID != "undefined" && feedSourceDID.trim() != '' && this.feedDescription.feedType == FeedEnums.Types.User){
-                    menuOptions.push({Icon:MingcuteProfileFill,Label:'View Profile',Action:function(){ShowUserProfile(feedSourceDID)},Type:ItemType.Option});
+                if(typeof feedSourceHandle != "undefined" && feedSourceHandle.trim() != '' && this.feedDescription.feedType == FeedEnums.Types.User){
+                    menuOptions.push({Icon:MingcuteProfileFill,Label:'View Profile',Action:function(){ShowUserProfile(feedSourceHandle)},Type:ItemType.Option});
                     menuOptions.push({Icon:MingcuteProfileFill,Label:'',Action:()=>{},Type:ItemType.Splitter});
                 }
                 //Need to update "feed edit" functionality, so removing this for now.

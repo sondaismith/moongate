@@ -444,7 +444,6 @@ export default defineComponent({
     props:{
         handle:{
             type:String,
-            required:true
         }
     },
     data(){

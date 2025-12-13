@@ -219,11 +219,10 @@ export const AppState = reactive({
             UserFocusModalState.currentUserAccountDID = userDID;
         }
     },
-    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method used to show the `UserFocusModal`. */
-    ShowUserFocusModal(userDID:string | undefined){
-        if(userDID && userDID.trim() != ''){
-            UserFocusModalState.currentUserAccountDID = userDID;
-            AppState.isViewingUserAccount = true;
+    /**Method used to show the `UserFocusModal`. You must pass in the handle of the account to display. */
+    ShowUserFocusModal(userHandle:string | undefined){
+        if(userHandle && userHandle.trim() != ''){
+            router.push(`/profile/${userHandle}`);
         }
     },
     /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method used to hide the `UserFocusModal`. */
@@ -251,7 +250,9 @@ export const AppState = reactive({
     isCreatingNewPost:false,
     /**Sets `CreatePost` to be displayed. */
     showCreatePost(){
-        this.isCreatingNewPost = true;
+        // this.isCreatingNewPost = true;
+        router.push('/create/post');
+
     },
     /**Sets `CreatePost` to be hidden. */
     hideCreatePost(){

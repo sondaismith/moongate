@@ -34,6 +34,7 @@ onBeforeMount(async () => {
       <RouterLink to="/profile/sad-machines.bsky.social/post/3lzrqulh7ic2l">sad-machines thread w/ multi-image posts</RouterLink>
       <RouterLink to="/create/feed/following">direct link to creating following feed</RouterLink>
       <RouterLink to="/create/feed/user/summary">user summary</RouterLink>
+      <RouterLink to="/create/post">create post</RouterLink>
   </nav>
   <RouterView />
   <RouterView name="modal" v-slot="{Component}" :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
