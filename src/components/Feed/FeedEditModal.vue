@@ -10,6 +10,7 @@
                     <div class="text-2xl">{{modalPages[currentPage].title}}</div>
                     <div v-if="AppState.isCreatingFeed" class="flex bg-green-600 rounded-full px-2 py-1 items-center self-center">Creating</div>
                     <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div>
+                    <div v-if="selectedFeedType.trim() != '' && currentPage != 0" class="flex border border-blue-600 rounded-full px-2 py-1 items-center self-center">{{ feedTypeOptions.find(x=> x.value == selectedFeedType)?.name.split(' ')[0] }} Feed</div>
                 </div>
                 {{ void "Pages" }}
                 <div class="flex items-center w-full">
