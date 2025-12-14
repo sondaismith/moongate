@@ -20,12 +20,16 @@ import CreatePost from './components/Post/CreatePost.vue';
 function keepDefaultView(to, from) {
     if (from.matched.length) {
         to.matched[0].components.default = from.matched[0].components.default;//always keep main view showing
-        //If prompted to login from `UserFocusModal`, keep showing the modal
-        if(typeof from.matched[0].components.modal != 'undefined' && to.path == '/login' && from.path.includes('/profile'))
+        //If prompted to login or create a post from `UserFocusModal`, keep showing the modal
+        if(typeof from.matched[0].components.modal != 'undefined' && (to.path == '/login' || to.path == '/create/post') && from.path.includes('/profile'))
             to.matched[0].components.modal = from.matched[0].components.modal;
         //If we are navigating from the main view and trying to login, DO NOT SHOW any modal - discard
         if(to.path == '/login' && typeof to.matched[0].components.modal != 'undefined' && from.path == '/'){
-            to.matched[0].components = {default:to.matched[0].components.default, login:LoginModal};
+            to.matched[0].components = {default:to.matched[0].components.default, user_prompt:LoginModal};
+        }
+        //If we are navigating from the main view and trying to create a post, DO NOT SHOW any modal - discard
+        if(to.path == '/create/post' && typeof to.matched[0].components.modal != 'undefined' && from.path == '/'){
+            to.matched[0].components = {default:to.matched[0].components.default, user_prompt:CreatePost};
         }
     }
     else{
@@ -35,7 +39,7 @@ function keepDefaultView(to, from) {
 
 const routes:RouteRecordRaw[] = [
     { path:'/', meta:{title:'Home | Moongate'},component: Sidebar },
-    { path:'/login', meta:{title:'Login | Moongate'}, components:{ login:LoginModal }, beforeEnter:[keepDefaultView] },
+    { path:'/login', meta:{title:'Login | Moongate'}, components:{ user_prompt:LoginModal }, beforeEnter:[keepDefaultView] },
     { path:'/about', meta:{title:'About | Moongate'}, components:{ modal:AboutAppModal }, beforeEnter:[keepDefaultView] },
     { path:'/settings', components:{ modal:SettingsPanel }, beforeEnter:[keepDefaultView] },
     { path:'/profile/:handle', components:{ modal:UserFocusModal }, beforeEnter:[keepDefaultView], props:true },
@@ -47,7 +51,7 @@ const routes:RouteRecordRaw[] = [
     { path:'/create/feed/', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/feed/:feedType', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/feed/:feedType/:summary', name:'create feed summary', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
-    { path:'/create/post/', components:{ modal:CreatePost }, beforeEnter:[keepDefaultView], props:true },
+    { path:'/create/post/', components:{ user_prompt:CreatePost }, beforeEnter:[keepDefaultView], props:true },
     { path: '/:pathMatch(.*)*', redirect:'/' }, //catches all invalid routes
 ]
 

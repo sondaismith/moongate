@@ -291,6 +291,9 @@ export default defineComponent({
             fullscreenImage : {} as ViewImage|ViewExternal,
             /**Is the "scroll to top" button currently visible? */
             isScrollToTopVisible:false,
+            /**Record of the last valid Post DID used. Used to prevent reload when `CreatePost`
+             * or `Login` modal are closed after opening on top of `PostFocusModal`. */
+            lastPostDid:''
         }
     },
     methods:{
@@ -700,13 +703,15 @@ export default defineComponent({
     },
     watch:{
         /**Updates thread context when Post DID changes (new post in thread is navigated to). */
-        postDid(newDid,oldDid){
-            if(newDid != oldDid)
+        postDid(newDid:string,oldDid:string){
+            if(typeof newDid != 'undefined' && newDid.trim() != '' && newDid != oldDid && newDid != this.lastPostDid){
+                this.lastPostDid = newDid;
                 this.getThreadData();
+            }
         },
         /**Updates the displayed post image when media index in route changes. */
-        clickedMediaIndex(newIndex,oldIndex){
-            if(newIndex != oldIndex)
+        clickedMediaIndex(newIndex:number,oldIndex:number){
+            if(typeof newIndex != 'undefined' && newIndex != oldIndex)
                 this.currentMediaIndex = newIndex;
         }
     },
@@ -720,6 +725,7 @@ export default defineComponent({
                 this.isScrollToTopVisible = true;
             }
         },200);
+        this.lastPostDid = this.postDid;
         console.log(this.handle);
         console.log(this.postDid);
         this.getThreadData();

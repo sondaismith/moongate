@@ -232,6 +232,10 @@ export const AppState = reactive({
     ToggleLoginModal(){
         AppState.isLoggingIntoAccount = !AppState.isLoggingIntoAccount;
     },
+    /**Displays the `LoginModal` component. */
+    ShowLoginModal(){
+        router.push(`/login`);
+    },
     /**Determines whether or not the `ConfirmModal` is currently visible. */
     isAskingForConfirmation: false,
     /**Discribes the action that is awaiting confirmation via the `ConfirmModal`. */
