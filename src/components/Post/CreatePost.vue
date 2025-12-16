@@ -1061,7 +1061,8 @@ export default defineComponent({
             return false;
         }
         if(this.canSubmitPost){
-            await this.$refs.confirm.show('Are you sure you want to discard this post?')
+            type ConfirmModalRef = InstanceType<typeof ConfirmModal>;
+            await (this.$refs.confirm as ConfirmModalRef).show('Are you sure you want to discard this post?')
             .then(res => {
                 leave = res;
             })
