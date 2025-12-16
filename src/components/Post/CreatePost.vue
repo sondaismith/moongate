@@ -1,10 +1,10 @@
 <template>
     <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-30 flex w-full h-full">
-        <div @click="confirmClose(canSubmitPost,isAwaitingPostConfirm,previousURL)" class="absolute w-full h-full bg-slate-800/60"/>
+        <div @click="close(previousURL)" class="absolute w-full h-full bg-slate-800/60"/>
         <div class="relative rounded-lg flex flex-col w-full sm:w-3/5 text-primary bg-focusBG border
         border-outlineLighter p-3 my-auto m-4 sm:m-auto gap-3 overflow-hidden">
             <div class="flex items-center justify-between">
-                <button @click="confirmClose(canSubmitPost,isAwaitingPostConfirm,previousURL)" class="font-bold text-sky-500 hover:text-sky-300
+                <button @click="close(previousURL)" class="font-bold text-sky-500 hover:text-sky-300
                 hover:border-transparent active:bg-transparent active:border-transparent active:text-sky-700 cursor-pointer focus-visible:outline
                 focus-visible:outline-searchbarFocusHightlight shadow-none">Cancel</button>
                 <PillButton data-test="create-post-button" :disabled="(!canSubmitPost || postDetails.isAwaitingFocusData)" @click="createNewPost"
@@ -289,6 +289,7 @@
                 <SquareButton @click="closeContentLabelOptionsModal" class="mt-2 font-bold bg-blue-500">Close</SquareButton>
             </div>
         </div>
+        <ConfirmModal ref="confirm"/>
     </div>
 </template>
 
@@ -319,6 +320,7 @@ import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import {imageDimensionsFromData} from 'image-dimensions';
 import { AspectRatio } from '@atproto/api/dist/client/types/app/bsky/embed/defs';
 import { router } from '../../main';
+import ConfirmModal from '../Utilities/ConfirmModal.vue';
 
 export default defineComponent({
     components:{
@@ -329,6 +331,7 @@ export default defineComponent({
         PillButton,
         CheckedButton,
         ModernToggleButton,
+        ConfirmModal,
     },
     props:{
         avatar: String,
@@ -336,6 +339,7 @@ export default defineComponent({
     },
     data(){
         return{
+            AppState,
             TrapFocus,
             URL,
             postText:'',
@@ -392,6 +396,7 @@ export default defineComponent({
             CreateContentLabelObjects,
             // canSubmitPost:false,
             confirmClose,
+            close,
             postDetails,
             isView,
             AppBskyEmbedRecord,
@@ -1049,6 +1054,20 @@ export default defineComponent({
             })
         }
     },
+    async beforeRouteLeave(to, from){
+        let leave = false;
+        if(this.isAwaitingPostConfirm){
+            toast.add({summary:"Please wait", detail:`Post creation in progress, please wait`, severity:'info', group:'tr', life:1500});
+            return false;
+        }
+        if(this.canSubmitPost){
+            await this.$refs.confirm.show('Are you sure you want to discard this post?')
+            .then(res => {
+                leave = res;
+            })
+        }
+        if(!leave) return false;
+    },
     mounted() {
         this.$el.focus();
     },
@@ -1058,6 +1077,12 @@ export default defineComponent({
     },
 })
 
+/**
+ * DO NOT USE, OLD METHOD --- Method used to close the `CreatePost` modal.
+ * @param postContentExists Has the User added content to the `CreatePost` form?
+ * @param awaitingPosting Is a Post currently awaiting creation?
+ * @param prevUrl The URL route that the `CreatePost` modal was opened from.
+ */
 function confirmClose(postContentExists:boolean,awaitingPosting:boolean,prevUrl:string){
     if(awaitingPosting){
         toast.add({summary:"Please wait", detail:`Post creation in progress, please wait`, severity:'info', group:'tr', life:1500});
@@ -1071,6 +1096,12 @@ function confirmClose(postContentExists:boolean,awaitingPosting:boolean,prevUrl:
     }
 }
 
+/**
+ * Method used to close the `CreatePost` modal.
+ * @param prevUrl The URL route that the `CreatePost` modal was opened from.
+ * Navigated to when modal is closed. If not provided will navigate back to
+ * home page.
+ */
 function close(prevUrl:string){
     if(typeof prevUrl != 'undefined') router.push(prevUrl);
     else router.push('/');
