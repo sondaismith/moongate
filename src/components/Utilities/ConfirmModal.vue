@@ -1,5 +1,5 @@
 <template>
-    <div v-if="isVisible" class="absolute z-50 flex flex-col w-full h-full">
+    <div v-if="isVisible || AppState.isAskingForConfirmation" class="absolute z-50 flex flex-col w-full h-full">
         <div :class="$attrs.class" class="absolute w-full h-full bg-slate-900/50 backdrop-blur-sm"></div>
         <div class="relative flex flex-col rounded bg-slate-800 m-auto p-4 gap-2 drop-shadow">
             <div v-if="confirmMessage.trim()!=''">{{ confirmMessage }}</div>
@@ -41,16 +41,18 @@ export default defineComponent({
     methods:{
         /**Confirm action. */
         confirm(){
-            // AppState.currentConfirmationTask.Task();
+            if(AppState.isAskingForConfirmation){
+                AppState.currentConfirmationTask.Task();
+            }
             this.resolvePromise(true);
             this.isVisible = false;
-            // AppState.hideConfirmModal();
+            AppState.isAskingForConfirmation = false;
         },
         /**Cancel action. */
         cancel(){
             this.resolvePromise(false);
             this.isVisible = false;
-            // AppState.hideConfirmModal();
+            AppState.isAskingForConfirmation = false;
         },
         /**
          * Method used to display the `ConfirmModal` component. Used to prompt the User
@@ -67,6 +69,10 @@ export default defineComponent({
                 this.rejectPromise = reject
             })
         }
+    },
+    beforeUnmount(){
+        //Clear `AppState` ConfirmationTask
+        AppState.currentConfirmationTask = {Message:'Default Message: Confirm Action', Task:()=>void 0} as IConfirmationTask;
     }
 })
 </script>

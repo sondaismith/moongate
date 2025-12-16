@@ -109,7 +109,7 @@
         <FeedOptionsMenu v-show="FeedState.isFeedOptionMenuVisible"/>
         <OptionsMenu v-show="OptionsMenuState.isOptionsMenuVisible"/>
         <Transition name="modal">
-            <ConfirmModal v-show="AppState.isAskingForConfirmation"/>
+            <ConfirmModal v-if="AppState.isAskingForConfirmation"/>
         </Transition>
         <Transition name="modal">
             <SaveMediaModal v-if="AppState.isSavingMediaModalVisible"/>

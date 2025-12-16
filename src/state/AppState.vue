@@ -236,7 +236,11 @@ export const AppState = reactive({
     ShowLoginModal(){
         router.push(`/login`);
     },
-    /**Determines whether or not the `ConfirmModal` is currently visible. */
+    /**
+     * Determines whether or not the `ConfirmModal` is currently visible. This is used with the
+     * non-Promise method of displaying the modal - usually called when displaying from
+     * interacting with an `OptionsMenu`.
+    */
     isAskingForConfirmation: false,
     /**Discribes the action that is awaiting confirmation via the `ConfirmModal`. */
     currentConfirmationTask: {Message:'Default Message: Confirm Action', Task:()=>void 0} as IConfirmationTask,
