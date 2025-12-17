@@ -13,6 +13,7 @@ import AboutAppModal from './components/Settings/AboutAppModal.vue';
 import SettingsPanel from './components/Settings/SettingsPanel.vue';
 import UserFocusModal from './components/User/UserFocusModal.vue';
 import PostFocusModal from './components/Post/PostFocusModal.vue';
+import SaveMediaModal from './components/Utilities/SaveMediaModal.vue';
 import FeedEditModal from './components/Feed/FeedEditModal.vue';
 import CreatePost from './components/Post/CreatePost.vue';
 
@@ -48,6 +49,8 @@ const routes:RouteRecordRaw[] = [
     { path:'/profile/:handle/post/:postDid/:clickedMediaIndex', components:{ modal:PostFocusModal }, beforeEnter:[keepDefaultView],
     props: route=> ({clickedMediaIndex: parseInt(route.params.clickedMediaIndex), handle: route.params.handle, postDid: route.params.postDid}),
     name:'postWithMedia'},
+    { path:'/profile/:handle/post/:postDid/download', components:{ user_prompt:SaveMediaModal }, beforeEnter:[keepDefaultView], props:true },
+    { path:'/profile/:handle/post/:postDid/:clickedMediaIndex/download', components:{ user_prompt:SaveMediaModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/feed/', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/feed/:feedType', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/feed/:feedType/:summary', name:'create feed summary', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },

@@ -422,7 +422,7 @@ export const AppState = reactive({
      */
     isSavingMediaModalVisible:false,
     /**Value holding details relating to the media to download/save. */
-    saveMedia:{} as ViewImage|ViewExternal,
+    saveMedia:{alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'} as ViewImage|ViewExternal,
     /**Value used to hold the default file name to use for media being saved. */
     fileSaveDetails:{
         /**The full filename that will be used when saving the file. Can be updated by control on `SaveMediaModal`. */

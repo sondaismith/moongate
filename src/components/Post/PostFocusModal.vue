@@ -368,7 +368,9 @@ export default defineComponent({
                 // postDetails.currentThreadView = postDetails.threadNavHistory[0] = postDetails.postThread;
                 //Take Post Thread prop and update relevant variables
                 postDetails.currentThreadView = this.threadNavHistory[0] = this.postThread;
-                this.currentMediaIndex = this.clickedMediaIndex; //Set initial media item to show
+                if(!Number.isNaN(this.clickedMediaIndex))
+                    this.currentMediaIndex = this.clickedMediaIndex; //Set initial media item to show
+                else this.currentMediaIndex = 0;
                 console.log(this.clickedMediaIndex);
             })
             .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')))

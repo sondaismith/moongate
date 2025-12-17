@@ -4,7 +4,7 @@
         <div class="relative flex flex-col max-w-[48rem] w-4/5 m-auto z-50
         rounded bg-savemodalBG border border-slate-800 overflow-hidden">
             <div class="px-2 py-1 bg-banner border-b border-slate-500">Save as</div>
-            <div class="flex flex-col gap-2 p-3 overflow-hidden">
+            <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
                 <div v-if="!AppState.saveMedia.uri" class="self-start rounded h-32 bg-slate-500 overflow-hidden"
                 :style="`aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}`">
                     <div class="h-full bg-cover" :style="`background-image: url(${AppState.saveMedia.thumb})`"></div>
@@ -49,6 +49,18 @@
                     <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
                 </SquareButton>
             </div>
+            <div v-else class="flex flex-col gap-2 p-3 overflow-hidden">
+                <div class="self-start rounded h-32 w-52 bg-placeholderPulseBG animate-pulse overflow-hidden">
+                </div>
+                <div class="flex h-10 w-full bg-placeholderPulseBG animate-pulse rounded">
+                </div>
+                <div v-if="isTauri()" class="relative h-10 w-full">
+                </div>
+                <div v-if="isTauri()" class="rounded h-3 w-full overflow-hidden bg-placeholderPulseBG animate-pulse">
+                </div>
+                <div v-else class="h-10 w-full bg-placeholderPulseBG animate-pulse rounded">
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -65,11 +77,36 @@ import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images'
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { invoke, isTauri } from '@tauri-apps/api/core';
 import { CreateBskyMediaDownloadURL } from '../../helpers/converters';
+import { getPostThread } from '../../lib/api/Post.vue';
+import { emptyPostThread } from '../../fake-data/dumPostData';
+import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { AppBskyEmbedRecordWithMedia } from '@atproto/api/dist/client';
 
 export default defineComponent({
     components:{
         InLaInput,
         SquareButton,
+    },
+    props:{
+        /**The handle of the creator of the Post to show. */
+        handle:{
+            type:String,
+        },
+        /**
+         * DID that points to the initial Post Thread to show in modal.
+         */
+        postDid:{
+            type: String,
+            default:''
+        },
+        /**
+         * Index of initial media to show in modal.
+         */
+        clickedMediaIndex:{
+            type: Number,
+            default: 0
+        },
     },
     data(){
         return{
@@ -82,6 +119,10 @@ export default defineComponent({
             progressGoal:0,
             /**State value indicating if a file with the same name already exists in current directory. */
             isFileNameTaken:false,
+            /**Are we waiting for the related Post's data to be returned. */
+            isAwaitingPostData:false,
+            /**Post data used to download related image. */
+            postData:emptyPostThread,
             isTauri,
         }
     },
@@ -259,7 +300,42 @@ export default defineComponent({
             //only set using an actual directory select dialog
             if(AppState.lastMediaSaveDirectory.trim() != '') return true;
             return false;
-        }
+        },
+        /**Post URI formated as URI beginning with 'at://'. */
+        postUri(){
+            return `at://${this.handle}/app.bsky.feed.post/${this.postDid}`;
+        },
+        /**
+         * Method that figures out what images exist in the passed in Post
+         * based on what type of data configuration the current Post has.
+         * @returns `ViewImage[]` containing Post images.
+         */
+        getPostImages():ViewImage[]{
+            //This is a standalone/parent Post, not a QRT (Quote Retweet)
+            if(!isViewRecord(this.postData.post)){
+                if(this.postData.post?.embed && this.postData.post.embed.images){
+                    //Is a parent Post with image(s)
+                    return this.postData.post.embed.images as ViewImage[];
+                }
+                else if(this.postData.post?.embed && AppBskyEmbedRecordWithMedia.isView(this.postData.post.embed) && this.postData.post.embed.media.images){
+                    //Is a parent Post with image(s) and a QRT
+                    return this.postData.post.embed.media.images as ViewImage[];
+                }
+            }
+            else{
+                //This is a QRT
+                if(this.postData.post?.embeds && this.postData.post.embeds.length>0 && this.postData.post.embeds[0].images){
+                    //Is a QRT with image(s)
+                    return this.postData.post.embeds[0].images as ViewImage[];
+                }
+                else if(this.postData.post?.embeds && this.postData.post.embeds.length>0 && this.postData.post.embeds[0].media &&
+                    this.postData.post.embeds[0].media.images){
+                    //Is a QRT with image(s)
+                    return this.postData.post.embeds[0].media.images as ViewImage[];
+                }
+            }
+            return [];
+        },
     },
     watch:{
         /**
@@ -278,8 +354,49 @@ export default defineComponent({
             }
         }
     },
+    async created(){
+        if(typeof AppState.saveMedia.thumb != 'undefined' && AppState.saveMedia.thumb == 'unset'){
+            //retrieve post data
+            this.isAwaitingPostData = true
+            await getPostThread(this.postUri)
+            .then(res => {
+                this.postData = res.data.thread as ThreadViewPost;
+            })
+            .catch(err => toast.add({summary:'Error getting Post thread for focus modal', detail:`${err}`, severity:'error', group:'tr', life:3000}))
+            .finally(()=>{
+                this.isAwaitingPostData = false;
+            });
+            let fileName = undefined;
+            let safeHandle = undefined;
+            let image = this.getPostImages[this.clickedMediaIndex] //this.postData.post.embed
+            AppState.saveMedia = image;
+            if(!image.uri){//not Tenor GIF
+                fileName = (image as ViewImage).fullsize.split('\/').pop()?.split('@')[0];
+                safeHandle = '';
+                if(typeof this.handle != 'undefined') safeHandle =  this.handle.replace (/\./g,'_');
+                AppState.fileSaveDetails.full = `${fileName} by ${safeHandle}`;
+                AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
+                AppState.fileSaveDetails.extension = '.jpg'; //Need to create method that parses image URL to determine extension (the @jpeg part)
+                AppState.fileSaveDetails.handle = typeof this.handle != 'undefined' ? this.handle : '';
+                // AppState.fileSaveDetails.postText = postText ? postText : '';
+
+            }
+            else{
+                fileName = (image as ViewExternal).uri.split('\/').pop()?.split('@')[0];
+                fileName = fileName ? fileName.split('.gif')[0] : '';
+                AppState.fileSaveDetails.full = `${fileName}`;
+                AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
+                AppState.fileSaveDetails.extension = '.gif';
+                AppState.fileSaveDetails.handle = '';
+                // AppState.fileSaveDetails.postText = postText ? postText : '';
+            }
+        }
+    },
     mounted(){
         this.checkIfFileNameAlreadyExists();
+    },
+    beforeUnmount(){
+        AppState.saveMedia = {alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'};//"clear" saveMedia variable
     }
 })
 </script>
