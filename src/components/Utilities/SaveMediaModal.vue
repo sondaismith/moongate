@@ -5,10 +5,8 @@
         rounded bg-savemodalBG border border-slate-800 overflow-hidden">
             <div class="px-2 py-1 bg-banner border-b border-slate-500">Save as</div>
             <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
-                <div v-if="!AppState.saveMedia.uri" class="self-start rounded h-32 max-w-full bg-slate-500 overflow-hidden"
-                :style="`aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}`">
-                    <div class="h-full bg-cover" :style="`background-image: url(${AppState.saveMedia.thumb})`"></div>
-                </div>
+                <img v-if="!AppState.saveMedia.uri" @contextmenu.prevent :src="AppState.saveMedia.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
+                :style="(typeof AppState.saveMedia.aspectRatio != 'undefined') ? `aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}` : ''" />
                 <div v-else class="self-start rounded size-32 bg-slate-500 overflow-hidden" @contextmenu.prevent>
                     <div class="h-full bg-contain bg-no-repeat bg-center" :style="`background-image: url(${AppState.saveMedia.uri})`"></div>
                 </div>

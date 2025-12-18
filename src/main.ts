@@ -22,7 +22,7 @@ function keepDefaultView(to, from) {
     if (from.matched.length) {
         to.matched[0].components.default = from.matched[0].components.default;//always keep main view showing
         //If prompted to login or create a post from `UserFocusModal`, keep showing the modal
-        if(typeof from.matched[0].components.modal != 'undefined' && (to.path == '/login' || to.path == '/create/post') && from.path.includes('/profile'))
+        if(typeof from.matched[0].components.modal != 'undefined' && (to.path == '/login' || to.path == '/create/post' || to.path.includes('/download') ) && from.path.includes('/profile'))
             to.matched[0].components.modal = from.matched[0].components.modal;
         //If we are navigating from the main view and trying to login, DO NOT SHOW any modal - discard
         if(to.path == '/login' && typeof to.matched[0].components.modal != 'undefined' && from.path == '/'){
@@ -31,6 +31,10 @@ function keepDefaultView(to, from) {
         //If we are navigating from the main view and trying to create a post, DO NOT SHOW any modal - discard
         if(to.path == '/create/post' && typeof to.matched[0].components.modal != 'undefined' && from.path == '/'){
             to.matched[0].components = {default:to.matched[0].components.default, user_prompt:CreatePost};
+        }
+        //If we are navigating from the main view and trying to download media, DO NOT SHOW any modal - discard
+        if(to.path.includes('/download') && typeof to.matched[0].components.modal != 'undefined' && from.path == '/'){
+            to.matched[0].components = {default:to.matched[0].components.default, user_prompt:SaveMediaModal};
         }
     }
     else{
