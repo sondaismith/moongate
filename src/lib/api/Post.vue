@@ -1,5 +1,5 @@
 <script lang="ts">
-import { $Typed, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedPostgate, AppBskyFeedThreadgate, AtUri, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
+import { $Typed, AppBskyEmbedRecordWithMedia, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedPostgate, AppBskyFeedThreadgate, AtUri, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
 import { GetBrowsingAgent } from "../api.vue";
 import { FeedViewPost, isReasonPin, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { AppState, toast } from "../../state/AppState.vue";
@@ -10,8 +10,9 @@ import { PostActions } from "../../enums/PostEnums";
 import { INestedPostOptions } from "../../interfaces/PostInterfaces";
 import { FollowerRule, FollowingRule, MentionRule } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate";
 import { SelfLabel, SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs";
-import { Main } from "@atproto/api/dist/client/types/app/bsky/embed/images";
+import { Main, ViewImage } from "@atproto/api/dist/client/types/app/bsky/embed/images";
 import { AspectRatio } from "@atproto/api/dist/client/types/app/bsky/embed/defs";
+import { isViewRecord } from "@atproto/api/dist/client/types/app/bsky/embed/record";
 
 export default{
     name:"Post API Methods"
@@ -71,6 +72,38 @@ export async function getBlueskyPostThread(postDID: string){
 export async function getPostThread(postURI:string):Promise<AppBskyFeedGetPostThread.Response>{
     var result = await GetBrowsingAgent().getPostThread({uri:postURI});
     return result;
+}
+
+/**
+ * Method that figures out what images exist in the passed in Post
+ * based on what type of data configuration the current Post has.
+ * @returns `ViewImage[]` containing Post images.
+ */
+export function getPostImages(postData:ThreadViewPost|undefined):ViewImage[]{
+    //This is a standalone/parent Post, not a QRT (Quote Retweet)
+    if(!isViewRecord(postData.post)){
+        if(typeof postData.post?.embed != 'undefined' && typeof postData.post.embed.images != 'undefined'){
+            //Is a parent Post with image(s)
+            return postData.post.embed.images as ViewImage[];
+        }
+        else if(typeof postData.post?.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postData.post.embed) && typeof postData.post.embed.media.images != 'undefined'){
+            //Is a parent Post with image(s) and a QRT
+            return postData.post.embed.media.images as ViewImage[];
+        }
+    }
+    else{
+        //This is a QRT
+        if(typeof postData.post?.embeds != 'undefined' && postData.post.embeds.length>0 && typeof postData.post.embeds[0].images != 'undefined'){
+            //Is a QRT with image(s)
+            return postData.post.embeds[0].images as ViewImage[];
+        }
+        else if(postData.post?.embeds && postData.post.embeds.length>0 && typeof postData.post.embeds[0].media != 'undefined' &&
+            typeof postData.post.embeds[0].media.images != 'undefined'){
+            //Is a QRT with image(s)
+            return postData.post.embeds[0].media.images as ViewImage[];
+        }
+    }
+    return [];
 }
 
 /**

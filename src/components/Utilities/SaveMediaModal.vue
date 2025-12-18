@@ -77,11 +77,10 @@ import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images'
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { invoke, isTauri } from '@tauri-apps/api/core';
 import { CreateBskyMediaDownloadURL } from '../../helpers/converters';
-import { getPostThread } from '../../lib/api/Post.vue';
+import { getPostImages, getPostThread } from '../../lib/api/Post.vue';
 import { emptyPostThread } from '../../fake-data/dumPostData';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
-import { AppBskyEmbedRecordWithMedia } from '@atproto/api/dist/client';
+import { router } from '../../main';
 
 export default defineComponent({
     components:{
@@ -123,6 +122,8 @@ export default defineComponent({
             isAwaitingPostData:false,
             /**Post data used to download related image. */
             postData:emptyPostThread,
+            /**The previous page the User was at before moving to download media. If it exists, it is returned to when `SaveMediaModal` is closed. */
+            previousURL:'',
             isTauri,
         }
     },
@@ -225,7 +226,10 @@ export default defineComponent({
          * Method used to close `SaveMediaModal`.
          */
         closeModal(){
-            if(!this.isDownloading) AppState.isSavingMediaModalVisible = false;
+            if(!this.isDownloading){
+                if(typeof this.previousURL != 'undefined') router.push(this.previousURL);
+                else router.push('/');
+            }
         },
         /**
          * Method that attempts to initiate download of specified file.
@@ -311,30 +315,7 @@ export default defineComponent({
          * @returns `ViewImage[]` containing Post images.
          */
         getPostImages():ViewImage[]{
-            //This is a standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postData.post)){
-                if(this.postData.post?.embed && this.postData.post.embed.images){
-                    //Is a parent Post with image(s)
-                    return this.postData.post.embed.images as ViewImage[];
-                }
-                else if(this.postData.post?.embed && AppBskyEmbedRecordWithMedia.isView(this.postData.post.embed) && this.postData.post.embed.media.images){
-                    //Is a parent Post with image(s) and a QRT
-                    return this.postData.post.embed.media.images as ViewImage[];
-                }
-            }
-            else{
-                //This is a QRT
-                if(this.postData.post?.embeds && this.postData.post.embeds.length>0 && this.postData.post.embeds[0].images){
-                    //Is a QRT with image(s)
-                    return this.postData.post.embeds[0].images as ViewImage[];
-                }
-                else if(this.postData.post?.embeds && this.postData.post.embeds.length>0 && this.postData.post.embeds[0].media &&
-                    this.postData.post.embeds[0].media.images){
-                    //Is a QRT with image(s)
-                    return this.postData.post.embeds[0].media.images as ViewImage[];
-                }
-            }
-            return [];
+            return getPostImages(this.postData);
         },
     },
     watch:{
@@ -353,6 +334,11 @@ export default defineComponent({
                 }, 200);
             }
         }
+    },
+    beforeRouteEnter(to,from,next){
+        next(vm => {
+            vm.$data.previousURL = from.path
+        })
     },
     async created(){
         if(typeof AppState.saveMedia.thumb != 'undefined' && AppState.saveMedia.thumb == 'unset'){

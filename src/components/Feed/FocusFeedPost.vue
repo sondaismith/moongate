@@ -188,7 +188,7 @@ import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/typ
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { isMain, Main, Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { toggleBlock } from '../../lib/api/User.vue';
-import { BookmarkPost, RemoveBookmark } from '../../lib/api/Post.vue';
+import { BookmarkPost, getPostImages, RemoveBookmark } from '../../lib/api/Post.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 
 export default defineComponent({
@@ -467,30 +467,9 @@ export default defineComponent({
          * @returns `ViewImage[]` containing Post images.
          */
         getPostImages():ViewImage[]{
-            //This is a standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postToShow)){
-                if(this.postToShow?.embed && this.postToShow.embed.images){
-                    //Is a parent Post with image(s)
-                    return this.postToShow.embed.images as ViewImage[];
-                }
-                else if(this.postToShow?.embed && AppBskyEmbedRecordWithMedia.isView(this.postToShow.embed) && this.postToShow.embed.media.images){
-                    //Is a parent Post with image(s) and a QRT
-                    return this.postToShow.embed.media.images as ViewImage[];
-                }
-            }
-            else{
-                //This is a QRT
-                if(this.postToShow?.embeds && this.postToShow.embeds.length>0 && this.postToShow.embeds[0].images){
-                    //Is a QRT with image(s)
-                    return this.postToShow.embeds[0].images as ViewImage[];
-                }
-                else if(this.postToShow?.embeds && this.postToShow.embeds.length>0 && this.postToShow.embeds[0].media &&
-                    this.postToShow.embeds[0].media.images){
-                    //Is a QRT with image(s)
-                    return this.postToShow.embeds[0].media.images as ViewImage[];
-                }
-            }
-            return [];
+            if(typeof this.postToShow != 'undefined')
+                return getPostImages({post:this.postToShow});
+            else return [];
         },
         /**
          * Method that figures out what object to pass on to the `VideoContainer` component
