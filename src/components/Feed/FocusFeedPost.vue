@@ -150,7 +150,7 @@
                     @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"/> -->
                     <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
-                    @media-click="(i:number) => openFocusDetails(i)"/>
+                    :post-id="getEndOfPostUri" @media-click="(i:number) => openFocusDetails(i)"/>
                     <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
                     :labels="postToShow.labels" :author="postToShow.author.handle"/>
                     <EmbedExternal v-if="postContainsExternalEmbed" :embed="getPostEmbed" @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"/>
@@ -530,6 +530,11 @@ export default defineComponent({
                     return this.postToShow?.embeds[0].media;
                 }
             }
+        },
+        /**Returns the last bit of ID information held at the end of the URI that points to
+         * the currently displayed Post. */
+        getEndOfPostUri(){
+            return this.postToShow.uri.split('/').pop();
         },
         getPostText():string{
             if(!isViewRecord(this.postToShow)) return this.postToShow?.record.text;

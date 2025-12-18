@@ -45,7 +45,8 @@
                 </div> -->
                 <ImageContainer v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
                 @image-clicked="showImageFullscreen" :show-fullsize="true" :is-large-container-view="true"
-                :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postDetails.currentThreadView.post.author.handle"/>
+                :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postDetails.currentThreadView.post.author.handle"
+                :post-id="getEndOfPostUri"/>
                 <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
                 class="relative flex flex-col max-w-full h-full justify-center p-5"
                 :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
@@ -251,12 +252,7 @@ export default defineComponent({
     },
     data(){
         return{
-            imageCollection: [
-                'src/assets/test-media/posts/image04.png',
-                'src/assets/test-media/posts/image01.png',
-                'src/assets/test-media/posts/image05.png',
-                'src/assets/test-media/posts/image06.png',
-            ],
+            imageCollection: [],
             postDetails,
             convertToLongTimestamp,
             isImageView,
@@ -592,14 +588,14 @@ export default defineComponent({
         hasEmbededImagesWithAltText(){
             //Image Post
             if(typeof postDetails.currentThreadView.post.embed != 'undefined' &&
-            postDetails.currentThreadView.post.embed.images &&
+            typeof postDetails.currentThreadView.post.embed.images != 'undefined' &&
             (postDetails.currentThreadView.post.embed.images as ViewImage[]).length > 0 &&
             (postDetails.currentThreadView.post.embed.images as ViewImage[])[this.currentMediaIndex].alt.trim() != '')
                 return true;
             //Image Post w/ QRT
             else if(typeof postDetails.currentThreadView.post.embed != 'undefined' &&
             AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
-            postDetails.currentThreadView.post.embed.media.images &&
+            typeof postDetails.currentThreadView.post.embed.media.images != 'undefined' &&
             (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0 &&
             (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[0].alt.trim() != '')
                 return true;
@@ -664,6 +660,11 @@ export default defineComponent({
             postDetails.currentThreadView.post.embed.external &&
             AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed)))
                 return postDetails.currentThreadView.post.embed;
+        },
+        /**Returns the last bit of ID information held at the end of the URI that points to
+         * the currently displayed Post. */
+        getEndOfPostUri(){
+            return postDetails.currentThreadView.post.uri.split('/').pop();
         },
         /**Determines if the current media index can be decreased.*/
         canDecreaseMediaIndex(){

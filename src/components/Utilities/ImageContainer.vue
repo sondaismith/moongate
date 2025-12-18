@@ -9,7 +9,7 @@
                 (imagesToDisplay?.length && imagesToDisplay.length > 1 ? 'aspect-ratio: 16 / 9':'')
             ]">
             <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Image"/>
-            <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, author, postText)" class="overflow-hidden max-h-full max-w-full"
+            <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, index, author, postId, postText)" class="overflow-hidden max-h-full max-w-full"
                 :class="[
                             (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
                             (imagesToDisplay?.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
@@ -27,7 +27,7 @@
             </div>
         </div>
         <div v-else-if="Array.isArray(imagesToDisplay) && typeof imagesToDisplay[0] != 'undefined' && isLargeContainerView"
-        @contextmenu="showOptionsMenu($event, imagesToDisplay[0], author, postText)" class="flex h-full w-full overflow-hidden">
+        @contextmenu="showOptionsMenu($event, imagesToDisplay[0], 0, author, postId, postText)" class="flex h-full w-full overflow-hidden">
             <div class="flex max-h-full max-w-full mx-auto" :class=imageContainerClasses>
                 <img @click="$emit('imageClicked', imagesToDisplay[0])"  :src="showFullsize ? imagesToDisplay[0].fullsize : imagesToDisplay[0].thumb"
                 class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
@@ -35,7 +35,7 @@
         </div>
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
-            <div v-if="imagesToDisplay" class="flex max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, imagesToDisplay, author, postText)">
+            <div v-if="isViewExternal(imagesToDisplay)" class="flex max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, imagesToDisplay, 0, author, postId, postText)">
                 <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div>
                 <!-- GIF -->
                 <img @click="handleExternalGIFCLick(imagesToDisplay)" class="max-h-full max-w-full object-cover" :title="imagesToDisplay.title" :src="imagesToDisplay.uri"/>
@@ -45,6 +45,11 @@
 </template>
 
 <script lang="ts">
+//Option Menu icons
+import MdiImageOutline from '~icons/mdi/image-outline';
+import MdiImagePlusOutline from '~icons/mdi/image-plus-outline';
+import MdiOpenInNew from '~icons/mdi/open-in-new';
+
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
@@ -53,14 +58,11 @@ import SpoilerOverlay from './SpoilerOverlay.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { AppState } from '../../state/AppState.vue';
-
-//Option Menu icons
-import MdiImageOutline from '~icons/mdi/image-outline';
-import MdiImagePlusOutline from '~icons/mdi/image-plus-outline';
-import MdiOpenInNew from '~icons/mdi/open-in-new';
 import { MediaType } from '../../enums/PostEnums';
-import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import { isViewExternal, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { isTauri } from '@tauri-apps/api/core';
+import { router } from '../../main';
+import { createPostRoute } from '../../lib/api/Post.vue';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
@@ -74,7 +76,7 @@ export function calculateImageContainerMinHeight(elWidth:number):number{
  * @param url The URL of the image to save.
  * @param author Value used to reference the author (uploader) of this image.
  */
-async function saveImageWithAuthor(image:ViewImage|ViewExternal, author:string|undefined, postText:string|undefined){
+async function saveImageWithAuthor(image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
     let fileName = undefined;
     let safeHandle = undefined;
     AppState.saveMedia = image;
@@ -98,7 +100,12 @@ async function saveImageWithAuthor(image:ViewImage|ViewExternal, author:string|u
         AppState.fileSaveDetails.handle = '';
         AppState.fileSaveDetails.postText = postText ? postText : '';
     }
-    AppState.isSavingMediaModalVisible = true;
+    // AppState.isSavingMediaModalVisible = true;
+    if(typeof author != 'undefined' && typeof postId != 'undefined'){
+        let route = createPostRoute(author,postId);
+        if(typeof route != 'undefined')
+            router.push(`${route}/${index}/download`)
+    }
 }
 
 /**
@@ -123,6 +130,7 @@ export default defineComponent({
         imagesToDisplay: Object as PropType<ViewImage[]>|PropType<ViewExternal>,
         labels: Object as PropType<Label[]>,
         author: String,
+        postId:String,
         postText: String,
         /**Setting this to `true` will use the fullsize image instead of the thumbnail.*/
         showFullsize: {
@@ -133,6 +141,11 @@ export default defineComponent({
         isLargeContainerView:{
             type: Boolean,
             default: false
+        }
+    },
+    data(){
+        return{
+            isViewExternal,
         }
     },
     methods:{
@@ -162,11 +175,11 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to Images.
          */
-        showOptionsMenu(e:MouseEvent, image:ViewImage|ViewExternal, author:string|undefined, postText:string|undefined){
+        showOptionsMenu(e:MouseEvent, image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
             // if(isTauri()){
                 e.preventDefault();
                 OptionsMenuState.currentMenuItems = [
-                    {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,author,postText)},Type:ItemType.Option},
+                    {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,index,author,postId,postText)},Type:ItemType.Option},
                 ] as IOptionMenuItem[];
                 if(!isTauri()){
                     OptionsMenuState.currentMenuItems.push({Icon:MdiOpenInNew,Label:'Splitter',Action:()=>{},Type:ItemType.Splitter});

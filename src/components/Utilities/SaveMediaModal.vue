@@ -5,7 +5,7 @@
         rounded bg-savemodalBG border border-slate-800 overflow-hidden">
             <div class="px-2 py-1 bg-banner border-b border-slate-500">Save as</div>
             <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
-                <div v-if="!AppState.saveMedia.uri" class="self-start rounded h-32 bg-slate-500 overflow-hidden"
+                <div v-if="!AppState.saveMedia.uri" class="self-start rounded h-32 max-w-full bg-slate-500 overflow-hidden"
                 :style="`aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}`">
                     <div class="h-full bg-cover" :style="`background-image: url(${AppState.saveMedia.thumb})`"></div>
                 </div>
@@ -93,9 +93,10 @@ export default defineComponent({
             type:String,
         },
         /**
-         * DID that points to the initial Post Thread to show in modal.
+         * Indentifier that helps point to the initial Post Thread to show in modal.
+         * Should be taken from the end section of a Post's URI.
          */
-        postDid:{
+        postId:{
             type: String,
             default:''
         },
@@ -227,8 +228,8 @@ export default defineComponent({
          */
         closeModal(){
             if(!this.isDownloading){
-                if(typeof this.previousURL != 'undefined') router.push(this.previousURL);
-                else router.push('/');
+                if(window.history.state.back != null && window.history.state.back.includes('/profile')) this.$router.go(-1);
+                else this.$router.push(`/`);
             }
         },
         /**
@@ -307,7 +308,7 @@ export default defineComponent({
         },
         /**Post URI formated as URI beginning with 'at://'. */
         postUri(){
-            return `at://${this.handle}/app.bsky.feed.post/${this.postDid}`;
+            return `at://${this.handle}/app.bsky.feed.post/${this.postId}`;
         },
         /**
          * Method that figures out what images exist in the passed in Post

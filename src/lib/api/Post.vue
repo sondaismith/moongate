@@ -107,6 +107,28 @@ export function getPostImages(postData:ThreadViewPost|undefined):ViewImage[]{
 }
 
 /**
+ * Creates a Post URI formated as a URI beginning with 'at://'.
+ * @param handle The handle of the User who created the Post.
+ * @param postDid The unique DID identifier of the related Post.
+ */
+export function createPostUri(handle:string, postDid:string):string|undefined{
+    if(handle.trim() != '' && isDid(postDid))
+        return `at://${handle}/app.bsky.feed.post/${postDid}`;
+    else return undefined;
+}
+
+/**
+ * Creates a route URL that can be used to view a specific Post.'.
+ * @param handle The handle of the User who created the Post.
+ * @param postId The unique identifier of the related Post - should be taken from end of Post URI value.
+ */
+export function createPostRoute(handle:string, postId:string):string|undefined{
+    if(handle.trim() != '' && postId.trim() != '')
+        return `/profile/${handle}/post/${postId}`;
+    else return undefined;
+}
+
+/**
  * Function that creates the embed object needed to attach an image or images to a Post.
  * @param images Array containing image Blobs returned after uploading the images to Bluesky.
  * @param imageAltText Array containing alt text for each image.
