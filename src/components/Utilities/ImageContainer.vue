@@ -145,7 +145,10 @@ export default defineComponent({
     },
     data(){
         return{
-            isViewExternal,
+            MediaType,
+            postDetails,
+            doesImageHeightSurpassContainer: false,
+            isViewExternal
         }
     },
     methods:{
@@ -265,13 +268,6 @@ export default defineComponent({
         */
         'media-click'(index:number){
             if(index>-1) return true;
-        }
-    },
-    data(){
-        return{
-            MediaType,
-            postDetails,
-            doesImageHeightSurpassContainer: false,
         }
     },
     mounted(){
