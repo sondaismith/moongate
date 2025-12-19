@@ -1,7 +1,7 @@
 <script lang="ts">
 import { $Typed, AppBskyEmbedRecordWithMedia, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedPostgate, AppBskyFeedThreadgate, AtUri, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
 import { GetBrowsingAgent } from "../api.vue";
-import { FeedViewPost, isReasonPin, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { FeedViewPost, isPostView, isReasonPin, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { AppState, toast } from "../../state/AppState.vue";
 import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/post";
 import { postDetails, showFocusModal } from "../../state/PostDetails.vue";
@@ -10,9 +10,10 @@ import { PostActions } from "../../enums/PostEnums";
 import { INestedPostOptions } from "../../interfaces/PostInterfaces";
 import { FollowerRule, FollowingRule, MentionRule } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate";
 import { SelfLabel, SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs";
-import { Main, ViewImage } from "@atproto/api/dist/client/types/app/bsky/embed/images";
+import { isImage, isView, Main, View as ViewForImages, ViewImage } from "@atproto/api/dist/client/types/app/bsky/embed/images";
 import { AspectRatio } from "@atproto/api/dist/client/types/app/bsky/embed/defs";
-import { isViewRecord } from "@atproto/api/dist/client/types/app/bsky/embed/record";
+import { isView as isViewForQRT, isViewRecord, ViewRecord } from "@atproto/api/dist/client/types/app/bsky/embed/record";
+import { isView as isViewForRecordWithMedia, View as ViewForRecordWithMedia} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
 
 export default{
     name:"Post API Methods"
@@ -79,30 +80,77 @@ export async function getPostThread(postURI:string):Promise<AppBskyFeedGetPostTh
  * based on what type of data configuration the current Post has.
  * @returns `ViewImage[]` containing Post images.
  */
-export function getPostImages(postData:ThreadViewPost|undefined):ViewImage[]{
+// export function getPostImages(postData:ThreadViewPost):ViewImage[]{
+// export function getPostImages(postData:PostView|ViewRecord):ViewImage[]{//View{
+export function getPostImages(postData:PostView|ViewRecord):ViewForImages|ViewForRecordWithMedia{
     //This is a standalone/parent Post, not a QRT (Quote Retweet)
-    if(!isViewRecord(postData.post)){
-        if(typeof postData.post?.embed != 'undefined' && typeof postData.post.embed.images != 'undefined'){
+    // if(!isViewRecord(postData.post)){
+    if(isPostView(postData)){
+        // if(typeof postData.post?.embed != 'undefined' && typeof postData.post.embed.images != 'undefined'){
+        if(typeof postData.embed != 'undefined' && isView(postData.embed)){
             //Is a parent Post with image(s)
-            return postData.post.embed.images as ViewImage[];
+            // return postData.post.embed.images as ViewImage[];
+            return postData.embed;
         }
-        else if(typeof postData.post?.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postData.post.embed) && typeof postData.post.embed.media.images != 'undefined'){
+        // else if(typeof postData.post?.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postData.post.embed) && typeof postData.post.embed.media.images != 'undefined'){
+        else if(typeof postData.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postData.embed) && isView(postData.embed.media)){
             //Is a parent Post with image(s) and a QRT
-            return postData.post.embed.media.images as ViewImage[];
+            // return postData.post.embed.media.images as ViewImage[];
+            return postData.embed;
         }
     }
-    else{
+    if(isViewRecord(postData)){
         //This is a QRT
-        if(typeof postData.post?.embeds != 'undefined' && postData.post.embeds.length>0 && typeof postData.post.embeds[0].images != 'undefined'){
+        // if(typeof postData.post?.embeds != 'undefined' && postData.post.embeds.length>0 && typeof postData.post.embeds[0].images != 'undefined'){
+        if(typeof postData.embeds != 'undefined' && postData.embeds.length>0 && isView(postData.embeds[0]) && typeof postData.embeds[0].images != 'undefined'){
             //Is a QRT with image(s)
-            return postData.post.embeds[0].images as ViewImage[];
+            // return postData.post.embeds[0].images as ViewImage[];
+            return postData.embeds[0];
         }
-        else if(postData.post?.embeds && postData.post.embeds.length>0 && typeof postData.post.embeds[0].media != 'undefined' &&
-            typeof postData.post.embeds[0].media.images != 'undefined'){
+        // else if(postData.post?.embeds && postData.post.embeds.length>0 && typeof postData.post.embeds[0].media != 'undefined' &&
+            // typeof postData.post.embeds[0].media.images != 'undefined'){
+        else if(typeof postData.embeds != 'undefined' && postData.embeds.length>0 && isViewForRecordWithMedia(postData.embeds[0]) && typeof postData.embeds[0].media != 'undefined'
+            && isView(postData.embeds[0].media) && typeof postData.embeds[0].media.images != 'undefined'){
             //Is a QRT with image(s)
-            return postData.post.embeds[0].media.images as ViewImage[];
+            // return postData.post.embeds[0].media.images as ViewImage[];
+            return postData.embeds[0];
         }
     }
+
+    //BELOW WILL WORK, BUT TYPE-CHECK ERRORS WILL PERSIST
+    // if(isViewRecord(postData)){
+    //     //This is a QRT
+    //     // if(typeof postData.post?.embeds != 'undefined' && postData.post.embeds.length>0 && typeof postData.post.embeds[0].images != 'undefined'){
+    //     if(typeof postData.embeds != 'undefined' && postData.embeds.length>0 && isView(postData.embeds[0]) && typeof postData.embeds[0].images != 'undefined'){
+    //         //Is a QRT with image(s)
+    //         // return postData.post.embeds[0].images as ViewImage[];
+    //         return postData.embeds[0].images;
+    //     }
+    //     // else if(postData.post?.embeds && postData.post.embeds.length>0 && typeof postData.post.embeds[0].media != 'undefined' &&
+    //         // typeof postData.post.embeds[0].media.images != 'undefined'){
+    //     else if(typeof postData.embeds != 'undefined' && postData.embeds.length>0 && isViewForRecordWithMedia(postData.embeds[0]) && typeof postData.embeds[0].media != 'undefined'
+    //         && isView(postData.embeds[0].media) && typeof postData.embeds[0].media.images != 'undefined'){
+    //         //Is a QRT with image(s)
+    //         // return postData.post.embeds[0].media.images as ViewImage[];
+    //         return postData.embeds[0].media.images;
+    //     }
+    // }
+    // //This is a standalone/parent Post, not a QRT (Quote Retweet)
+    // // if(!isViewRecord(postData.post)){
+    // else{
+    //     // if(typeof postData.post?.embed != 'undefined' && typeof postData.post.embed.images != 'undefined'){
+    //     if(typeof postData.embed != 'undefined' && isView(postData.embed)){
+    //         //Is a parent Post with image(s)
+    //         // return postData.post.embed.images as ViewImage[];
+    //         return postData.embed.images;
+    //     }
+    //     // else if(typeof postData.post?.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postData.post.embed) && typeof postData.post.embed.media.images != 'undefined'){
+    //     else if(typeof postData.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postData.embed) && isView(postData.embed.media)){
+    //         //Is a parent Post with image(s) and a QRT
+    //         // return postData.post.embed.media.images as ViewImage[];
+    //         return postData.embed.media.images;
+    //     }
+    // }
     return [];
 }
 

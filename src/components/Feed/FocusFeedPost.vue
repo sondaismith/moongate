@@ -148,12 +148,14 @@
                     <!-- <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
                     @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"/> -->
-                    <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
+                    <!-- Add check to ensure postToShow is PostView -->
+                    <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages" :media-embed="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
                     :post-id="getEndOfPostUri" @media-click="(i:number) => openFocusDetails(i)"/>
                     <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
                     :labels="postToShow.labels" :author="postToShow.author.handle"/>
-                    <EmbedExternal v-if="postContainsExternalEmbed" :embed="getPostEmbed" @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"/>
+                    <EmbedExternal v-if="postContainsExternalEmbed" :embed="getPostEmbed" @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"
+                    :author="postToShow.author.handle" :post-id="getEndOfPostUri"/>
                     {{ void "Reposts - ViewRecord and View" }}
                     <FocusFeedPost v-if="postToShow.embed?.record && postToShow.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postToShow.embed.record.record)"
                     :post-data="postToShow.embed.record.record" :post-reason="postReason"
@@ -170,26 +172,28 @@
 </template>
 
 <script lang="ts">
-import { isGeneratorView, isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
+import { GeneratorView, isGeneratorView, isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyFeedDefs, AppBskyGraphDefs, AppBskyLabelerDefs, isDid } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
-import { isViewBlocked, isViewDetached, isViewNotFound, isViewRecord, ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { isViewBlocked, isViewDetached, isViewNotFound, isViewRecord, ViewBlocked, ViewDetached, ViewNotFound, ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import PostInteractionIcons from '../Post/PostInteractionIcons.vue';
-import { isImage, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isImage, View, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isView as isViewForRecordWithMedia, View as ViewForRecordWithMedia} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
 import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
-import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
+import { isListView, isStarterPackViewBasic, ListView, StarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { isMain, Main, Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { toggleBlock } from '../../lib/api/User.vue';
 import { BookmarkPost, getPostImages, RemoveBookmark } from '../../lib/api/Post.vue';
 import { AppState, toast } from '../../state/AppState.vue';
+import { LabelerView } from '@atproto/api/dist/client/types/app/bsky/labeler/defs';
 
 export default defineComponent({
     components:{
@@ -204,7 +208,8 @@ export default defineComponent({
     },
     props:{
         /**Prop used to pass in Post details - used by "Feed-type" display components (`FeedColumn`). */
-        postData: Object as PropType<PostView>,
+        postData: Object as PropType<PostView>|PropType<ViewRecord>|PropType<ViewNotFound>|PropType<ViewBlocked>|PropType<ViewDetached>|
+            PropType<GeneratorView>|PropType<ListView>|PropType<LabelerView>|PropType<StarterPackViewBasic>|PropType<{$type: string}>,
         /**Prop used to pass in Post details - used by "Reply-type" display components (`PostThreadView`). */
         threadData: Object as PropType<ThreadViewPost>,
         postReason: Object as PropType<ReasonRepost|ReasonPin>,
@@ -244,7 +249,7 @@ export default defineComponent({
              * The current Post details to show. "Post" is derived from `threadData`
              * first if it exists and `postData` second.
              */
-            postToShow: {author:{did:'',handle:''},cid:'',indexedAt:'',record:{},uri:''} as PostView,
+            postToShow: {author:{did:'',handle:''},cid:'',indexedAt:'',record:{},uri:''} as PostView|ViewRecord,//|ViewNotFound|ViewBlocked|ViewDetached|AppBskyFeedDefs.GeneratorView|AppBskyGraphDefs.ListView|AppBskyLabelerDefs.LabelerView|AppBskyGraphDefs.StarterPackViewBasic,
             /**Are we currently waiting for an action relating to blocking or unblocking a User account to finish? */
             isAwaitingAccountBlockAction:false,
             /**Are we currently waiting for an action relating to saving/removing a Post bookmark to finish? */
@@ -466,10 +471,12 @@ export default defineComponent({
          * based on what type of data configuration the current Post has.
          * @returns `ViewImage[]` containing Post images.
          */
-        getPostImages():ViewImage[]{
+        // getPostImages():ViewImage[]{
+        getPostImages():View|ViewForRecordWithMedia{
             if(typeof this.postToShow != 'undefined')
-                return getPostImages({post:this.postToShow});
-            else return [];
+                // return getPostImages({post:this.postToShow});
+                return getPostImages(this.postToShow);
+            else return {images:[]};
         },
         /**
          * Method that figures out what object to pass on to the `VideoContainer` component

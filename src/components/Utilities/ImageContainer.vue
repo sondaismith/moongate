@@ -1,6 +1,6 @@
 <template>
     <div ref="imageContainer" class="h-full w-full content-center">
-        <div v-if="Array.isArray(imagesToDisplay) && !isLargeContainerView" class="@container relative grid border
+        <!-- <div v-if="Array.isArray(imagesToDisplay) && imagesToDisplay.length>0 && !isLargeContainerView" class="@container relative grid border
             border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 h-full w-full" :class="showFullsize ? 'min-w-0' : 'grid-cols-2 grid-flow-row grid-rows-2 gap-0.5'"
             :style="[
                 (imagesToDisplay?.length === 1 && !imagesToDisplay[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),
@@ -16,9 +16,9 @@
                             (imagesToDisplay?.length === 2 && index === 1 ? 'col-start-2 row-span-2':''),
                             (imagesToDisplay?.length === 3 && index === 0 ? 'col-start-1 row-span-2':''),
                             showFullsize ? 'w-full' : 'cursor-pointer'
-                        ]">
+                        ]"> -->
                 <!-- Hide image extension when in "fullsize/fullscreen" mode -->
-                <div v-if="!showFullsize" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
+                <!-- <div v-if="!showFullsize" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
                 <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
                 :title="image.alt"
                 :class="(imagesToDisplay?.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
@@ -26,19 +26,57 @@
                 <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
             </div>
         </div>
-        <div v-else-if="Array.isArray(imagesToDisplay) && typeof imagesToDisplay[0] != 'undefined' && isLargeContainerView"
+        <div v-else-if="Array.isArray(imagesToDisplay) && imagesToDisplay.length>0 && typeof imagesToDisplay[0] != 'undefined' && isLargeContainerView"
         @contextmenu="showOptionsMenu($event, imagesToDisplay[0], 0, author, postId, postText)" class="flex h-full w-full overflow-hidden">
             <div class="flex max-h-full max-w-full mx-auto" :class=imageContainerClasses>
                 <img @click="$emit('imageClicked', imagesToDisplay[0])"  :src="showFullsize ? imagesToDisplay[0].fullsize : imagesToDisplay[0].thumb"
                 class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
             </div>
+        </div> -->
+        <div v-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && !isLargeContainerView" class="@container relative grid border
+            border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 h-full w-full" :class="showFullsize ? 'min-w-0' : 'grid-cols-2 grid-flow-row grid-rows-2 gap-0.5'"
+            :style="[
+                (mediaEmbed.images.length === 1 && !mediaEmbed.images[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),
+                (mediaEmbed.images.length === 1 && mediaEmbed.images[0].aspectRatio && !showFullsize ? `aspect-ratio: ${mediaEmbed.images[0].aspectRatio?.width} / ${mediaEmbed.images[0].aspectRatio?.height}`:''),
+                // (imagesToDisplay?.length === 1 && imagesToDisplay[0].aspectRatio ? `height: ${imagesToDisplay[0].aspectRatio?.height}px; width: ${imagesToDisplay[0].aspectRatio?.width}px;`:''),
+                (mediaEmbed.images.length && mediaEmbed.images.length > 1 ? 'aspect-ratio: 16 / 9':'')
+            ]">
+            <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Image"/>
+            <div v-for="(image, index) in mediaEmbed.images" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, index, author, postId, postText)" class="overflow-hidden max-h-full max-w-full"
+                :class="[
+                            (mediaEmbed.images.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
+                            (mediaEmbed.images.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
+                            (mediaEmbed.images.length === 2 && index === 1 ? 'col-start-2 row-span-2':''),
+                            (mediaEmbed.images.length === 3 && index === 0 ? 'col-start-1 row-span-2':''),
+                            showFullsize ? 'w-full' : 'cursor-pointer'
+                        ]">
+                <!-- Hide image extension when in "fullsize/fullscreen" mode -->
+                <div v-if="!showFullsize" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
+                <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
+                :title="image.alt"
+                :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
+                    :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div>
+                <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
+            </div>
+        </div>
+        <div v-else-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && typeof mediaEmbed.images[0] != 'undefined' && isLargeContainerView"
+        @contextmenu="showOptionsMenu($event, mediaEmbed.images[0], 0, author, postId, postText)" class="flex h-full w-full overflow-hidden">
+            <div class="flex max-h-full max-w-full mx-auto" :class=imageContainerClasses>
+                <img @click="$emit('imageClicked', mediaEmbed.images[0])"  :src="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
+                class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
+            </div>
         </div>
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
-            <div v-if="isViewExternal(imagesToDisplay)" class="flex max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, imagesToDisplay, 0, author, postId, postText)">
+            <!-- <div v-if="typeof imagesToDisplay != 'undefined' && !Array.isArray(imagesToDisplay) && AppBskyEmbedExternal.isView(imagesToDisplay)" class="flex max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, imagesToDisplay, 0, author, postId, postText)">
+                <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div> -->
+                <!-- GIF -->
+                <!-- <img @click="handleExternalGIFCLick(imagesToDisplay)" class="max-h-full max-w-full object-cover" :title="imagesToDisplay.external.title" :src="imagesToDisplay.external.uri"/>
+            </div> -->
+            <div v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)" class="flex max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
                 <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div>
                 <!-- GIF -->
-                <img @click="handleExternalGIFCLick(imagesToDisplay)" class="max-h-full max-w-full object-cover" :title="imagesToDisplay.title" :src="imagesToDisplay.uri"/>
+                <img @click="handleExternalGIFCLick(mediaEmbed)" class="max-h-full max-w-full object-cover" :title="mediaEmbed.external.title" :src="mediaEmbed.external.uri"/>
             </div>
         </div>
     </div>
@@ -52,17 +90,18 @@ import MdiOpenInNew from '~icons/mdi/open-in-new';
 
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
-import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isViewImage, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { Label } from '@atproto/api/dist/client/types/com/atproto/label/defs';
 import SpoilerOverlay from './SpoilerOverlay.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { AppState } from '../../state/AppState.vue';
 import { MediaType } from '../../enums/PostEnums';
-import { isViewExternal, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import { isExternal, isMain, isView, View, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { isTauri } from '@tauri-apps/api/core';
 import { router } from '../../main';
 import { createPostRoute } from '../../lib/api/Post.vue';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
@@ -76,12 +115,16 @@ export function calculateImageContainerMinHeight(elWidth:number):number{
  * @param url The URL of the image to save.
  * @param author Value used to reference the author (uploader) of this image.
  */
-async function saveImageWithAuthor(image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+// async function saveImageWithAuthor(image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+async function saveImageWithAuthor(image:ViewImage|View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
     let fileName = undefined;
     let safeHandle = undefined;
-    AppState.saveMedia = image;
-    if(!image.uri){//not Tenor GIF
-        fileName = (image as ViewImage).fullsize.split('\/').pop()?.split('@')[0];
+    // AppState.saveMedia = image;
+    // if(!image.uri){//not Tenor GIF
+    if(!AppBskyEmbedExternal.isView(image)){//not Tenor GIF
+        AppState.saveMedia = image;
+        // fileName = (image as ViewImage).fullsize.split('\/').pop()?.split('@')[0];
+        fileName = image.fullsize.split('\/').pop()?.split('@')[0];
         safeHandle = '';
         if(author) safeHandle =  author.replace (/\./g,'_');
         AppState.fileSaveDetails.full = `${fileName} by ${safeHandle}`;
@@ -92,7 +135,9 @@ async function saveImageWithAuthor(image:ViewImage|ViewExternal, index:number, a
 
     }
     else{
-        fileName = (image as ViewExternal).uri.split('\/').pop()?.split('@')[0];
+        AppState.saveMedia = (image as View).external;
+        // fileName = (image as ViewExternal).uri.split('\/').pop()?.split('@')[0];
+        fileName = (image as View).external.uri.split('\/').pop()?.split('@')[0];
         fileName = fileName ? fileName.split('.gif')[0] : '';
         AppState.fileSaveDetails.full = `${fileName}`;
         AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
@@ -127,7 +172,9 @@ export default defineComponent({
     },
     name:'ImageContainer',
     props:{
-        imagesToDisplay: Object as PropType<ViewImage[]>|PropType<ViewExternal>,
+        // imagesToDisplay: Object as PropType<ViewImage[]>|PropType<View>,//PropType<ViewExternal>,
+        // imagesToDisplay: Object as PropType<ViewForImages>|PropType<AppBskyEmbedExternal.View>|PropType<View>,//PropType<ViewExternal>,
+        mediaEmbed: Object as PropType<AppBskyEmbedImages.View>|PropType<AppBskyEmbedRecordWithMedia.View>|PropType<AppBskyEmbedExternal.View>,//PropType<ViewExternal>,
         labels: Object as PropType<Label[]>,
         author: String,
         postId:String,
@@ -148,7 +195,11 @@ export default defineComponent({
             MediaType,
             postDetails,
             doesImageHeightSurpassContainer: false,
-            isViewExternal
+            isMain,
+            isView,
+            AppBskyEmbedImages,
+            AppBskyEmbedExternal,
+            imagesToDisplay: [] as ViewImage[] // AppBskyEmbedImages.View|AppBskyEmbedRecordWithMedia.View,
         }
     },
     methods:{
@@ -178,7 +229,8 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to Images.
          */
-        showOptionsMenu(e:MouseEvent, image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+        // showOptionsMenu(e:MouseEvent, image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+        showOptionsMenu(e:MouseEvent, image:ViewImage|View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
             // if(isTauri()){
                 e.preventDefault();
                 OptionsMenuState.currentMenuItems = [
@@ -197,7 +249,8 @@ export default defineComponent({
          * (if `showFullsize` is true) or show `PostFocusModal` (usually from `FocusFeedPost`).
          * @param image Object representing the image to display full-size.
          */
-        handleExternalGIFCLick(image:ViewExternal){
+        // handleExternalGIFCLick(image:ViewExternal){
+        handleExternalGIFCLick(image:View){
             if(this.showFullsize)
                 this.$emit('imageClicked',image);
             else
@@ -275,6 +328,10 @@ export default defineComponent({
         // if(this.imagesToDisplay) this.images = this.imagesToDisplay;
         if(this.isLargeContainerView){
             this.updateDoesImageHeightSurpassContainer();
+        }
+        if(typeof this.mediaEmbed != 'undefined'){
+            if(AppBskyEmbedImages.isView(this.mediaEmbed)) this.imagesToDisplay = this.mediaEmbed.images
+            else if(AppBskyEmbedRecordWithMedia.isView(this.mediaEmbed) && AppBskyEmbedImages.isView(this.mediaEmbed.media)) this.imagesToDisplay = this.mediaEmbed.media.images;
         }
     }
 })

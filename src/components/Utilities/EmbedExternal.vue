@@ -53,7 +53,8 @@
                 <ImageContainer
                 @image-clicked="img => $emit('imageClicked',img)"
                 @media-click="i => $emit('media-click',i)"
-                :show-fullsize="showFullsize" :images-to-display="embed.external"/>
+                :author="author" :post-id="postId"
+                :show-fullsize="showFullsize" :images-to-display="embed" :media-embed="embed"/>
             </div>
         </div>
     </div>
@@ -101,7 +102,9 @@ export default defineComponent({
         showFullsize: {
             type: Boolean,
             default: false
-        }
+        },
+        author: String,
+        postId:String,
     },
     data(){
         return{

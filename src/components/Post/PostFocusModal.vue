@@ -44,7 +44,7 @@
                 :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[currentMediaIndex] as ViewImage).fullsize+')'}">
                 </div> -->
                 <ImageContainer v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
-                @image-clicked="showImageFullscreen" :show-fullsize="true" :is-large-container-view="true"
+                @image-clicked="showImageFullscreen" :show-fullsize="true" :media-embed="{$type:'app.bsky.embed.images#view', images: [getEmbededImageObjects.images[currentMediaIndex]]} as AppBskyEmbedImages.View" :is-large-container-view="true"
                 :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postDetails.currentThreadView.post.author.handle"
                 :post-id="getEndOfPostUri"/>
                 <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
@@ -192,7 +192,7 @@ import { isView as isImageView, ViewImage } from '@atproto/api/dist/client/types
 import { isView as isVideoView, View as ViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { AppBskyEmbedExternal, AppBskyEmbedRecordWithMedia } from '@atproto/api';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import PostInteractionIcons from './PostInteractionIcons.vue';
@@ -294,7 +294,7 @@ export default defineComponent({
     },
     methods:{
         increaseCurrentMediaIndex(){
-            if(this.currentMediaIndex+1 < this.imageCollection.length)
+            if(this.currentMediaIndex+1 < this.getEmbededImageObjects.images.length)
                 // postDetails.setClickedMediaIndex(postDetails.getClickedMediaIndex()+1);
                 // this.currentMediaIndex = this.currentMediaIndex+1;
                 this.$router.push(`/profile/${postDetails.currentThreadView.post.author.handle}/post/${postDetails.currentThreadView.post.uri.split('/').pop()}/${this.currentMediaIndex+1}`);
@@ -628,6 +628,25 @@ export default defineComponent({
             return '';
         },
         /**
+         * Method used to return the Embed View (AppBskyEmbedImages.View) held by the currently
+         * selected Post. Resolves the location of the data based on the type of
+         * the Post object.
+         */
+        getEmbededImageObjects():AppBskyEmbedImages.View{
+            if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedImages.isView(postDetails.currentThreadView.post.embed))
+                return postDetails.currentThreadView.post.embed;
+            else if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            AppBskyEmbedImages.isView(postDetails.currentThreadView.post.embed.media) &&
+            postDetails.currentThreadView.post.embed.media.images.length>0)
+                return postDetails.currentThreadView.post.embed.media;
+            return {images:[]};
+        },
+        getCurrentImageToDisplay(){
+            return {$type:'app.bsky.embed.images#view', images: [this.getEmbededImageObjects.images[this.currentMediaIndex]]} as AppBskyEmbedImages.View;
+        },
+        /**
          * Method used to return the image collection held by the currently
          * selected Post. Resolves the location of the data based on the type of
          * the Post object.
@@ -668,7 +687,7 @@ export default defineComponent({
         },
         /**Determines if the current media index can be decreased.*/
         canDecreaseMediaIndex(){
-            let currentImages = this.getEmbededImageViewImageObjects;
+            let currentImages = this.getEmbededImageObjects.images;
             if(currentImages.length>0){
                 if(this.currentMediaIndex != 0 &&
                 this.currentMediaIndex>=0)
@@ -678,7 +697,7 @@ export default defineComponent({
         },
         /**Determines if the current media index can be increased.*/
         canIncreaseMediaIndex(){
-            let currentImages = this.getEmbededImageViewImageObjects;
+            let currentImages = this.getEmbededImageObjects.images;
             if(currentImages.length>0){
                 if(this.currentMediaIndex+1 < currentImages.length &&
                 this.currentMediaIndex>=0)
