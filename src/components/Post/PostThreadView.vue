@@ -8,11 +8,11 @@
                 <TransitionGroup>
                     <div v-for="replies in currentThreadView.replies" :key="(replies as ThreadViewPost).post.cid" class="py-2 pr-3 flex flex-col gap-2">
                         <FocusFeedPost v-if="isThreadViewPost(replies)" @thread-reply-clicked="changeThreadFromPost"
-                        :thread-data="replies" :is-reply-style="true" :reply-index="0" :total-replies="replies.post.replyCount"/>
+                        :post-data="({$type:'app.bsky.feed.defs#postView',...replies.post} as PostView)" :is-reply-style="true" :reply-index="0" :total-replies="replies.post.replyCount"/>
                         {{ void "displays replies to comment" }}
                         <TransitionGroup>
                             <div v-for="(reply, index) in (replies as ThreadViewPost).replies" :key="(reply as ThreadViewPost).post.cid">
-                                <FocusFeedPost @thread-reply-clicked="changeThreadFromPost" :thread-data="reply" :is-reply-style="true"
+                                <FocusFeedPost v-if="isThreadViewPost(reply)" @thread-reply-clicked="changeThreadFromPost" :post-data="({$type:'app.bsky.feed.defs#postView',...reply.post} as PostView)" :is-reply-style="true"
                                 :reply-index="index+1" :total-replies="replies.replies.length"/>
                             </div>
                         </TransitionGroup>
@@ -27,7 +27,7 @@
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
 import PostReply from './PostReply.vue';
-import { isThreadViewPost, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
 import { emptyPostThread } from '../../fake-data/dumPostData';
 
