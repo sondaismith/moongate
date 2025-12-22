@@ -42,6 +42,11 @@ onBeforeMount(async () => {
       <component :is="Component" />
     </transition>
   </RouterView>
+  <RouterView name="modal2" v-slot="{Component}" :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
+    <transition name="modal">
+      <component :is="Component" />
+    </transition>
+  </RouterView>
   <RouterView name="user_prompt" v-slot="{Component}" :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
     <transition name="modal">
       <component :is="Component" />

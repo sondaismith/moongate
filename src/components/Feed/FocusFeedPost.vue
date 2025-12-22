@@ -299,8 +299,11 @@ export default defineComponent({
                 // else
                 //     showFocusModal(this.postToShow.uri, mediaIndex);
                 let postDid:string|undefined = this.postToShow.uri.split('/').pop();
-                if(this.getPostImages.length>0)
+                if(AppBskyEmbedImages.isView(this.getPostImages) && this.getPostImages.images.length>0)
                     this.$router.push(`/profile/${this.postToShow.author.handle}/post/${postDid}/${mediaIndex}`);
+                else if(AppBskyEmbedRecordWithMedia.isView(this.getPostImages) && AppBskyEmbedImages.isView(this.getPostImages.media) && this.getPostImages.media.images.length>0){
+                    this.$router.push(`/profile/${this.postToShow.author.handle}/post/${postDid}/${mediaIndex}`);
+                }
                 else
                     this.$router.push(`/profile/${this.postToShow.author.handle}/post/${postDid}`);
                 // this.$router.push({name:'postWithMedia', params:{handle: this.postToShow.author.handle, postDid:postDid, clickedMediaIndex:mediaIndex}});
