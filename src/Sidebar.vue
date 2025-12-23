@@ -171,12 +171,14 @@ import { isOnMobileTouchscreen } from "./helpers/states";
 import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
 import AppLogo from "./components/SVG/AppLogo.vue";
 import AboutAppModal from "./components/Settings/AboutAppModal.vue";
+import UserButton from "./components/Navbar/UserButton.vue";
 
 
     export default defineComponent({
         name:'Sidebar',
         components:{
             FeedButton,
+            UserButton,
             SidebarButton,
             FeedColumn,
             FeedEditModal,

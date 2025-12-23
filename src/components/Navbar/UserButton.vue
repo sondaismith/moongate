@@ -72,6 +72,16 @@ function displayCurrentUsersAccount(){
 }
 
 /**
+ * Displays the login modal.
+ * NOTE: Before creating this, a direct call of `AppState.ShowLoginModal()` was used by the
+ * OptionsMenu. It caused errors when running specific component tests, even though this component
+ * was never referenced. This method was created to fix that issue.
+ */
+function callShowLoginModal(){
+    AppState.ShowLoginModal();
+}
+
+/**
  * Prompts the User for confirmation that they want to log out of their account.
  */
 function confirmLogout(){
