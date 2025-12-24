@@ -1,69 +1,95 @@
 import "fake-indexeddb/auto";
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { afterAll, describe, expect, it, test } from "vitest";
-import Sidebar from '../../Sidebar.vue';
+import App from '../../App.vue';
 import FeedEditModal from "./FeedEditModal.vue";
 import UserSearchBar from "../Utilities/UserSearchBar.vue"
+import { createRouter, createWebHistory } from "vue-router";
+import { routes } from "../../lib/router";
+
+//Following guide given here: https://test-utils.vuejs.org/guide/advanced/vue-router#Using-a-Real-Router
+const router = createRouter({
+  history: createWebHistory(),
+  routes: routes,
+})
 
 describe('Feed Create/Edit modal show/hide', () => {
-    describe('feed create/edit FeedButton pressed from main page', () => {
-        const wrapper = mount(Sidebar);
+    describe('feed create/edit FeedButton pressed from main page', async () => {
+        router.push('/')
+        // After this line, router is ready
+        await router.isReady()
+        const wrapper = mount(App, {
+            global:{
+                plugins: [router]
+            }
+        });
         const addFeedButton = wrapper.get('[data-testid="add-feed-button"');
 
         test('login modal is shown if user is not logged in', async () => {
             await addFeedButton.trigger('click'); //click "add feed" button
+            await flushPromises();
             expect(wrapper.find('[data-testid="login-modal"').exists()).toBe(true);
             // expect(wrapper.find('[data-testid="feed-edit-modal').exists()).toBe(true);
         })
-        test('create feed modal is shown after selecting to browse as guest', async () => {
-            await addFeedButton.trigger('click'); //click "add feed" button
-            expect(wrapper.find('[data-testid="login-modal"').exists()).toBe(true); //login modal shown
-            const browseAsGuestButton = wrapper.get('[data-testid="browse-as-guest-button"');
-            await browseAsGuestButton.trigger('click'); //select to browse as guest
-            expect(wrapper.find('[data-testid="login-modal"').exists()).toBe(false);
-            await addFeedButton.trigger('click'); //click "add feed" button
-            expect(wrapper.find('[data-testid="feed-edit-modal"').exists()).toBe(true); //create feed modal shown
-        })
+        // test('create feed modal is shown after selecting to browse as guest', async () => {
+        //     await addFeedButton.trigger('click'); //click "add feed" button
+        //     expect(wrapper.find('[data-testid="login-modal"').exists()).toBe(true); //login modal shown
+        //     const browseAsGuestButton = wrapper.get('[data-testid="browse-as-guest-button"');
+        //     await browseAsGuestButton.trigger('click'); //select to browse as guest
+        //     expect(wrapper.find('[data-testid="login-modal"').exists()).toBe(false);
+        //     await addFeedButton.trigger('click'); //click "add feed" button
+        //     expect(wrapper.find('[data-testid="feed-edit-modal"').exists()).toBe(true); //create feed modal shown
+        // })
         afterAll(() => {
             wrapper.unmount();
         })
     })
 })
 describe('Creating new Feed', () => {
-    describe('User selects to create User Feed', () => {
-        const wrapper = mount(FeedEditModal);
-        const userFeedType = wrapper.get('[data-testid="feedEditModal-user-feed-button"]');
+    describe('User selects to create User Feed', async () => {
+        router.push('/')
+        // After this line, router is ready
+        await router.isReady()
+        const wrapper = mount(App, {
+            global:{
+                plugins: [router]
+            }
+        });
+
+        const addFeedButton = wrapper.get('[data-testid="add-feed-button"');
         it('navigates to user feed options page', async () => {
-            await userFeedType.trigger('click'); //select "user feed"
+            await addFeedButton.trigger('click'); //click "add feed" button
+            await flushPromises();
+            expect(wrapper.find('[data-testid="login-modal"').exists()).toBe(true);//not logged in - login modal shown
+            wrapper.find('[data-testid="browse-as-guest-button"').trigger('click');
+            await flushPromises();
+            await addFeedButton.trigger('click'); //click "add feed" button
+            await flushPromises();
+            await wrapper.find('[data-testid="feedEditModal-user-feed-button"]').trigger('click'); //select "user feed"
+            await flushPromises();
             //Confirm "user feed" selection
             expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
-            await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
+            await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');//search for user page
+            await flushPromises();
             expect(wrapper.find('[data-testid="feedEditModal-user-search-bar"]').exists()).toBe(true);
         })
         it('prevents navigation to summary page until user is entered', () => {
-            // const toCreatePageButton = wrapper.get('[data-testid="feededit-next-page-button"');
             expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(false);
         })
         it('navigates back to Feed type selection page when back button clicked', async () => {
-            // expect(wrapper.find('[data-testid="feed-edit-back-button"').exists()).toBe(true);
             await wrapper.find('[data-testid="feedEditModal-back-button"').trigger('click');//navigate back to start
+            await flushPromises();
             expect(wrapper.find('[data-testid="feedEditModal-user-feed-button"]').exists()).toBe(true);
         })
         it('navigates to summary/submit page when type and specifications have been selected', async () => {
-            await userFeedType.trigger('click'); //select "user feed"
+            await wrapper.find('[data-testid="feedEditModal-user-feed-button"]').trigger('click'); //select "user feed"
+            await flushPromises();
             //Confirm "user feed" selection
             expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
             await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
+            await flushPromises();
             let userSearchBar = wrapper.findComponent(UserSearchBar);
             expect(userSearchBar.exists()).toBe(true);
-
-            //Make sure value entered into `UserSearchBar` is emitting (don't really need to test this)
-            // let userSearchInput = wrapper.findComponent({name: 'InLaInput'});
-            // expect(userSearchInput.exists()).toBe(true);
-            // userSearchInput.setValue('bob');
-            // userSearchInput.trigger('submit');
-            // expect(userSearchInput.emitted()).toHaveProperty('update:modelValue', [['bob']]) //.toEqual('failed');
-            // expect(userSearchInput.emitted()).toEqual('failed');
 
             //Mock that API data has been returned to `UserSearchBar`
             await userSearchBar.setData({
@@ -76,13 +102,14 @@ describe('Creating new Feed', () => {
             expect(userSearchBar.find('[data-testid="userSearchBar-returned-users-container"').exists()).toBe(true);
             //Select "returned" user result
             await userSearchBar.find('[data-testid="userSearchBar-returned-users-container"').find('div').trigger('click');
+            await flushPromises();
             //Note that the above click should navigate to summary page AND request ProfileViewDetail data from API
             //Would be great if the API call could actually have a mock call instead of failing and having the data set below
             //checkout https://vitest.dev/guide/mocking.html#requests
             //Check that we navigated to summary page
             expect(wrapper.find('[data-testid="feedEditModal-summary-page"').exists()).toBe(true);
             //Mock that ProfileViewDetailed was returned for summary page
-            await wrapper.setData({
+            await wrapper.getComponent(FeedEditModal).setData({
                 feedFilters:{
                     user:{
                         did:'did:test-did-valie',

@@ -1,5 +1,5 @@
 <template>
-    <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-50 flex
+    <div data-testid="login-modal" tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-50 flex
         flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm justify-center focus-visible:outline-none">
         <div @click="closeModal" class="absolute z-10 w-full h-full"></div>
         <div class="flex flex-col relative z-20 gap-4 w-[90%] md:w-2/3 lg:max-w-[700px]
