@@ -4,16 +4,28 @@ import { afterAll, describe, expect, it, test } from "vitest";
 import App from '../../App.vue';
 import FeedEditModal from "./FeedEditModal.vue";
 import UserSearchBar from "../Utilities/UserSearchBar.vue"
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory, Router } from "vue-router";
 import { routes } from "../../lib/router";
 
+let router:Router;
 //Following guide given here: https://test-utils.vuejs.org/guide/advanced/vue-router#Using-a-Real-Router
-const router = createRouter({
-  history: createWebHistory(),
-  routes: routes,
-})
+// const router = createRouter({
+//   history: createWebHistory(),
+//   routes: routes,
+// })
+// beforeEach(async () => {
+//   router = createRouter({
+//     history: createWebHistory(),
+//     routes: routes,
+//   })
+// });
 
 describe('Feed Create/Edit modal show/hide', () => {
+    //should be done with beforeEach, but requires reorganizing of tests
+    router = createRouter({
+        history: createWebHistory(),
+        routes: routes,
+    })
     describe('feed create/edit FeedButton pressed from main page', async () => {
         router.push('/')
         // After this line, router is ready
@@ -45,7 +57,15 @@ describe('Feed Create/Edit modal show/hide', () => {
         })
     })
 })
+
+//The following test suite will fail if all the tests are not run in order.
+//Need to reorganize how the tests are structured.
 describe('Creating new Feed', () => {
+    //should be done with beforeEach, but requires reorganizing of tests
+    router = createRouter({
+        history: createWebHistory(),
+        routes: routes,
+    })
     describe('User selects to create User Feed', async () => {
         router.push('/')
         // After this line, router is ready
@@ -119,10 +139,15 @@ describe('Creating new Feed', () => {
                 }
             })
             expect(wrapper.find('[data-testid="feedEditModal-create-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-close"').trigger('click');
+            await flushPromises();
         })
         afterAll(() => {
             wrapper.unmount();
         })
+        // it('unmounts component', ()=> {
+        //     wrapper.unmount();
+        // })
     })
     describe('User selects to create Tag Feed', async () => {
         router.push('/')
@@ -138,11 +163,11 @@ describe('Creating new Feed', () => {
             //Deal with login modal
             await addFeedButton.trigger('click'); //click "add feed" button
             await flushPromises();
-            expect(wrapper.find('[data-testid="login-modal"').exists()).toBe(true);//not logged in - login modal shown
-            wrapper.find('[data-testid="browse-as-guest-button"').trigger('click');
-            await flushPromises();
-            await addFeedButton.trigger('click'); //click "add feed" button
-            await flushPromises();
+            // expect(wrapper.find('[data-testid="login-modal"').exists()).toBe(true);//not logged in - login modal shown
+            // wrapper.find('[data-testid="browse-as-guest-button"').trigger('click');
+            // await flushPromises();
+            // await addFeedButton.trigger('click'); //click "add feed" button
+            // await flushPromises();
             //interact with tag feed button
             const tagFeedButton = wrapper.find('[data-testid="feedEditModal-tag-feed-button"]');
             expect(tagFeedButton.exists()).toBe(true);
@@ -187,35 +212,62 @@ describe('Creating new Feed', () => {
             //Ensure we're on summary page
             expect(wrapper.find('[data-testid="feedEditModal-summary-page"').exists()).toBe(true);
             expect(wrapper.find('[data-testid="feedEditModal-create-button"').exists()).toBe(true);
+            //Close FeedEditModal
+            await wrapper.find('[data-testid="feedEditModal-close"').trigger('click');
+            await flushPromises();
         })
         afterAll(() => {
             wrapper.unmount();
         })
     })
-    describe.skip('User selects to create Trending Feed', () => {
-        const wrapper = mount(FeedEditModal);
-        const trendingFeedButton = wrapper.find('[data-testid="feedEditModal-trending-feed-button"]');
-        expect(trendingFeedButton.exists()).toBe(true);
+    describe('User selects to create Trending Feed', async () => {
+        // const wrapper = mount(FeedEditModal);
+        router.push('/')
+        // After this line, router is ready
+        await router.isReady()
+        const wrapper = mount(App, {
+            global:{
+                plugins: [router]
+            }
+        });
+        it('handles prompt to select browsing mode - selects guest browsing', async() => {
+            const addFeedButton = wrapper.get('[data-testid="add-feed-button"');
+            // //Deal with login modal
+            // await addFeedButton.trigger('click'); //click "add feed" button
+            // await flushPromises();
+            // expect(wrapper.find('[data-testid="login-modal"').exists()).toBe(true);//not logged in - login modal shown
+            // wrapper.find('[data-testid="browse-as-guest-button"').trigger('click');
+            // await flushPromises();
+            await addFeedButton.trigger('click'); //click "add feed" button
+            await flushPromises();
+        })
         it('navigates to trending feed options page', async () => {
-            await trendingFeedButton.trigger('click'); //select "trending feed"
+            expect(wrapper.find('[data-testid="feedEditModal-trending-feed-button"').exists()).toBe(true);
+            await wrapper.find('[data-testid="feedEditModal-trending-feed-button"').trigger('click'); //select "trending feed"
+            await flushPromises();
             //Confirm "trending feed" selection
             expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
             await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
+            await flushPromises();
             expect(wrapper.find('[data-testid="feedEditModal-options-page"').exists()).toBe(true);
         })
         it('navigates back to Feed type selection page when back button clicked', async () => {
             // expect(wrapper.find('[data-testid="feed-edit-back-button"').exists()).toBe(true);
             await wrapper.find('[data-testid="feedEditModal-back-button"').trigger('click');//navigate back to start
+            await flushPromises();
             expect(wrapper.find('[data-testid="feedEditModal-tag-feed-button"]').exists()).toBe(true);
         })
         it('navigates to summary/submit page when type and specifications have been selected', async () => {
-            await trendingFeedButton.trigger('click'); //select "trending feed"
+            await wrapper.find('[data-testid="feedEditModal-trending-feed-button"').trigger('click'); //select "trending feed"
+            await flushPromises();
             //Confirm "trending feed" selection
             expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
             await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
+            await flushPromises();
             //No option currently, so we can got straight to summary
             expect(wrapper.find('[data-testid="feedEditModal-next-page-button"').exists()).toBe(true);
             await wrapper.find('[data-testid="feedEditModal-next-page-button"').trigger('click');
+            await flushPromises();
             //Ensure we're on summary page
             expect(wrapper.find('[data-testid="feedEditModal-summary-page"').exists()).toBe(true);
             expect(wrapper.find('[data-testid="feedEditModal-create-button"').exists()).toBe(true);
