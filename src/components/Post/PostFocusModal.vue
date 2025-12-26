@@ -315,8 +315,8 @@ export default defineComponent({
             this.fullscreenImage = {} as ViewImage|ViewExternal;
         },
         hideModal(){
-            this.$router.push("/");
-            // postDetails.hideFocusModal();
+            if(window.history.state.back != null && window.history.state.back.includes('/profile')) this.$router.go(-1);
+            else this.$router.push(`/`);
             this.threadNavIndex = 0; //Clear thread navigation history
             this.threadNavHistory = [emptyPostThread];
         },
