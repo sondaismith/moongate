@@ -10,15 +10,16 @@
 </template>
 
 <script lang="ts">
+//Option Menu Icons
+import MingcuteAddCircleLine from '~icons/mingcute/add-circle-line';
+import MingcuteExternalLinkLine from '~icons/mingcute/external-link-line';
+
 import { defineComponent } from 'vue'
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { isDid } from '@atproto/api';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
-
-//Option Menu Icons
-import MingcuteAddCircleLine from '~icons/mingcute/add-circle-line';
 import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 
@@ -43,6 +44,14 @@ function CreateUserFeed(userDid:string,userHandle:string){
     .catch(err => {
         toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
     });
+}
+
+/**
+ * Opens the associated User's profile in a new tab.
+ * @param handle The handle of the User's profile that will be displayed in the new tab.
+ */
+function OpenProfileInNewTab(handle:string){
+    window.open(`/profile/${handle}`);
 }
 
 export default defineComponent({
@@ -83,9 +92,10 @@ export default defineComponent({
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteAddCircleLine,Label:'Create new User Feed',Action:function(){CreateUserFeed(userDid,userHandle)},Type:ItemType.Option},
+                {Icon:MingcuteExternalLinkLine,Label:'Open Profile in New Tab',Action:function(){OpenProfileInNewTab(userHandle)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
-        },
+        }
     }
 })
 </script>
