@@ -750,7 +750,8 @@ export default defineComponent({
             }
         },200);
         this.lastPostDid = this.postDid;
-        if(window.history.state.back != null) this.routeEntryPoint = window.history.state.back;
+        if(window.history.state.back != null && !(window.history.state.back as String).includes('/post')) this.routeEntryPoint = window.history.state.back;
+        else if(window.history.state.forward != null && !(window.history.state.forward as String).includes('/post')) this.routeEntryPoint = window.history.state.forward;
         console.log(this.handle);
         console.log(this.postDid);
         this.getThreadData();
