@@ -289,7 +289,10 @@ export default defineComponent({
             isScrollToTopVisible:false,
             /**Record of the last valid Post DID used. Used to prevent reload when `CreatePost`
              * or `Login` modal are closed after opening on top of `PostFocusModal`. */
-            lastPostDid:''
+            lastPostDid:'',
+            /**Record of the route the User was using before opening this modal. Navigated back to when
+             * the modal is closed. */
+            routeEntryPoint:'/'
         }
     },
     methods:{
@@ -315,8 +318,7 @@ export default defineComponent({
             this.fullscreenImage = {} as ViewImage|ViewExternal;
         },
         hideModal(){
-            if(window.history.state.back != null && window.history.state.back.includes('/profile')) this.$router.go(-1);
-            else this.$router.push(`/`);
+            this.$router.push(this.routeEntryPoint);
             this.threadNavIndex = 0; //Clear thread navigation history
             this.threadNavHistory = [emptyPostThread];
         },
@@ -748,6 +750,7 @@ export default defineComponent({
             }
         },200);
         this.lastPostDid = this.postDid;
+        if(window.history.state.back != null) this.routeEntryPoint = window.history.state.back;
         console.log(this.handle);
         console.log(this.postDid);
         this.getThreadData();
