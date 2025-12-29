@@ -96,7 +96,7 @@ export function getPostImages(postData:PostView|ViewRecord):ViewForImages|ViewFo
         else if(typeof postData.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postData.embed) && isView(postData.embed.media)){
             //Is a parent Post with image(s) and a QRT
             // return postData.post.embed.media.images as ViewImage[];
-            return postData.embed;
+            return postData.embed.media;
         }
     }
     if(isViewRecord(postData)){
