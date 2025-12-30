@@ -42,7 +42,7 @@
                 (mediaEmbed.images.length && mediaEmbed.images.length > 1 ? 'aspect-ratio: 16 / 9':'')
             ]">
             <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Image"/>
-            <div v-for="(image, index) in mediaEmbed.images" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, index, author, postId, postText)" class="overflow-hidden max-h-full max-w-full"
+            <div v-for="(image, index) in mediaEmbed.images" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...image}, index, author, postId, postText)" class="overflow-hidden max-h-full max-w-full"
                 :class="[
                             (mediaEmbed.images.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
                             (mediaEmbed.images.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
@@ -157,12 +157,13 @@ async function saveImageWithAuthor(image:ViewImage|View, index:number, author:st
  * Method used to open a specific Image in a new browser tab.
  * @param imageToShow Object representing the Image to open in the new tab.
  */
-function OpenImageInNewTab(imageToShow:ViewImage|ViewExternal){
-    if(!imageToShow.uri){//not Tenor GIF
-        open((imageToShow as ViewImage).fullsize);
+function OpenImageInNewTab(imageToShow:ViewImage|View){
+    // if(!imageToShow.uri){//not Tenor GIF
+    if(AppBskyEmbedExternal.isView(imageToShow)){//Tenor GIF
+        open(imageToShow.external.uri);
     }
-    else{
-        open((imageToShow as ViewExternal).uri);
+    else if(AppBskyEmbedImages.isViewImage(imageToShow)){
+        open(imageToShow.fullsize);
     }
 }
 
