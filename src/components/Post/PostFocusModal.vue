@@ -52,7 +52,8 @@
                 :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
                 :video-view="postDetails.currentThreadView.post.embed">
                 </video-container>
-                <EmbedExternal v-else-if="hasEmbedGIFMedia" @image-clicked="showImageFullscreen" :embed="getEmbedGIFMedia" :show-fullsize="true"/>
+                <EmbedExternal v-else-if="hasEmbedGIFMedia" @image-clicked="showImageFullscreen" :embed="getEmbedGIFMedia" :show-fullsize="true"
+                :author="postDetails.currentThreadView.post.author.handle" :post-id="getEndOfPostUri"/>
                 <div class="flex h-full w-10 shrink-0 items-center ml-auto">
                     <SlideshowArrow v-if="canIncreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Right" @button-clicked="increaseCurrentMediaIndex"/>
                 </div>
@@ -684,8 +685,9 @@ export default defineComponent({
         },
         /**Returns the last bit of ID information held at the end of the URI that points to
          * the currently displayed Post. */
-        getEndOfPostUri(){
-            return postDetails.currentThreadView.post.uri.split('/').pop();
+        getEndOfPostUri():string{
+            let postId = postDetails.currentThreadView.post.uri.split('/').pop();
+            return typeof postId != 'undefined' ? postId : '';
         },
         /**Determines if the current media index can be decreased.*/
         canDecreaseMediaIndex(){

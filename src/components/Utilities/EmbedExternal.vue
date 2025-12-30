@@ -103,8 +103,14 @@ export default defineComponent({
             type: Boolean,
             default: false
         },
-        author: String,
-        postId:String,
+        author:{
+            type: String,
+            required: true,
+        },
+        postId:{
+            type: String,
+            required: true,
+        },
     },
     data(){
         return{

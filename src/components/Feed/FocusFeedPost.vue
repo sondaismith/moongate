@@ -543,8 +543,9 @@ export default defineComponent({
         },
         /**Returns the last bit of ID information held at the end of the URI that points to
          * the currently displayed Post. */
-        getEndOfPostUri(){
-            return this.postToShow.uri.split('/').pop();
+        getEndOfPostUri():string{
+            let postId = this.postToShow.uri.split('/').pop();
+            return typeof postId != 'undefined' ? postId : '';
         },
         getPostText():string{
             if(!isViewRecord(this.postToShow)) return this.postToShow?.record.text;
