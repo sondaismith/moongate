@@ -88,9 +88,6 @@
             </div>
             <FeedPost/>
         </div>
-        <Transition name="modal">
-            <LoginModal data-testid="login-modal" v-if="AppState.isLoggingIntoAccount"/>
-        </Transition>
         <Toast position="bottom-center" group="bc"/>
         <!-- <Toast position="bottom-center" group="bc":pt="{
                 root:'mr-auto',
@@ -110,12 +107,6 @@
         <OptionsMenu v-show="OptionsMenuState.isOptionsMenuVisible"/>
         <Transition name="modal">
             <ConfirmModal v-if="AppState.isAskingForConfirmation"/>
-        </Transition>
-        <Transition name="modal">
-            <SaveMediaModal v-if="AppState.isSavingMediaModalVisible"/>
-        </Transition>
-        <Transition>
-            <PostFocusModal v-if="postDetails.isFocusVisible" :initial-thread-uri="postDetails.uriOfPostToShow" :clicked-media-index="postDetails.clickedMediaIndex"/>
         </Transition>
         <Transition name="modal">
             <FeedOrderModal v-if="AppState.isUpdatingFeedPosition" :feed-id-to-update="FeedState.selectedFeed"/>

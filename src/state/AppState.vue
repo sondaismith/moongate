@@ -170,7 +170,7 @@ export const AppState = reactive({
      */
     showLoginAccountSelect(){
         this.loginModalStartPage = 1;
-        this.isLoggingIntoAccount = true;
+        router.push(`/login`);
     },
     /**
      * Returns the `Agent` to access the Bluesky API with based on

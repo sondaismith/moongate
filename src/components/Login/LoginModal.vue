@@ -391,7 +391,7 @@ export default defineComponent({
         closeModal(){
             // AppState.ToggleLoginModal();
             console.log(window.history.state);
-            if(window.history.state.back != null && window.history.state.back.includes('/profile')) this.$router.go(-1);
+            if(window.history.state.back != null && (window.history.state.back.includes('/profile') || window.history.state.back.includes('/settings'))) this.$router.go(-1);
             else if(window.history.state.back == null) this.$router.push(`/`);
             else this.$router.push(`/`);
         },

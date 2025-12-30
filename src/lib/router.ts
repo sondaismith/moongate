@@ -28,6 +28,11 @@ function keepDefaultView(to, from) {
             // to.matched[0].components.modal = from.matched[0].components.modal;
             to.matched[0].components = {default:to.matched[0].components.default, modal2:from.matched[0].components.modal2, user_prompt:to.matched[0].components.user_prompt};
         }
+        //If prompted to login from `SettingsPanel` only keep showing `SettingsPanel`
+        else if(to.path == '/login' && from.path == '/settings'){
+            // to.matched[0].components.modal = from.matched[0].components.modal;
+            to.matched[0].components = {default:to.matched[0].components.default, modal:from.matched[0].components.modal, user_prompt:to.matched[0].components.user_prompt};
+        }
         //need to update below to check modal2
         //If moving to view a Post in `PostFocusModal` from `UserFocusModal`, keep showing `UserFocusModal`
         if(typeof from.matched[0].components.modal != 'undefined' && (to.path.includes('/post') ) && from.path.includes('/profile')){
