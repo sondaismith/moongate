@@ -60,7 +60,7 @@
             </div>
         </div>
         <div v-else-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && typeof mediaEmbed.images[0] != 'undefined' && isLargeContainerView"
-        @contextmenu="showOptionsMenu($event, mediaEmbed.images[0], 0, author, postId, postText)" class="flex h-full w-full overflow-hidden">
+        @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...mediaEmbed.images[0]}, 0, author, postId, postText)" class="flex h-full w-full overflow-hidden">
             <div class="flex max-h-full max-w-full mx-auto" :class=imageContainerClasses>
                 <img @click="$emit('imageClicked', mediaEmbed.images[0])"  :src="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
                 class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
