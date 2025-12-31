@@ -113,7 +113,7 @@ export function getPostImages(postData:PostView|ViewRecord):ViewForImages|ViewFo
             && isView(postData.embeds[0].media) && typeof postData.embeds[0].media.images != 'undefined'){
             //Is a QRT with image(s)
             // return postData.post.embeds[0].media.images as ViewImage[];
-            return postData.embeds[0];
+            return postData.embeds[0].media;
         }
     }
 
