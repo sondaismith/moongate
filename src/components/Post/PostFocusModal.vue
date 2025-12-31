@@ -749,7 +749,7 @@ export default defineComponent({
         },
         /**Updates the displayed post image when media index in route changes. */
         clickedMediaIndex(newIndex:number,oldIndex:number){
-            if(typeof newIndex != 'undefined' && newIndex != oldIndex)
+            if(typeof newIndex != 'undefined' && newIndex != oldIndex && !this.$router.currentRoute.value.path.includes('/download'))
                 this.currentMediaIndex = newIndex;
         }
     },
