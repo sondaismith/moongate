@@ -899,6 +899,24 @@ export default defineComponent({
             else{
                 return false;
             }
+        },
+        getFeedTypeTitle(){
+            let cleanedFeedType = '';
+            if(this.selectedFeedType == FeedEnums.Types.FeedGenerator) cleanedFeedType = 'Custom Feed'
+            else if(this.selectedFeedType.trim() != '') cleanedFeedType = this.selectedFeedType[0].toUpperCase()+this.selectedFeedType.slice(1);
+            let title = `Selecting Feed Type | moongate`;
+            switch (this.currentPage) {
+                case 1:
+                    title = `Creating "${cleanedFeedType}" Feed | moongate`
+                    break;
+                case 2:
+                    title = `"${cleanedFeedType}" Feed Summary | moongate`
+                    break;
+                default:
+                    title = `Selecting Feed Type | moongate`;
+                    break;
+            }
+            return title;
         }
     },
     watch:{
@@ -911,8 +929,11 @@ export default defineComponent({
             }
         },
         summary(newSummary:string,oldSummary:string){
-            if(typeof newSummary != 'undefined' && newSummary != oldSummary && newSummary.toLocaleLowerCase() == 'summary') this.currentPage = 2;
-            else if(typeof oldSummary != 'undefined' && newSummary != oldSummary && oldSummary.toLocaleLowerCase() == 'summary') this.currentPage = 1;
+            if(typeof newSummary != 'undefined' && newSummary != oldSummary && newSummary.toLocaleLowerCase() == 'summary') {
+                this.currentPage = 2; //go to Feed summary page
+                document.title = this.getFeedTypeTitle;//Update page title when view Feed summary
+            }
+            else if(typeof oldSummary != 'undefined' && newSummary != oldSummary && oldSummary.toLocaleLowerCase() == 'summary') this.currentPage = 1; //go back to Feed options page
         }
     },
     beforeRouteEnter(to, from, next){
@@ -933,13 +954,30 @@ export default defineComponent({
             }
             //Direct navigation to summary prevented
             else if(!from.path.includes('/create/feed/') && to.name == 'create feed summary'){
-                next({path:'/create/feed'});
+                next(vm =>{
+                    document.title = vm.getFeedTypeTitle;
+                    vm.$router.replace('/create/feed');
+                })
             }
             //Prevent jump to summary if type is not the same
             else if(to.name == 'create feed summary' && !to.path.includes(from.path)){
                 next({path:from.path,replace:true})
             }
-            else next();
+            else{//navigate as usual - but make sure the correct modal page is being shown
+                if(to.path == '/create/feed'){
+                    next(vm =>{
+                        document.title = vm.getFeedTypeTitle;
+                        vm.$data.currentPage = 0;
+                    })
+                }
+                else if(to.name == 'feed type selected'){
+                    next(vm =>{
+                        document.title = vm.getFeedTypeTitle;
+                        vm.$data.currentPage = 1;
+                    })
+                }
+                else next();
+            }
         }
     },
     beforeRouteUpdate(to, from, next){
@@ -959,6 +997,7 @@ export default defineComponent({
         else if(typeof this.feedType != 'undefined' && !Object.values(FeedEnums.Types).includes(this.feedType)){//invalid feed type
             this.$router.replace('/create/feed');
         }
+        document.title = this.getFeedTypeTitle;
     },
     mounted(){
         if(AppState.isUpdatingFeed){

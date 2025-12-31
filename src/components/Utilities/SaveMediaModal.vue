@@ -337,6 +337,7 @@ export default defineComponent({
     beforeRouteEnter(to,from,next){
         next(vm => {
             vm.$data.previousURL = from.path
+            document.title = `Saving Media Shared by ${vm.$props.handle} | moongate`;
         })
     },
     async created(){

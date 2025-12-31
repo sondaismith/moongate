@@ -193,7 +193,7 @@ import { isView as isImageView, ViewImage } from '@atproto/api/dist/client/types
 import { isView as isVideoView, View as ViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia, AppBskyFeedPost } from '@atproto/api';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import PostInteractionIcons from './PostInteractionIcons.vue';
@@ -375,6 +375,7 @@ export default defineComponent({
             .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')))
             .finally(()=>{
                 postDetails.isAwaitingFocusData = false;
+                document.title = this.getFocusPostTitle;
             });
         },
         setCurrentThreadView(cid: string) {
@@ -725,6 +726,17 @@ export default defineComponent({
         },
         postUri(){
             return `at://${this.handle}/app.bsky.feed.post/${this.postDid}`;
+        },
+        /**Returns formatted title for Post currently being viewed on PostFocusModal. */
+        getFocusPostTitle(){
+            let postTextClip = ''
+            if(!postDetails.isAwaitingFocusData && AppBskyFeedPost.isMain(postDetails.currentThreadView.post.record)){
+                let fullText = (postDetails.currentThreadView.post.record as AppBskyFeedPost.Main).text
+                let sliceLength = 21;
+                if(fullText.length<sliceLength) sliceLength = fullText.length
+                postTextClip =  fullText.slice(0,sliceLength-1);
+            }
+            return postTextClip.trim() != '' ? `${postTextClip}... by ${postDetails.currentThreadView.post.author.displayName} | moongate` : `${postDetails.currentThreadView.post.author.displayName}'s Post | moongate`;
         }
     },
     watch:{
@@ -740,6 +752,14 @@ export default defineComponent({
             if(typeof newIndex != 'undefined' && newIndex != oldIndex)
                 this.currentMediaIndex = newIndex;
         }
+    },
+    beforeRouteEnter(to, from, next){
+        if(from.name == 'saving media'){//restore page title after navigating back from `SaveMediaModal`
+            next(vm => {
+                document.title = vm.getFocusPostTitle;
+            })
+        }
+        next();
     },
     created(){
         /**Defines actions for the `toggleScrollToTop` function */
@@ -763,8 +783,7 @@ export default defineComponent({
         this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
         this.$el.addEventListener('mouseup', this.onMouseShortcutEntered);
         (this.$el as HTMLElement).focus();
-        //Get Post Thread data via Bsky API
-        // if(this.initialThreadUri != '') this.getThreadData();
+        document.title = `Loading Post data... | moongate`
     },
     beforeUnmount() {
         console.log('Closing PostFocusModal...');

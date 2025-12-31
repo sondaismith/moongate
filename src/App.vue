@@ -8,11 +8,11 @@ import { router } from "./main";
 onBeforeMount(async () => {
   console.log('App.vue onMounted()');
   //Load application settings
-  router.beforeEach(async (to, from) => {
+  router.afterEach(async (to, from) => {
     if(!AppSettingsState.isSettingsLoaded){
       await AppSettingsState.loadSettingsFromStore();
     }
-    document.title = to.meta.title as string || 'moongate - A Desktop App for Bluesky';
+    document.title = to.meta.title as string || 'Loading... | moongate - A Desktop App for Bluesky';
   })
 })
 </script>

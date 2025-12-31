@@ -715,6 +715,9 @@ export default defineComponent({
             await UserFocusModalState.updateCurrentUserPageDetails(this.handle)
             .then(res => {
                 this.isHandleValid = res
+                if(this.isHandleValid) document.title = `${UserFocusModalState.currentUserPageDetails.ProfileData.displayName?.trim()!='' ?
+                    UserFocusModalState.currentUserPageDetails.ProfileData.displayName : UserFocusModalState.currentUserPageDetails.ProfileData.handle}'s Account | moongate`;
+                else document.title = `Account Not Found | moongate`;
                 this.restoreTabAfterNavHistoryChange(UserFocusModalState.currentUserPageDetails.currentTab);
             });
             if(this.isHandleValid){//If provided handle is valid
@@ -1077,6 +1080,7 @@ export default defineComponent({
         // this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
         // this.$el.addEventListener('mouseup', this.onMouseShortcutEntered);
         if(modal) modal.focus(); //focus modal
+        document.title = `Loading Account data... | moongate`
     },
     beforeUnmount() {
         UserFocusModalState.currentNavIndex = 0;
