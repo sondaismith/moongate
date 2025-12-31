@@ -46,7 +46,7 @@
                 <ImageContainer v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
                 @image-clicked="showImageFullscreen" :show-fullsize="true" :media-embed="{$type:'app.bsky.embed.images#view', images: [getEmbededImageObjects.images[currentMediaIndex]]} as AppBskyEmbedImages.View" :is-large-container-view="true"
                 :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postDetails.currentThreadView.post.author.handle"
-                :post-id="getEndOfPostUri"/>
+                :post-id="getEndOfPostUri" :media-index="currentMediaIndex"/>
                 <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
                 class="relative flex flex-col max-w-full h-full justify-center p-5"
                 :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
@@ -759,7 +759,7 @@ export default defineComponent({
                 document.title = vm.getFocusPostTitle;
             })
         }
-        next();
+        else next();
     },
     created(){
         /**Defines actions for the `toggleScrollToTop` function */

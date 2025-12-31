@@ -79,6 +79,7 @@ import { getPostImages, getPostThread } from '../../lib/api/Post.vue';
 import { emptyPostThread } from '../../fake-data/dumPostData';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { router } from '../../main';
+import { AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
 
 export default defineComponent({
     components:{
@@ -314,7 +315,14 @@ export default defineComponent({
          * @returns `ViewImage[]` containing Post images.
          */
         getPostImages():ViewImage[]{
-            return getPostImages(this.postData);
+            let imageContainer = getPostImages({$type:'app.bsky.feed.defs#postView',...this.postData.post});
+            if(AppBskyEmbedImages.isView(imageContainer)){
+                return imageContainer.images;
+            }
+            else if(AppBskyEmbedRecordWithMedia.isView(imageContainer)){
+                return (imageContainer.media as AppBskyEmbedImages.View).images;
+            }
+            return [];
         },
     },
     watch:{
