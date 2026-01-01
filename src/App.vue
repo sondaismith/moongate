@@ -1,10 +1,57 @@
 <script setup lang="ts">
+import { RouterView } from "vue-router";
 import Sidebar from "./Sidebar.vue";
+import { AppSettingsState } from "./state/AppSettingsState.vue";
+import { onBeforeMount } from "vue";
+import { router } from "./main";
+
+onBeforeMount(async () => {
+  console.log('App.vue onMounted()');
+  //Load application settings
+  router.afterEach(async (to, from) => {
+    if(!AppSettingsState.isSettingsLoaded){
+      await AppSettingsState.loadSettingsFromStore();
+    }
+    document.title = to.meta.title as string || 'Loading... | moongate - A Desktop App for Bluesky';
+  })
+})
 </script>
 
 <template>
-  <Sidebar/>
+  <!-- <Sidebar/> -->
   <!-- <DemoSidebar/> -->
+  <nav v-if="false" class="flex flex-wrap divide-x-2">
+    <RouterLink to="/">Home</RouterLink>
+    <RouterLink to="/about">About</RouterLink>
+    <RouterLink to="/settings">Settings</RouterLink>
+    <RouterLink to="/create/feed">Create Feed</RouterLink>
+    <RouterLink to="/profile/mega64official.bsky.social">Mega64</RouterLink>
+    <RouterLink to="/profile/jonbois.bsky.social">Jon Bois</RouterLink>
+    <RouterLink to="/profile/fang.3am.moe">Fang Guu</RouterLink>
+    <RouterLink to="/profile/handle.will.fail">[Invalid Handle]</RouterLink>
+    <RouterLink to="/profile/jonbois.bsky.social/post/3m5u7c6woo22v">Jon Bois sunset skeet</RouterLink>
+    <RouterLink to="/profile/margomarch.bsky.social/post/3ltruwgg7ms2z/2">Margo image link</RouterLink>
+    <RouterLink to="/profile/sad-machines.bsky.social/post/3lzrqulh7ic2l">sad-machines thread w/ multi-image posts</RouterLink>
+    <RouterLink to="/create/feed/following">direct link to creating following feed</RouterLink>
+    <RouterLink to="/create/feed/user/summary">user summary</RouterLink>
+    <RouterLink to="/create/post">create post</RouterLink>
+  </nav>
+  <RouterView />
+  <RouterView name="modal" v-slot="{Component}" :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
+    <transition name="modal">
+      <component :is="Component" />
+    </transition>
+  </RouterView>
+  <RouterView name="modal2" v-slot="{Component}" :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
+    <transition name="modal">
+      <component :is="Component" />
+    </transition>
+  </RouterView>
+  <RouterView name="user_prompt" v-slot="{Component}" :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
+    <transition name="modal">
+      <component :is="Component" />
+    </transition>
+  </RouterView>
 </template>
 
 <style>
@@ -190,5 +237,17 @@ button {
   font-family: 'Open Sans';
   src: url(./../public/fonts/OpenSans-Italic-VariableFont_wdth\,wght.ttf);
   font-style: italic;
+}
+
+.modal-move,
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0 !important;
+    transform: translateY(-10px);
 }
 </style>

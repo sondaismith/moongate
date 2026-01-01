@@ -44,14 +44,16 @@
                 :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[currentMediaIndex] as ViewImage).fullsize+')'}">
                 </div> -->
                 <ImageContainer v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
-                @image-clicked="showImageFullscreen" :show-fullsize="true" :is-large-container-view="true"
-                :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postDetails.currentThreadView.post.author.handle"/>
+                @image-clicked="showImageFullscreen" :show-fullsize="true" :media-embed="{$type:'app.bsky.embed.images#view', images: [getEmbededImageObjects.images[currentMediaIndex]]} as AppBskyEmbedImages.View" :is-large-container-view="true"
+                :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postDetails.currentThreadView.post.author.handle"
+                :post-id="getEndOfPostUri" :media-index="currentMediaIndex"/>
                 <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
                 class="relative flex flex-col max-w-full h-full justify-center p-5"
                 :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
                 :video-view="postDetails.currentThreadView.post.embed">
                 </video-container>
-                <EmbedExternal v-else-if="hasEmbedGIFMedia" @image-clicked="showImageFullscreen" :embed="getEmbedGIFMedia" :show-fullsize="true"/>
+                <EmbedExternal v-else-if="hasEmbedGIFMedia" @image-clicked="showImageFullscreen" :embed="getEmbedGIFMedia" :show-fullsize="true"
+                :author="postDetails.currentThreadView.post.author.handle" :post-id="getEndOfPostUri"/>
                 <div class="flex h-full w-10 shrink-0 items-center ml-auto">
                     <SlideshowArrow v-if="canIncreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Right" @button-clicked="increaseCurrentMediaIndex"/>
                 </div>
@@ -191,7 +193,7 @@ import { isView as isImageView, ViewImage } from '@atproto/api/dist/client/types
 import { isView as isVideoView, View as ViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { AppBskyEmbedExternal, AppBskyEmbedRecordWithMedia } from '@atproto/api';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia, AppBskyFeedPost } from '@atproto/api';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import PostInteractionIcons from './PostInteractionIcons.vue';
@@ -230,9 +232,9 @@ export default defineComponent({
         //     required: true
         // },
         /**
-         * URI that points to the initial Post Thread to show in modal.
+         * DID that points to the initial Post Thread to show in modal.
          */
-        initialThreadUri:{
+        postDid:{
             type: String,
             default:''
         },
@@ -242,16 +244,16 @@ export default defineComponent({
         clickedMediaIndex:{
             type: Number,
             default: 0
-        }
+        },
+        /**The handle of the creator of the Post to show. */
+        handle:{
+            type:String,
+        },
+
     },
     data(){
         return{
-            imageCollection: [
-                'src/assets/test-media/posts/image04.png',
-                'src/assets/test-media/posts/image01.png',
-                'src/assets/test-media/posts/image05.png',
-                'src/assets/test-media/posts/image06.png',
-            ],
+            imageCollection: [],
             postDetails,
             convertToLongTimestamp,
             isImageView,
@@ -286,18 +288,27 @@ export default defineComponent({
             fullscreenImage : {} as ViewImage|ViewExternal,
             /**Is the "scroll to top" button currently visible? */
             isScrollToTopVisible:false,
+            /**Record of the last valid Post DID used. Used to prevent reload when `CreatePost`
+             * or `Login` modal are closed after opening on top of `PostFocusModal`. */
+            lastPostDid:'',
+            /**Record of the route the User was using before opening this modal. Navigated back to when
+             * the modal is closed. */
+            routeEntryPoint:'/'
         }
     },
     methods:{
         increaseCurrentMediaIndex(){
-            if(this.currentMediaIndex+1 < this.imageCollection.length)
+            if(this.currentMediaIndex+1 < this.getEmbededImageObjects.images.length)
                 // postDetails.setClickedMediaIndex(postDetails.getClickedMediaIndex()+1);
-                this.currentMediaIndex = this.currentMediaIndex+1;
+                // this.currentMediaIndex = this.currentMediaIndex+1;
+                this.$router.push(`/profile/${postDetails.currentThreadView.post.author.handle}/post/${postDetails.currentThreadView.post.uri.split('/').pop()}/${this.currentMediaIndex+1}`);
         },
         decreaseCurrentMediaIndex(){
             if(this.currentMediaIndex-1 >= 0)
                 // postDetails.setClickedMediaIndex(postDetails.getClickedMediaIndex()-1);
-                this.currentMediaIndex = this.currentMediaIndex-1;
+                // this.currentMediaIndex = this.currentMediaIndex-1;
+                this.$router.push(`/profile/${postDetails.currentThreadView.post.author.handle}/post/${postDetails.currentThreadView.post.uri.split('/').pop()}/${this.currentMediaIndex-1}`);
+
         },
         showImageFullscreen(image:ViewImage|ViewExternal){
             this.fullscreenImage = image;
@@ -308,7 +319,7 @@ export default defineComponent({
             this.fullscreenImage = {} as ViewImage|ViewExternal;
         },
         hideModal(){
-            postDetails.hideFocusModal();
+            this.$router.push(this.routeEntryPoint);
             this.threadNavIndex = 0; //Clear thread navigation history
             this.threadNavHistory = [emptyPostThread];
         },
@@ -349,17 +360,23 @@ export default defineComponent({
          * context in other situations use {@link updateThreadContextFromPost}.
          */
         async getThreadData(){
-            await getPostThread(this.initialThreadUri)
+            postDetails.isAwaitingFocusData = true;
+            await getPostThread(this.postUri)
             .then(res => {
                 this.postThread = res.data.thread as ThreadViewPost;
                 // postDetails.currentThreadView = postDetails.threadNavHistory[0] = postDetails.postThread;
                 //Take Post Thread prop and update relevant variables
                 postDetails.currentThreadView = this.threadNavHistory[0] = this.postThread;
-                this.currentMediaIndex = this.clickedMediaIndex; //Set initial media item to show
-                postDetails.isAwaitingFocusData = false;
-                console.log(this.postThread);
+                if(!Number.isNaN(this.clickedMediaIndex))
+                    this.currentMediaIndex = this.clickedMediaIndex; //Set initial media item to show
+                else this.currentMediaIndex = 0;
+                console.log(this.clickedMediaIndex);
             })
-            .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')));
+            .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')))
+            .finally(()=>{
+                postDetails.isAwaitingFocusData = false;
+                document.title = this.getFocusPostTitle;
+            });
         },
         setCurrentThreadView(cid: string) {
             var result = this.findThreadView(cid,this.postThread);
@@ -423,19 +440,33 @@ export default defineComponent({
          * Updates the Posts/Replies displayed in the PostFocusModal component.
          * Triggered by an emitted message coming from a child `FocusFeedPost`
          * timestamp being clicked.
-         * @param newThreadContextURI The URI pointing to the new Post Thread context to display.
+         * @param newThreadContext The new Post Thread context to display.
          * @param mediaIndex The Index of the media in the Post's collection to display.
          */
-        async updateThreadContextFromPost(newThreadContextURI:string,mediaIndex:number){
-            postDetails.isAwaitingFocusData = true;
-            // await getPostThread(newThreadContext.post.uri)
-            await getPostThread(newThreadContextURI)
-            .then(res => {
-                this.setThreadContext(res.data.thread as ThreadViewPost);
+        async updateThreadContextFromPost(newThreadContext:ThreadViewPost|undefined,mediaIndex:number){
+            if(typeof newThreadContext != 'undefined'){
+                // postDetails.isAwaitingFocusData = true;
+                // // await getPostThread(newThreadContext.post.uri)
+                // await getPostThread(this.createThreadPostUri(newThreadContext))
+                // .then(res => {
+                //     this.setThreadContext(res.data.thread as ThreadViewPost);
+                //     this.currentMediaIndex = mediaIndex;
+                // })
+                // .catch(err => toast.add(HandleAPIError(err, 'Error getting reply')))
+                // .finally(() => postDetails.isAwaitingFocusData = false);
+                console.log(mediaIndex);
+                this.$router.push(`/profile/${newThreadContext.post.author.handle}/post/${newThreadContext.post.uri.split('/').pop()}`);
                 this.currentMediaIndex = mediaIndex;
-            })
-            .catch(err => toast.add(HandleAPIError(err, 'Error getting reply')))
-            .finally(() => postDetails.isAwaitingFocusData = false);
+            }
+        },
+        /**
+         * Method used to create a "post URI" for the current thread context.
+         * Returns URI in the format of `at://[handle]/app.bsky.feed.post/[post DID]`.
+         * @param thread The `ThreadViewPost` thread context to create the URI for.
+         */
+        createThreadPostUri(thread:ThreadViewPost){
+            let postDid = thread.post.uri.split('/').pop();
+            return `at://${thread.post.author.handle}/app.bsky.feed.post/${postDid}`;
         },
         /**
          * Method that resets the current ThreadView back to the Post
@@ -560,15 +591,15 @@ export default defineComponent({
          */
         hasEmbededImagesWithAltText(){
             //Image Post
-            if(postDetails.currentThreadView.post.embed &&
-            postDetails.currentThreadView.post.embed.images &&
+            if(typeof postDetails.currentThreadView.post.embed != 'undefined' &&
+            typeof postDetails.currentThreadView.post.embed.images != 'undefined' &&
             (postDetails.currentThreadView.post.embed.images as ViewImage[]).length > 0 &&
             (postDetails.currentThreadView.post.embed.images as ViewImage[])[this.currentMediaIndex].alt.trim() != '')
                 return true;
             //Image Post w/ QRT
-            else if(postDetails.currentThreadView.post.embed &&
+            else if(typeof postDetails.currentThreadView.post.embed != 'undefined' &&
             AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
-            postDetails.currentThreadView.post.embed.media.images &&
+            typeof postDetails.currentThreadView.post.embed.media.images != 'undefined' &&
             (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0 &&
             (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[0].alt.trim() != '')
                 return true;
@@ -599,6 +630,25 @@ export default defineComponent({
             (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
                 return (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[this.currentMediaIndex].alt;
             return '';
+        },
+        /**
+         * Method used to return the Embed View (AppBskyEmbedImages.View) held by the currently
+         * selected Post. Resolves the location of the data based on the type of
+         * the Post object.
+         */
+        getEmbededImageObjects():AppBskyEmbedImages.View{
+            if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedImages.isView(postDetails.currentThreadView.post.embed))
+                return postDetails.currentThreadView.post.embed;
+            else if(postDetails.currentThreadView.post.embed &&
+            AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
+            AppBskyEmbedImages.isView(postDetails.currentThreadView.post.embed.media) &&
+            postDetails.currentThreadView.post.embed.media.images.length>0)
+                return postDetails.currentThreadView.post.embed.media;
+            return {images:[]};
+        },
+        getCurrentImageToDisplay(){
+            return {$type:'app.bsky.embed.images#view', images: [this.getEmbededImageObjects.images[this.currentMediaIndex]]} as AppBskyEmbedImages.View;
         },
         /**
          * Method used to return the image collection held by the currently
@@ -634,9 +684,15 @@ export default defineComponent({
             AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed)))
                 return postDetails.currentThreadView.post.embed;
         },
+        /**Returns the last bit of ID information held at the end of the URI that points to
+         * the currently displayed Post. */
+        getEndOfPostUri():string{
+            let postId = postDetails.currentThreadView.post.uri.split('/').pop();
+            return typeof postId != 'undefined' ? postId : '';
+        },
         /**Determines if the current media index can be decreased.*/
         canDecreaseMediaIndex(){
-            let currentImages = this.getEmbededImageViewImageObjects;
+            let currentImages = this.getEmbededImageObjects.images;
             if(currentImages.length>0){
                 if(this.currentMediaIndex != 0 &&
                 this.currentMediaIndex>=0)
@@ -646,9 +702,9 @@ export default defineComponent({
         },
         /**Determines if the current media index can be increased.*/
         canIncreaseMediaIndex(){
-            let currentImages = this.getEmbededImageViewImageObjects;
+            let currentImages = this.getEmbededImageObjects.images;
             if(currentImages.length>0){
-                if(this.currentMediaIndex+1 != currentImages.length &&
+                if(this.currentMediaIndex+1 < currentImages.length &&
                 this.currentMediaIndex>=0)
                     return true;
             }
@@ -667,7 +723,43 @@ export default defineComponent({
         showThreadGateRules():boolean{
             //if NOT (viewing a reply while not logged in)
             return !(typeof postDetails.currentThreadView.parent != 'undefined' && !AppState.isAuthBrowsing);
+        },
+        postUri(){
+            return `at://${this.handle}/app.bsky.feed.post/${this.postDid}`;
+        },
+        /**Returns formatted title for Post currently being viewed on PostFocusModal. */
+        getFocusPostTitle(){
+            let postTextClip = ''
+            if(!postDetails.isAwaitingFocusData && AppBskyFeedPost.isMain(postDetails.currentThreadView.post.record)){
+                let fullText = (postDetails.currentThreadView.post.record as AppBskyFeedPost.Main).text
+                let sliceLength = 21;
+                if(fullText.length<sliceLength) sliceLength = fullText.length
+                postTextClip =  fullText.slice(0,sliceLength-1);
+            }
+            return postTextClip.trim() != '' ? `${postTextClip}... by ${postDetails.currentThreadView.post.author.displayName} | moongate` : `${postDetails.currentThreadView.post.author.displayName}'s Post | moongate`;
         }
+    },
+    watch:{
+        /**Updates thread context when Post DID changes (new post in thread is navigated to). */
+        postDid(newDid:string,oldDid:string){
+            if(typeof newDid != 'undefined' && newDid.trim() != '' && newDid != oldDid && newDid != this.lastPostDid){
+                this.lastPostDid = newDid;
+                this.getThreadData();
+            }
+        },
+        /**Updates the displayed post image when media index in route changes. */
+        clickedMediaIndex(newIndex:number,oldIndex:number){
+            if(typeof newIndex != 'undefined' && newIndex != oldIndex && !this.$router.currentRoute.value.path.includes('/download'))
+                this.currentMediaIndex = newIndex;
+        }
+    },
+    beforeRouteEnter(to, from, next){
+        if(from.name == 'saving media'){//restore page title after navigating back from `SaveMediaModal`
+            next(vm => {
+                document.title = vm.getFocusPostTitle;
+            })
+        }
+        else next();
     },
     created(){
         /**Defines actions for the `toggleScrollToTop` function */
@@ -679,14 +771,19 @@ export default defineComponent({
                 this.isScrollToTopVisible = true;
             }
         },200);
+        this.lastPostDid = this.postDid;
+        if(window.history.state.back != null && !(window.history.state.back as String).includes('/post')) this.routeEntryPoint = window.history.state.back;
+        else if(window.history.state.forward != null && !(window.history.state.forward as String).includes('/post')) this.routeEntryPoint = window.history.state.forward;
+        console.log(this.handle);
+        console.log(this.postDid);
+        this.getThreadData();
     },
     mounted(){
         //Add keyboard+mouse shortcut listener
         this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
         this.$el.addEventListener('mouseup', this.onMouseShortcutEntered);
         (this.$el as HTMLElement).focus();
-        //Get Post Thread data via Bsky API
-        if(this.initialThreadUri != '') this.getThreadData();
+        document.title = `Loading Post data... | moongate`
     },
     beforeUnmount() {
         console.log('Closing PostFocusModal...');

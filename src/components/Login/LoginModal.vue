@@ -1,5 +1,5 @@
 <template>
-    <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-50 flex
+    <div data-testid="login-modal" tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-50 flex
         flex-col w-full h-full bg-slate-900/80 backdrop-blur-sm justify-center focus-visible:outline-none">
         <div @click="closeModal" class="absolute z-10 w-full h-full"></div>
         <div class="flex flex-col relative z-20 gap-4 w-[90%] md:w-2/3 lg:max-w-[700px]
@@ -145,13 +145,15 @@
                 </div>
             </Transition>
             <div class="flex">
-                <SquareButton v-if="currentPage != 0" @click="clickedBackButton" class="mr-auto bg-btn hover:bg-btnHover">Back</SquareButton>
+                <SquareButton v-if="currentPage != 0" @click="clickedBackButton" :is-awaiting-response="attemptingLogin"
+                class="mr-auto bg-btn hover:bg-btnHover w-12">Back</SquareButton>
                 <SquareButton v-if="currentPage == modalPage.length-1" @click="loginAccount" :is-disabled="isLoginDisabled"
                 :is-awaiting-response="attemptingLogin" :title="titleMessage"
                 class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
                 text-primary md:self-end md:w-40 h-10">Login</SquareButton>
             </div>
         </div>
+        <ConfirmModal ref="confirm"/>
     </div>
 </template>
 
@@ -169,6 +171,7 @@ import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { ATPlatform, IAccount, LoginState } from '../../interfaces/AccountInterfaces';
 import RadioBarButton from '../Utilities/RadioBarButton.vue';
 import { GenerateUniqueID } from '../../helpers/generators';
+import ConfirmModal from '../Utilities/ConfirmModal.vue';
 
 /**
  * Asks the User if they're sure they would like to delete the selected
@@ -184,6 +187,7 @@ export default defineComponent({
         InLaInput: InLaInput,
         SquareButton,
         RadioBarButton,
+        ConfirmModal,
     },
     data(){
         return{
@@ -227,7 +231,6 @@ export default defineComponent({
                 AppState.currentUsername = "Logged In";
                 accountDID = res.data.did;
                 AppState.canBrowse = true;
-                AppState.ToggleLoginModal();
                 AccountPeekState.lastMouseEvent = new MouseEvent('login');
                 AccountPeekState.profileData = {did:'',handle:''};
                 this.refreshFeeds();//Refresh feeds so we can get likes, blocks etc.
@@ -275,6 +278,7 @@ export default defineComponent({
                         AppSettingsState.Settings.savedAccountState.state = LoginState.Authorized;
                     }
                     AppSettingsState.saveSettingsToStore();
+                    this.closeModal();
                 })
                 .catch(err => {
                     toast.add(HandleAPIError(err, 'Error getting profile info'));
@@ -285,7 +289,8 @@ export default defineComponent({
         browseAsGuest(){
             AppState.browseAsGuest();
             AppSettingsState.saveSettingsToStore();
-            AppState.ToggleLoginModal();
+            // AppState.ToggleLoginModal();
+            this.$router.go(-1);
         },
         /**Method called when User chooses to browse as guest. */
         asGuestClicked(){
@@ -301,16 +306,21 @@ export default defineComponent({
             else this.gotoLoginPage();
         },
         /**Method called when a saved account is clicked/selected. */
-        clickedSavedAccount(account:IAccount){
+        async clickedSavedAccount(account:IAccount){
             this.selectedAccount = account;
             if(account.id.trim() != '' && this.isRemovingSavedAccount){
-                ConfirmSavedAccountRemoval(this.removeSavedAccount);
+                type ConfirmModalRef = InstanceType<typeof ConfirmModal>;
+                await (this.$refs.confirm as ConfirmModalRef).show('Are you sure you wish to remove this Saved Account?')
+                .then(res => {
+                    if(res) this.removeSavedAccount();
+                })
             }
             else this.gotoLoginPage(account.handle.split('.bsky.social')[0]);
         },
         /**
          * Method that deletes Saved Feed a specified index. Should not be
-         * called directly - use `askAboutIndexedDBFeedDeletion()`.
+         * called directly - use `ConfirmModal.show()` or
+         * `askAboutIndexedDBFeedDeletion()`.
          */
         removeSavedAccount(){
             try{
@@ -379,7 +389,11 @@ export default defineComponent({
             this.isRemovingSavedAccount = !this.isRemovingSavedAccount;
         },
         closeModal(){
-            AppState.ToggleLoginModal();
+            // AppState.ToggleLoginModal();
+            console.log(window.history.state);
+            if(window.history.state.back != null && (window.history.state.back.includes('/profile') || window.history.state.back.includes('/settings'))) this.$router.go(-1);
+            else if(window.history.state.back == null) this.$router.push(`/`);
+            else this.$router.push(`/`);
         },
         /**
          * Method that refreshes all the displayed Feeds after the User logs in.

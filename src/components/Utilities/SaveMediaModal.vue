@@ -4,11 +4,9 @@
         <div class="relative flex flex-col max-w-[48rem] w-4/5 m-auto z-50
         rounded bg-savemodalBG border border-slate-800 overflow-hidden">
             <div class="px-2 py-1 bg-banner border-b border-slate-500">Save as</div>
-            <div class="flex flex-col gap-2 p-3 overflow-hidden">
-                <div v-if="!AppState.saveMedia.uri" class="self-start rounded h-32 bg-slate-500 overflow-hidden"
-                :style="`aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}`">
-                    <div class="h-full bg-cover" :style="`background-image: url(${AppState.saveMedia.thumb})`"></div>
-                </div>
+            <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
+                <img v-if="!AppState.saveMedia.uri" @contextmenu.prevent :src="AppState.saveMedia.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
+                :style="(typeof AppState.saveMedia.aspectRatio != 'undefined') ? `aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}` : ''" />
                 <div v-else class="self-start rounded size-32 bg-slate-500 overflow-hidden" @contextmenu.prevent>
                     <div class="h-full bg-contain bg-no-repeat bg-center" :style="`background-image: url(${AppState.saveMedia.uri})`"></div>
                 </div>
@@ -49,6 +47,18 @@
                     <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
                 </SquareButton>
             </div>
+            <div v-else class="flex flex-col gap-2 p-3 overflow-hidden">
+                <div class="self-start rounded h-32 w-52 bg-placeholderPulseBG animate-pulse overflow-hidden">
+                </div>
+                <div class="flex h-10 w-full bg-placeholderPulseBG animate-pulse rounded">
+                </div>
+                <div v-if="isTauri()" class="relative h-10 w-full">
+                </div>
+                <div v-if="isTauri()" class="rounded h-3 w-full overflow-hidden bg-placeholderPulseBG animate-pulse">
+                </div>
+                <div v-else class="h-10 w-full bg-placeholderPulseBG animate-pulse rounded">
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -65,11 +75,37 @@ import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images'
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { invoke, isTauri } from '@tauri-apps/api/core';
 import { CreateBskyMediaDownloadURL } from '../../helpers/converters';
+import { getPostImages, getPostThread } from '../../lib/api/Post.vue';
+import { emptyPostThread } from '../../fake-data/dumPostData';
+import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { router } from '../../main';
+import { AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
 
 export default defineComponent({
     components:{
         InLaInput,
         SquareButton,
+    },
+    props:{
+        /**The handle of the creator of the Post to show. */
+        handle:{
+            type:String,
+        },
+        /**
+         * Indentifier that helps point to the initial Post Thread to show in modal.
+         * Should be taken from the end section of a Post's URI.
+         */
+        postId:{
+            type: String,
+            default:''
+        },
+        /**
+         * Index of initial media to show in modal.
+         */
+        clickedMediaIndex:{
+            type: Number,
+            default: 0
+        },
     },
     data(){
         return{
@@ -82,6 +118,12 @@ export default defineComponent({
             progressGoal:0,
             /**State value indicating if a file with the same name already exists in current directory. */
             isFileNameTaken:false,
+            /**Are we waiting for the related Post's data to be returned. */
+            isAwaitingPostData:false,
+            /**Post data used to download related image. */
+            postData:emptyPostThread,
+            /**The previous page the User was at before moving to download media. If it exists, it is returned to when `SaveMediaModal` is closed. */
+            previousURL:'',
             isTauri,
         }
     },
@@ -184,7 +226,10 @@ export default defineComponent({
          * Method used to close `SaveMediaModal`.
          */
         closeModal(){
-            if(!this.isDownloading) AppState.isSavingMediaModalVisible = false;
+            if(!this.isDownloading){
+                if(window.history.state.back != null && window.history.state.back.includes('/profile')) this.$router.go(-1);
+                else this.$router.push(`/`);
+            }
         },
         /**
          * Method that attempts to initiate download of specified file.
@@ -259,7 +304,26 @@ export default defineComponent({
             //only set using an actual directory select dialog
             if(AppState.lastMediaSaveDirectory.trim() != '') return true;
             return false;
-        }
+        },
+        /**Post URI formated as URI beginning with 'at://'. */
+        postUri(){
+            return `at://${this.handle}/app.bsky.feed.post/${this.postId}`;
+        },
+        /**
+         * Method that figures out what images exist in the passed in Post
+         * based on what type of data configuration the current Post has.
+         * @returns `ViewImage[]` containing Post images.
+         */
+        getPostImages():ViewImage[]{
+            let imageContainer = getPostImages({$type:'app.bsky.feed.defs#postView',...this.postData.post});
+            if(AppBskyEmbedImages.isView(imageContainer)){
+                return imageContainer.images;
+            }
+            else if(AppBskyEmbedRecordWithMedia.isView(imageContainer)){
+                return (imageContainer.media as AppBskyEmbedImages.View).images;
+            }
+            return [];
+        },
     },
     watch:{
         /**
@@ -278,8 +342,55 @@ export default defineComponent({
             }
         }
     },
+    beforeRouteEnter(to,from,next){
+        next(vm => {
+            vm.$data.previousURL = from.path
+            document.title = `Saving Media Shared by ${vm.$props.handle} | moongate`;
+        })
+    },
+    async created(){
+        if(typeof AppState.saveMedia.thumb != 'undefined' && AppState.saveMedia.thumb == 'unset'){
+            //retrieve post data
+            this.isAwaitingPostData = true
+            await getPostThread(this.postUri)
+            .then(res => {
+                this.postData = res.data.thread as ThreadViewPost;
+            })
+            .catch(err => toast.add({summary:'Error getting Post thread for focus modal', detail:`${err}`, severity:'error', group:'tr', life:3000}))
+            .finally(()=>{
+                this.isAwaitingPostData = false;
+            });
+            let fileName = undefined;
+            let safeHandle = undefined;
+            let image = this.getPostImages[this.clickedMediaIndex] //this.postData.post.embed
+            AppState.saveMedia = image;
+            if(!image.uri){//not Tenor GIF
+                fileName = (image as ViewImage).fullsize.split('\/').pop()?.split('@')[0];
+                safeHandle = '';
+                if(typeof this.handle != 'undefined') safeHandle =  this.handle.replace (/\./g,'_');
+                AppState.fileSaveDetails.full = `${fileName} by ${safeHandle}`;
+                AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
+                AppState.fileSaveDetails.extension = '.jpg'; //Need to create method that parses image URL to determine extension (the @jpeg part)
+                AppState.fileSaveDetails.handle = typeof this.handle != 'undefined' ? this.handle : '';
+                // AppState.fileSaveDetails.postText = postText ? postText : '';
+
+            }
+            else{
+                fileName = (image as ViewExternal).uri.split('\/').pop()?.split('@')[0];
+                fileName = fileName ? fileName.split('.gif')[0] : '';
+                AppState.fileSaveDetails.full = `${fileName}`;
+                AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
+                AppState.fileSaveDetails.extension = '.gif';
+                AppState.fileSaveDetails.handle = '';
+                // AppState.fileSaveDetails.postText = postText ? postText : '';
+            }
+        }
+    },
     mounted(){
         this.checkIfFileNameAlreadyExists();
+    },
+    beforeUnmount(){
+        AppState.saveMedia = {alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'};//"clear" saveMedia variable
     }
 })
 </script>
