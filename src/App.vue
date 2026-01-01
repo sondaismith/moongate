@@ -20,21 +20,21 @@ onBeforeMount(async () => {
 <template>
   <!-- <Sidebar/> -->
   <!-- <DemoSidebar/> -->
-   <nav class="flex flex-wrap divide-x-2">
-      <RouterLink to="/">Home</RouterLink>
-      <RouterLink to="/about">About</RouterLink>
-      <RouterLink to="/settings">Settings</RouterLink>
-      <RouterLink to="/create/feed">Create Feed</RouterLink>
-      <RouterLink to="/profile/mega64official.bsky.social">Mega64</RouterLink>
-      <RouterLink to="/profile/jonbois.bsky.social">Jon Bois</RouterLink>
-      <RouterLink to="/profile/fang.3am.moe">Fang Guu</RouterLink>
-      <RouterLink to="/profile/handle.will.fail">[Invalid Handle]</RouterLink>
-      <RouterLink to="/profile/jonbois.bsky.social/post/3m5u7c6woo22v">Jon Bois sunset skeet</RouterLink>
-      <RouterLink to="/profile/margomarch.bsky.social/post/3ltruwgg7ms2z/2">Margo image link</RouterLink>
-      <RouterLink to="/profile/sad-machines.bsky.social/post/3lzrqulh7ic2l">sad-machines thread w/ multi-image posts</RouterLink>
-      <RouterLink to="/create/feed/following">direct link to creating following feed</RouterLink>
-      <RouterLink to="/create/feed/user/summary">user summary</RouterLink>
-      <RouterLink to="/create/post">create post</RouterLink>
+  <nav v-if="false" class="flex flex-wrap divide-x-2">
+    <RouterLink to="/">Home</RouterLink>
+    <RouterLink to="/about">About</RouterLink>
+    <RouterLink to="/settings">Settings</RouterLink>
+    <RouterLink to="/create/feed">Create Feed</RouterLink>
+    <RouterLink to="/profile/mega64official.bsky.social">Mega64</RouterLink>
+    <RouterLink to="/profile/jonbois.bsky.social">Jon Bois</RouterLink>
+    <RouterLink to="/profile/fang.3am.moe">Fang Guu</RouterLink>
+    <RouterLink to="/profile/handle.will.fail">[Invalid Handle]</RouterLink>
+    <RouterLink to="/profile/jonbois.bsky.social/post/3m5u7c6woo22v">Jon Bois sunset skeet</RouterLink>
+    <RouterLink to="/profile/margomarch.bsky.social/post/3ltruwgg7ms2z/2">Margo image link</RouterLink>
+    <RouterLink to="/profile/sad-machines.bsky.social/post/3lzrqulh7ic2l">sad-machines thread w/ multi-image posts</RouterLink>
+    <RouterLink to="/create/feed/following">direct link to creating following feed</RouterLink>
+    <RouterLink to="/create/feed/user/summary">user summary</RouterLink>
+    <RouterLink to="/create/post">create post</RouterLink>
   </nav>
   <RouterView />
   <RouterView name="modal" v-slot="{Component}" :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
