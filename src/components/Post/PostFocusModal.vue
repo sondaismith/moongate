@@ -1,5 +1,5 @@
 <template>
-    <div data-test="post-focus-modal" id="post-focus-modal" tabindex="0" @scroll.passive="toggleScrollToTop"
+    <div data-testid="post-focus-modal" id="post-focus-modal" tabindex="0" @scroll.passive="toggleScrollToTop"
     class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
         {{ void "Fullscreen Image" }}
         <Transition>
@@ -77,7 +77,7 @@
         {{ void "Comments Section" }}
         <div class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto">
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
-            <div v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
+            <div data-testid="postFocusModal-focus-post-loading" v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
                 <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
                     <div class="flex gap-2 mb-1">
                         <div class="drop-shadow-md">
@@ -126,7 +126,7 @@
                     </div>
                 </div>
                 {{ void "Post Content - Text" }}
-                <RichPostTextBsky data-test="postFocusModal-text" class="text-sm pt-2 text-primary"
+                <RichPostTextBsky data-testid="postFocusModal-text" class="text-sm pt-2 text-primary"
                 :post-text="(postDetails.currentThreadView.post.record as Record).text"
                 :post-facets="(postDetails.currentThreadView.post.record as Record).facets"
                 :is-changing-thread-context="isChangingThreadContext"/>
@@ -372,10 +372,14 @@ export default defineComponent({
                 else this.currentMediaIndex = 0;
                 console.log(this.clickedMediaIndex);
             })
-            .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')))
+            .catch(err => {
+                // toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal'))
+                console.log('PostFocusModal - error getting Post Thread data')
+            })
             .finally(()=>{
                 postDetails.isAwaitingFocusData = false;
                 document.title = this.getFocusPostTitle;
+                console.log('PostFocusModal - getThreadData "finally" handler has run')
             });
         },
         setCurrentThreadView(cid: string) {

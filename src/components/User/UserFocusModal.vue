@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
+    <div data-testid="user-focus-modal" class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{ void "Fullscreen Image" }}
         <TransitionGroup>
@@ -45,7 +45,7 @@
                 </SquareButton>
             </div>
             {{ void "Main Container" }}
-            <div v-if="!isHandleValid" class="flex flex-col gap-1 items-center mx-auto py-4">
+            <div data-testid="userFocusModal-invalid-handle" v-if="!isHandleValid" class="flex flex-col gap-1 items-center mx-auto py-4">
                 <i-mdi:alert-circle class="size-14"/>
                 <div class="text-center pb-2">
                     <div class="font-bold bg-pink-300s">Unable to resolve handle</div>
@@ -55,7 +55,7 @@
                 border border-outlineLighter shadow-none mr-1"
                 @click="updateDisplayedData">Try Again?</button>
             </div>
-            <div v-else id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="0">
+            <div data-testid="userFocusModal-user-focus-container" v-else id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="0">
                 <div class="flex flex-col h-full">
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0s grow items-center">
