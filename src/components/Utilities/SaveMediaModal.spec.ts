@@ -23,7 +23,7 @@ let router:Router;
 //     })
 
 beforeAll(() => {
-    server.listen()
+    server.listen({onUnhandledRequest: 'error'})
     console.log('MSW server listening')
 })
 beforeEach(() => {
@@ -59,6 +59,7 @@ test('INCOMPLETE TEST - post content is as expected', async () => {
     // router.push('/profile/testman.debug');
     router.push('/profile/testman.debug/post/readablePostId');
     await flushPromises();
+    await flushPromises();
     // console.log(wrapper.html())
     // expect(wrapper.find('[data-testid="user-focus-modal"').exists()).toBe(true);
     expect(wrapper.find('[data-testid="post-focus-modal"').exists()).toBe(true);
@@ -66,6 +67,6 @@ test('INCOMPLETE TEST - post content is as expected', async () => {
     // expect(wrapper.find('[data-testid="userFocusModal-invalid-handle"').exists()).toBe(true);
     expect(router.currentRoute.value.path).toBe('/profile/testman.debug/post/readablePostId');
     // router.push('/profile/testman.debug/post/readablePostId');
-    // expect(wrapper.find('[data-testid="postFocusModal-focus-post-loading"').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="postFocusModal-focus-post-loading"').exists()).toBe(false);
     // expect(wrapper.find('[data-testid="postFocusModal-text"').exists()).toBe(true);
 })
