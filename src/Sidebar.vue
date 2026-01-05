@@ -1,5 +1,5 @@
 <template>
-    <div data-test="app-viewport" id="app-viewport" class="flex flex-row absolute h-full w-screen"
+    <div data-testid="app-viewport" id="app-viewport" class="flex flex-row absolute h-full w-screen"
     :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
         {{ void "sidebar" }}
         <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar w-16 shrink-0 items-center">

@@ -1,6 +1,7 @@
 import "fake-indexeddb/auto";
 import App from '../../App.vue';
 import PostFocusModal from '../Post/PostFocusModal.vue';
+import {render, fireEvent, screen, prettyDOM, waitFor} from '@testing-library/vue'
 import { flushPromises, mount } from '@vue/test-utils';
 import { beforeAll, afterEach, afterAll, expect, beforeEach } from 'vitest'
 import { server } from '../../mocks/node'
@@ -69,4 +70,23 @@ test('INCOMPLETE TEST - post content is as expected', async () => {
     // router.push('/profile/testman.debug/post/readablePostId');
     expect(wrapper.find('[data-testid="postFocusModal-focus-post-loading"').exists()).toBe(false);
     // expect(wrapper.find('[data-testid="postFocusModal-text"').exists()).toBe(true);
+})
+
+test('testing-library 1st test', async () => {
+    render(App,{
+        global:{
+            plugins: [router],
+        },
+    });
+    // router.push('/profile/testman.debug/post/readablePostId');
+    router.push('/profile/bernews.bsky.social/post/3mbgzoqre6n2z');
+    await router.isReady();
+    // screen.debug();
+    // console.log(prettyDOM(screen.getByTestId('post-focus-modal')))
+    await waitFor(() => {
+        expect(screen.getByTestId('postFocusModal-focus-post-loaded')).toBeDefined()
+    })
+    console.log(screen.getByTestId('PostFocusModal-handle').innerHTML);
+    console.log(screen.getByText('invalid').innerHTML)
+    // console.log(screen.getByTestId('PostFocusModal-handle').innerHTML)
 })

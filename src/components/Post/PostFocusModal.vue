@@ -102,7 +102,7 @@
                     </div>
                 </div>
             </div>
-            <div v-else class="p-4 pb-1 sticky top-10 sm:top-0 z-10 bg-postFocusBG border-b border-outline shadow-lg sm:shadow-none shadow-postFocusModalDetailsShadow/10">
+            <div data-testid="postFocusModal-focus-post-loaded" v-else class="p-4 pb-1 sticky top-10 sm:top-0 z-10 bg-postFocusBG border-b border-outline shadow-lg sm:shadow-none shadow-postFocusModalDetailsShadow/10">
                 {{ void "User Info/Actions" }}
                 <div class="flex gap-1">
                     <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
