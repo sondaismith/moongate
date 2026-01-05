@@ -1,10 +1,10 @@
 import "fake-indexeddb/auto";
+import { server } from '../../mocks/node'
 import App from '../../App.vue';
 import PostFocusModal from '../Post/PostFocusModal.vue';
+import { beforeAll, afterEach, afterAll, expect, beforeEach } from 'vitest'
 import {render, fireEvent, screen, prettyDOM, waitFor} from '@testing-library/vue'
 import { flushPromises, mount } from '@vue/test-utils';
-import { beforeAll, afterEach, afterAll, expect, beforeEach } from 'vitest'
-import { server } from '../../mocks/node'
 import { createRouter, createWebHistory, Router } from 'vue-router';
 import { routes } from '../../lib/router';
 
@@ -79,14 +79,20 @@ test('testing-library 1st test', async () => {
         },
     });
     // router.push('/profile/testman.debug/post/readablePostId');
-    router.push('/profile/bernews.bsky.social/post/3mbgzoqre6n2z');
+    // router.push('/');
+    // router.push('/profile/bernews.bsky.social/post/3mbgzoqre6n2z');
+    router.push('/profile/sad-machines.bsky.social/post/3lzrqulh7ic2l');
     await router.isReady();
+    // router.push('/profile/sad-machines.bsky.social/post/3lzrqulh7ic2l');
     // screen.debug();
     // console.log(prettyDOM(screen.getByTestId('post-focus-modal')))
     await waitFor(() => {
         expect(screen.getByTestId('postFocusModal-focus-post-loaded')).toBeDefined()
     })
     console.log(screen.getByTestId('PostFocusModal-handle').innerHTML);
-    console.log(screen.getByText('invalid').innerHTML)
+    // await waitFor(() => {
+    //     console.log(screen.getByText('invalid').innerHTML)
+    // })
+    await screen.findByText('@sad-machines.bsky.social')
     // console.log(screen.getByTestId('PostFocusModal-handle').innerHTML)
 })

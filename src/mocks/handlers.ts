@@ -10,7 +10,7 @@ export const handlers = [
     })
   }),
   // http.get('**/app.bsky.feed.getPostThread?uri*', () => {
-  http.get('*/app.bsky.feed.getPostThread', () => {
+  http.get('*/app.bsky.feed.getPostThread', ({request}) => {
     console.log('trying to get post thread data from Bluesky API');
     return HttpResponse.json({
       "thread": {
