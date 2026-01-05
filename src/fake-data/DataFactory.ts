@@ -1,4 +1,4 @@
-import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { IFeedDescription, IFeedListing } from "../interfaces/FeedInterfaces";
 import { FeedEnums } from "../enums/FeedEnums";
 import { View } from "@atproto/api/dist/client/types/app/bsky/embed/external";
@@ -6,6 +6,7 @@ import { $Typed } from "@atproto/api/dist/client/util";
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 import { GenerateCID } from "../helpers/generators";
+import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 
 /**
  * Method used to create a dummy `FeedViewPost` object for testing purposes.
@@ -55,6 +56,53 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
                 $type: "app.bsky.feed.defs#reasonPin"
             }
         }
+    }
+    return post;
+}
+
+/**
+ * Method used to create a dummy `ThreadViewPost` object for testing purposes.
+ * MUST AWAIT IN ORDER FOR CID TO BE GENERATED.
+ * @example
+ * let post1:AppBskyFeedGetPostThread.OutputSchema;
+ * await CreateThreadViewPost('tester.da.playwright',"Lorem ipsum dipsum, dimsum, mmm I'm hungry",true,'I AM A TESTER').then(res =>{
+ *   post1 = {thread:res as $Typed<ThreadViewPost>}
+ * })
+ * @param handle The handle of the User who made the Post.
+ * @param postText The text content of the Post.
+ * @param includeEmbedLink Should this post contain an external link embed?
+ * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
+ * @param postTime The time this Post was created.
+ * @returns The created `ThreadViewPost` object.
+ */
+export async function CreateThreadViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
+    displayName:string='',postTime:Date=new Date()):Promise<ThreadViewPost>{
+    let cid = `author_${handle}_${1}`;
+    await GenerateCID(`author_${handle}_${1}`).then(res => {
+        cid = res.toString();
+    })
+    let profile:ProfileViewBasic={
+        did:`did:plc:fake_${1}`,
+        handle:handle,
+        displayName: displayName.trim() != '' ? displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' ')
+    }
+    let post:ThreadViewPost = {
+        $type:"app.bsky.feed.defs#threadViewPost",
+        post:{
+            author:profile,
+            cid:cid,
+            indexedAt:postTime.toISOString(),
+            record: {
+                $type: "app.bsky.feed.post",
+                createdAt: postTime.toISOString(),
+                langs: [
+                    "en-US"
+                ],
+                text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
+            },
+            uri:'at://did:plc:nowhere',
+            embed:includeEmbedLink ? CreateEmbed() : undefined
+        },
     }
     return post;
 }
@@ -328,6 +376,8 @@ export function CreateEmbed():$Typed<View>{
             thumb: `http://localhost:1420${import.meta.env.BASE_URL.replace('src','iframes/src')}assets/test-media/posts/image08.png`
             //above URI will only work when testing with Cypress...not sure how to check for the testing environment
             //"src/assets/test-media/posts/image08.png"
+            // "http://localhost:1420/src/assets/test-media/posts/image08.png"
+            //above URI works with Playwright
             //'https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg'
         }
     }
