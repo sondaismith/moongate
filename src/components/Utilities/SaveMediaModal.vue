@@ -1,7 +1,7 @@
 <template>
     <div class="absolute flex z-50 w-full h-full">
         <div @click="closeModal" class="absolute w-full h-full bg-slate-800/60 backdrop-blur-sm"></div>
-        <div class="relative flex flex-col max-w-[48rem] w-4/5 m-auto z-50
+        <div data-testid="saveMediaModal" class="relative flex flex-col max-w-[48rem] w-4/5 m-auto z-50
         rounded bg-savemodalBG border border-slate-800 overflow-hidden">
             <div class="px-2 py-1 bg-banner border-b border-slate-500">Save as</div>
             <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">

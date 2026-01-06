@@ -7,6 +7,7 @@ import { Notification } from "@atproto/api/dist/client/types/app/bsky/notificati
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 import { GenerateCID } from "../helpers/generators";
 import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
+import { AppBskyEmbedImages } from "@atproto/api/dist/client";
 
 /**
  * Method used to create a dummy `FeedViewPost` object for testing purposes.
@@ -75,7 +76,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
  * @param postTime The time this Post was created.
  * @returns The created `ThreadViewPost` object.
  */
-export async function CreateThreadViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
+export async function CreateThreadViewPost(handle:string, postText:string='', includeImage:boolean=false, includeEmbedLink:boolean=false,
     displayName:string='',postTime:Date=new Date()):Promise<ThreadViewPost>{
     let cid = `author_${handle}_${1}`;
     await GenerateCID(`author_${handle}_${1}`).then(res => {
@@ -100,9 +101,26 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
                 ],
                 text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
             },
-            uri:'at://did:plc:nowhere',
+            uri:'at://did:plc:nowherezonefake/app.bsky.feed.post/eenymeannuim0',
             embed:includeEmbedLink ? CreateEmbed() : undefined
         },
+    }
+    if(includeImage){
+        let image:$Typed<AppBskyEmbedImages.View> = {
+            $type:"app.bsky.embed.images#view",
+            images:[
+                {
+                    thumb: "http://localhost:1420/src/assets/test-media/posts/image08.png",
+                    fullsize: "http://localhost:1420/src/assets/test-media/posts/image08.png",
+                    alt: "",
+                    aspectRatio: {
+                        height: 350,
+                        width: 700
+                    }
+                }
+            ]
+        }
+        post.post.embed = image;
     }
     return post;
 }
