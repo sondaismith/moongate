@@ -72,12 +72,15 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
  * @param handle The handle of the User who made the Post.
  * @param postText The text content of the Post.
  * @param includeEmbedLink Should this post contain an external link embed?
+ * @param includeImage Should this post have an image attached?
+ * @param includeReply Should this image have a reply attached?
  * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
  * @param postTime The time this Post was created.
  * @returns The created `ThreadViewPost` object.
  */
 export async function CreateThreadViewPost(handle:string, postText:string='', includeImage:boolean=false, includeEmbedLink:boolean=false,
-    displayName:string='',postTime:Date=new Date()):Promise<ThreadViewPost>{
+    includeReply:{activate:boolean,images:boolean}={activate:false,images:false},displayName:string='',
+    postTime:Date=new Date()):Promise<ThreadViewPost>{
     let cid = `author_${handle}_${1}`;
     await GenerateCID(`author_${handle}_${1}`).then(res => {
         cid = res.toString();
@@ -121,6 +124,11 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
             ]
         }
         post.post.embed = image;
+    }
+    if(includeReply.activate){
+        let reply = await CreateThreadViewPost('mr.reply.guy', "Just replin'",true);
+        let replies:$Typed<ThreadViewPost>[] = [reply as $Typed<ThreadViewPost>]
+        post.replies = replies;
     }
     return post;
 }

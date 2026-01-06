@@ -104,7 +104,7 @@
         bg-btn hover:bg-btnHover cursor-pointer select-none">
             Reply
         </div>
-        <div class="flex w-full">
+        <div data-testid="focusFeedPost" class="flex w-full">
             <div>
                 <AvatarRound v-if="isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"/>
                 <div v-if="replyIndex !=undefined && totalReplies!=undefined && replyIndex<totalReplies" class="h-full bg-slate-700 w-0.5 m-auto"></div>
