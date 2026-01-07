@@ -76,7 +76,7 @@ export const UserFocusModalState = reactive({
                 newNavHistory.ProfileData = res.data;
             })
             .catch(err => {
-                // console.log(err);
+                console.log(err);
                 isHandleValid = false;
             })
             if(isHandleValid){//If provided handle is valid

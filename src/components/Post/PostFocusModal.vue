@@ -741,7 +741,8 @@ export default defineComponent({
                 if(fullText.length<sliceLength) sliceLength = fullText.length
                 postTextClip =  fullText.slice(0,sliceLength-1);
             }
-            return postTextClip.trim() != '' ? `${postTextClip}... by ${postDetails.currentThreadView.post.author.displayName} | moongate` : `${postDetails.currentThreadView.post.author.displayName}'s Post | moongate`;
+            let userId = (typeof postDetails.currentThreadView.post.author.displayName != 'undefined') ? postDetails.currentThreadView.post.author.displayName : postDetails.currentThreadView.post.author.handle;
+            return postTextClip.trim() != '' ? `${postTextClip}... by ${userId} | moongate` : `${userId}'s Post | moongate`;
         }
     },
     watch:{
@@ -766,7 +767,7 @@ export default defineComponent({
         }
         else next();
     },
-    created(){
+    async created(){
         /**Defines actions for the `toggleScrollToTop` function */
         this.toggleScrollToTop = debounce(e => {
             if((e.target as HTMLElement).scrollTop<20){
@@ -781,7 +782,8 @@ export default defineComponent({
         else if(window.history.state.forward != null && !(window.history.state.forward as String).includes('/post')) this.routeEntryPoint = window.history.state.forward;
         console.log(this.handle);
         console.log(this.postDid);
-        this.getThreadData();
+        console.log('PostFocusModal created() running');
+        await this.getThreadData();
     },
     mounted(){
         //Add keyboard+mouse shortcut listener

@@ -715,8 +715,8 @@ export default defineComponent({
             await UserFocusModalState.updateCurrentUserPageDetails(this.handle)
             .then(res => {
                 this.isHandleValid = res
-                if(this.isHandleValid) document.title = `${UserFocusModalState.currentUserPageDetails.ProfileData.displayName?.trim()!='' ?
-                    UserFocusModalState.currentUserPageDetails.ProfileData.displayName : UserFocusModalState.currentUserPageDetails.ProfileData.handle}'s Account | moongate`;
+                if(this.isHandleValid) document.title = typeof UserFocusModalState.currentUserPageDetails.ProfileData.displayName != 'undefined' ?
+                `${UserFocusModalState.currentUserPageDetails.ProfileData.displayName}'s Account | moongate` : `${UserFocusModalState.currentUserPageDetails.ProfileData.handle}'s Account | moongate`;
                 else document.title = `Account Not Found | moongate`;
                 this.restoreTabAfterNavHistoryChange(UserFocusModalState.currentUserPageDetails.currentTab);
             });

@@ -6,7 +6,7 @@ import { $Typed } from "@atproto/api/dist/client/util";
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 import { GenerateCID } from "../helpers/generators";
-import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
+import { ProfileViewBasic, ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/client";
 
 /**
@@ -128,8 +128,6 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
         }
         else if(includeImage.type == "ext_gif"){
             let extGif:$Typed<AppBskyEmbedExternal.View> = CreateEmbedGIF();
-            console.log('created embed GIF');
-            console.log(extGif);
             // (post.post.record as AppBskyFeedPost.Record).embed = extGif;
             post.post.embed = extGif;
         }
@@ -140,6 +138,32 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
         post.replies = replies;
     }
     return post;
+}
+
+/**
+ * Method used to create a dummy `ProfileViewDetailed` object for testing purposes.
+ * @param handle The handle of the User.
+ * @param displayName The display name of the User. (Optional)
+ * @returns The created `ProfileViewDetailed` object.
+ */
+export async function CreateUserProfile(handle:string,displayName:string|undefined=undefined):Promise<ProfileViewDetailed>{
+    let i = Math.floor(Math.random()*7);
+    let j = Math.floor(Math.random()*7);
+    let indexDate = new Date().toISOString();
+    let profile:ProfileViewDetailed = {
+        did:`did:plc:6unmjnerkpiy3yh6x4auqpy3`,
+        handle:handle,
+        avatar:`http://localhost:1420/src/assets/test-media/posts/image0${i+1}.png`,
+        banner:`http://localhost:1420/src/assets/test-media/posts/image0${j+1}.png`,
+        followersCount: Math.floor(Math.random()*50000),
+        followsCount: Math.floor(Math.random()*1000),
+        postsCount: Math.floor(Math.random()*3600),
+        indexedAt:indexDate,
+        createdAt:indexDate,
+    }
+    profile.description = `Hello! I am a User Profile created for testing this app.\nDID:${profile.did}\nHandle:${profile.handle}`
+    if(typeof displayName != 'undefined') profile.displayName = displayName;
+    return profile;
 }
 
 /**
