@@ -49,7 +49,7 @@
         class="flex flex-col rounded-lg border text-primary transition-colors
         border-outline hover:bg-embedHoverBG bg-postBG
         overflow-hidden text-xs cursor-pointer">
-            <div class="relative border-outline aspect-[1.91/1]">
+            <div data-testid="embedExternal-GIF-imageContainer" class="relative border-outline aspect-[1.91/1]">
                 <ImageContainer
                 @image-clicked="img => $emit('imageClicked',img)"
                 @media-click="i => $emit('media-click',i)"
@@ -169,7 +169,7 @@ export default defineComponent({
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },
-    }
+    },
 })
 </script>
 

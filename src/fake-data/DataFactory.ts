@@ -7,7 +7,7 @@ import { Notification } from "@atproto/api/dist/client/types/app/bsky/notificati
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 import { GenerateCID } from "../helpers/generators";
 import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
-import { AppBskyEmbedImages } from "@atproto/api/dist/client";
+import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/client";
 
 /**
  * Method used to create a dummy `FeedViewPost` object for testing purposes.
@@ -78,9 +78,9 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
  * @param postTime The time this Post was created.
  * @returns The created `ThreadViewPost` object.
  */
-export async function CreateThreadViewPost(handle:string, postText:string='', includeImage:boolean=false, includeEmbedLink:boolean=false,
-    includeReply:{activate:boolean,images:boolean}={activate:false,images:false},displayName:string='',
-    postTime:Date=new Date()):Promise<ThreadViewPost>{
+export async function CreateThreadViewPost(handle:string, postText:string='', includeImage:{activate:boolean,type:'img'|'ext_gif'}={activate:false,type:"img"},
+    includeEmbedLink:boolean=false, includeReply:{activate:boolean,images:boolean,type:'img'|'ext_gif'}={activate:false,images:false,type:"img"},
+    displayName:string='', postTime:Date=new Date()):Promise<ThreadViewPost>{
     let cid = `author_${handle}_${1}`;
     await GenerateCID(`author_${handle}_${1}`).then(res => {
         cid = res.toString();
@@ -108,25 +108,34 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
             embed:includeEmbedLink ? CreateEmbed() : undefined
         },
     }
-    if(includeImage){
-        let image:$Typed<AppBskyEmbedImages.View> = {
-            $type:"app.bsky.embed.images#view",
-            images:[
-                {
-                    thumb: "http://localhost:1420/src/assets/test-media/posts/image08.png",
-                    fullsize: "http://localhost:1420/src/assets/test-media/posts/image08.png",
-                    alt: "",
-                    aspectRatio: {
-                        height: 350,
-                        width: 700
+    if(includeImage.activate){
+        if(includeImage.type == "img"){
+            let image:$Typed<AppBskyEmbedImages.View> = {
+                $type:"app.bsky.embed.images#view",
+                images:[
+                    {
+                        thumb: "http://localhost:1420/src/assets/test-media/posts/image08.png",
+                        fullsize: "http://localhost:1420/src/assets/test-media/posts/image08.png",
+                        alt: "",
+                        aspectRatio: {
+                            height: 350,
+                            width: 700
+                        }
                     }
-                }
-            ]
+                ]
+            }
+            post.post.embed = image;
         }
-        post.post.embed = image;
+        else if(includeImage.type == "ext_gif"){
+            let extGif:$Typed<AppBskyEmbedExternal.View> = CreateEmbedGIF();
+            console.log('created embed GIF');
+            console.log(extGif);
+            // (post.post.record as AppBskyFeedPost.Record).embed = extGif;
+            post.post.embed = extGif;
+        }
     }
     if(includeReply.activate){
-        let reply = await CreateThreadViewPost('mr.reply.guy', "Just replin'",true);
+        let reply = await CreateThreadViewPost('mr.reply.guy', "Just replin'",{activate:true,type:includeReply.type});
         let replies:$Typed<ThreadViewPost>[] = [reply as $Typed<ThreadViewPost>]
         post.replies = replies;
     }
@@ -400,6 +409,29 @@ export function CreateEmbed():$Typed<View>{
             title: "Component Test shows link to nowhere",
             description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
             thumb: `http://localhost:1420${import.meta.env.BASE_URL.replace('src','iframes/src')}assets/test-media/posts/image08.png`
+            //above URI will only work when testing with Cypress...not sure how to check for the testing environment
+            //"src/assets/test-media/posts/image08.png"
+            // "http://localhost:1420/src/assets/test-media/posts/image08.png"
+            //above URI works with Playwright
+            //'https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg'
+        }
+    }
+    return emb;
+}
+
+/**
+ * Method used to return a hard-coded object that can be used to attach
+ * an "external GIF" embed object to a Post.
+ * @returns A `$Typed<View>` External Embed GIF object.
+ */
+export function CreateEmbedGIF():$Typed<AppBskyEmbedExternal.View>{
+    let emb:$Typed<AppBskyEmbedExternal.View> = {
+        $type: "app.bsky.embed.external#view",
+        external:{
+            uri: "http://localhost:1420/src/assets/test-media/posts/tenor.com_test_ok.gif",
+            title: "Placeholder for External GIF Testing",
+            description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
+            // thumb: `http://localhost:1420${import.meta.env.BASE_URL.replace('src','iframes/src')}assets/test-media/posts/image08.png`
             //above URI will only work when testing with Cypress...not sure how to check for the testing environment
             //"src/assets/test-media/posts/image08.png"
             // "http://localhost:1420/src/assets/test-media/posts/image08.png"
