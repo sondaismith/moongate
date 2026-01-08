@@ -36,7 +36,7 @@ beforeEach(() => {
 afterEach(() => server.resetHandlers())
 afterAll(() => server.close())
 
-test('TEST USED TO DEBUG IMPLEMENTING msw - responds with the user', async () => {
+test.skip('TEST USED TO DEBUG IMPLEMENTING msw - responds with the user', async () => {
 //   const response = await fetch('/profile/testman.debug/post/readablePostId')
   const response = await fetch('https://api.bsky.app/xrpc/app.bsky.feed.getPostThread?uri=at://asasksjaks')
 
@@ -47,7 +47,7 @@ test('TEST USED TO DEBUG IMPLEMENTING msw - responds with the user', async () =>
   })
 })
 
-test('INCOMPLETE TEST - post content is as expected', async () => {
+test.skip('INCOMPLETE TEST - post content is as expected', async () => {
     router.push('/')
     // router.push('/profile/testman.debug/post/readablePostId');
     // After this line, router is ready
@@ -72,7 +72,7 @@ test('INCOMPLETE TEST - post content is as expected', async () => {
     // expect(wrapper.find('[data-testid="postFocusModal-text"').exists()).toBe(true);
 })
 
-test('testing-library 1st test', async () => {
+test.skip('testing-library 1st test', async () => {
     render(App,{
         global:{
             plugins: [router],

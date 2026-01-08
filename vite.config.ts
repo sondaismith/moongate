@@ -1,9 +1,11 @@
 /// <reference types="vitest" />
+/// <reference types="vitest/config" />
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import Icons from 'unplugin-icons/vite';
 import IconsResolver from 'unplugin-icons/resolver'
 import Components from 'unplugin-vue-components/vite'
+import { configDefaults } from "vitest/config";
 
 
 // @ts-expect-error process is a nodejs global
@@ -36,6 +38,11 @@ export default defineConfig(async ({mode}) => {
     test:{
       globals: true,
       environment: "jsdom",
+      exclude: [
+        ...configDefaults.exclude,
+        './tests/**',
+        '**/cypress/**',
+      ],
     },
     //Hide DEBUG messages outside of dev environment
     esbuild:{
