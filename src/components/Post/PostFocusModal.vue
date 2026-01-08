@@ -1,5 +1,5 @@
 <template>
-    <div data-test="post-focus-modal" id="post-focus-modal" tabindex="0" @scroll.passive="toggleScrollToTop"
+    <div data-testid="post-focus-modal" id="post-focus-modal" tabindex="0" @scroll.passive="toggleScrollToTop"
     class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
         {{ void "Fullscreen Image" }}
         <Transition>
@@ -32,7 +32,7 @@
         <div v-if="hasImageMedia || hasEmbedGIFMedia || isVideoView(postDetails.currentThreadView.post.embed)"
         class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
             {{ void "Media Container" }}
-            <div class="flex items-center h-full w-full justify-center overflow-hidden p-5 sm:pt-10">
+            <div data-testid="postFocusModal-media-container" class="flex items-center h-full w-full justify-center overflow-hidden p-5 sm:pt-10">
                 <div class="flex h-full w-10 shrink-0 items-center mr-auto">
                     <SlideshowArrow v-if="canDecreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Left" @button-clicked="decreaseCurrentMediaIndex"/>
                 </div>
@@ -77,7 +77,7 @@
         {{ void "Comments Section" }}
         <div class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto">
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
-            <div v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
+            <div data-testid="postFocusModal-focus-post-loading" v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
                 <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
                     <div class="flex gap-2 mb-1">
                         <div class="drop-shadow-md">
@@ -102,7 +102,7 @@
                     </div>
                 </div>
             </div>
-            <div v-else class="p-4 pb-1 sticky top-10 sm:top-0 z-10 bg-postFocusBG border-b border-outline shadow-lg sm:shadow-none shadow-postFocusModalDetailsShadow/10">
+            <div data-testid="postFocusModal-focus-post-loaded" v-else class="p-4 pb-1 sticky top-10 sm:top-0 z-10 bg-postFocusBG border-b border-outline shadow-lg sm:shadow-none shadow-postFocusModalDetailsShadow/10">
                 {{ void "User Info/Actions" }}
                 <div class="flex gap-1">
                     <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
@@ -126,7 +126,7 @@
                     </div>
                 </div>
                 {{ void "Post Content - Text" }}
-                <RichPostTextBsky data-test="postFocusModal-text" class="text-sm pt-2 text-primary"
+                <RichPostTextBsky data-testid="postFocusModal-text" class="text-sm pt-2 text-primary"
                 :post-text="(postDetails.currentThreadView.post.record as Record).text"
                 :post-facets="(postDetails.currentThreadView.post.record as Record).facets"
                 :is-changing-thread-context="isChangingThreadContext"/>
@@ -372,10 +372,15 @@ export default defineComponent({
                 else this.currentMediaIndex = 0;
                 console.log(this.clickedMediaIndex);
             })
-            .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal')))
+            .catch(err => {
+                // toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal'))
+                console.log('PostFocusModal - error getting Post Thread data')
+                console.log(err)
+            })
             .finally(()=>{
                 postDetails.isAwaitingFocusData = false;
                 document.title = this.getFocusPostTitle;
+                console.log('PostFocusModal - getThreadData "finally" handler has run')
             });
         },
         setCurrentThreadView(cid: string) {
@@ -736,7 +741,8 @@ export default defineComponent({
                 if(fullText.length<sliceLength) sliceLength = fullText.length
                 postTextClip =  fullText.slice(0,sliceLength-1);
             }
-            return postTextClip.trim() != '' ? `${postTextClip}... by ${postDetails.currentThreadView.post.author.displayName} | moongate` : `${postDetails.currentThreadView.post.author.displayName}'s Post | moongate`;
+            let userId = (typeof postDetails.currentThreadView.post.author.displayName != 'undefined') ? postDetails.currentThreadView.post.author.displayName : postDetails.currentThreadView.post.author.handle;
+            return postTextClip.trim() != '' ? `${postTextClip}... by ${userId} | moongate` : `${userId}'s Post | moongate`;
         }
     },
     watch:{
@@ -761,7 +767,7 @@ export default defineComponent({
         }
         else next();
     },
-    created(){
+    async created(){
         /**Defines actions for the `toggleScrollToTop` function */
         this.toggleScrollToTop = debounce(e => {
             if((e.target as HTMLElement).scrollTop<20){
@@ -776,7 +782,8 @@ export default defineComponent({
         else if(window.history.state.forward != null && !(window.history.state.forward as String).includes('/post')) this.routeEntryPoint = window.history.state.forward;
         console.log(this.handle);
         console.log(this.postDid);
-        this.getThreadData();
+        console.log('PostFocusModal created() running');
+        await this.getThreadData();
     },
     mounted(){
         //Add keyboard+mouse shortcut listener

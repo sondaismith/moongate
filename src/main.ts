@@ -37,4 +37,21 @@ app.use(ToastService);
 app.component("Toast", Toast);
 app.use(router);
 
+///Code below used to use Mock Service Worker browser integration for request mocking
+// async function enableMocking() {
+//   if (process.env.NODE_ENV !== 'development') {
+//     return
+//   }
+
+//   const { worker } = await import('./mocks/browser')
+
+//   // `worker.start()` returns a Promise that resolves
+//   // once the Service Worker is up and ready to intercept requests.
+//   return worker.start()
+// }
+
+// enableMocking().then(() => {
+//   app.mount("#app");
+// })
+
 app.mount("#app");
