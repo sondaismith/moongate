@@ -123,6 +123,5 @@ test('when viewing Post with text in PostFocusModal and User has a display name,
     page.getByTestId('saveMediaModal-close').click({position:{x:1,y:1}});
     await expect(page.getByTestId('saveMediaModal-close')).toBeHidden();
     //Check window title
-    console.log(await page.title())
     await expect(page).toHaveTitle(`${postText1.slice(0,20)}... by ${displayName1} | moongate`);
 })
