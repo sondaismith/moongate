@@ -72,7 +72,7 @@
                                 <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.banner" :class="{'blur-lg':isAccountBlocked}"/>
                             </div>
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
-                            :style="`mask: url(./assets/placeholder/no_banner_pattern.svg)`">
+                            :style="`mask: url(${getPlaceholderImageSrc})`">
                             </div>
                             <div v-if="hasProfileAvatar" @click="showPFPFullscreen" class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
                             items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
@@ -1057,6 +1057,14 @@ export default defineComponent({
         hasEndOfBookmarksBeenReached():boolean{
             let fd = UserFocusModalState.currentUserPageDetails.FeedData;
             return typeof fd.cursor == 'undefined' || fd.cursor.trim() == '';
+        },
+        /**
+         * Returns the URI needed to display the "banner image placeholder" pattern
+         * based on the current app environment.
+         */
+        getPlaceholderImageSrc(){
+            if(import.meta.env.DEV) return '../../assets/placeholder/no_banner_pattern.svg';
+            else return './assets/placeholder/no_banner_pattern.svg'
         }
     },
     watch:{
