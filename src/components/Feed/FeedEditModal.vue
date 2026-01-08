@@ -925,7 +925,7 @@ export default defineComponent({
             else if(newType != oldType){
                 this.currentPage = 1;
                 this.selectedFeedType = newType;
-                if(newType = FeedEnums.Types.FeedGenerator) this.getCustomFeeds();
+                if(newType == FeedEnums.Types.FeedGenerator) this.getCustomFeeds();
             }
         },
         summary(newSummary:string,oldSummary:string){
