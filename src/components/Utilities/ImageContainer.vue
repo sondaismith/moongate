@@ -52,10 +52,12 @@
                         ]">
                 <!-- Hide image extension when in "fullsize/fullscreen" mode -->
                 <div v-if="!showFullsize" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
-                <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
+                <!-- <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
                 :title="image.alt"
                 :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
-                    :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div>
+                    :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div> -->
+                <Image v-if="!showFullsize" :img-url="showFullsize ? image.fullsize : image.thumb" :title="image.alt" class="h-full w-full bg-center bg-no-repeat"
+                :fill-container="true" :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'object-contain' : 'object-cover')"/>
                 <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
             </div>
         </div>
@@ -185,7 +187,7 @@ export default defineComponent({
             type:Number,
             default:0
         },
-        /**Setting this to `true` will use the fullsize image instead of the thumbnail.*/
+        /**Setting this to `true` will use the fullsize image instead of the thumbnail. Currently used for showing GIFs via `EmbedExternal`.*/
         showFullsize: {
             type: Boolean,
             default: false

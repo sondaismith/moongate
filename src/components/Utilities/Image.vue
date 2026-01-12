@@ -1,9 +1,9 @@
 <template>
-    <div v-show="!imageLoaded" class="flex h-1/2 w-4/5 m-auto object-contain animate-pulse rounded-lg overflow-hidden">
+    <div v-show="!imageLoaded" class="flex m-auto object-contain animate-pulse rounded-lg overflow-hidden" :class="fillContainer ? 'h-full' : 'h-1/2 w-full'">
         <div class="m-auto"><div class="loader"></div></div>
     </div>
-    <div class="flex max-h-full max-w-full mx-auto" :class="imageContainerClass">
-        <img v-show="imageLoaded" :src="imgUrl" v-bind="$attrs" @load="loadComplete"/>
+    <div v-show="imageLoaded" class="flex max-h-full max-w-full mx-auto" :class="[imageContainerClass, fillContainer && imageLoaded ? 'h-full w-full' : '']">
+        <img :src="imgUrl" v-bind="$attrs" @load="loadComplete"/>
     </div>
 </template>
 
@@ -22,6 +22,11 @@ export default defineComponent({
         imageContainerClass:{
             type:String as PropType<'justify-center'|'self-center'>,
             default:'self-center'
+        },
+        /**Should image take up as much space as possible. Currently used when displaying in `FocusFeedPost`. */
+        fillContainer:{
+            type:Boolean,
+            default:false
         }
     },
     data() {
@@ -50,7 +55,7 @@ export default defineComponent({
 <style scoped>
 /* HTML: <div class="loader"></div> */
 .loader {
-  width: 40px;
+  width: 20px;
   aspect-ratio: 1;
   position: relative;
 }
