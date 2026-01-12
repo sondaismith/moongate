@@ -61,10 +61,8 @@
         </div>
         <div data-testid="imageContainer-postFocusModal" v-else-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && typeof mediaEmbed.images[0] != 'undefined' && isLargeContainerView"
         @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...mediaEmbed.images[0]}, mediaIndex, author, postId, postText)" class="flex h-full w-full overflow-hidden">
-            <div class="flex max-h-full max-w-full mx-auto" :class=imageContainerClasses>
-                <img @click="$emit('imageClicked', mediaEmbed.images[0])"  :src="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
-                class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
-            </div>
+                <Image @click="$emit('imageClicked', mediaEmbed.images[0])" :img-url="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
+                :image-container-class="imageContainerClasses" class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
         </div>
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
@@ -102,6 +100,7 @@ import { isTauri } from '@tauri-apps/api/core';
 import { router } from '../../main';
 import { createPostRoute } from '../../lib/api/Post.vue';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
+import Image from './Image.vue';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
@@ -170,6 +169,7 @@ function OpenImageInNewTab(imageToShow:ViewImage|View){
 export default defineComponent({
     components:{
         SpoilerOverlay,
+        Image,
     },
     name:'ImageContainer',
     props:{

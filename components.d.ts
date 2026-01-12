@@ -36,6 +36,7 @@ declare module 'vue' {
     Hashtag: typeof import('./src/components/Utilities/Hashtag.vue')['default']
     Hyperlink: typeof import('./src/components/Utilities/Hyperlink.vue')['default']
     'ILogos:bluesky': typeof import('~icons/logos/bluesky')['default']
+    Image: typeof import('./src/components/Utilities/Image.vue')['default']
     ImageContainer: typeof import('./src/components/Utilities/ImageContainer.vue')['default']
     'IMdi:accounts': typeof import('~icons/mdi/accounts')['default']
     'IMdi:alertCircle': typeof import('~icons/mdi/alert-circle')['default']
