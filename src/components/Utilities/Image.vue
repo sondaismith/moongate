@@ -1,6 +1,7 @@
 <template>
-    <div v-show="!imageLoaded" class="flex m-auto object-contain animate-pulse rounded-lg overflow-hidden" :class="fillContainer ? 'h-full' : 'h-1/2 w-full'">
-        <div class="m-auto"><div class="loader"></div></div>
+    <div v-show="!imageLoaded" class="flex m-auto object-contain animate-pulse rounded-lg overflow-hidden" :class="fillContainer ? 'h-full w-full' : 'h-1/2 w-full'">
+        <div v-if="loaderType == 'blocks'" class="m-auto"><div class="loader"></div></div>
+        <div v-if="loaderType == 'spinner'" class="m-auto"><i-mingcute:loading-fill class="spinner text-black"/></div>
     </div>
     <div v-show="imageLoaded" class="flex max-h-full max-w-full mx-auto" :class="[imageContainerClass, fillContainer && imageLoaded ? 'h-full w-full' : '']">
         <img :src="imgUrl" v-bind="$attrs" @load="loadComplete"/>
@@ -23,10 +24,15 @@ export default defineComponent({
             type:String as PropType<'justify-center'|'self-center'>,
             default:'self-center'
         },
-        /**Should image take up as much space as possible. Currently used when displaying in `FocusFeedPost`. */
+        /**Should image take up as much space as possible. Currently used when displaying in `FocusFeedPost` and `AvatarRound`. */
         fillContainer:{
             type:Boolean,
             default:false
+        },
+        /**Determines what loading animation is used. */
+        loaderType:{
+            type:String as PropType<'blocks'|'spinner'>,
+            default:'blocks'
         }
     },
     data() {
