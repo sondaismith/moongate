@@ -69,16 +69,16 @@
                             <div v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
                             bg-no-repeat bg-center bg-cover overflow-hidden"
                             :class="{'cursor-pointer' : hasProfileBanner}">
-                                <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.banner" :class="{'blur-lg':isAccountBlocked}"/>
+                                <Image :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.banner!" :fill-container="true" :class="{'blur-lg':isAccountBlocked}"/>
                             </div>
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
                             :style="`mask: url(${getPlaceholderImageSrc})`">
                             </div>
                             <div v-if="hasProfileAvatar" @click="showPFPFullscreen" class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
-                            items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
+                            items-center justify-center shrink-0 border-2 border-slate-800 bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover user-pfp
                             cursor-pointer transition-colors hover:border-hover overflow-hidden">
-                                <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.avatar"
-                                :class="{'blur scale-150':isAccountBlocked}"/>
+                                <Image :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.avatar!" loader-type="spinner"
+                                :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked}"/>
                             </div>
                             <div v-else class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
                             items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
@@ -431,6 +431,7 @@ import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
 import { INavigationHistory } from '../../interfaces/UserInterfaces';
+import Image from '../Utilities/Image.vue';
 
 /**
  * Used to create a HTTP URL link To the currently view User's profile.
@@ -513,6 +514,7 @@ export default defineComponent({
         ToContainerTop,
         SquareButton,
         AccountModerationLabel,
+        Image,
     },
     methods:{
         /**Prepares and displays data when the "Posts" tab is clicked. */
@@ -855,9 +857,7 @@ export default defineComponent({
          * when navigating forwards and backwards through the history.
          */
         restoreScrollPosAfterNavHistoryChange(){
-            setTimeout(() => {
-                this.scrollToModalPos(UserFocusModalState.currentUserPageDetails.scrollPos);
-            }, 100);
+            this.scrollToModalPos(UserFocusModalState.currentUserPageDetails.scrollPos);
         },
         /**
          * Method that restores the last tab the "Navigation History" object was displaying.
@@ -1068,10 +1068,10 @@ export default defineComponent({
         }
     },
     watch:{
-        handle(newHandle:string, oldHandle:string){
+        async handle(newHandle:string, oldHandle:string){
             if(typeof newHandle != 'undefined' && newHandle.trim() != ''){
                 this.updateCurrentNavHistoryScrollPos();
-                this.updateDisplayedData();
+                await this.updateDisplayedData();
                 this.restoreScrollPosAfterNavHistoryChange();
             }
         }
@@ -1093,6 +1093,7 @@ export default defineComponent({
     beforeUnmount() {
         UserFocusModalState.currentNavIndex = 0;
         UserFocusModalState.navigationHistory = [];
+        UserFocusModalState.currentUserPageDetails = {} as INavigationHistory;
         //Remove keyboard shortcut listener
         // this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
         // this.$el.removeEventListener('mouseup', this.onMouseShortcutEntered);

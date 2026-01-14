@@ -21,7 +21,7 @@
                     <div v-for="a in trend?.actors"
                     class="flex rounded-full size-5 shrink-0 bg-slate-700 bg-contain overflow-hidden"
                     :title="a.displayName ? a.displayName : a.handle">
-                        <Image v-if="typeof a.avatar != 'undefined'" :img-url="a.avatar" loader-type="spinner" :fill-container="true" :use-small-spinner="true" />
+                        <Image v-if="typeof a.avatar != 'undefined'" :img-url="a.avatar" loader-type="spinner" :fill-container="true" :spinner-width="10" />
                     </div>
                 </div>
                 <div class="text-xs text-secondary text-nowrap" :title="postCountText">

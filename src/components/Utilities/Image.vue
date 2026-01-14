@@ -1,7 +1,7 @@
 <template>
     <div v-show="!imageLoaded && !imageError" class="flex m-auto object-contain animate-pulse rounded-lg overflow-hidden" :class="fillContainer ? 'h-full w-full' : 'h-1/2 w-full'">
         <div v-if="loaderType == 'blocks'" class="m-auto"><div class="loader"></div></div>
-        <div v-if="loaderType == 'spinner'" class="m-auto"><i-mingcute:loading-fill class="spinner text-black" :class="useSmallSpinner ? 'text-[10px]' : ''"/></div>
+        <div v-if="loaderType == 'spinner'" class="m-auto"><i-mingcute:loading-fill class="spinner text-black" :class="`text-[${spinnerWidth}px]`"/></div>
     </div>
     <div v-show="imageError" class="flex" title="Error Loading Image">
         <i-mingcute:warning-fill class="text-2xl"/>
@@ -27,6 +27,11 @@ export default defineComponent({
             type:String as PropType<'justify-center'|'self-center'>,
             default:'self-center'
         },
+        /**Should the image be blurred out? Currently used on `UserFocusModal` with blocked accounts. */
+        // blurImage:{
+        //     type:Boolean,
+        //     default:false
+        // },
         /**Should image take up as much space as possible. Currently used when displaying in `FocusFeedPost` and `AvatarRound`. */
         fillContainer:{
             type:Boolean,
@@ -37,10 +42,10 @@ export default defineComponent({
             type:String as PropType<'blocks'|'spinner'>,
             default:'blocks'
         },
-        /**Should as the displayed spinner size be made smaller? */
-        useSmallSpinner:{
-            type:Boolean,
-            default:false
+        /**Specifies the width of the loading spinner in px (pixels). Default is 16px. */
+        spinnerWidth:{
+            type:Number,
+            default:16
         }
     },
     data() {
