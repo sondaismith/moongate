@@ -1,7 +1,7 @@
 <template>
     <div v-show="!imageLoaded && !imageError" class="flex m-auto object-contain animate-pulse rounded-lg overflow-hidden" :class="fillContainer ? 'h-full w-full' : 'h-1/2 w-full'">
         <div v-if="loaderType == 'blocks'" class="m-auto"><div class="loader"></div></div>
-        <div v-if="loaderType == 'spinner'" class="m-auto"><i-mingcute:loading-fill class="spinner text-black"/></div>
+        <div v-if="loaderType == 'spinner'" class="m-auto"><i-mingcute:loading-fill class="spinner text-black" :class="useSmallSpinner ? 'text-[10px]' : ''"/></div>
     </div>
     <div v-show="imageError" class="flex" title="Error Loading Image">
         <i-mingcute:warning-fill class="text-2xl"/>
@@ -36,6 +36,11 @@ export default defineComponent({
         loaderType:{
             type:String as PropType<'blocks'|'spinner'>,
             default:'blocks'
+        },
+        /**Should as the displayed spinner size be made smaller? */
+        useSmallSpinner:{
+            type:Boolean,
+            default:false
         }
     },
     data() {

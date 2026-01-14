@@ -19,9 +19,9 @@
             <div class="flex gap-2 items-center">
                 <div v-if="typeof trend != 'undefined' && trend.actors.length>0" class="flex overflow-hidden">
                     <div v-for="a in trend?.actors"
-                    class="flex rounded-full size-5 shrink-0 bg-slate-700 bg-contain"
-                    :style="`background-image:url(${a.avatar})`"
+                    class="flex rounded-full size-5 shrink-0 bg-slate-700 bg-contain overflow-hidden"
                     :title="a.displayName ? a.displayName : a.handle">
+                        <Image v-if="typeof a.avatar != 'undefined'" :img-url="a.avatar" loader-type="spinner" :fill-container="true" :use-small-spinner="true" />
                     </div>
                 </div>
                 <div class="text-xs text-secondary text-nowrap" :title="postCountText">
@@ -47,11 +47,15 @@ import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import { toast } from '../../state/AppState.vue';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
+import Image from '../Utilities/Image.vue';
 
 export default defineComponent({
     props:{
         trend: Object as PropType<TrendView>,
         position:Number
+    },
+    components:{
+        Image,
     },
     data(){
         return{
