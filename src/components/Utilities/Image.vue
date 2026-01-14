@@ -1,10 +1,13 @@
 <template>
-    <div v-show="!imageLoaded" class="flex m-auto object-contain animate-pulse rounded-lg overflow-hidden" :class="fillContainer ? 'h-full w-full' : 'h-1/2 w-full'">
+    <div v-show="!imageLoaded && !imageError" class="flex m-auto object-contain animate-pulse rounded-lg overflow-hidden" :class="fillContainer ? 'h-full w-full' : 'h-1/2 w-full'">
         <div v-if="loaderType == 'blocks'" class="m-auto"><div class="loader"></div></div>
         <div v-if="loaderType == 'spinner'" class="m-auto"><i-mingcute:loading-fill class="spinner text-black"/></div>
     </div>
+    <div v-show="imageError" class="flex" title="Error Loading Image">
+        <i-mingcute:warning-fill class="text-2xl"/>
+    </div>
     <div v-show="imageLoaded" class="flex max-h-full max-w-full mx-auto" :class="[imageContainerClass, fillContainer && imageLoaded ? 'h-full w-full' : '']">
-        <img :src="imgUrl" v-bind="$attrs" @load="loadComplete"/>
+        <img :src="imgUrl" v-bind="$attrs" @load="loadComplete" @error="errorOccured"/>
     </div>
 </template>
 
@@ -38,7 +41,9 @@ export default defineComponent({
     data() {
         return{
             /**Variable indicating if image to display has completed downloading. */
-            imageLoaded:false
+            imageLoaded:false,
+            /**Variable indicating if there was an error during the attempt to download the image to display. */
+            imageError:false
         }
     },
     methods:{
@@ -47,6 +52,12 @@ export default defineComponent({
          */
         loadComplete(){
             this.imageLoaded = true;
+        },
+        /**
+         * Method called when there is an error during the image download.
+         */
+        errorOccured(){
+            this.imageError = true;
         }
     },
     watch:{
