@@ -69,7 +69,7 @@
                             <div v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
                             bg-no-repeat bg-center bg-cover overflow-hidden"
                             :class="{'cursor-pointer' : hasProfileBanner}">
-                                <Image :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.banner!" :fill-container="true" :class="{'blur-lg':isAccountBlocked}"/>
+                                <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.banner!" :fill-container="true" :class="{'blur-lg':isAccountBlocked}"/>
                             </div>
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
                             :style="`mask: url(${getPlaceholderImageSrc})`">
@@ -77,7 +77,7 @@
                             <div v-if="hasProfileAvatar" @click="showPFPFullscreen" class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
                             items-center justify-center shrink-0 border-2 border-slate-800 bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover user-pfp
                             cursor-pointer transition-colors hover:border-hover overflow-hidden">
-                                <Image :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.avatar!" loader-type="spinner"
+                                <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.avatar!" loader-type="spinner"
                                 :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked}"/>
                             </div>
                             <div v-else class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
@@ -431,7 +431,7 @@ import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
 import { INavigationHistory } from '../../interfaces/UserInterfaces';
-import Image from '../Utilities/Image.vue';
+import ImageLoader from '../Utilities/ImageLoader.vue';
 
 /**
  * Used to create a HTTP URL link To the currently view User's profile.

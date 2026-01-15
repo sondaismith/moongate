@@ -4,7 +4,7 @@
     @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
     border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
     transition-[border-color] ease-linear duration-200 cursor-pointer overflow-hidden">
-        <Image v-if="typeof avatar != 'undefined'" :img-url="avatar" :fill-container="true" :loader-type="'spinner'"/>
+        <ImageLoader v-if="typeof avatar != 'undefined'" :img-url="avatar" :fill-container="true" :loader-type="'spinner'"/>
         <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
     </div>
 </template>
@@ -22,7 +22,7 @@ import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
-import Image from './Image.vue';
+import ImageLoader from './ImageLoader.vue';
 
 /**
  * Method that adds a new User feed to the displayed list of Feeds based on

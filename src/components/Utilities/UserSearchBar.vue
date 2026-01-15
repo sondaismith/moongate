@@ -36,7 +36,7 @@
                     <div class="flex gap-2 w-full border-2 p-2 border-transparent
                     group-focus:border-feedtypeBtnFocusHighlight">
                         <div class="flex rounded-full size-10 min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover overflow-hidden">
-                            <Image v-if="typeof result.avatar != 'undefined'" :img-url="result.avatar" :fill-container="true" :loader-type="'spinner'"/>
+                            <ImageLoader v-if="typeof result.avatar != 'undefined'" :img-url="result.avatar" :fill-container="true" :loader-type="'spinner'"/>
                             <i-mingcute:user-add-fill v-else/>
                         </div>
                         <div class="flex shrink-0 overflow-hidden flex-col items-start">
@@ -72,7 +72,7 @@ import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 import { toast } from '../../state/AppState.vue';
 import VerifiedBadge from './VerifiedBadge.vue';
 import { isUserVerified } from '../../helpers/states';
-import Image from './Image.vue';
+import ImageLoader from './ImageLoader.vue';
 
 export default defineComponent({
     name:'User Search Bar',

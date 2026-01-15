@@ -21,7 +21,7 @@
                     <div v-for="a in trend?.actors"
                     class="flex rounded-full size-5 shrink-0 bg-slate-700 bg-contain overflow-hidden"
                     :title="a.displayName ? a.displayName : a.handle">
-                        <Image v-if="typeof a.avatar != 'undefined'" :img-url="a.avatar" loader-type="spinner" :fill-container="true" :spinner-width="10" />
+                        <ImageLoader v-if="typeof a.avatar != 'undefined'" :img-url="a.avatar" loader-type="spinner" :fill-container="true" :spinner-width="10" />
                     </div>
                 </div>
                 <div class="text-xs text-secondary text-nowrap" :title="postCountText">
@@ -47,7 +47,7 @@ import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import { toast } from '../../state/AppState.vue';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
-import Image from '../Utilities/Image.vue';
+import ImageLoader from '../Utilities/ImageLoader.vue';
 
 export default defineComponent({
     props:{
