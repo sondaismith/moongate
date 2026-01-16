@@ -340,45 +340,57 @@
                             grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] justify-items-center
                             backdrop-blur-0 overflow-x-hiddens">
                                 <div v-for="n in UserFocusModalState.currentUserPageDetails.FeedData.data.filter(
-                                    x => x.post.embed && x.post.author.did == UserFocusModalState.currentUserPageDetails.ProfileData.did &&
+                                    x => isFeedViewPostCust(x) && typeof x.post.embed != 'undefined' && x.post.author.did == UserFocusModalState.currentUserPageDetails.ProfileData.did &&
                                     (AppBskyEmbedImages.isView(x.post.embed) || AppBskyEmbedVideo.isView(x.post.embed)))"
                                     class="relative rounded aspect-square size-44 overflow-hidden border border-outlineLighter">
-                                    <div v-if="n.post.embed.images && n.post.embed.images.length>1" class="select-none">
-                                        <div class="absolute z-[3] flex rounded top-2 right-2 size-6 bg-slate-300 backdrop-blur-sm text-slate-900 font-bold items-center justify-center drop-shadow">{{ n.post.embed?.images.length }}</div>
-                                        <div class="absolute z-[2] flex rounded top-[5px] right-[5px] size-6 bg-slate-300/60 text-slate-900 font-bold items-center justify-center drop-shadow"></div>
-                                    </div>
-                                    <div v-if="n.post.embed.images" class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs text-white bg-black/70 select-none">Photo</div>
-                                    <div v-else class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs text-white bg-black/70 select-none">Video</div>
-                                    <SpoilerOverlay class="z-[1]" :labels="n.post.labels" :has-sensitive-content="hasSensitiveContent(n)" :media-type="n.post.embed?.images ? MediaType.Image : MediaType.Video"/>
-                                    <div @click="showMediaContent(n)" class="relative flex bg-violet-500 hover:bg-violet-300
-                                    cursor-pointer w-full h-full bg-no-repeat bg-center bg-cover
-                                    overflow-hidden backdrop-blur-0"
-                                    :title="n.post.embed?.images ? n.post.embed?.images[0].alt : null"
-                                    :style="'background-image: url('+(n.post.embed.images ? n.post.embed.images[0].thumb : n.post.embed?.thumbnail)+')'">
+                                    <div v-if="isFeedViewPostCust(n) && typeof n.post.embed != 'undefined'" class="w-full h-full">
+                                        <div v-if="AppBskyEmbedImages.isView(n.post.embed) &&
+                                        typeof n.post.embed.images != 'undefined' && n.post.embed.images.length>1" class="select-none">
+                                            <div class="absolute z-[3] flex rounded top-2 right-2 size-6 bg-slate-300 backdrop-blur-sm text-slate-900 font-bold items-center justify-center drop-shadow">{{ n.post.embed?.images.length }}</div>
+                                            <div class="absolute z-[2] flex rounded top-[5px] right-[5px] size-6 bg-slate-300/60 text-slate-900 font-bold items-center justify-center drop-shadow"></div>
+                                        </div>
+                                        <div v-if="AppBskyEmbedImages.isView(n.post.embed) && typeof n.post.embed.images != 'undefined'" class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs text-white bg-black/70 select-none">Photo</div>
+                                        <div v-else class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs text-white bg-black/70 select-none">Video</div>
+                                        <SpoilerOverlay class="z-[1]" :labels="n.post.labels" :has-sensitive-content="hasSensitiveContent(n)"
+                                        :media-type="AppBskyEmbedImages.isView(n.post.embed) && typeof n.post.embed.images != 'undefined' ? MediaType.Image : MediaType.Video"/>
+                                        <div @click="showMediaContent(n)" @contextmenu.prevent class="relative flex bg-violet-500 hover:bg-violet-300
+                                        cursor-pointer w-full h-full bg-no-repeat bg-center bg-cover
+                                        overflow-hidden backdrop-blur-0">
+                                            <ImageLoader v-if="isFeedViewPostCust(n) && AppBskyEmbedImages.isView(n.post.embed)"
+                                            :img-url="typeof n.post.embed.images != 'undefined' ? n.post.embed.images[0].thumb : ''" :fill-container="true" :class="'w-full object-cover'"
+                                            :title="n.post.embed.images[0].alt" />
+                                            <ImageLoader v-if="isFeedViewPostCust(n) && AppBskyEmbedVideo.isView(n.post.embed)"
+                                            :img-url="typeof n.post.embed.thumbnail != 'undefined' ? n.post.embed.thumbnail : ''" :fill-container="true" :class="'w-full object-cover'"
+                                            :title="n.post.embed.alt" />
+                                        </div>
                                     </div>
                                     <!-- Started on using `ImageContainer` for the thumbnails displayed on the media tab
                                     but realized that it doesn't really make sense when you can just download the image after
                                     opening the `PostFocusModal`. Maybe I'll change things later. -->
-                                    <!-- <ImageContainer @click="showMediaContent(n)" :images-to-display="n.post.embed.images ? n.post.embed.images.slice(0,1) : [{alt:'',fullsize:n.post.embed?.thumbnail,thumb:n.post.embed?.thumbnail}]" :author="n.post.author.handle"/> -->
+                                    <!-- <ImageContainer @click="showMediaContent(n)" :media-embed="n.post.embed.images ? n.post.embed.images.slice(0,1) : [{alt:'',fullsize:n.post.embed?.thumbnail,thumb:n.post.embed?.thumbnail}]" :author="n.post.author.handle"/> -->
+                                    <!-- <ImageContainer v-if="isFeedViewPostCust(n) && AppBskyEmbedImages.isView(n.post.embed)" @click="showMediaContent(n)" :media-embed="typeof n.post.embed != 'undefined' ? n.post.embed : [{alt:'',fullsize:n.post.embed?.thumbnail,thumb:n.post.embed?.thumbnail}]" :author="n.post.author.handle"/>
+                                    <ImageLoader v-if="isFeedViewPostCust(n) && AppBskyEmbedVideo.isView(n.post.embed)" :img-url="n.post.embed.thumbnail" :fill-container="true" :class="'object-cover'"/> -->
                                 </div>
                             </div>
-                            <div v-if="!UserFocusModalState.currentUserPageDetails.FeedData.cursor"
-                            class="flex justify-center rounded p-1 gap-1 mt-4 w-full items-center
-                            border border-outlineLighter bg-disabled select-none">
-                                <i-mdi:block/>
-                                <div>End of posts</div>
-                            </div>
-                            <SquareButton v-else-if="UserFocusModalState.currentUserPageDetails.FeedData.cursor &&
-                            !isAwaitingTabSwitchData" @click="loadOlderPosts"
-                            focus-padding="[1px]"
-                            class="rounded h-8 p-1 mt-4 mx-4 w-full items-center cursor-pointer
-                            border border-outline bg-btn hover:bg-btnHover">
-                                <div class="flex items-center gap-1">
-                                    <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
-                                    <i-mingcute:plus-fill v-else/>
-                                    <div>Load more</div>
+                            <div class="mt-4 mx-4">
+                                <div v-if="!UserFocusModalState.currentUserPageDetails.FeedData.cursor"
+                                class="flex justify-center rounded p-1 gap-1 w-full items-center
+                                border border-outlineLighter bg-disabled select-none">
+                                    <i-mdi:block/>
+                                    <div>End of posts</div>
                                 </div>
-                            </SquareButton>
+                                <SquareButton v-else-if="UserFocusModalState.currentUserPageDetails.FeedData.cursor &&
+                                !isAwaitingTabSwitchData" @click="loadOlderPosts"
+                                focus-padding="[1px]"
+                                class="rounded h-8 p-1 w-full items-center cursor-pointer
+                                border border-outline bg-btn hover:bg-btnHover">
+                                    <div class="flex items-center gap-1">
+                                        <i-mingcute:loading-fill v-if="isAwaitingLoadMorePosts" class="spinner"/>
+                                        <i-mingcute:plus-fill v-else/>
+                                        <div>Load more</div>
+                                    </div>
+                                </SquareButton>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -398,10 +410,9 @@ import MdiUserCheck from '~icons/mdi/user-check';
 
 import { defineComponent } from 'vue'
 import PillButton from '../Utilities/PillButton.vue';
-import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { FeedViewPost, isPostView, isReasonRepost, PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AppBskyActorGetProfile, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
 import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { GenerateTagLinkText } from '../../helpers/parsers';
 import Hashtag from '../Utilities/Hashtag.vue';
@@ -432,6 +443,7 @@ import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
 import { INavigationHistory } from '../../interfaces/UserInterfaces';
 import ImageLoader from '../Utilities/ImageLoader.vue';
+import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 
 /**
  * Used to create a HTTP URL link To the currently view User's profile.
@@ -505,6 +517,7 @@ export default defineComponent({
         RichPostText,
         RichPostTextBsky,
         ImageContainer,
+        ImageLoader,
         VideoContainer,
         SpoilerOverlay,
         AvatarRound,
@@ -919,6 +932,14 @@ export default defineComponent({
          */
         onNavigateBack(e:PopStateEvent){
             console.log(e);
+        },
+        /**
+         * A User-Defined Type Guard for asserting that the passed in object is a `FeedViewPost` object.
+         * Created because these objects never have the `$type` variable included...
+         * @param feedPost The "feed post" object to check.
+         */
+        isFeedViewPostCust(feedPost:FeedViewPost | Notification | TrendView):feedPost is FeedViewPost{
+            return typeof (feedPost as FeedViewPost).post !== 'undefined';
         },
         /**
          * Shows Options Menu allowing user to perform different actions
