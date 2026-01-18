@@ -185,9 +185,9 @@
                         <div v-else-if="selectedFeedType == FeedEnums.Types.User"
                         class="flex flex-col overflow-auto divide-y divide-outline">
                             <div v-if="!isAwaitingProfileData" class="flex flex-col gap-1 w-full">
-                                <div class="flex rounded-full h-20 mx-auto aspect-square bg-sky-400 justify-center items-center bg-cover text-2xl"
-                                :style="{'background-image': 'url('+feedFilters.user.avatar+')'}">
-                                    <i-mingcute:user-add-fill v-if="!feedFilters.user.avatar"/>
+                                <div class="flex rounded-full overflow-hidden h-20 mx-auto aspect-square bg-searchbarHandle justify-center items-center bg-cover text-2xl">
+                                    <i-mingcute:user-add-fill v-if="typeof feedFilters.user.avatar == 'undefined'"/>
+                                    <ImageLoader v-else :img-url="feedFilters.user.avatar" :fill-container="true" loader-type="spinner"/>
                                 </div>
                                 <div class="flex w-full overflow-hidden flex-col items-start">
                                     <div class="flex gap-1 items-center w-full overflow-hidden">
@@ -314,6 +314,7 @@ import { AppBskyFeedDefs } from '@atproto/api/dist/client';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 import FilterBar from '../Utilities/FilterBar.vue';
 import { PropType } from 'vue';
+import ImageLoader from '../Utilities/ImageLoader.vue';
 
 export default defineComponent({
     components:{
@@ -325,6 +326,7 @@ export default defineComponent({
         CustomFeedButton,
         CustomFeedButtonPlaceholder,
         FilterBar,
+        ImageLoader,
     },
     props:{
         feedType: Object as PropType<FeedEnums.Types>,
