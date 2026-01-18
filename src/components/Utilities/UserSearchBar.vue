@@ -35,16 +35,18 @@
                     v-for="result, index in filteredUsers" :key="index" tabindex="0">
                     <div class="flex gap-2 w-full border-2 p-2 border-transparent
                     group-focus:border-feedtypeBtnFocusHighlight">
-                        <div class="flex rounded-full min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover"
-                        :style="{'background-image': 'url('+result.avatar+')'}">
-                            <i-mingcute:user-add-fill v-if="!result.avatar"/>
+                        <div class="flex rounded-full size-10 min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover overflow-hidden">
+                            <ImageLoader v-if="typeof result.avatar != 'undefined'" :img-url="result.avatar" :fill-container="true" :loader-type="'spinner'"/>
+                            <i-mingcute:user-add-fill v-else/>
                         </div>
                         <div class="flex shrink-0 overflow-hidden flex-col items-start">
                             <div class="flex gap-1 items-center w-full overflow-hidden">
-                                <div class="whitespace-nowrap overflow-hidden text-ellipsis">{{ result.displayName }}</div>
+                                <div v-if="typeof result.displayName != 'undefined' && result.displayName.trim() == ''" class="whitespace-nowrap overflow-hidden text-ellipsis opacity-20">[Whitespace]</div>
+                                <div v-if="typeof result.displayName != 'undefined'" class="whitespace-nowrap overflow-hidden text-ellipsis">{{ result.displayName }}</div>
+                                <div v-else class="whitespace-nowrap overflow-hidden text-ellipsis opacity-20">No Display Name</div>
                                 <VerifiedBadge v-if="isUserVerified(result)" class="size-4"/>
                             </div>
-                            <div class="text-xs text-searchbarHandle">@{{ result.handle }}</div>
+                            <div class="text-xs text-searchbarHandle mt-auto">@{{ result.handle }}</div>
                         </div>
                         <div class="w-full max-h-8 self-center text-secondary text-left line-clamp-2
                         overflow-hidden text-ellipsis text-xs"
@@ -70,12 +72,14 @@ import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 import { toast } from '../../state/AppState.vue';
 import VerifiedBadge from './VerifiedBadge.vue';
 import { isUserVerified } from '../../helpers/states';
+import ImageLoader from './ImageLoader.vue';
 
 export default defineComponent({
     name:'User Search Bar',
     components:{
         InLaInput,
         VerifiedBadge,
+        Image,
     },
     props:{
         /**

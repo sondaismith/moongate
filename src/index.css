@@ -65,7 +65,7 @@
         --color-feedcolumn-settings-btn-hover:theme(colors.gray.400);
         --color-feedcolumn-settings-btn-selected:theme(colors.slate.800);
         --color-feedcolumn-settings-btn-selected-hover:theme(colors.slate.600);
-        --color-userfocusmodal-banner-bg:theme(colors.slate.400);
+        --color-userfocusmodal-banner-bg:theme(colors.slate.700);
         --color-postfocusmodal-details-shadow:theme(colors.slate.800);
         --color-logo-fill:theme(colors.white);
         --color-about-page-banner:theme(colors.slate.900);

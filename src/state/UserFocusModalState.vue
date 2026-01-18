@@ -92,7 +92,10 @@ export const UserFocusModalState = reactive({
                     }
                     else toast.add({summary:"Error", detail:`${err}`, severity:'error', group:'tr', life:3000});
                     //Account is probably blocked - Display Profile, but no posts
-                    this.currentUserPageDetails.FeedData = {data:[],cursor:undefined}
+                    // this.currentUserPageDetails.FeedData = {data:[],cursor:undefined}
+                    newNavHistory.FeedData = {data:[],cursor:undefined}
+                    this.navigationHistory.push(newNavHistory);
+                    this.currentUserPageDetails = newNavHistory;
                 })
             }
             return isHandleValid;

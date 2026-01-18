@@ -1,11 +1,11 @@
 <template>
     <div @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,did?did:'',handle?handle:'')"
     @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
-    @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="rounded-full bg-slate-300 aspect-square
-    border border-outline box-content size-10 bg-contain hover:border-hover
-    transition-[border-color] ease-linear duration-200 cursor-pointer"
-    :style="{'background-image' : 'url('+avatar+')'}">
-        <i-mingcute:butterfly-2-fill v-if="!avatar" class="text-2xl h-full w-full p-1 text-blue-600"/>
+    @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
+    border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
+    transition-[border-color] ease-linear duration-200 cursor-pointer overflow-hidden">
+        <ImageLoader v-if="typeof avatar != 'undefined'" :img-url="avatar" :fill-container="true" :loader-type="'spinner'"/>
+        <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
     </div>
 </template>
 
@@ -22,6 +22,7 @@ import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
+import ImageLoader from './ImageLoader.vue';
 
 /**
  * Method that adds a new User feed to the displayed list of Feeds based on
@@ -65,6 +66,9 @@ export default defineComponent({
         avatar:String,
         did:String,
         handle:String,
+    },
+    components:{
+        Image,
     },
     emits:{
         /**Emit used to indicate the Avatar element has been clicked. */

@@ -52,19 +52,19 @@
                         ]">
                 <!-- Hide image extension when in "fullsize/fullscreen" mode -->
                 <div v-if="!showFullsize" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
-                <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
+                <!-- <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
                 :title="image.alt"
                 :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
-                    :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div>
+                    :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div> -->
+                <ImageLoader v-if="!showFullsize" :img-url="showFullsize ? image.fullsize : image.thumb" :title="image.alt" class="h-full w-full bg-center bg-no-repeat"
+                :fill-container="true" :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'object-contain' : 'object-cover')"/>
                 <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
             </div>
         </div>
         <div data-testid="imageContainer-postFocusModal" v-else-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && typeof mediaEmbed.images[0] != 'undefined' && isLargeContainerView"
         @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...mediaEmbed.images[0]}, mediaIndex, author, postId, postText)" class="flex h-full w-full overflow-hidden">
-            <div class="flex max-h-full max-w-full mx-auto" :class=imageContainerClasses>
-                <img @click="$emit('imageClicked', mediaEmbed.images[0])"  :src="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
-                class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
-            </div>
+                <ImageLoader @click="$emit('imageClicked', mediaEmbed.images[0])" :img-url="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
+                :image-container-class="imageContainerClasses" class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
         </div>
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
@@ -102,6 +102,7 @@ import { isTauri } from '@tauri-apps/api/core';
 import { router } from '../../main';
 import { createPostRoute } from '../../lib/api/Post.vue';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
+import ImageLoader from './ImageLoader.vue';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
@@ -170,6 +171,7 @@ function OpenImageInNewTab(imageToShow:ViewImage|View){
 export default defineComponent({
     components:{
         SpoilerOverlay,
+        Image,
     },
     name:'ImageContainer',
     props:{
@@ -185,7 +187,7 @@ export default defineComponent({
             type:Number,
             default:0
         },
-        /**Setting this to `true` will use the fullsize image instead of the thumbnail.*/
+        /**Setting this to `true` will use the fullsize image instead of the thumbnail. Currently used for showing GIFs via `EmbedExternal`.*/
         showFullsize: {
             type: Boolean,
             default: false

@@ -118,26 +118,6 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1 h-full overflow-y-auto preload-gutter">
-                                    <!-- <div class="flex gap-1 items-center py-1 bg-feedColumnBG shadow-scroll-underline">
-                                        <div class="text-lg">Bluesky</div>
-                                        <div title="Bluesky Discover Feed Generator"><i-logos:bluesky class="shrink-0" /></div>
-                                    </div>
-                                    <div v-if="!awaitingInitialCustomFeedData && defaultFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
-                                            <CustomFeedButton v-for="n in defaultFeedData" class="min-w-64 sm:flex-[1_0_32%]" :feed-generator-view="n.generator"/>
-                                    </div>
-                                    <div v-else-if="awaitingInitialCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
-                                        <CustomFeedButtonPlaceholder class="min-w-64 w-full sm:flex-[1_0_32%]"/>
-                                    </div>
-                                    <div v-else class="pt-2">
-                                        <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
-                                            <div class="flex gap-1 items-center">
-                                                <div class="text-lg font-semibold">Error Retrieving Default Feeds</div>
-                                                <i-mingcute:wifi-off-line/>
-                                            </div>
-                                            <hr class="border-outline"/>
-                                            <div class="text-sm">Default feeds could not be reached at this time</div>
-                                        </div>
-                                    </div> -->
                                     <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline">
                                         <div class="text-lg">Discover New Feeds</div>
                                         <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
@@ -205,9 +185,9 @@
                         <div v-else-if="selectedFeedType == FeedEnums.Types.User"
                         class="flex flex-col overflow-auto divide-y divide-outline">
                             <div v-if="!isAwaitingProfileData" class="flex flex-col gap-1 w-full">
-                                <div class="flex rounded-full h-20 mx-auto aspect-square bg-sky-400 justify-center items-center bg-cover text-2xl"
-                                :style="{'background-image': 'url('+feedFilters.user.avatar+')'}">
-                                    <i-mingcute:user-add-fill v-if="!feedFilters.user.avatar"/>
+                                <div class="flex rounded-full overflow-hidden h-20 mx-auto aspect-square bg-searchbarHandle justify-center items-center bg-cover text-2xl">
+                                    <i-mingcute:user-add-fill v-if="typeof feedFilters.user.avatar == 'undefined'"/>
+                                    <ImageLoader v-else :img-url="feedFilters.user.avatar" :fill-container="true" loader-type="spinner"/>
                                 </div>
                                 <div class="flex w-full overflow-hidden flex-col items-start">
                                     <div class="flex gap-1 items-center w-full overflow-hidden">
@@ -334,6 +314,7 @@ import { AppBskyFeedDefs } from '@atproto/api/dist/client';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 import FilterBar from '../Utilities/FilterBar.vue';
 import { PropType } from 'vue';
+import ImageLoader from '../Utilities/ImageLoader.vue';
 
 export default defineComponent({
     components:{
@@ -345,6 +326,7 @@ export default defineComponent({
         CustomFeedButton,
         CustomFeedButtonPlaceholder,
         FilterBar,
+        ImageLoader,
     },
     props:{
         feedType: Object as PropType<FeedEnums.Types>,
