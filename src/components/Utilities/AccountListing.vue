@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-2 w-full overflow-hidden">
             <div class="flex gap-1 items-center">
                 <div class="flex bg-blueskyBlue aspect-square rounded-full shrink-0 w-8 items-center justify-center overflow-hidden">
-                    <img v-if="modItem.account.avatar" :src="modItem.account.avatar"/>
+                    <ImageLoader v-if="modItem.account.avatar" :img-url="modItem.account.avatar" :fill-container="true" loader-type="spinner"/>
                     <i-mingcute:radar-2-fill v-else class="text-white h-6 w-6"/>
                 </div>
                 <div class="flex flex-col overflow-hidden">
@@ -31,6 +31,7 @@
 import { defineComponent, PropType } from 'vue'
 import AccountModerationLabel from './AccountModerationLabel.vue';
 import { IAccountModerationItem } from '../../interfaces/SettingsInterfaces';
+import ImageLoader from './ImageLoader.vue';
 
 export default defineComponent({
     props:{
@@ -47,6 +48,7 @@ export default defineComponent({
     },
     components:{
         AccountModerationLabel,
+        ImageLoader,
     },
     emits:{
         actionClicked:null,
