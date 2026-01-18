@@ -23,6 +23,7 @@ import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import ImageLoader from './ImageLoader.vue';
+import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
 
 /**
  * Method that adds a new User feed to the displayed list of Feeds based on
@@ -85,7 +86,9 @@ export default defineComponent({
         displaySelectedUserAccount(e:Event){
             //Cancel displaying `AccountPeek`
             AccountPeekState.cancelUserPeek(true);
-            this.$router.push(`/profile/${this.handle}`);
+            if(typeof UserFocusModalState.currentUserPageDetails.ProfileData != 'undefined' &&
+            UserFocusModalState.currentUserPageDetails.ProfileData.handle == this.handle) return; //do nothing if already on destination User page
+            else this.$router.push(`/profile/${this.handle}`);
             e.stopPropagation();//Prevent click "bubbling"
         },
         /**
