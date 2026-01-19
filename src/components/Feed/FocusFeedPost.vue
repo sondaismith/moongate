@@ -99,7 +99,7 @@
             </div>
         </div>
         <div v-else-if="postToShow && isPostReply && !isReplyStyle" @click="openPostReply(getReplyParentURI)"
-        title="Open Reply Parent"
+        data-testid="focusfeedpost-view-parent" title="Open Reply Parent"
         class="flex self-start py-0.5 px-2 rounded-md text-[10px] leading-3 text-primary
         bg-btn hover:bg-btnHover cursor-pointer select-none">
             Reply
