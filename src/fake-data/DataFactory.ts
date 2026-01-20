@@ -8,6 +8,7 @@ import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/def
 import { GenerateCID } from "../helpers/generators";
 import { ProfileViewBasic, ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/client";
+import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
 
 /**
  * Type indicating the state of a Parent Post - is it a `PostView` (standard), Not Found (i.e. deleted), Blocked,
@@ -267,6 +268,33 @@ export async function CreateUserProfile(handle:string,displayName:string|undefin
     profile.description = `Hello! I am a User Profile created for testing this app.\nDID:${profile.did}\nHandle:${profile.handle}`
     if(typeof displayName != 'undefined') profile.displayName = displayName;
     return profile;
+}
+
+/**
+ * Method used to create a `BookmarkView` object representing a bookmarked Post.
+ * @param handle The handle of the User who made the bookmarked Post.
+ * @param postText The text content of the bookmarked Post.
+ * @param displayName The display name of the User who made the bookmarked Post. If none is provided, the handle will be used.
+ * @param postTime The time that the bookmarked Post was created.
+ * @returns The created `BookmarkView` object.
+ */
+export async function CreateBookmarkView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date()):Promise<BookmarkView>{
+    let indexTime = postTime.toISOString();
+    let cid = `bookmark${handle}_${1}`;
+    await GenerateCID(cid).then(res => {
+        cid = res.toString();
+    })
+    let bItem:$Typed<PostView>;
+    await CreatePostView(handle,postText,displayName,postTime).then(res => bItem = res);
+    let bookmark:BookmarkView = {
+        item:bItem!,
+        subject:{//These values are expected to be unused in testing for now
+            cid:cid,
+            uri:'at://did:plc:nowhere'
+        },
+        createdAt:indexTime
+    }
+    return bookmark;
 }
 
 /**

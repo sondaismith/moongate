@@ -17,7 +17,7 @@
                             <i-mdi:spy class="shrink-0"/>
                             <i-mdi:chevron-right class="ml-auto text-3xl"/>
                         </RadioBarButton>
-                        <RadioBarButton @click="loginToAccountClicked" :selected="AppSettingsState.Settings.savedAccountState.state == LoginState.Authorized">
+                        <RadioBarButton data-testid="login-to-account-button" @click="loginToAccountClicked" :selected="AppSettingsState.Settings.savedAccountState.state == LoginState.Authorized">
                              <div class="flex flex-col md:gap-1.5 md:flex-row md:items-center text-left">
                                 <div class="flex gap-1.5 items-center">
                                     <div class="text-xs md:text-base text-nowrap">Login to account</div>
@@ -147,7 +147,7 @@
             <div class="flex">
                 <SquareButton v-if="currentPage != 0" @click="clickedBackButton" :is-awaiting-response="attemptingLogin"
                 class="mr-auto bg-btn hover:bg-btnHover w-12">Back</SquareButton>
-                <SquareButton v-if="currentPage == modalPage.length-1" @click="loginAccount" :is-disabled="isLoginDisabled"
+                <SquareButton data-testid="login-button" v-if="currentPage == modalPage.length-1" @click="loginAccount" :is-disabled="isLoginDisabled"
                 :is-awaiting-response="attemptingLogin" :title="titleMessage"
                 class="bg-loginBtn font-semibold transition-colors hover:bg-loginBtnHover
                 text-primary md:self-end md:w-40 h-10">Login</SquareButton>
