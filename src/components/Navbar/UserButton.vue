@@ -1,6 +1,6 @@
 <template>
     <div @click="onUserButtonClick" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
-        @contextmenu.prevent class="relative cursor-pointer">
+        @contextmenu.prevent class="relative cursor-pointer" data-testid="userbutton">
         <div class="absolute z-10 border-[3px] border-sidebar w-3 -left-1 box-content aspect-square rounded-full" :class="GetLoginStateColor"
         :title="GetLoginStateText"></div>
         <a class="group relative flex justify-center aspect-square
@@ -10,7 +10,7 @@
                 <i-mingcute:key-2-line v-if="!AppState.canBrowse || !isVisible" class=" absolute h-full text-2xl transition-colors text-primary group-hover:text-loginHighlight"/>
                 <div v-else-if="AppState.canBrowse || isVisible" class="absolute flex h-full w-full justify-center">
                     {{ void "User PFP" }}
-                    <div v-if="AppState.isAuthBrowsing" class="absolute flex h-full w-full rounded-full bg-contain"
+                    <div data-testid="userbutton-user-avatar" v-if="AppState.isAuthBrowsing" class="absolute flex h-full w-full rounded-full bg-contain"
                         :style="`background-image: url(${AppState.currentPFP});`">
                     </div>
                     <div v-if="AppState.isAuthBrowsing && AppState.currentPFP == ''" class="flex items-center text-primary text-2xl">

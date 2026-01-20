@@ -1,5 +1,5 @@
 import test, { expect } from "@playwright/test";
-import { CreateBookmarkView, CreateFeedViewPost, CreateThreadViewPost, CreateUserProfile } from "../src/fake-data/DataFactory";
+import { CreateBookmarkView, CreateFeedViewPost, CreateLoginSessionResponse, CreateThreadViewPost, CreateUserProfile } from "../src/fake-data/DataFactory";
 import { $Typed, AppBskyFeedGetPostThread } from "@atproto/api";
 import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
@@ -48,51 +48,6 @@ test.beforeEach(async ({ context }) => {
     //         body:JSON.stringify({feed:[post2]})
     //     });
     // });
-    //Intercept any attempt to log in and return dummy session data
-    await context.route(/com.atproto.server.createSession/, route => {
-        route.fulfill({
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-            body:JSON.stringify(
-                {
-                    did: "did:plc:test-session",
-                    didDoc: {
-                        "@context": [
-                            "https://www.w3.org/ns/did/v1",
-                            "https://w3id.org/security/multikey/v1",
-                            "https://w3id.org/security/suites/secp256k1-2019/v1"
-                        ],
-                        id: "did:plc:test-session",
-                        alsoKnownAs: [
-                            "at://test-session.bsky.social"
-                        ],
-                        verificationMethod: [
-                            {
-                                id: "did:plc:test-session#atproto",
-                                type: "Multikey",
-                                controller: "did:plc:test-session",
-                                publicKeyMultibase: "zQ3shkYUSJxz7PmCaGznbNR5oMCLKsjC7foCUVLVhxhioa5fa"
-                            }
-                        ],
-                        service: [
-                            {
-                                id: "#atproto_pds",
-                                type: "AtprotoPersonalDataServer",
-                                serviceEndpoint: "https://hollowfoot.us-west.host.bsky.network"
-                            }
-                        ]
-                    },
-                    handle: "test-session.bsky.social",
-                    email: "testSession@mail.com",
-                    emailConfirmed: true,
-                    emailAuthFactor: false,
-                    accessJwt: "testAccessJwt",
-                    refreshJwt: "testRefreshJwt",
-                    active: true
-                }
-            )
-        });
-    });
 })
 
 test('FocusFeedPost with valid reply parent should display "View Parent of Reply" button', async ({context, page}) => {
@@ -137,8 +92,15 @@ test('FocusFeedPost with NotFoundPost reply parent should not display "View Pare
     await expect(page.getByTestId('focusfeedpost-view-parent')).toBeHidden();
 })
 
-test('Bookmark FocusFeedPost with PostView reply parent should display "View Parent of Reply" button', async ({context, page}) => {
-    // console.log(JSON.stringify(bookmarkWithParentThatExist));
+test('Bookmarked FocusFeedPost with PostView reply parent should display "View Parent of Reply" button', async ({context, page},testInfo) => {
+    let sessionResponse = CreateLoginSessionResponse(profile1.handle,profile1.did);
+    await page.route(/com.atproto.server.createSession/, route => {
+        route.fulfill({
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+            body:JSON.stringify(sessionResponse)
+        });
+    });
     await page.route(/app.bsky.actor.getProfile/, route => {
         route.fulfill({
             status: 200,
@@ -157,7 +119,7 @@ test('Bookmark FocusFeedPost with PostView reply parent should display "View Par
         route.fulfill({
             status: 200,
             headers: { 'Content-Type': 'application/json' },
-            body:JSON.stringify({feed:[bookmarkWithParentThatExist]})
+            body:JSON.stringify({bookmarks:[bookmarkWithParentThatExist]})
         });
     });
     //Log in
@@ -167,7 +129,24 @@ test('Bookmark FocusFeedPost with PostView reply parent should display "View Par
     await page.getByTestId('login-password-input').getByRole('textbox').fill('password');
     // await page.getByRole('button').filter({visible:true}).getByText('Login',{exact:true}).click();
     await page.getByTestId('login-button').click();
-    await page.goto(`/profile/${handle1}`,{waitUntil:'networkidle'});
-    // await page.getByText(bookmarkText1).scrollIntoViewIfNeeded();
+    //View logged in User's Profile via interacting with the `UserButton`
+    await expect(page.getByTestId('userbutton-user-avatar')).toBeVisible();
+    // const userbuttonLoggedInAvatar = await page.getByTestId('userbutton-user-avatar').screenshot();
+    // await testInfo.attach('image showing UserButton with logged in User avatar', {
+    //     body: userbuttonLoggedInAvatar,
+    //     contentType: 'image/png',
+    // });
+    await page.getByTestId('userbutton').click();
+    await page.getByText('View Profile').click();
+    //Switch to the "Saved/Bookmark" tab
+    await expect(page.getByText('Saved')).toBeVisible();
+    // const savedTab = await page.getByText('Saved').screenshot();
+    // await testInfo.attach('image showing Saved tab on UserFocusModal', {
+    //     body: savedTab,
+    //     contentType: 'image/png',
+    // });
+    await page.getByText('Saved').click();
+    //Check that the displayed bookmark has the "View Parent of Reply" button visible
+    await page.getByText(bookmarkText1).scrollIntoViewIfNeeded();
     await expect(page.getByTestId('focusfeedpost-view-parent')).toBeVisible();
 })

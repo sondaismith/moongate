@@ -9,6 +9,7 @@ import { GenerateCID } from "../helpers/generators";
 import { ProfileViewBasic, ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/client";
 import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
+import { OutputSchema } from "@atproto/api/dist/client/types/com/atproto/server/createSession";
 
 /**
  * Type indicating the state of a Parent Post - is it a `PostView` (standard), Not Found (i.e. deleted), Blocked,
@@ -595,4 +596,51 @@ export function CreateEmbedGIF():$Typed<AppBskyEmbedExternal.View>{
         }
     }
     return emb;
+}
+
+/**
+ * Method used to create a dummy session response. Currently used to mock logging into Bluesky.
+ * @param handle The handle to use in the session response.
+ * @param did The DID to use in the session response. NOTE: If trying access features that require an
+ * account match (i.e. Bookmarks) the DID of the User Profile and Session Response must match.
+ * @returns The created session response object.
+ */
+export function CreateLoginSessionResponse(handle:string="test-session.bsky.social",did:string="did:plc:test-session"):OutputSchema{
+    let response:OutputSchema = {
+        did: did,
+        didDoc: {
+            "@context": [
+                "https://www.w3.org/ns/did/v1",
+                "https://w3id.org/security/multikey/v1",
+                "https://w3id.org/security/suites/secp256k1-2019/v1"
+            ],
+            id: "did:plc:test-session",
+            alsoKnownAs: [
+                "at://test-session.bsky.social"
+            ],
+            verificationMethod: [
+                {
+                    id: "did:plc:test-session#atproto",
+                    type: "Multikey",
+                    controller: "did:plc:test-session",
+                    publicKeyMultibase: "zQ3shkYUSJxz7PmCaGznbNR5oMCLKsjC7foCUVLVhxhioa5fa"
+                }
+            ],
+            service: [
+                {
+                    id: "#atproto_pds",
+                    type: "AtprotoPersonalDataServer",
+                    serviceEndpoint: "https://hollowfoot.us-west.host.bsky.network"
+                }
+            ]
+        },
+        handle: handle,
+        email: "testSession@mail.com",
+        emailConfirmed: true,
+        emailAuthFactor: false,
+        accessJwt: "testAccessJwt",
+        refreshJwt: "testRefreshJwt",
+        active: true
+    }
+    return response;
 }
