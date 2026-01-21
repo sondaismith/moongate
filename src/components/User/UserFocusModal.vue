@@ -240,8 +240,7 @@
                             </div>
                             <div v-else-if="!awaitingProfileData && !isNavigatingHistory" v-for="n in UserFocusModalState.currentUserPageDetails.FeedData.data as FeedViewPost[]"
                             class="w-full shrink-0s">
-                                <!-- <FocusFeedPost :post-data="n.post" :post-reason="n.reason" :reply="n.reply" @focus-post-avatar-clicked="updateDisplayedData"/> -->
-                                <FocusFeedPost :post-data="({$type:'app.bsky.feed.defs#postView',...n.post} as PostView)" :post-reason="n.reason" :reply="n.reply" @focus-post-avatar-clicked="updateDisplayedData"/>
+                                <FocusFeedPost :post-data="({$type:'app.bsky.feed.defs#postView',...n.post} as PostView)" :post-reason="n.reason" :reply-ref="n.reply" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
                             <div v-if="!awaitingProfileData && !UserFocusModalState.currentUserPageDetails.FeedData.cursor"
                             class="flex justify-center rounded p-1 gap-1 w-full items-center
