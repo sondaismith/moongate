@@ -29,7 +29,7 @@ await CreateFeedViewPost(handle1,postText2,undefined,displayName1,currentDateTim
 await CreateFeedViewPost(handle1,postText3,undefined,displayName1,currentDateTime,undefined,"NotFoundPost").then(res => {
     postWithNotFoundPostParent = res;
 })
-await CreateBookmarkView(handle1,bookmarkText1,displayName1,currentDateTime).then(res => {
+await CreateBookmarkView(handle1,bookmarkText1,displayName1,currentDateTime,"PostView").then(res => {
     bookmarkWithParentThatExist = res;
 })
 

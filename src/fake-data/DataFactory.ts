@@ -10,6 +10,7 @@ import { ProfileViewBasic, ProfileViewDetailed } from "@atproto/api/dist/client/
 import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/client";
 import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
 import { OutputSchema } from "@atproto/api/dist/client/types/com/atproto/server/createSession";
+import { Main } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 
 /**
  * Type indicating the state of a Parent Post - is it a `PostView` (standard), Not Found (i.e. deleted), Blocked,
@@ -277,9 +278,12 @@ export async function CreateUserProfile(handle:string,displayName:string|undefin
  * @param postText The text content of the bookmarked Post.
  * @param displayName The display name of the User who made the bookmarked Post. If none is provided, the handle will be used.
  * @param postTime The time that the bookmarked Post was created.
+ * @param parentState The "state" of the Parent post of the bookmarked Post being created. Options are No Parent,
+ * Standard Parent Post (value currently hardcoded), `NotFoundPost` Parent or `BlockedPost` Parent.
  * @returns The created `BookmarkView` object.
  */
-export async function CreateBookmarkView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date()):Promise<BookmarkView>{
+export async function CreateBookmarkView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date(),
+parentState:ParentState='None'):Promise<BookmarkView>{
     let indexTime = postTime.toISOString();
     let cid = `bookmark${handle}_${1}`;
     await GenerateCID(cid).then(res => {
@@ -294,6 +298,45 @@ export async function CreateBookmarkView(handle:string,postText:string='',displa
             uri:'at://did:plc:nowhere'
         },
         createdAt:indexTime
+    }
+    switch (parentState) {
+        case "PostView":
+            let parentPost:$Typed<PostView>;
+            await CreatePostView('parent.to.reply',"I'm the parent!",'Parent Post').then(res =>{
+                parentPost = res;
+                (bItem.record as Main).reply = {
+                    parent:{
+                        cid:parentPost.cid,
+                        uri:parentPost.uri
+                    },
+                    root:{
+                        cid:parentPost.cid,
+                        uri:parentPost.uri
+                    }
+                }
+            })
+            break;
+        case "NotFoundPost":
+            let nfPost = CreateNotFoundPost();
+            let nfCID:string;
+            await GenerateCID(`author_${handle}_nf`).then(res => {
+                nfCID = res.toString();
+                (bItem.record as Main).reply = {
+                    // parent:nfPost,
+                    // root:nfPost
+                    parent:{
+                        cid:nfCID,
+                        uri:nfPost.uri
+                    },
+                    root:{
+                        cid:nfCID,
+                        uri:nfPost.uri
+                    }
+                }
+            })
+            break;
+        default:
+            break;
     }
     return bookmark;
 }

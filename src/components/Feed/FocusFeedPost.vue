@@ -568,7 +568,7 @@ export default defineComponent({
             //ThreadViewPost that is reply (seen in Feed)
             if(this.reply && isPostView(this.reply.parent)) return true;
             //Standalone PostView that is reply (likely seen as bookmark)
-            else if(isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined' && isPostView(this.postToShow)) return true;
+            else if(isPostView(this.postToShow) && isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined' ) return true; //there's no way to know the state of the reply Post until accessing it when using this object...
             return false;
         },
         /**Return the URI pointing to the Parent of this Post, if it exists. */
