@@ -7,8 +7,8 @@
         border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
         overflow-hidden text-xs cursor-pointer">
             <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
-                <img class="absolute w-full h-full object-center object-cover"
-                :src="embed && embed.external ? embed.external.thumb : ''"/>
+                <ImageLoader :img-url="typeof embed != 'undefined' && typeof embed.external != 'undefined' && typeof embed.external.thumb != 'undefined' ? embed.external.thumb : ''"
+                class="absolute w-full h-full object-center object-cover" :fill-container="true"/>
             </div>
             <div class="p-2 font-normal">
                 <div class="text-sm font-semibold">{{ embed.external.title}}</div>
@@ -29,8 +29,8 @@
         border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
         overflow-hidden text-xs cursor-pointer">
             <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
-                <img class="absolute w-full h-full object-center object-cover"
-                :src="embed && embed.external ? embed.external.thumb : ''"/>
+                <ImageLoader :img-url="typeof embed != 'undefined' && typeof embed.external != 'undefined' && typeof embed.external.thumb != 'undefined' ? embed.external.thumb : ''"
+                class="absolute w-full h-full object-center object-cover" :fill-container="true"/>
             </div>
             <div class="p-2 font-normal">
                 <div class="text-sm font-semibold">{{ embed.external.title}}</div>
@@ -49,11 +49,12 @@
         class="flex flex-col rounded-lg border text-primary transition-colors
         border-outline hover:bg-embedHoverBG bg-postBG
         overflow-hidden text-xs cursor-pointer">
-            <div class="relative border-outline aspect-[1.91/1]">
+            <div data-testid="embedExternal-GIF-imageContainer" class="relative border-outline aspect-[1.91/1]">
                 <ImageContainer
                 @image-clicked="img => $emit('imageClicked',img)"
                 @media-click="i => $emit('media-click',i)"
-                :show-fullsize="showFullsize" :images-to-display="embed.external"/>
+                :author="author" :post-id="postId"
+                :show-fullsize="showFullsize" :images-to-display="embed" :media-embed="embed"/>
             </div>
         </div>
     </div>
@@ -73,6 +74,7 @@ import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { CopyTextToClipboard } from '../../state/AppState.vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import ImageLoader from './ImageLoader.vue';
 
 /**
  * Method used to open link in the system's default browser.
@@ -84,7 +86,8 @@ async function OpenLink(url:string){
 
 export default defineComponent({
     components:{
-        ImageContainer
+        ImageContainer,
+        Image,
     },
     props:{
         embed: {
@@ -101,7 +104,15 @@ export default defineComponent({
         showFullsize: {
             type: Boolean,
             default: false
-        }
+        },
+        author:{
+            type: String,
+            required: true,
+        },
+        postId:{
+            type: String,
+            required: true,
+        },
     },
     data(){
         return{
@@ -160,7 +171,7 @@ export default defineComponent({
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         },
-    }
+    },
 })
 </script>
 

@@ -157,8 +157,8 @@
                 class="flex flex-col gap-2">
                     <div v-for="n in feedData?.data" data-test="feedColumn-post" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">
-                        <FocusFeedPost tabindex="-1" class="border-0" :post-data="(n as FeedViewPost).post"
-                        :post-reason="(n as FeedViewPost).reason" :reply="(n as FeedViewPost).reply"
+                        <FocusFeedPost tabindex="-1" class="border-0" :post-data="({$type:'app.bsky.feed.defs#postView',...(n as FeedViewPost).post} as PostView)"
+                        :post-reason="(n as FeedViewPost).reason" :reply-ref="(n as FeedViewPost).reply"
                         :is-feed-post-style="true"/>
                     </div>
                 </div>
@@ -236,7 +236,7 @@ import { ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, SaveF
 import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { debounce } from '../../helpers/debouncer';
-import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { FeedViewPost, isReasonPin, isReasonRepost, PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import FocusFeedPost from './FocusFeedPost.vue';
 import FeedPost from './FeedPost.vue';
 import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';

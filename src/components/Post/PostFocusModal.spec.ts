@@ -100,12 +100,12 @@ describe("test", () => {
     const wrapper = mount(PostFocusModal);
     test("threadNavHistory content is displayed in component", async () => {
         await wrapper.setData({postDetails:{
-            // isAwaitingFocusData: true,
+            isAwaitingFocusData: false,
             postThread: testPostThreadView[0],
             threadNavHistory: testPostThreadView,
             currentThreadView: testPostThreadView[0],
         }});
-        // console.log(wrapper.html());
+        console.log(wrapper.html());
         //Check handle
         expect(wrapper.find('[data-testid="PostFocusModal-handle"]').exists()).toBe(true);
         expect(wrapper.find('[data-testid="PostFocusModal-handle"]').text()).toContain('@'+testPostThreadView[0].post.author.handle);

@@ -98,13 +98,15 @@
                 {{ convertToShortTimestamp(postReason.indexedAt) }}
             </div>
         </div>
-        <div v-else-if="postToShow && isPostReply" @click="openPostReply(getReplyParentURI)"
-        title="Open Reply Parent"
-        class="flex self-start py-0.5 px-2 rounded-md text-[10px] leading-3 text-primary
-        bg-btn hover:bg-btnHover cursor-pointer select-none">
-            Reply
-        </div>
-        <div class="flex w-full">
+        <button v-else-if="postToShow && isPostReply.isReply && !isReplyStyle" @click="openPostParent(getParentPostURI)"
+        data-testid="focusfeedpost-view-parent" :disabled="isAwaitingParentPostHandle" title="Open Parent Post"
+        class="flex gap-1 items-center self-start py-0.5 px-1 rounded-md text-[10px] leading-3 text-primary
+        bg-btn hover:bg-btnHover hover:border-transparent disabled:bg-disabled cursor-pointer
+        disabled:cursor-default shadow-none select-none">
+            <i-mingcute:loading-fill v-if="isAwaitingParentPostHandle" class="spinner"/>
+            <div>View Parent</div>
+        </button>
+        <div data-testid="focusFeedPost" class="flex w-full">
             <div>
                 <AvatarRound v-if="isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"/>
                 <div v-if="replyIndex !=undefined && totalReplies!=undefined && replyIndex<totalReplies" class="h-full bg-slate-700 w-0.5 m-auto"></div>
@@ -133,8 +135,10 @@
                             <i-mingcute:bookmark-fill v-else class="text-postBookmark group-hover:text-postBookmarkHover group-active:text-postBookmarkActive group-disabled:text-disabled"/>
                         </button>
                     </div>
-                    <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
-                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '') : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div>
+                    <!-- <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
+                    <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div> -->
+                    <RouterLink v-if="!isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-test="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</RouterLink>
+                    <RouterLink v-else-if="isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-test="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</RouterLink>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
@@ -143,12 +147,17 @@
                     <!-- Is Quoted Post -->
                     <RichPostTextBsky data-test="focusFeedPost-text" v-else :post-text="((postToShow as ViewRecord).value as Record).text" :post-facets="((postToShow as ViewRecord).value as Record).facets"/>
                     {{ void "Post Media" }}
-                    <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
+                    <!-- <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
-                    @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '', i) : openFocusDetails(i)"/>
+                    @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"/> -->
+                    <!-- Add check to ensure postToShow is PostView -->
+                    <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages" :media-embed="getPostImages"
+                    :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
+                    :post-id="getEndOfPostUri" @media-click="(i:number) => openFocusDetails(i)"/>
                     <VideoContainer v-if="postContainsVideo" :video-view="getPostVideo"
                     :labels="postToShow.labels" :author="postToShow.author.handle"/>
-                    <EmbedExternal v-if="postContainsExternalEmbed" :embed="getPostEmbed" @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData.post.uri : '', i) : openFocusDetails(i)"/>
+                    <EmbedExternal v-if="postContainsExternalEmbed" :embed="getPostEmbed" @media-click="(i:number) => isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined, i) : openFocusDetails(i)"
+                    :author="postToShow.author.handle" :post-id="getEndOfPostUri"/>
                     {{ void "Reposts - ViewRecord and View" }}
                     <FocusFeedPost v-if="postToShow.embed?.record && postToShow.embed?.record.record && AppBskyEmbedRecord.isViewRecord(postToShow.embed.record.record)"
                     :post-data="postToShow.embed.record.record" :post-reason="postReason"
@@ -165,26 +174,28 @@
 </template>
 
 <script lang="ts">
-import { isGeneratorView, isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
+import { GeneratorView, isGeneratorView, isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyFeedDefs, AppBskyGraphDefs, AppBskyLabelerDefs, isDid } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
-import { isViewBlocked, isViewDetached, isViewNotFound, isViewRecord, ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { isViewBlocked, isViewDetached, isViewNotFound, isViewRecord, ViewBlocked, ViewDetached, ViewNotFound, ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import PostInteractionIcons from '../Post/PostInteractionIcons.vue';
-import { isImage, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
-import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
+import { isImage, View, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { isView as isViewForRecordWithMedia, View as ViewForRecordWithMedia} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
+import { postDetails } from '../../state/PostDetails.vue';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
-import { isListView, isStarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
+import { isListView, isStarterPackViewBasic, ListView, StarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { isMain, Main, Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
-import { toggleBlock } from '../../lib/api/User.vue';
-import { BookmarkPost, RemoveBookmark } from '../../lib/api/Post.vue';
+import { getUserProfile, toggleBlock } from '../../lib/api/User.vue';
+import { BookmarkPost, getPostImages, RemoveBookmark } from '../../lib/api/Post.vue';
 import { AppState, toast } from '../../state/AppState.vue';
+import { LabelerView } from '@atproto/api/dist/client/types/app/bsky/labeler/defs';
 
 export default defineComponent({
     components:{
@@ -199,7 +210,8 @@ export default defineComponent({
     },
     props:{
         /**Prop used to pass in Post details - used by "Feed-type" display components (`FeedColumn`). */
-        postData: Object as PropType<PostView>,
+        postData: Object as PropType<PostView>|PropType<ViewRecord>|PropType<ViewNotFound>|PropType<ViewBlocked>|PropType<ViewDetached>|
+            PropType<GeneratorView>|PropType<ListView>|PropType<LabelerView>|PropType<StarterPackViewBasic>|PropType<{$type: string}>,
         /**Prop used to pass in Post details - used by "Reply-type" display components (`PostThreadView`). */
         threadData: Object as PropType<ThreadViewPost>,
         postReason: Object as PropType<ReasonRepost|ReasonPin>,
@@ -213,7 +225,8 @@ export default defineComponent({
         },
         replyIndex:Number,
         totalReplies:Number,
-        reply: Object as PropType<ReplyRef>
+        /**The `ReplyRef` object associated with the Post to display, if there is one. */
+        replyRef: Object as PropType<ReplyRef>
     },
     data(){
         return{
@@ -239,11 +252,13 @@ export default defineComponent({
              * The current Post details to show. "Post" is derived from `threadData`
              * first if it exists and `postData` second.
              */
-            postToShow: {author:{did:'',handle:''},cid:'',indexedAt:'',record:{},uri:''} as PostView,
+            postToShow: {author:{did:'',handle:''},cid:'',indexedAt:'',record:{},uri:''} as PostView|ViewRecord,//|ViewNotFound|ViewBlocked|ViewDetached|AppBskyFeedDefs.GeneratorView|AppBskyGraphDefs.ListView|AppBskyLabelerDefs.LabelerView|AppBskyGraphDefs.StarterPackViewBasic,
             /**Are we currently waiting for an action relating to blocking or unblocking a User account to finish? */
             isAwaitingAccountBlockAction:false,
             /**Are we currently waiting for an action relating to saving/removing a Post bookmark to finish? */
             isAwaitingBookmarkUpdate:false,
+            /**Are we currently waiting for the account handle of the parent Post creator to be resolved? */
+            isAwaitingParentPostHandle:false,
         }
     },
     emits:{
@@ -258,13 +273,13 @@ export default defineComponent({
          * This emit travels from `FocusFeedPost` to `PostThreadView` to `PostFocusModal`.
          * QRT Posts will emit to the container `FocusFeedPost` and then continue up
          * the previously outlined route.
-         * @param postThreadURI The URI pointing to the new Post Thread context to display.
+         * @param postThread The the new Post Thread context to display.
          * @param mediaIndex The Index of the media in the Post's collection to display.
          */
-        threadReplyClicked:(postThreadURI:string,mediaIndex:number) => {
-            if(postThreadURI.trim() != '')
-                return {postThreadURI,mediaIndex};
-            else return false;
+        threadReplyClicked:(postThread:ThreadViewPost|undefined,mediaIndex:number) => {
+            // if(postThreadURI.trim() != '')
+                return {postThread: postThread,mediaIndex};
+            // else return false;
         }
     },
     methods:{
@@ -284,25 +299,76 @@ export default defineComponent({
             if(this.postToShow){
                 //Check if modal is already visible - if it is we are not showing it
                 //for the first time, the thread context is being updated
-                if(postDetails.isFocusVisible)
-                    this.emitThreadReplyClicked(this.postToShow.uri);
+                // if(postDetails.isFocusVisible)
+                //     this.emitThreadReplyClicked(this.postToShow.uri);
+                // else
+                //     showFocusModal(this.postToShow.uri, mediaIndex);
+                let postDid:string|undefined = this.postToShow.uri.split('/').pop();
+                if(AppBskyEmbedImages.isView(this.getPostImages) && this.getPostImages.images.length>0)
+                    this.$router.push(`/profile/${this.postToShow.author.handle}/post/${postDid}/${mediaIndex}`);
+                else if(AppBskyEmbedRecordWithMedia.isView(this.getPostImages) && AppBskyEmbedImages.isView(this.getPostImages.media) && this.getPostImages.media.images.length>0){
+                    this.$router.push(`/profile/${this.postToShow.author.handle}/post/${postDid}/${mediaIndex}`);
+                }
                 else
-                    showFocusModal(this.postToShow.uri, mediaIndex);
+                    this.$router.push(`/profile/${this.postToShow.author.handle}/post/${postDid}`);
+                // this.$router.push({name:'postWithMedia', params:{handle: this.postToShow.author.handle, postDid:postDid, clickedMediaIndex:mediaIndex}});
             }
         },
-        openPostReply(postURI:string|undefined, mediaIndex:number=0){
-            if(typeof this.postToShow != 'undefined' && typeof postURI != 'undefined'){
-                showFocusModal(postURI, mediaIndex);
+        /**
+         * Method used to generate a route used to display the interacted with Post in the
+         * `PostFocusModal` component.
+         * @param mediaIndex The index of the Post image to display. Default is 0.
+         */
+        getGeneratedPostUri(mediaIndex:number=0):string{
+            let postDid = this.postToShow.uri.split('/').pop();
+            // if(this.getPostImages.length>0)
+            //     return `/profile/${this.postToShow.author.handle}/post/${postDid}/${mediaIndex}`;
+            // else
+                return `/profile/${this.postToShow.author.handle}/post/${postDid}`;
+        },
+        /**
+         * Method used to open the parent Post of this Post in `PostFocusModal`, if it exists.
+         * @param postURI The URI that points to the parent post.
+         * @param mediaIndex The media index to initially show when displaying the parent post.
+         */
+        async openPostParent(postURI:string|undefined, mediaIndex:number=0){
+            if(typeof this.postToShow != 'undefined' && typeof postURI != 'undefined' && !this.isAwaitingParentPostHandle){
+                let accountDid = postURI.split('/')[2];
+                let handle = '';
+                if(this.isPostReply.hasFullParentInfo){
+                    //If reply reference exists and parent is a PostView object
+                    if(typeof this.replyRef != 'undefined' && isPostView(this.replyRef.parent)) handle = this.replyRef.parent.author.handle;
+                    //need to handle `NotFoundPost` and `BlockedPost` situations as well
+                }
+                else{
+                    //disable "View Parent of Reply" button until this resolves
+                    this.isAwaitingParentPostHandle = true;
+                    await getUserProfile(accountDid).then(res => {
+                        handle = res.data.handle;
+                    })
+                    .catch(err => {
+                        toast.add({summary:'Error Getting Parent Post', detail:`${err}`, severity:'error', group:'tr', life:3000});
+                        //add route navigation to display current post once `UserFocusModal` has support for displaying parent/root posts
+                    })
+                    .finally(()=>{
+                        //re-enable "View Parent of Reply" button
+                        this.isAwaitingParentPostHandle = false;
+                    })
+                }
+                if(handle.trim() != ''){
+                    let postDid:string|undefined = postURI.split('/').pop();
+                    this.$router.push(`/profile/${handle}/post/${postDid}`);
+                }
             }
         },
         /**
          * Updates the Posts/Replies displayed in the PostFocusModal component.
          * Emits `threadReplyClicked` with URI of Post Thread to display.
-         * @param newThreadURI The URI pointing to the new Post Thread context to display.
+         * @param newThread The  new Post Thread context to display.
          */
-        emitThreadReplyClicked(newThreadURI:string, mediaIndex:number=0){
-            if(newThreadURI.trim() != '')
-                this.$emit('threadReplyClicked',newThreadURI,mediaIndex);
+        emitThreadReplyClicked(newThread:ThreadViewPost|undefined, mediaIndex:number=0){
+            // if(newThread.trim() != '')
+                this.$emit('threadReplyClicked',newThread,mediaIndex);
         },
         /**
          * Method used to attempt to block/unblock the account associated with the
@@ -443,31 +509,12 @@ export default defineComponent({
          * based on what type of data configuration the current Post has.
          * @returns `ViewImage[]` containing Post images.
          */
-        getPostImages():ViewImage[]{
-            //This is a standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postToShow)){
-                if(this.postToShow?.embed && this.postToShow.embed.images){
-                    //Is a parent Post with image(s)
-                    return this.postToShow.embed.images as ViewImage[];
-                }
-                else if(this.postToShow?.embed && AppBskyEmbedRecordWithMedia.isView(this.postToShow.embed) && this.postToShow.embed.media.images){
-                    //Is a parent Post with image(s) and a QRT
-                    return this.postToShow.embed.media.images as ViewImage[];
-                }
-            }
-            else{
-                //This is a QRT
-                if(this.postToShow?.embeds && this.postToShow.embeds.length>0 && this.postToShow.embeds[0].images){
-                    //Is a QRT with image(s)
-                    return this.postToShow.embeds[0].images as ViewImage[];
-                }
-                else if(this.postToShow?.embeds && this.postToShow.embeds.length>0 && this.postToShow.embeds[0].media &&
-                    this.postToShow.embeds[0].media.images){
-                    //Is a QRT with image(s)
-                    return this.postToShow.embeds[0].media.images as ViewImage[];
-                }
-            }
-            return [];
+        // getPostImages():ViewImage[]{
+        getPostImages():View|ViewForRecordWithMedia{
+            if(typeof this.postToShow != 'undefined')
+                // return getPostImages({post:this.postToShow});
+                return getPostImages(this.postToShow);
+            else return {images:[]};
         },
         /**
          * Method that figures out what object to pass on to the `VideoContainer` component
@@ -529,6 +576,12 @@ export default defineComponent({
                 }
             }
         },
+        /**Returns the last bit of ID information held at the end of the URI that points to
+         * the currently displayed Post. */
+        getEndOfPostUri():string{
+            let postId = this.postToShow.uri.split('/').pop();
+            return typeof postId != 'undefined' ? postId : '';
+        },
         getPostText():string{
             if(!isViewRecord(this.postToShow)) return this.postToShow?.record.text;
             else return this.postToShow.value.text;
@@ -543,21 +596,21 @@ export default defineComponent({
             return false;
         },
         /**
-         * Method used to check if this Post is a reply. Ensures it the `parent`
-         * is a `PostView` as well.
+         * Method used to check if this Post is a reply.
          */
-        isPostReply(){
+        isPostReply():{isReply:boolean,hasFullParentInfo:boolean}{
             //ThreadViewPost that is reply (seen in Feed)
-            if(this.reply && isPostView(this.reply.parent)) return true;
+            if(this.replyRef && isPostView(this.replyRef.parent)) return {isReply:true,hasFullParentInfo:true};
             //Standalone PostView that is reply (likely seen as bookmark)
-            else if(isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined' && isPostView(this.postToShow)) return true;
-            return false;
+            else if(isPostView(this.postToShow) && isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined')
+                return {isReply:true,hasFullParentInfo:false}; //there's no way to know the state of the reply Post until accessing it when using this object...
+            return {isReply:false,hasFullParentInfo:false};
         },
         /**Return the URI pointing to the Parent of this Post, if it exists. */
-        getReplyParentURI():string|undefined{
-            if(this.isPostReply){
-                if(typeof this.reply != 'undefined' && isPostView(this.reply.parent)) return this.reply.parent.uri;
-                else if(isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined') return (this.postToShow.record as Main).reply?.parent.uri;
+        getParentPostURI():string|undefined{
+            if(this.isPostReply.isReply){
+                if(typeof this.replyRef != 'undefined' && isPostView(this.replyRef.parent)) return this.replyRef.parent.uri;
+                else if(isPostView(this.postToShow) && isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined') return (this.postToShow.record as Main).reply!.parent.uri;
             }
         },
         /**Is the account associated with the currently displayed Post blocked by the logged in User? */

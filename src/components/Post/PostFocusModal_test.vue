@@ -1,5 +1,5 @@
 <template>
-    <div data-test="post-focus-modal" :class="postDetails.isFocusVisible ? 'show' : ''"
+    <div data-testid="post-focus-modal" :class="postDetails.isFocusVisible ? 'show' : ''"
     class="absolute z-10 h-full w-full flex justify-between bg-slate-900/90">
         {{ void "Media Section" }}
         <div class="flex flex-col w-full">
@@ -154,11 +154,11 @@ export default defineComponent({
 </script>
 
 <style scoped>
-[data-test="post-focus-modal"]{
+[data-testid="post-focus-modal"]{
     z-index: -10;
     display: none;
 }
-[data-test="post-focus-modal"].show{
+[data-testid="post-focus-modal"].show{
     z-index: 20;
     display: flex;
 }

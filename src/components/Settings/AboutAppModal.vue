@@ -33,6 +33,35 @@
             <div class="flex flex-col overflow-y-auto">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">January 22nd 2026</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Updated "View Parent of Post" button that is displayed on "reply posts".
+                            <ul class="list-disc list-inside h-full text-sm">
+                                <li>Changed label from "Reply" to "View Parent".</li>
+                                <li>Modified click behavior so that opening a Post that has been deleted is handled (albeit in a basic manner at the moment).</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">January 18th 2026</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Updated how various app components handle loading images.</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">January 1st 2026</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Updated app to use Routes during interactions.
+                            <ul class="list-disc list-inside h-full text-sm">
+                                <li>This allows for easier navigation via backward/forward navigation buttons or shortcuts.</li>
+                            </ul>
+                        </li>
+                        <li>Posts can be opened in a new tab via interacting with the Post timestamp.</li>
+                        <li>User Accounts can be opened in a new tab via interacting with the User's Avatar.</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">November 20th 2025</div>
                     <ul class="list-disc list-inside h-full py-1 text-sm">
                         <li>Added ability to Bookmark posts.
@@ -172,7 +201,7 @@ export default defineComponent({
             return import.meta.env.VITE_VUE_APP_VERSION;
         },
         closeModal(){
-            AppState.HideAboutAppModal();
+            this.$router.push('/');
         },
         /**
          * Shows Options Menu allowing user to perform different actions

@@ -1,26 +1,29 @@
 <template>
     <div @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,did?did:'',handle?handle:'')"
     @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
-    @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="rounded-full bg-slate-300 aspect-square
-    border border-outline box-content size-10 bg-contain hover:border-hover
-    transition-[border-color] ease-linear duration-200 cursor-pointer"
-    :style="{'background-image' : 'url('+avatar+')'}">
-        <i-mingcute:butterfly-2-fill v-if="!avatar" class="text-2xl h-full w-full p-1 text-blue-600"/>
+    @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
+    border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
+    transition-[border-color] ease-linear duration-200 cursor-pointer overflow-hidden">
+        <ImageLoader v-if="typeof avatar != 'undefined'" :img-url="avatar" :fill-container="true" :loader-type="'spinner'"/>
+        <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
     </div>
 </template>
 
 <script lang="ts">
+//Option Menu Icons
+import MingcuteAddCircleLine from '~icons/mingcute/add-circle-line';
+import MingcuteExternalLinkLine from '~icons/mingcute/external-link-line';
+
 import { defineComponent } from 'vue'
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { isDid } from '@atproto/api';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
-
-//Option Menu Icons
-import MingcuteAddCircleLine from '~icons/mingcute/add-circle-line';
 import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
+import ImageLoader from './ImageLoader.vue';
+import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
 
 /**
  * Method that adds a new User feed to the displayed list of Feeds based on
@@ -45,6 +48,14 @@ function CreateUserFeed(userDid:string,userHandle:string){
     });
 }
 
+/**
+ * Opens the associated User's profile in a new tab.
+ * @param handle The handle of the User's profile that will be displayed in the new tab.
+ */
+function OpenProfileInNewTab(handle:string){
+    window.open(`/profile/${handle}`);
+}
+
 export default defineComponent({
     data(){
         return{
@@ -56,6 +67,9 @@ export default defineComponent({
         avatar:String,
         did:String,
         handle:String,
+    },
+    components:{
+        Image,
     },
     emits:{
         /**Emit used to indicate the Avatar element has been clicked. */
@@ -72,8 +86,9 @@ export default defineComponent({
         displaySelectedUserAccount(e:Event){
             //Cancel displaying `AccountPeek`
             AccountPeekState.cancelUserPeek(true);
-            AppState.ShowUserFocusModal(this.did);
-            this.$emit('avatarClicked',this.did);
+            if(typeof UserFocusModalState.currentUserPageDetails.ProfileData != 'undefined' &&
+            UserFocusModalState.currentUserPageDetails.ProfileData.handle == this.handle) return; //do nothing if already on destination User page
+            else this.$router.push(`/profile/${this.handle}`);
             e.stopPropagation();//Prevent click "bubbling"
         },
         /**
@@ -84,9 +99,10 @@ export default defineComponent({
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteAddCircleLine,Label:'Create new User Feed',Action:function(){CreateUserFeed(userDid,userHandle)},Type:ItemType.Option},
+                {Icon:MingcuteExternalLinkLine,Label:'Open Profile in New Tab',Action:function(){OpenProfileInNewTab(userHandle)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
-        },
+        }
     }
 })
 </script>

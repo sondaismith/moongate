@@ -1,5 +1,5 @@
 <template>
-    <div data-test="app-viewport" id="app-viewport" class="flex flex-row absolute h-full w-screen"
+    <div data-testid="app-viewport" id="app-viewport" class="flex flex-row absolute h-full w-screen"
     :class="{'theme-light':!AppSettingsState.Settings.isDarkMode}">
         {{ void "sidebar" }}
         <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar w-16 shrink-0 items-center">
@@ -88,9 +88,6 @@
             </div>
             <FeedPost/>
         </div>
-        <Transition name="modal">
-            <LoginModal data-testid="login-modal" v-if="AppState.isLoggingIntoAccount"/>
-        </Transition>
         <Toast position="bottom-center" group="bc"/>
         <!-- <Toast position="bottom-center" group="bc":pt="{
                 root:'mr-auto',
@@ -109,34 +106,13 @@
         <FeedOptionsMenu v-show="FeedState.isFeedOptionMenuVisible"/>
         <OptionsMenu v-show="OptionsMenuState.isOptionsMenuVisible"/>
         <Transition name="modal">
-            <ConfirmModal v-show="AppState.isAskingForConfirmation"/>
-        </Transition>
-        <Transition name="modal">
-            <SaveMediaModal v-if="AppState.isSavingMediaModalVisible"/>
-        </Transition>
-        <Transition>
-            <PostFocusModal v-if="postDetails.isFocusVisible" :initial-thread-uri="postDetails.uriOfPostToShow" :clicked-media-index="postDetails.clickedMediaIndex"/>
+            <ConfirmModal v-if="AppState.isAskingForConfirmation"/>
         </Transition>
         <Transition name="modal">
             <FeedOrderModal v-if="AppState.isUpdatingFeedPosition" :feed-id-to-update="FeedState.selectedFeed"/>
         </Transition>
-        <Transition name="modal">
-            <FeedEditModal v-if="AppState.isCreatingFeed || AppState.isUpdatingFeed"/>
-        </Transition>
-        <Transition>
-            <UserFocusModal v-if="AppState.isViewingUserAccount"/>
-        </Transition>
         <Transition name="peek">
             <AccountPeek v-show="AccountPeekState.isUserPeeking"/>
-        </Transition>
-        <Transition name="modal">
-            <CreatePost v-if="AppState.isCreatingNewPost" :post-ref="postDetails.currentPostData"/>
-        </Transition>
-        <Transition name="modal">
-            <SettingsPanel v-if="AppState.isSettingsPanelVisible"/>
-        </Transition>
-        <Transition name="modal">
-            <AboutAppModal v-if="AppState.isAboutAppModalVisible"/>
         </Transition>
     </div>
 </template>
@@ -186,12 +162,14 @@ import { isOnMobileTouchscreen } from "./helpers/states";
 import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
 import AppLogo from "./components/SVG/AppLogo.vue";
 import AboutAppModal from "./components/Settings/AboutAppModal.vue";
+import UserButton from "./components/Navbar/UserButton.vue";
 
 
     export default defineComponent({
         name:'Sidebar',
         components:{
             FeedButton,
+            UserButton,
             SidebarButton,
             FeedColumn,
             FeedEditModal,
@@ -237,9 +215,7 @@ import AboutAppModal from "./components/Settings/AboutAppModal.vue";
         methods: {
             addFeed(){
                 // addDummyFeed();
-                if(!AppState.checkIfCanBrowse()) return;
-                AppState.ToggleCreateFeedModal();
-                this.showScrollXPos();
+                this.$router.push(`/create/feed`);
             },
             removeFeed(){
                 // if(this.feedListing.feedList && this.feedListing.feedList.length>0){
@@ -256,10 +232,10 @@ import AboutAppModal from "./components/Settings/AboutAppModal.vue";
                 AppState.showCreatePost();
             },
             showSettingsPanel(){
-                AppState.ShowSettingsPanel();
+                this.$router.push('/settings');
             },
             showAboutAppModal(){
-                AppState.ShowAboutAppModal();
+                this.$router.push('/about');
                 if(document.activeElement instanceof HTMLElement) document.activeElement.blur();
             },
             /**
@@ -392,8 +368,8 @@ import AboutAppModal from "./components/Settings/AboutAppModal.vue";
              * `moongate_settings` store and applies them.
              */
             async loadAppConfig(){
-                //Load application settings
-                await AppSettingsState.loadSettingsFromStore();
+                // //Load application settings
+                // await AppSettingsState.loadSettingsFromStore();
                 //Tauri - ensure databases exist
                 if(isTauri()){
                     await this.userAccountsDatabaseSetup();

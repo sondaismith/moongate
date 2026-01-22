@@ -1,7 +1,7 @@
 <template>
     <div data-testid="feed-edit-modal" tabindex="-1" @keydown="(e)=>TrapFocus($el,e)"
     class="absolute z-10 flex w-full h-full text-primary focus-visible:outline-none">
-        <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full bg-slate-800/40 backdrop-blur-sm"></div>
+        <div data-testid="feedEditModal-close" @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full bg-slate-800/40 backdrop-blur-sm"></div>
         {{void "Modal Control"}}
         <div class="z-20 flex flex-col gap-1 w-[95%] md:max-w-[1024px] h-[92%] mx-auto my-auto rounded bg-feedColumnBG
             p-4 drop-shadow-lg backdrop-blur-0">
@@ -10,6 +10,7 @@
                     <div class="text-2xl">{{modalPages[currentPage].title}}</div>
                     <div v-if="AppState.isCreatingFeed" class="flex bg-green-600 rounded-full px-2 py-1 items-center self-center">Creating</div>
                     <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div>
+                    <div v-if="selectedFeedType.trim() != '' && currentPage != 0" class="flex border border-blue-600 rounded-full px-2 py-1 items-center self-center">{{ feedTypeOptions.find(x=> x.value == selectedFeedType)?.name.split(' ')[0] }} Feed</div>
                 </div>
                 {{ void "Pages" }}
                 <div class="flex items-center w-full">
@@ -117,26 +118,6 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-1 h-full overflow-y-auto preload-gutter">
-                                    <!-- <div class="flex gap-1 items-center py-1 bg-feedColumnBG shadow-scroll-underline">
-                                        <div class="text-lg">Bluesky</div>
-                                        <div title="Bluesky Discover Feed Generator"><i-logos:bluesky class="shrink-0" /></div>
-                                    </div>
-                                    <div v-if="!awaitingInitialCustomFeedData && defaultFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
-                                            <CustomFeedButton v-for="n in defaultFeedData" class="min-w-64 sm:flex-[1_0_32%]" :feed-generator-view="n.generator"/>
-                                    </div>
-                                    <div v-else-if="awaitingInitialCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
-                                        <CustomFeedButtonPlaceholder class="min-w-64 w-full sm:flex-[1_0_32%]"/>
-                                    </div>
-                                    <div v-else class="pt-2">
-                                        <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
-                                            <div class="flex gap-1 items-center">
-                                                <div class="text-lg font-semibold">Error Retrieving Default Feeds</div>
-                                                <i-mingcute:wifi-off-line/>
-                                            </div>
-                                            <hr class="border-outline"/>
-                                            <div class="text-sm">Default feeds could not be reached at this time</div>
-                                        </div>
-                                    </div> -->
                                     <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline">
                                         <div class="text-lg">Discover New Feeds</div>
                                         <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
@@ -204,9 +185,9 @@
                         <div v-else-if="selectedFeedType == FeedEnums.Types.User"
                         class="flex flex-col overflow-auto divide-y divide-outline">
                             <div v-if="!isAwaitingProfileData" class="flex flex-col gap-1 w-full">
-                                <div class="flex rounded-full h-20 mx-auto aspect-square bg-sky-400 justify-center items-center bg-cover text-2xl"
-                                :style="{'background-image': 'url('+feedFilters.user.avatar+')'}">
-                                    <i-mingcute:user-add-fill v-if="!feedFilters.user.avatar"/>
+                                <div class="flex rounded-full overflow-hidden h-20 mx-auto aspect-square bg-searchbarHandle justify-center items-center bg-cover text-2xl">
+                                    <i-mingcute:user-add-fill v-if="typeof feedFilters.user.avatar == 'undefined'"/>
+                                    <ImageLoader v-else :img-url="feedFilters.user.avatar" :fill-container="true" loader-type="spinner"/>
                                 </div>
                                 <div class="flex w-full overflow-hidden flex-col items-start">
                                     <div class="flex gap-1 items-center w-full overflow-hidden">
@@ -332,6 +313,8 @@ import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlacehol
 import { AppBskyFeedDefs } from '@atproto/api/dist/client';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 import FilterBar from '../Utilities/FilterBar.vue';
+import { PropType } from 'vue';
+import ImageLoader from '../Utilities/ImageLoader.vue';
 
 export default defineComponent({
     components:{
@@ -343,6 +326,12 @@ export default defineComponent({
         CustomFeedButton,
         CustomFeedButtonPlaceholder,
         FilterBar,
+        ImageLoader,
+    },
+    props:{
+        feedType: Object as PropType<FeedEnums.Types>,
+        /**Used to show summary page for Feed creation - if value is not 'summary' navigation moves back to the start of the process. */
+        summary: String,
     },
     data(){
         return{
@@ -451,7 +440,12 @@ export default defineComponent({
                 this.selectedFeedType="";
             }
             else{
-                this.currentPage++
+                if(this.currentPage == 0 && this.selectedFeedType.trim() != '' && Object.values<string>(FeedEnums.Types).includes(this.selectedFeedType)){
+                    this.$router.push(`/create/feed/${this.selectedFeedType}`);
+                }
+                else if(this.currentPage == 1){
+                    this.$router.push(`/create/feed/${this.selectedFeedType}/summary`);
+                }
             }
             this.feedTypeSelected = true;
             if(this.customFeedData.length<1 && this.currentPage == 1 && this.selectedFeedType == FeedEnums.Types.FeedGenerator) this.getCustomFeeds();
@@ -464,7 +458,8 @@ export default defineComponent({
          */
         backOnePage(){
             if(this.currentPage-1 > -1){
-                this.currentPage--;
+                console.log(this.$route)
+                if(this.currentPage >= 1) this.$router.push(this.$route.path.substring(0, this.$route.path.lastIndexOf('/')));
                 this.feedTypeSelected = false;
                 this.feedSpecificationsSet = false;
             }
@@ -779,7 +774,8 @@ export default defineComponent({
         },
         closeModal(){
             // AppState.ToggleCreateFeedModal();
-            AppState.HideEditFeedModal();
+            // AppState.HideEditFeedModal();
+            this.$router.push(`/`);
         }
     },
     computed:{
@@ -885,15 +881,105 @@ export default defineComponent({
             else{
                 return false;
             }
+        },
+        getFeedTypeTitle(){
+            let cleanedFeedType = '';
+            if(this.selectedFeedType == FeedEnums.Types.FeedGenerator) cleanedFeedType = 'Custom Feed'
+            else if(this.selectedFeedType.trim() != '') cleanedFeedType = this.selectedFeedType[0].toUpperCase()+this.selectedFeedType.slice(1);
+            let title = `Selecting Feed Type | moongate`;
+            switch (this.currentPage) {
+                case 1:
+                    title = `Creating "${cleanedFeedType}" Feed | moongate`
+                    break;
+                case 2:
+                    title = `"${cleanedFeedType}" Feed Summary | moongate`
+                    break;
+                default:
+                    title = `Selecting Feed Type | moongate`;
+                    break;
+            }
+            return title;
         }
     },
     watch:{
-        // currentPage(){
-        //     //If User navigates to Feed Generator page start retrieving Feed Generator data
-        //     if(this.currentPage == 1 && this.selectedFeedType == FeedEnums.Types.FeedGenerator){
-        //         // this.getCustomFeeds();
-        //     }
-        // }
+        feedType(newType:string, oldType:string){
+            if(typeof newType == 'undefined') this.currentPage = 0;
+            else if(newType != oldType){
+                this.currentPage = 1;
+                this.selectedFeedType = newType;
+                if(newType == FeedEnums.Types.FeedGenerator) this.getCustomFeeds();
+            }
+        },
+        summary(newSummary:string,oldSummary:string){
+            if(typeof newSummary != 'undefined' && newSummary != oldSummary && newSummary.toLocaleLowerCase() == 'summary') {
+                this.currentPage = 2; //go to Feed summary page
+                document.title = this.getFeedTypeTitle;//Update page title when view Feed summary
+            }
+            else if(typeof oldSummary != 'undefined' && newSummary != oldSummary && oldSummary.toLocaleLowerCase() == 'summary') this.currentPage = 1; //go back to Feed options page
+        }
+    },
+    beforeRouteEnter(to, from, next){
+        if(!AppState.canBrowse) next({path:'/login'});
+        else{
+            //Determine if Feed is being created or updated
+            if(to.path.includes('/create')){
+                AppState.isCreatingFeed = true;
+                AppState.isUpdatingFeed = false;
+            }
+            else{
+                AppState.isUpdatingFeed = true;
+                AppState.isCreatingFeed = false;
+            }
+            //Prevent creating Following or Notification feeds if not logged in
+            if((to.path.includes('/following') || to.path.includes('/notification')) && !AppState.isAuthBrowsing){
+                next({path:'/create/feed'});
+            }
+            //Direct navigation to summary prevented
+            else if(!from.path.includes('/create/feed/') && to.name == 'create feed summary'){
+                next(vm =>{
+                    document.title = vm.getFeedTypeTitle;
+                    vm.$router.replace('/create/feed');
+                })
+            }
+            //Prevent jump to summary if type is not the same
+            else if(to.name == 'create feed summary' && !to.path.includes(from.path)){
+                next({path:from.path,replace:true})
+            }
+            else{//navigate as usual - but make sure the correct modal page is being shown
+                if(to.path == '/create/feed'){
+                    next(vm =>{
+                        document.title = vm.getFeedTypeTitle;
+                        vm.$data.currentPage = 0;
+                    })
+                }
+                else if(to.name == 'feed type selected'){
+                    next(vm =>{
+                        document.title = vm.getFeedTypeTitle;
+                        vm.$data.currentPage = 1;
+                    })
+                }
+                else next();
+            }
+        }
+    },
+    beforeRouteUpdate(to, from, next){
+        //Prevent creating Following or Notification feeds if not logged in
+        if((to.path.includes('/following') || to.path.includes('/notification')) && !AppState.isAuthBrowsing){
+            next({path:'/create/feed'});
+        }
+    },
+    async created(){
+        if(typeof this.feedType != 'undefined' && Object.values(FeedEnums.Types).includes(this.feedType)){
+            this.selectedFeedType = this.feedType
+            this.currentPage = 1;
+            if(this.feedType == FeedEnums.Types.FeedGenerator){
+                this.getCustomFeeds();
+            }
+        }
+        else if(typeof this.feedType != 'undefined' && !Object.values(FeedEnums.Types).includes(this.feedType)){//invalid feed type
+            this.$router.replace('/create/feed');
+        }
+        document.title = this.getFeedTypeTitle;
     },
     mounted(){
         if(AppState.isUpdatingFeed){

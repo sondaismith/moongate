@@ -440,7 +440,7 @@ describe('Sidebar Tests', () => {
             //View the Post Thread
             cy.get('[data-test="focusFeedPost-timestamp-button"]').eq(1).click();
             //Reply to latest reply
-            cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+            cy.get('[data-testid="post-focus-modal"]').within($focusModal => {
                 cy.get('[data-test="postInteraction-reply-button"]').eq(1).click();
             })
             //Enter reply text
@@ -451,7 +451,7 @@ describe('Sidebar Tests', () => {
             cy.wait(['@createRecordTest','@getPostThreadTest']);
             cy.wait(200);//Reply count is updated slighly after API call response is receieved
             //Check that reply count increased
-            cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+            cy.get('[data-testid="post-focus-modal"]').within($focusModal => {
                 cy.get('[data-test="postInteraction-reply-button"]').eq(1).then($item => {
                     const replyCount = $item.text()
                     console.log(replyCount)
@@ -461,7 +461,7 @@ describe('Sidebar Tests', () => {
 
             //---REPLY TO FIRST POST VIA POSTFOCUSMODAL---
             //Reply to parent Post
-            cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+            cy.get('[data-testid="post-focus-modal"]').within($focusModal => {
                 cy.get('[data-test="postInteraction-reply-button"]').eq(0).click();
             });
             //Enter reply text
@@ -472,7 +472,7 @@ describe('Sidebar Tests', () => {
             cy.wait(['@createRecordTest','@getPostThreadTest']);
             cy.wait(200);//Reply count is updated slighly after API call response is receieved
             //Check that reply count increased
-            cy.get('[data-test="post-focus-modal"]').within($focusModal => {
+            cy.get('[data-testid="post-focus-modal"]').within($focusModal => {
                 cy.get('[data-test="postInteraction-reply-button"]').eq(0).then($item => {
                     const replyCount = $item.text()
                     console.log(replyCount)

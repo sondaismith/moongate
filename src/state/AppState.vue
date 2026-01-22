@@ -14,6 +14,7 @@ import { AppSettingsState } from './AppSettingsState.vue';
 import { LoginState } from '../interfaces/AccountInterfaces';
 import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { FeedEnums } from '../enums/FeedEnums';
+import { router } from '../main';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -140,7 +141,8 @@ export const AppState = reactive({
         //how they would like to browse
         if(!this.canBrowse){
             toast.add({summary:"Browsing mode", detail:`Please choose how you would like to browse.`, severity:'info', group:'tr', life:3000})
-            this.isLoggingIntoAccount = true;
+            // this.isLoggingIntoAccount = true;
+            // router.push(`/login`);
             return this.canBrowse;
         }
         return this.canBrowse;
@@ -156,7 +158,8 @@ export const AppState = reactive({
         if(!this.isAuthBrowsing){
             toast.add({summary:"Requires login", detail:`In order to ${action} you must be logged in.`, severity:'info', group:'tr', life:3000});
             this.loginModalStartPage = 1;
-            this.isLoggingIntoAccount = true;
+            // this.isLoggingIntoAccount = true;
+            router.push(`/login`);
             return this.isAuthBrowsing;
         }
         return this.isAuthBrowsing;
@@ -167,7 +170,7 @@ export const AppState = reactive({
      */
     showLoginAccountSelect(){
         this.loginModalStartPage = 1;
-        this.isLoggingIntoAccount = true;
+        router.push(`/login`);
     },
     /**
      * Returns the `Agent` to access the Bluesky API with based on
@@ -216,21 +219,28 @@ export const AppState = reactive({
             UserFocusModalState.currentUserAccountDID = userDID;
         }
     },
-    /**Method used to hide the `UserFocusModal`. */
-    ShowUserFocusModal(userDID:string | undefined){
-        if(userDID && userDID.trim() != ''){
-            UserFocusModalState.currentUserAccountDID = userDID;
-            AppState.isViewingUserAccount = true;
+    /**Method used to show the `UserFocusModal`. You must pass in the handle of the account to display. */
+    ShowUserFocusModal(userHandle:string | undefined){
+        if(userHandle && userHandle.trim() != ''){
+            router.push(`/profile/${userHandle}`);
         }
     },
-    /**Method used to hide the `UserFocusModal`. */
+    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method used to hide the `UserFocusModal`. */
     HideUserFocusModal(){
         AppState.isViewingUserAccount = false;
     },
     ToggleLoginModal(){
         AppState.isLoggingIntoAccount = !AppState.isLoggingIntoAccount;
     },
-    /**Determines whether or not the `ConfirmModal` is currently visible. */
+    /**Displays the `LoginModal` component. */
+    ShowLoginModal(){
+        router.push(`/login`);
+    },
+    /**
+     * Determines whether or not the `ConfirmModal` is currently visible. This is used with the
+     * non-Promise method of displaying the modal - usually called when displaying from
+     * interacting with an `OptionsMenu`.
+    */
     isAskingForConfirmation: false,
     /**Discribes the action that is awaiting confirmation via the `ConfirmModal`. */
     currentConfirmationTask: {Message:'Default Message: Confirm Action', Task:()=>void 0} as IConfirmationTask,
@@ -248,7 +258,9 @@ export const AppState = reactive({
     isCreatingNewPost:false,
     /**Sets `CreatePost` to be displayed. */
     showCreatePost(){
-        this.isCreatingNewPost = true;
+        // this.isCreatingNewPost = true;
+        router.push('/create/post');
+
     },
     /**Sets `CreatePost` to be hidden. */
     hideCreatePost(){
@@ -410,7 +422,7 @@ export const AppState = reactive({
      */
     isSavingMediaModalVisible:false,
     /**Value holding details relating to the media to download/save. */
-    saveMedia:{} as ViewImage|ViewExternal,
+    saveMedia:{alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'} as ViewImage|ViewExternal,
     /**Value used to hold the default file name to use for media being saved. */
     fileSaveDetails:{
         /**The full filename that will be used when saving the file. Can be updated by control on `SaveMediaModal`. */
@@ -433,9 +445,9 @@ export const AppState = reactive({
     lastMediaSaveDirectory:'',
     /**Variable that indicates if the Settings Panel component is visible or not. */
     isSettingsPanelVisible: false,
-    /**Method that causes the Settings Panel to be displayed. */
+    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method that causes the Settings Panel to be displayed. */
     ShowSettingsPanel(){ this.isSettingsPanelVisible = true;},
-    /**Method that causes the Settings Panel to be hidden. */
+    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method that causes the Settings Panel to be hidden. */
     HideSettingsPanel(){ this.isSettingsPanelVisible = false;},
     /**
      * Method that handles focusing the most important component/element when
@@ -471,9 +483,9 @@ export const AppState = reactive({
     isAppOnMobileTouchscreenDevice:false,
     /**Variable that indicates if the "About App" modal is visible or not. */
     isAboutAppModalVisible: false,
-    /**Method that causes the "About App" modal to be displayed. */
+    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method that causes the "About App" modal to be displayed. */
     ShowAboutAppModal(){ this.isAboutAppModalVisible = true;},
-    /**Method that causes the "About App" modal to be hidden. */
+    /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method that causes the "About App" modal to be hidden. */
     HideAboutAppModal(){ this.isAboutAppModalVisible = false;},
 })
 </script>

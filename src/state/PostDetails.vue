@@ -205,6 +205,8 @@ export const postDetails = reactive({
         // this.clickedMediaIndex = mediaIndex;
     },
     /**
+     * NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS
+     * ---
      * Method that hides "Focus" modal - media on left with comments
      * in right sidebar.
      */
