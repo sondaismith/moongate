@@ -98,12 +98,14 @@
                 {{ convertToShortTimestamp(postReason.indexedAt) }}
             </div>
         </div>
-        <div v-else-if="postToShow && isPostReply && !isReplyStyle" @click="openPostReply(getReplyParentURI)"
-        title="Open Reply Parent"
-        class="flex self-start py-0.5 px-2 rounded-md text-[10px] leading-3 text-primary
-        bg-btn hover:bg-btnHover cursor-pointer select-none">
-            Reply
-        </div>
+        <button v-else-if="postToShow && isPostReply.isReply && !isReplyStyle" @click="openPostParent(getParentPostURI)"
+        data-testid="focusfeedpost-view-parent" :disabled="isAwaitingParentPostHandle" title="Open Parent Post"
+        class="flex gap-1 items-center self-start py-0.5 px-1 rounded-md text-[10px] leading-3 text-primary
+        bg-btn hover:bg-btnHover hover:border-transparent disabled:bg-disabled cursor-pointer
+        disabled:cursor-default shadow-none select-none">
+            <i-mingcute:loading-fill v-if="isAwaitingParentPostHandle" class="spinner"/>
+            <div>View Parent</div>
+        </button>
         <div data-testid="focusFeedPost" class="flex w-full">
             <div>
                 <AvatarRound v-if="isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"/>
@@ -185,12 +187,12 @@ import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import PostInteractionIcons from '../Post/PostInteractionIcons.vue';
 import { isImage, View, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { isView as isViewForRecordWithMedia, View as ViewForRecordWithMedia} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
-import { postDetails, showFocusModal } from '../../state/PostDetails.vue';
+import { postDetails } from '../../state/PostDetails.vue';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { isListView, isStarterPackViewBasic, ListView, StarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { isMain, Main, Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
-import { toggleBlock } from '../../lib/api/User.vue';
+import { getUserProfile, toggleBlock } from '../../lib/api/User.vue';
 import { BookmarkPost, getPostImages, RemoveBookmark } from '../../lib/api/Post.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { LabelerView } from '@atproto/api/dist/client/types/app/bsky/labeler/defs';
@@ -223,7 +225,8 @@ export default defineComponent({
         },
         replyIndex:Number,
         totalReplies:Number,
-        reply: Object as PropType<ReplyRef>
+        /**The `ReplyRef` object associated with the Post to display, if there is one. */
+        replyRef: Object as PropType<ReplyRef>
     },
     data(){
         return{
@@ -254,6 +257,8 @@ export default defineComponent({
             isAwaitingAccountBlockAction:false,
             /**Are we currently waiting for an action relating to saving/removing a Post bookmark to finish? */
             isAwaitingBookmarkUpdate:false,
+            /**Are we currently waiting for the account handle of the parent Post creator to be resolved? */
+            isAwaitingParentPostHandle:false,
         }
     },
     emits:{
@@ -321,9 +326,39 @@ export default defineComponent({
             // else
                 return `/profile/${this.postToShow.author.handle}/post/${postDid}`;
         },
-        openPostReply(postURI:string|undefined, mediaIndex:number=0){
-            if(typeof this.postToShow != 'undefined' && typeof postURI != 'undefined'){
-                showFocusModal(postURI, mediaIndex);
+        /**
+         * Method used to open the parent Post of this Post in `PostFocusModal`, if it exists.
+         * @param postURI The URI that points to the parent post.
+         * @param mediaIndex The media index to initially show when displaying the parent post.
+         */
+        async openPostParent(postURI:string|undefined, mediaIndex:number=0){
+            if(typeof this.postToShow != 'undefined' && typeof postURI != 'undefined' && !this.isAwaitingParentPostHandle){
+                let accountDid = postURI.split('/')[2];
+                let handle = '';
+                if(this.isPostReply.hasFullParentInfo){
+                    //If reply reference exists and parent is a PostView object
+                    if(typeof this.replyRef != 'undefined' && isPostView(this.replyRef.parent)) handle = this.replyRef.parent.author.handle;
+                    //need to handle `NotFoundPost` and `BlockedPost` situations as well
+                }
+                else{
+                    //disable "View Parent of Reply" button until this resolves
+                    this.isAwaitingParentPostHandle = true;
+                    await getUserProfile(accountDid).then(res => {
+                        handle = res.data.handle;
+                    })
+                    .catch(err => {
+                        toast.add({summary:'Error Getting Parent Post', detail:`${err}`, severity:'error', group:'tr', life:3000});
+                        //add route navigation to display current post once `UserFocusModal` has support for displaying parent/root posts
+                    })
+                    .finally(()=>{
+                        //re-enable "View Parent of Reply" button
+                        this.isAwaitingParentPostHandle = false;
+                    })
+                }
+                if(handle.trim() != ''){
+                    let postDid:string|undefined = postURI.split('/').pop();
+                    this.$router.push(`/profile/${handle}/post/${postDid}`);
+                }
             }
         },
         /**
@@ -561,21 +596,21 @@ export default defineComponent({
             return false;
         },
         /**
-         * Method used to check if this Post is a reply. Ensures it the `parent`
-         * is a `PostView` as well.
+         * Method used to check if this Post is a reply.
          */
-        isPostReply(){
+        isPostReply():{isReply:boolean,hasFullParentInfo:boolean}{
             //ThreadViewPost that is reply (seen in Feed)
-            if(this.reply && isPostView(this.reply.parent)) return true;
+            if(this.replyRef && isPostView(this.replyRef.parent)) return {isReply:true,hasFullParentInfo:true};
             //Standalone PostView that is reply (likely seen as bookmark)
-            else if(isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined' && isPostView(this.postToShow)) return true;
-            return false;
+            else if(isPostView(this.postToShow) && isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined')
+                return {isReply:true,hasFullParentInfo:false}; //there's no way to know the state of the reply Post until accessing it when using this object...
+            return {isReply:false,hasFullParentInfo:false};
         },
         /**Return the URI pointing to the Parent of this Post, if it exists. */
-        getReplyParentURI():string|undefined{
-            if(this.isPostReply){
-                if(typeof this.reply != 'undefined' && isPostView(this.reply.parent)) return this.reply.parent.uri;
-                else if(isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined') return (this.postToShow.record as Main).reply?.parent.uri;
+        getParentPostURI():string|undefined{
+            if(this.isPostReply.isReply){
+                if(typeof this.replyRef != 'undefined' && isPostView(this.replyRef.parent)) return this.replyRef.parent.uri;
+                else if(isPostView(this.postToShow) && isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined') return (this.postToShow.record as Main).reply!.parent.uri;
             }
         },
         /**Is the account associated with the currently displayed Post blocked by the logged in User? */

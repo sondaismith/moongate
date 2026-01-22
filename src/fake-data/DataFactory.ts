@@ -1,4 +1,4 @@
-import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { FeedViewPost, NotFoundPost, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { IFeedDescription, IFeedListing } from "../interfaces/FeedInterfaces";
 import { FeedEnums } from "../enums/FeedEnums";
 import { View } from "@atproto/api/dist/client/types/app/bsky/embed/external";
@@ -8,6 +8,64 @@ import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/def
 import { GenerateCID } from "../helpers/generators";
 import { ProfileViewBasic, ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/client";
+import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
+import { OutputSchema } from "@atproto/api/dist/client/types/com/atproto/server/createSession";
+import { Main } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+
+/**
+ * Type indicating the state of a Parent Post - is it a `PostView` (standard), Not Found (i.e. deleted), Blocked,
+ * or does it not exist at all.
+ */
+type ParentState = 'PostView'|'NotFoundPost'|'BlockedPost'|'None';
+
+/**
+ * Method used to create a dummy `PostView` object for testing purposes.
+ * @param handle The handle of the User who made the Post.
+ * @param postText The text content of the Post.
+ * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
+ * @param postTime The time that the Post was created.
+ * @returns The created `PostView` object.
+ */
+export async function CreatePostView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date()):Promise<$Typed<PostView>>{
+    let indexTime = postTime.toISOString();
+    let cid = `author_${handle}_${1}`;
+    await GenerateCID(`author_${handle}_${1}`).then(res => {
+        cid = res.toString();
+    })
+    let post:$Typed<PostView> = {
+        $type:"app.bsky.feed.defs#postView",
+        author:{
+            did:`did:plc:fake_${1}`,
+            handle:handle,
+            displayName:displayName.trim() != '' ? displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' ')
+        },
+        cid:cid,
+        indexedAt:indexTime,
+        record: {
+            $type: "app.bsky.feed.post",
+            createdAt: indexTime,
+            langs: [
+                "en-US"
+            ],
+            text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
+        },
+        uri:'at://did:plc:nowhere'
+    }
+    return post;
+}
+
+/**
+ * Method used to create a dummy `NotFoundPost` object for testing purposes.
+ * @returns A `$Typed<NotFoundPost>` object.
+ */
+export function CreateNotFoundPost():$Typed<NotFoundPost>{
+    let nfpost:$Typed<NotFoundPost> = {
+        $type:"app.bsky.feed.defs#notFoundPost",
+        notFound:true,
+        uri:'at://did:plc:notFoundPost'
+    }
+    return nfpost;
+}
 
 /**
  * Method used to create a dummy `FeedViewPost` object for testing purposes.
@@ -16,17 +74,20 @@ import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/clie
  * @param postText The text content of the Post.
  * @param includeEmbedLink Should this post contain an external link embed?
  * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
+ * @param isPinned Should the created Post be a pinned post?
+ * @param postTime The time that the Post was created.
+ * @param parentState The "state" of the Parent post of the Post being created. Options are No Parent,
+ * Standard Parent Post (value currently hardcoded), `NotFoundPost` Parent or `BlockedPost` Parent.
  * @returns The created `FeedViewPost` object.
  */
 export async function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
-    displayName:string='',postTime:Date=new Date(),isPinned:boolean=false):Promise<FeedViewPost>{
+    displayName:string='',postTime:Date=new Date(),isPinned:boolean=false,parentState:ParentState='None'):Promise<FeedViewPost>{
     // let currentTime = new Date();
     // currentTime.setTime(currentTime.getTime()-(1*60*1000));
     // postTime.setTime(postTime.getTime()-(1*60*1000));
     // let indexTime = currentTime.toISOString();
     let indexTime = postTime.toISOString();
     let cid = `author_${handle}_${1}`;
-    // cid = "bafyreifzelycxgfy7niauhzchi34z6avvb6fczinbcyj3y6465szpf5f7a";
     await GenerateCID(`author_${handle}_${1}`).then(res => {
         cid = res.toString();
     })
@@ -57,6 +118,51 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
                 $type: "app.bsky.feed.defs#reasonPin"
             }
         }
+    }
+    switch (parentState) {
+        case "PostView":
+            let parentPost:$Typed<PostView>;
+            await CreatePostView('parent.to.reply',"I'm the parent!",'Parent Post').then(res =>{
+                parentPost = res;
+                post.reply = {
+                    parent:parentPost,
+                    root:parentPost
+                }
+                post.post.record = {
+                    reply:{
+                        parent:{
+                            cid:parentPost.cid,
+                            uri:parentPost.uri
+                        },
+                    },
+                    //root not implemented
+                    ...post.post.record
+                }
+            })
+            break;
+        case "NotFoundPost":
+            let nfPost = CreateNotFoundPost();
+            let nfCID:string;
+            await GenerateCID(`author_${handle}_nf`).then(res => {
+                nfCID = res.toString();
+                post.reply = {
+                    parent:nfPost,
+                    root:nfPost
+                }
+                post.post.record = {
+                    reply:{
+                        parent:{
+                            cid:nfCID,
+                            uri:nfPost.uri
+                        },
+                    },
+                    //root not implemented
+                    ...post.post.record
+                }
+            })
+            break;
+        default:
+            break;
     }
     return post;
 }
@@ -164,6 +270,75 @@ export async function CreateUserProfile(handle:string,displayName:string|undefin
     profile.description = `Hello! I am a User Profile created for testing this app.\nDID:${profile.did}\nHandle:${profile.handle}`
     if(typeof displayName != 'undefined') profile.displayName = displayName;
     return profile;
+}
+
+/**
+ * Method used to create a `BookmarkView` object representing a bookmarked Post.
+ * @param handle The handle of the User who made the bookmarked Post.
+ * @param postText The text content of the bookmarked Post.
+ * @param displayName The display name of the User who made the bookmarked Post. If none is provided, the handle will be used.
+ * @param postTime The time that the bookmarked Post was created.
+ * @param parentState The "state" of the Parent post of the bookmarked Post being created. Options are No Parent,
+ * Standard Parent Post (value currently hardcoded), `NotFoundPost` Parent or `BlockedPost` Parent.
+ * @returns The created `BookmarkView` object.
+ */
+export async function CreateBookmarkView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date(),
+parentState:ParentState='None'):Promise<BookmarkView>{
+    let indexTime = postTime.toISOString();
+    let cid = `bookmark${handle}_${1}`;
+    await GenerateCID(cid).then(res => {
+        cid = res.toString();
+    })
+    let bItem:$Typed<PostView>;
+    await CreatePostView(handle,postText,displayName,postTime).then(res => bItem = res);
+    let bookmark:BookmarkView = {
+        item:bItem!,
+        subject:{//These values are expected to be unused in testing for now
+            cid:cid,
+            uri:'at://did:plc:nowhere'
+        },
+        createdAt:indexTime
+    }
+    switch (parentState) {
+        case "PostView":
+            let parentPost:$Typed<PostView>;
+            await CreatePostView('parent.to.reply',"I'm the parent!",'Parent Post').then(res =>{
+                parentPost = res;
+                (bItem.record as Main).reply = {
+                    parent:{
+                        cid:parentPost.cid,
+                        uri:parentPost.uri
+                    },
+                    root:{
+                        cid:parentPost.cid,
+                        uri:parentPost.uri
+                    }
+                }
+            })
+            break;
+        case "NotFoundPost":
+            let nfPost = CreateNotFoundPost();
+            let nfCID:string;
+            await GenerateCID(`author_${handle}_nf`).then(res => {
+                nfCID = res.toString();
+                (bItem.record as Main).reply = {
+                    // parent:nfPost,
+                    // root:nfPost
+                    parent:{
+                        cid:nfCID,
+                        uri:nfPost.uri
+                    },
+                    root:{
+                        cid:nfCID,
+                        uri:nfPost.uri
+                    }
+                }
+            })
+            break;
+        default:
+            break;
+    }
+    return bookmark;
 }
 
 /**
@@ -464,4 +639,51 @@ export function CreateEmbedGIF():$Typed<AppBskyEmbedExternal.View>{
         }
     }
     return emb;
+}
+
+/**
+ * Method used to create a dummy session response. Currently used to mock logging into Bluesky.
+ * @param handle The handle to use in the session response.
+ * @param did The DID to use in the session response. NOTE: If trying access features that require an
+ * account match (i.e. Bookmarks) the DID of the User Profile and Session Response must match.
+ * @returns The created session response object.
+ */
+export function CreateLoginSessionResponse(handle:string="test-session.bsky.social",did:string="did:plc:test-session"):OutputSchema{
+    let response:OutputSchema = {
+        did: did,
+        didDoc: {
+            "@context": [
+                "https://www.w3.org/ns/did/v1",
+                "https://w3id.org/security/multikey/v1",
+                "https://w3id.org/security/suites/secp256k1-2019/v1"
+            ],
+            id: "did:plc:test-session",
+            alsoKnownAs: [
+                "at://test-session.bsky.social"
+            ],
+            verificationMethod: [
+                {
+                    id: "did:plc:test-session#atproto",
+                    type: "Multikey",
+                    controller: "did:plc:test-session",
+                    publicKeyMultibase: "zQ3shkYUSJxz7PmCaGznbNR5oMCLKsjC7foCUVLVhxhioa5fa"
+                }
+            ],
+            service: [
+                {
+                    id: "#atproto_pds",
+                    type: "AtprotoPersonalDataServer",
+                    serviceEndpoint: "https://hollowfoot.us-west.host.bsky.network"
+                }
+            ]
+        },
+        handle: handle,
+        email: "testSession@mail.com",
+        emailConfirmed: true,
+        emailAuthFactor: false,
+        accessJwt: "testAccessJwt",
+        refreshJwt: "testRefreshJwt",
+        active: true
+    }
+    return response;
 }

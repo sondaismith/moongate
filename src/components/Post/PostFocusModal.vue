@@ -376,6 +376,7 @@ export default defineComponent({
                 // toast.add(HandleAPIError(err, 'Error getting Post thread for focus modal'))
                 console.log('PostFocusModal - error getting Post Thread data')
                 console.log(err)
+                postDetails.currentThreadView = this.threadNavHistory[0] = emptyPostThread;
             })
             .finally(()=>{
                 postDetails.isAwaitingFocusData = false;

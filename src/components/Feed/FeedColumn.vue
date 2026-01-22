@@ -158,7 +158,7 @@
                     <div v-for="n in feedData?.data" data-test="feedColumn-post" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">
                         <FocusFeedPost tabindex="-1" class="border-0" :post-data="({$type:'app.bsky.feed.defs#postView',...(n as FeedViewPost).post} as PostView)"
-                        :post-reason="(n as FeedViewPost).reason" :reply="(n as FeedViewPost).reply"
+                        :post-reason="(n as FeedViewPost).reason" :reply-ref="(n as FeedViewPost).reply"
                         :is-feed-post-style="true"/>
                     </div>
                 </div>
