@@ -65,21 +65,20 @@ function keepDefaultView(to, from) {
 }
 
 export const routes:RouteRecordRaw[] = [
-    { path:'/', meta:{title:'Home | moongate'},component: Sidebar },
-    { path:'/login', meta:{title:'Login | moongate'}, components:{ user_prompt:LoginModal }, beforeEnter:[keepDefaultView] },
-    { path:'/about', meta:{title:'About | moongate'}, components:{ modal:AboutAppModal }, beforeEnter:[keepDefaultView] },
-    { path:'/settings', meta:{title: 'Settings | moongate'}, components:{ modal:SettingsPanel }, beforeEnter:[keepDefaultView] },
-    { path:'/profile/:handle', components:{ modal:UserFocusModal }, beforeEnter:[keepDefaultView], props:true },
-    { path:'/profile/:handle/post/:postDid', components:{ modal2:PostFocusModal }, beforeEnter:[keepDefaultView], props:true },
+    { path:'/', name:'home', meta:{title:'Home | moongate'},component: Sidebar },
+    { path:'/login', name:'login', meta:{title:'Login | moongate'}, components:{ user_prompt:LoginModal }, beforeEnter:[keepDefaultView] },
+    { path:'/about', name:'about', meta:{title:'About | moongate'}, components:{ modal:AboutAppModal }, beforeEnter:[keepDefaultView] },
+    { path:'/settings', name:'settings', meta:{title: 'Settings | moongate'}, components:{ modal:SettingsPanel }, beforeEnter:[keepDefaultView] },
+    { path:'/profile/:handle', name:'userfocusmodal', components:{ modal:UserFocusModal }, beforeEnter:[keepDefaultView], props:true },
+    { path:'/profile/:handle/post/:postDid', name:'postfocusmodal', components:{ modal2:PostFocusModal }, beforeEnter:[keepDefaultView], props:true },
     // { path:'/profile/:handle/post/:postDid/:clickedMediaIndex', components:{ modal:PostFocusModal }, beforeEnter:[keepDefaultView], props:true, name:'postWithMedia'},
-    { path:'/profile/:handle/post/:postDid/:clickedMediaIndex', components:{ modal2:PostFocusModal }, beforeEnter:[keepDefaultView],
-    props: route=> ({clickedMediaIndex: parseInt(route.params.clickedMediaIndex), handle: route.params.handle, postDid: route.params.postDid}),
-    name:'postWithMedia'},
-    { path:'/profile/:handle/post/:postId/download', components:{ user_prompt:SaveMediaModal }, beforeEnter:[keepDefaultView], props:true },
+    { path:'/profile/:handle/post/:postDid/:clickedMediaIndex', name:'postfocusmodal with mediaindex', components:{ modal2:PostFocusModal }, beforeEnter:[keepDefaultView],
+    props: route=> ({clickedMediaIndex: parseInt(route.params.clickedMediaIndex), handle: route.params.handle, postDid: route.params.postDid})},
+    { path:'/profile/:handle/post/:postId/download', name:'savemediamodal direct', components:{ user_prompt:SaveMediaModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/profile/:handle/post/:postId/:clickedMediaIndex/download', name:'saving media', components:{ user_prompt:SaveMediaModal }, beforeEnter:[keepDefaultView], props:true },
-    { path:'/create/feed/', meta:{title:'Selecting Feed Type | moongate'}, components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
+    { path:'/create/feed/', name:'create feed', meta:{title:'Selecting Feed Type | moongate'}, components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/feed/:feedType', name:'feed type selected', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/feed/:feedType/:summary', name:'create feed summary', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
-    { path:'/create/post/', components:{ user_prompt:CreatePost }, beforeEnter:[keepDefaultView], props:true },
+    { path:'/create/post/', name:'create post', components:{ user_prompt:CreatePost }, beforeEnter:[keepDefaultView], props:true },
     { path: '/:pathMatch(.*)*', redirect:'/' }, //catches all invalid routes
 ]
