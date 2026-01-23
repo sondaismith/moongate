@@ -10,7 +10,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { routes } from "./lib/router";
 
 export const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHistory(import.meta.env.BASE_URL),
     routes: routes,
     scrollBehavior(to, from, savedPosition) {
         if(savedPosition){
