@@ -330,28 +330,13 @@ export default defineComponent({
          * @param e Key down event.
          */
         onKeyboardShorcutEntered(e:KeyboardEvent){
-            if(e.key == 'ArrowLeft' && !e.repeat){
+            if(e.key == 'ArrowLeft' && !e.altKey && !e.repeat){
                 this.decreaseCurrentMediaIndex();
             }
-            else if(e.key == 'ArrowRight' && !e.repeat){
+            else if(e.key == 'ArrowRight' && !e.altKey && !e.repeat){
                 this.increaseCurrentMediaIndex();
             }
-            if(e.key == 'ArrowLeft' && e.altKey && !e.repeat){
-                this.decreaseThreadNavIndex();
-            }
-            else if(e.key == 'ArrowRight' && e.altKey && !e.repeat){
-                this.increaseThreadNavIndex();
-            }
             // else if(!e.repeat) console.log('Other key pressed: '+e.key);
-        },
-        /**
-         * Method that adds support for navigating through the modal navigation history
-         * using the Mouse "Browser Back" and "Browser Forward" buttons.
-         * @param e The MouseEvent fired.
-         */
-        onMouseShortcutEntered(e:MouseEvent){
-            if(e.button == 3) this.decreaseThreadNavIndex();
-            else if (e.button == 4) this.increaseThreadNavIndex();
         },
         /**
          * Method used to retrieve the Post/Post thread data via the Bluesky
@@ -756,8 +741,10 @@ export default defineComponent({
         },
         /**Updates the displayed post image when media index in route changes. */
         clickedMediaIndex(newIndex:number,oldIndex:number){
-            if(typeof newIndex != 'undefined' && newIndex != oldIndex && !this.$router.currentRoute.value.path.includes('/download'))
+            if(typeof newIndex != 'undefined' && newIndex != oldIndex && !this.$router.currentRoute.value.path.includes('/download')){
                 this.currentMediaIndex = newIndex;
+                document.title = this.getFocusPostTitle;
+            }
         }
     },
     beforeRouteEnter(to, from, next){
@@ -789,7 +776,6 @@ export default defineComponent({
     mounted(){
         //Add keyboard+mouse shortcut listener
         this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
-        this.$el.addEventListener('mouseup', this.onMouseShortcutEntered);
         (this.$el as HTMLElement).focus();
         document.title = `Loading Post data... | moongate`
     },
@@ -797,7 +783,6 @@ export default defineComponent({
         console.log('Closing PostFocusModal...');
         //Remove keyboard+mouse shortcut listener
         this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
-        this.$el.removeEventListener('mouseup', this.onMouseShortcutEntered);
         AppState.handleFocusOnComponentClose();
     },
 })
