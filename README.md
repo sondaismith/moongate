@@ -13,7 +13,7 @@ Moongate is a Desktop/Web Client App for Bluesky, built using Tauri + Vue. The g
     <a href="https://fourfour.one/moon"><img width='800px' src="./README/images/moongate_about_img.png" /></a>
 </div>
 
-**Moongate** currently offers the current features:
+**Moongate** currently offers the following features:
 
 - Multi-column Feed layout
 - Ability to browse Bluesky content without account
@@ -53,8 +53,8 @@ moongate is released under the [MIT license](./LICENSE.md).
 ## ...
 <details>
 <summary>Why moongate?</summary>
+<p>
 The association with good luck +
-<div align="left" style="display:flex; justify-content:center; width:90px; border-radius:3px; padding:8px; background-color:#e2e8f0;">
-    <img title='Bermuda' style="border-radius:3px; filter:drop-shadow(3px 3px 2px #0000007d)" src='./README/images/bm.png'/>
-</div> representation + it's sort of related to the sky?
+    <img height=14 title='Bermuda' src='./README/images/bm.png'/> representation + it's sort of related to the sky?
+</p>
 </details>
