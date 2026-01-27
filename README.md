@@ -20,6 +20,11 @@ Moongate is a Desktop/Web Client App for Bluesky, built using Tauri + Vue. The g
 - Media tab for accounts with grid layout :framed_picture:
 - Ability to save images with author details :memo:
 - Light and Dark themes :sunrise: :city_sunset:
+- Responsive layout that supports mobile screens:
+
+<div align="center">
+<img width='500px' src="./README/images/responsive_layout.png" />
+</div>
 
 ## Coming Soon
 - OAuth Login and session management. :handshake:
