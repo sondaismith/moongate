@@ -239,6 +239,13 @@ button {
   font-style: italic;
 }
 
+@font-face {
+  font-display: auto;
+  font-family: 'Cal Sans';
+  font-style: normal;
+  src: local("Cal Sans"), url(/fonts/CalSans-Regular.ttf);
+}
+
 .modal-move,
 .modal-enter-active,
 .modal-leave-active {

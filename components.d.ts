@@ -103,6 +103,7 @@ declare module 'vue' {
     'IMingcute:world2Line': typeof import('~icons/mingcute/world2-line')['default']
     InLaInput: typeof import('./src/components/Utilities/InLaInput.vue')['default']
     IntroMessage: typeof import('./src/components/Intro/IntroMessage.vue')['default']
+    'ISimpleIcons:github': typeof import('~icons/simple-icons/github')['default']
     'ISimpleIcons:kofi': typeof import('~icons/simple-icons/kofi')['default']
     'ISolar:boxMinimalisticBoldDuotone': typeof import('~icons/solar/box-minimalistic-bold-duotone')['default']
     'ISolar:chatDotsOutline': typeof import('~icons/solar/chat-dots-outline')['default']

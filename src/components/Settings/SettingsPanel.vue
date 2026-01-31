@@ -1,7 +1,7 @@
 <template>
     <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
-        <div class="relative z-20 flex flex-col max-w-[40rem] w-full md:w-2/3s h-full max-h-[30rem]
+        <div class="relative z-20 flex flex-col max-w-[40rem] w-full md:w-2/3s h-4/5 sm:max-h-[34rem]
         m-4 my-auto sm:m-auto rounded bg-focusBG text-primary border border-sidebar drop-shadow-lg
         overflow-hidden">
             <div class="flex gap-1 px-2 py-1 border-b border-outline items-center text-2xl font-light select-none">
