@@ -69,6 +69,7 @@
         --color-postfocusmodal-details-shadow:theme(colors.slate.800);
         --color-logo-fill:theme(colors.white);
         --color-about-page-banner:theme(colors.slate.900);
+        --color-about-page-banner-btn-hover:theme(colors.slate.700);
         --color-spoiler-blackout-color:theme(colors.slate.700);
         --color-radio-button-selected:theme(colors.blue.500);
         --color-donation-btn-bg:theme(colors.blue.600);
@@ -163,6 +164,7 @@
     --color-postfocusmodal-details-shadow:theme(colors.black);
     --color-logo-fill:theme(colors.slate.600);
     --color-about-page-banner:theme(colors.slate.400);
+    --color-about-page-banner-btn-hover:theme(colors.slate.500);
     --color-spoiler-blackout-color:theme(colors.slate.800);
     --color-radio-button-selected:theme(colors.blue.600);
     --color-donation-btn-bg:theme(colors.blue.400);
