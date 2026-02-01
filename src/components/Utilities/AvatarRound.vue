@@ -48,14 +48,6 @@ function CreateUserFeed(userDid:string,userHandle:string){
     });
 }
 
-/**
- * Opens the associated User's profile in a new tab.
- * @param handle The handle of the User's profile that will be displayed in the new tab.
- */
-function OpenProfileInNewTab(handle:string){
-    window.open(`/profile/${handle}`);
-}
-
 export default defineComponent({
     data(){
         return{
@@ -70,6 +62,7 @@ export default defineComponent({
     },
     components:{
         Image,
+        ImageLoader
     },
     emits:{
         /**Emit used to indicate the Avatar element has been clicked. */
@@ -99,7 +92,7 @@ export default defineComponent({
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteAddCircleLine,Label:'Create new User Feed',Action:function(){CreateUserFeed(userDid,userHandle)},Type:ItemType.Option},
-                {Icon:MingcuteExternalLinkLine,Label:'Open Profile in New Tab',Action:function(){OpenProfileInNewTab(userHandle)},Type:ItemType.Option},
+                {Icon:MingcuteExternalLinkLine,Label:'Open Profile in New Tab',Action:function(){},Type:ItemType.RouterLink,route:`/profile/${userHandle}`},
             ] as IOptionMenuItem[]
             OptionsMenuState.showOptionMenu(e);
         }
