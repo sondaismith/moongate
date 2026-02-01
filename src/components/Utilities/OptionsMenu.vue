@@ -12,6 +12,17 @@
                     <div class="pr-1 text-base" :class="mi.IconStyle"><component :is="mi.Icon"/></div>
                     <div class="pl-2" :class="mi.LabelStyle">{{ mi.Label }}</div>
                 </button>
+                <RouterLink v-if="mi.Type == ItemType.RouterLink" :to="typeof mi.route != 'undefined' && mi.route.trim() != '' ? mi.route : ''"
+                target="_blank" tabindex="-1">
+                    <button @contextmenu.prevent
+                    class="flex rounded-sm py-0.5 px-1 divide-x-[1px] items-center hover:bg-btnHover shadow-none cursor-pointer
+                    focus-visible:border-searchbarFocusHightlight disabled:text-disabled disabled:hover:bg-transparent
+                    disabled:hover:border-transparent disabled:cursor-default"
+                    :disabled="mi.disabled">
+                        <div class="pr-1 text-base" :class="mi.IconStyle"><component :is="mi.Icon"/></div>
+                        <div class="pl-2" :class="mi.LabelStyle">{{ mi.Label }}</div>
+                    </button>
+                </RouterLink>
                 <div v-if="mi.Type ==ItemType.Splitter" class="bg-outline h-[1px]">
                 </div>
             </template>
@@ -32,11 +43,13 @@ export interface IOptionMenuItem{
     Type:ItemType,
     IconStyle?: string,
     LabelStyle?: string,
-    disabled?: boolean
+    disabled?: boolean,
+    route?: string
 }
 
 export enum ItemType{
     Option,
+    RouterLink,
     Splitter
 }
 
