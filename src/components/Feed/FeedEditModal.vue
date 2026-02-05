@@ -315,6 +315,7 @@ import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 import FilterBar from '../Utilities/FilterBar.vue';
 import { PropType } from 'vue';
 import ImageLoader from '../Utilities/ImageLoader.vue';
+import { BroadcastChannelTarget, BroadcastObject } from '../../types/BroadcastChannelTypes.ts';
 
 export default defineComponent({
     components:{
@@ -676,6 +677,7 @@ export default defineComponent({
                 //Create the Feed
                 if(AppState.isCreatingFeed){
                     AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false);
+                    AppState.moongateBroadcastChannel.postMessage(`Created new feed for: ${res.description.feedHandle}.`)
                     this.closeModal();
                 }
                 else if(AppState.isUpdatingFeed){
@@ -725,6 +727,8 @@ export default defineComponent({
                                 attempted:true,
                                 success:true
                             };
+                            let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:{description:res.description,data:res.data,cursor:res.cursor,seenAt:res.seenAt,isAwaitingFeedData:false}};
+                            AppState.moongateBroadcastChannel.postMessage(feedSyncMessage);
                             successes++;
                         }
                     })

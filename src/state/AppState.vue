@@ -95,6 +95,8 @@ export default{
  * as theming, current user, etc.
  */
 export const AppState = reactive({
+    /**BroadcastChannel used to keep elements of applications in sync when using multiple tabs/windows. */
+    moongateBroadcastChannel: new BroadcastChannel('moongate_bc'),
     /**Is the app in Dark Mode. If false, the light theme is used. */
     isDarkMode: true,
     /**

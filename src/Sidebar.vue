@@ -163,6 +163,8 @@ import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
 import AppLogo from "./components/SVG/AppLogo.vue";
 import AboutAppModal from "./components/Settings/AboutAppModal.vue";
 import UserButton from "./components/Navbar/UserButton.vue";
+import { isBroadcastObject } from "./types/BroadcastChannelTypes";
+import { BroadcastChannelTarget } from "./types/BroadcastChannelTypes";
 
 
     export default defineComponent({
@@ -407,8 +409,23 @@ import UserButton from "./components/Navbar/UserButton.vue";
                     toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000})
                 });
             },
+            /**
+             * Method that sets up the listener actions for the `BroadcastChannel` used by the
+             * application.
+             */
+            setupBroadcastChannel(){
+                AppState.moongateBroadcastChannel.onmessage = (event) => {
+                    //WIP
+                    if(isBroadcastObject(event.data)){
+                        console.log('This message contains a BroadcastObject object')
+                        if(event.data.target == BroadcastChannelTarget.FeedColumn) console.log('This message is for updating the FeedColumn state.');
+                    }
+                        console.log(event);
+                }
+            },
             async appStartupProcedure(){
                 await this.setUpListeners();
+                this.setupBroadcastChannel();
                 await this.loadAppConfig();
                 if(isTauri()) invoke('show_main_window');//unhide main window and focus it via Rust
             },
