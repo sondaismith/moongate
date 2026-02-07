@@ -676,7 +676,7 @@ export default defineComponent({
             .then(res => {
                 //Create the Feed
                 if(AppState.isCreatingFeed){
-                    AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false);
+                    AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false,true,true);
                     AppState.moongateBroadcastChannel.postMessage(`Created new feed for: ${res.description.feedHandle}.`)
                     this.closeModal();
                 }

@@ -34,6 +34,7 @@ import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { IFeedDescription } from '../../interfaces/FeedInterfaces';
 import { FeedEnums } from '../../enums/FeedEnums';
 import { router } from '../../main';
+import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to
@@ -62,7 +63,8 @@ function UpdateFeed(){
  */
 function DeleteFeed(){
     RemoveFeed(FeedState.selectedFeed);
-    // FeedState.isFeedOptionMenuVisible = false;
+    let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
+    AppState.moongateBroadcastChannel.postMessage(feedSyncMessage);
     OptionsMenuState.hideOptionMenu();
 }
 /**

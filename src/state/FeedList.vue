@@ -16,6 +16,7 @@ import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/def
 import { isTauri } from '@tauri-apps/api/core';
 import { stringifyFeedListData, updateSavedFeedsTable } from '../lib/db/local_db';
 import { clearIndexedDBSavedFeeds, Feed, web_db } from '../lib/db/web_db';
+import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../types/BroadcastChannelTypes';
 
 //Code from Mulan at https://stackoverflow.com/a/27747377
 function dec2hex (dec: number) {
@@ -78,13 +79,16 @@ export const FeedState = reactive({
  * @param description Details about the Feed (type, DID source, etc.).
  * @param feed The Feed data returned by the Bluesky API.
  * @param cursor Cursor to use when attempting to paginate displayed Posts.
+ * @param seenAt Value used to indicate when the displayed Notifications were seen. Only used for Notification-type feeds.
  * @param awaitingData Indicates if the Feed is waiting for data to display. Using
  * the default value of true usually means the Feed is being added from the "Saved Feed"
  * database.
  * @param saveChanges Should the FeedList be saved to disk after Feed was added. Can be
  * used to postpone save until bulk add has finished.
+ * @param syncFeed Should a message be sent through `BroadcastChannel` to sync the FeedList
+ * in all open instances of the app in any tabs/windows.
  */
-export async function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true, saveChanges:boolean=true){
+export async function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true, saveChanges:boolean=true, syncFeed:boolean=false){
     /**Used to prevent duplicate Feeds from being created during a hot reload (or any other situation) */
     let isFeedDuplicate = FeedState.FeedList.find(feed => feed.description.feedId == description.feedId) != undefined;
     if(isFeedDuplicate){
@@ -101,6 +105,11 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
     });
     //Save changes when requested
     if(saveChanges) await SaveFeedChanges();
+    //Sync feeds between tabs/windows
+    if(syncFeed){
+        let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
+        AppState.moongateBroadcastChannel.postMessage(feedSyncMessage);
+    }
 }
 
 /**
