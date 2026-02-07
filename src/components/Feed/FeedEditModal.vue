@@ -315,7 +315,7 @@ import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 import FilterBar from '../Utilities/FilterBar.vue';
 import { PropType } from 'vue';
 import ImageLoader from '../Utilities/ImageLoader.vue';
-import { BroadcastChannelTarget, BroadcastObject } from '../../types/BroadcastChannelTypes.ts';
+import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes.ts';
 
 export default defineComponent({
     components:{
@@ -727,8 +727,6 @@ export default defineComponent({
                                 attempted:true,
                                 success:true
                             };
-                            let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:{description:res.description,data:res.data,cursor:res.cursor,seenAt:res.seenAt,isAwaitingFeedData:false}};
-                            AppState.moongateBroadcastChannel.postMessage(feedSyncMessage);
                             successes++;
                         }
                     })
@@ -760,6 +758,8 @@ export default defineComponent({
                 //     };
                 // }
                 if(successes>0){
+                    let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
+                    AppState.moongateBroadcastChannel.postMessage(feedSyncMessage);
                     setTimeout(() => {
                         this.closeModal();
                     }, 3000);

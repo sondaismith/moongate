@@ -418,7 +418,11 @@ import { BroadcastChannelTarget } from "./types/BroadcastChannelTypes";
                     //WIP
                     if(isBroadcastObject(event.data)){
                         console.log('This message contains a BroadcastObject object')
-                        if(event.data.target == BroadcastChannelTarget.FeedColumn) console.log('This message is for updating the FeedColumn state.');
+                        if(event.data.target == BroadcastChannelTarget.FeedColumn){
+                            //Update FeedList in other tabs/windows, but DO NOT save change to disk
+                            console.log('This message is for updating the FeedColumn state.');
+                            FeedState.FeedList = event.data.data;
+                        }
                     }
                         console.log(event);
                 }
