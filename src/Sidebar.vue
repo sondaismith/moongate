@@ -418,13 +418,27 @@ import { BroadcastChannelTarget } from "./types/BroadcastChannelTypes";
                     //WIP
                     if(isBroadcastObject(event.data)){
                         console.log('This message contains a BroadcastObject object')
-                        if(event.data.target == BroadcastChannelTarget.FeedColumn){
-                            //Update FeedList in other tabs/windows, but DO NOT save change to disk
-                            console.log('This message is for updating the FeedColumn state.');
-                            FeedState.FeedList = event.data.data;
+                        // if(event.data.target == BroadcastChannelTarget.FeedColumn){
+                        //     //Update FeedList in other tabs/windows, but DO NOT save change to disk
+                        //     console.log('This message is for updating the FeedColumn state.');
+                        //     FeedState.FeedList = event.data.data;
+                        // }
+                        switch (event.data.target) {
+                            case BroadcastChannelTarget.FeedColumn:
+                                //Update FeedList in other tabs/windows, but DO NOT save change to disk
+                                console.log('This message is for updating the FeedColumn state.');
+                                FeedState.FeedList = event.data.data;
+                                break;
+                            case BroadcastChannelTarget.AppSettings:
+                                //Update App Settings in other tabs/windows, but DO NOT save change to disk
+                                console.log('This message is for updating the "App Settings" state.');
+                                AppSettingsState.Settings = event.data.data;
+                                break;
+                            default:
+                                break;
                         }
                     }
-                        console.log(event);
+                    console.log(event);
                 }
             },
             async appStartupProcedure(){
