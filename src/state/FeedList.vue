@@ -108,7 +108,7 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
     //Sync feeds between tabs/windows
     if(syncFeed){
         let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
-        AppState.moongateBroadcastChannel.postMessage(feedSyncMessage);
+        AppState.SendAppSyncMessage(feedSyncMessage);
     }
 }
 

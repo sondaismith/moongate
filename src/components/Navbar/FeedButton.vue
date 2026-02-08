@@ -64,7 +64,7 @@ function UpdateFeed(){
 function DeleteFeed(){
     RemoveFeed(FeedState.selectedFeed);
     let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
-    AppState.moongateBroadcastChannel.postMessage(feedSyncMessage);
+    AppState.SendAppSyncMessage(feedSyncMessage);
     OptionsMenuState.hideOptionMenu();
 }
 /**

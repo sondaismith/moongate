@@ -759,7 +759,7 @@ export default defineComponent({
                 // }
                 if(successes>0){
                     let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
-                    AppState.moongateBroadcastChannel.postMessage(feedSyncMessage);
+                    AppState.SendAppSyncMessage(feedSyncMessage);
                     setTimeout(() => {
                         this.closeModal();
                     }, 3000);

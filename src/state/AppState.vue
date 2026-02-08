@@ -15,6 +15,7 @@ import { LoginState } from '../interfaces/AccountInterfaces';
 import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { FeedEnums } from '../enums/FeedEnums';
 import { router } from '../main';
+import { BroadcastObject } from '../types/BroadcastChannelTypes';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -97,6 +98,14 @@ export default{
 export const AppState = reactive({
     /**BroadcastChannel used to keep elements of applications in sync when using multiple tabs/windows. */
     moongateBroadcastChannel: new BroadcastChannel('moongate_bc'),
+    /**
+     * Method used to send messages used to sync the application state between tabs/windows
+     * via the `BroadcastChannel`.
+     * @param messagePayload The data to sync between tabs/windows.
+     */
+    SendAppSyncMessage(messagePayload:BroadcastObject){
+        this.moongateBroadcastChannel.postMessage(messagePayload);
+    },
     /**Is the app in Dark Mode. If false, the light theme is used. */
     isDarkMode: true,
     /**
