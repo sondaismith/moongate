@@ -433,6 +433,7 @@ import { BroadcastChannelTarget } from "./types/BroadcastChannelTypes";
                                 //Update App Settings in other tabs/windows, but DO NOT save change to disk
                                 console.log('This message is for updating the "App Settings" state.');
                                 AppSettingsState.Settings = event.data.data;
+                                AppState.updateAppStateLoginValues();
                                 break;
                             default:
                                 break;

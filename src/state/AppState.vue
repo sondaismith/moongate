@@ -131,6 +131,32 @@ export const AppState = reactive({
         toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
     },
     /**
+     * Method used to make sure the variables held in `AppState` for determining "Login Status"
+     * are up to date and match what is held in `AppSettingsState.Settings.savedAccountState`.
+     * This method should only need to be used when handling the "App Settings" `BroadcastChannel` message used
+     * to sync application states over multiple tabs/windows.
+     */
+    updateAppStateLoginValues(){
+        switch (AppSettingsState.Settings.savedAccountState.state) {
+            case LoginState.Authorized:
+                AppState.isAuthBrowsing = true;
+                AppState.isGuestBrowsing = false;
+                AppState.currentUsername = "Logged In";
+                AppState.canBrowse = true;
+                break;
+            case LoginState.Guest:
+                AppState.isAuthBrowsing = false;
+                AppState.isGuestBrowsing = true;
+                AppState.currentUsername = "Guest";
+                AppState.canBrowse = true;
+                break;
+            default://Unset - no browsing mode choice made
+                AppState.canBrowse = AppState.isGuestBrowsing = AppState.isAuthBrowsing = false;
+                AppState.currentUsername = "Login Here";
+                break;
+        }
+    },
+    /**
      * Is the user browsing Bluesky with a user account. NOTE: if this is
      * true, `isGuestBrowsing` must be false.
      */
