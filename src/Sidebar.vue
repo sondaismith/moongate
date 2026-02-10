@@ -144,7 +144,7 @@ import { FeedEnums } from "./enums/FeedEnums";
 import FeedEditModal from "./components/Feed/FeedEditModal.vue";
 import UserFocusModal from "./components/User/UserFocusModal.vue";
 import { OptionsMenuState } from "./state/OptionsMenuState.vue";
-import { GetBrowsingAgent } from "./lib/api.vue";
+import { ResumeAuthSession, GetBrowsingAgent } from "./lib/api.vue";
 import { SavedFeeds } from "./lib/db/local_db";
 import { AccountPeekState } from "./state/AccountPeekState.vue";
 import FeedButton from "./components/Navbar/FeedButton.vue";
@@ -165,6 +165,7 @@ import AboutAppModal from "./components/Settings/AboutAppModal.vue";
 import UserButton from "./components/Navbar/UserButton.vue";
 import { isBroadcastObject } from "./types/BroadcastChannelTypes";
 import { BroadcastChannelTarget } from "./types/BroadcastChannelTypes";
+import { LoginState } from "./interfaces/AccountInterfaces";
 
 
     export default defineComponent({
@@ -434,6 +435,15 @@ import { BroadcastChannelTarget } from "./types/BroadcastChannelTypes";
                                 console.log('This message is for updating the "App Settings" state.');
                                 AppSettingsState.Settings = event.data.data;
                                 AppState.updateAppStateLoginValues();
+                                break;
+                            case BroadcastChannelTarget.LoginState:
+                                //Update App Settings in other tabs/windows, but DO NOT save change to disk
+                                console.log('This message is for updating the "Authorized Login" state.');
+                                console.log(event.data.data);
+                                console.log(AppSettingsState.Settings.savedAccountState.state);
+                                if(AppSettingsState.Settings.savedAccountState.state == LoginState.Authorized && typeof event.data.data == 'undefined') {console.log('this will be a logout action'); } //logout
+                                else if(typeof event.data.data != 'undefined') {console.log('this will sync the auth login state'); ResumeAuthSession(event.data.data);}
+                                else console.log('this will have been syncing guest browsing')
                                 break;
                             default:
                                 break;

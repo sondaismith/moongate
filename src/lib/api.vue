@@ -1,6 +1,6 @@
 <script lang="ts">
 // src/lib/api.ts
-import { Agent, AtpAgentLoginOpts, ComAtprotoServerCreateSession, CredentialSession } from "@atproto/api";
+import { Agent, AtpAgentLoginOpts, AtpSessionData, ComAtprotoServerCreateSession, CredentialSession } from "@atproto/api";
 import { AppState } from '../state/AppState.vue';
 
 export default{
@@ -39,6 +39,23 @@ export function GetBrowsingAgent():Agent{
   else{
     return guestAgent;
   }
+}
+
+/**
+ * Method used to access `CredentialSession` object used for authorized
+ * access to Bluesky's API. Should only be used to sync the "login state"
+ * between app instances open in multiple tabs/windows.
+ */
+export function GetAuthSession():AtpSessionData|undefined{
+  return authSession.session;
+}
+
+/**
+ * Method used to resume an already authorized API session. Should on be used to sync
+ * the "login state" between app instances open in multiple tabs/windows.
+ */
+export function ResumeAuthSession(sessionData:AtpSessionData){
+  authSession.resumeSession(sessionData);
 }
 
 /**

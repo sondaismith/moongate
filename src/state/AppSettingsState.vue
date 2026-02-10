@@ -7,6 +7,7 @@ import { WebDBAppSettings, web_db } from '../lib/db/web_db';
 import { ATPlatform, LoginState } from '../interfaces/AccountInterfaces';
 import { AppState } from './AppState.vue';
 import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../types/BroadcastChannelTypes';
+import { GetAuthSession } from '../lib/api.vue';
 
 export default{
     name:"AppSettingsState"
@@ -239,9 +240,13 @@ export const AppSettingsState = reactive({
             })
             .then(res => {
                 console.log(res);
-                //sync between tabs/windows on success
+                //sync "app settings" between tabs/windows on success
                 let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.AppSettings, data:toRawDeep(cs)};
                 AppState.SendAppSyncMessage(feedSyncMessage);
+                //sync "login state"
+                let currentSession = GetAuthSession();
+                let authSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.LoginState, data:toRawDeep(currentSession)};
+                AppState.SendAppSyncMessage(authSyncMessage);
             })
             .catch(err => {
                 console.log(`Error trying to save settings to IndexedDB`);

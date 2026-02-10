@@ -40,6 +40,7 @@ import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { LoginState } from '../../interfaces/AccountInterfaces';
 import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
+import { BroadcastChannelTarget, BroadcastObject } from '../../types/BroadcastChannelTypes';
 
 let optionsMenu:IOptionMenuItem[] = [
     {Icon:MingcuteProfileFill,Label:'View Profile',Action:displayCurrentUsersAccount,Type:ItemType.Option},
@@ -104,6 +105,9 @@ async function logoutOfAccount(){
         }
         AccountPeekState.lastMouseEvent = new MouseEvent('logout');
         AccountPeekState.profileData = {did:'',handle:''};
+        //Send logout sync
+        let authSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.LoginState, data:undefined};
+        AppState.SendAppSyncMessage(authSyncMessage);
         //Refresh displayed Feeds after logout
         FeedState.FeedList.forEach(feed => {
             RefreshFeed(feed.description.feedId,new Date(),10);
