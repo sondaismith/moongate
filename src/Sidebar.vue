@@ -119,7 +119,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { FeedState, AddFeedToList, OLDcreateFeedDescription, AddSavedFeed, LoadFeedPostsAsync, SaveFeedChanges } from "./state/FeedList.vue";
+import { FeedState, AddFeedToList, OLDcreateFeedDescription, AddSavedFeed, LoadFeedPostsAsync, SaveFeedChanges, RefreshAllFeeds } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState, toast } from "./state/AppState.vue";
@@ -434,15 +434,17 @@ import { LoginState } from "./interfaces/AccountInterfaces";
                                 //Update App Settings in other tabs/windows, but DO NOT save change to disk
                                 console.log('This message is for updating the "App Settings" state.');
                                 AppSettingsState.Settings = event.data.data;
+                                //Set current account PFP after app setting sync
+                                if(AppSettingsState.Settings.savedAccountState.currentAccount>-1 && AppSettingsState.Settings.savedAccountState.accounts.length>0){
+                                    AppState.currentPFP = AppSettingsState.Settings.savedAccountState.accounts[AppSettingsState.Settings.savedAccountState.currentAccount].avatar;
+                                }
+                                //Sync login state
                                 AppState.updateAppStateLoginValues();
                                 break;
                             case BroadcastChannelTarget.LoginState:
-                                //Update App Settings in other tabs/windows, but DO NOT save change to disk
                                 console.log('This message is for updating the "Authorized Login" state.');
-                                console.log(event.data.data);
-                                console.log(AppSettingsState.Settings.savedAccountState.state);
-                                if(AppSettingsState.Settings.savedAccountState.state == LoginState.Authorized && typeof event.data.data == 'undefined') {console.log('this will be a logout action'); } //logout
-                                else if(typeof event.data.data != 'undefined') {console.log('this will sync the auth login state'); ResumeAuthSession(event.data.data);}
+                                if(AppSettingsState.Settings.savedAccountState.state == LoginState.Authorized && typeof event.data.data == 'undefined') {console.log('this will be a logout action'); AppState.UpdateAppStateAfterLogout(); } //logout
+                                else if(typeof event.data.data != 'undefined') {console.log('this will sync the auth login state'); ResumeAuthSession(event.data.data); RefreshAllFeeds();}
                                 else console.log('this will have been syncing guest browsing')
                                 break;
                             default:

@@ -808,6 +808,18 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
 }
 
 /**
+ * Method used to refresh all feeds displayed in the `FeedColumn` component. Intended
+ * to be used when logging into or out of an authorized account. Used to get the displayed
+ * elements to reflect the User Account's preferences/state (liked posts, blocked users, etc.).
+ * @param postsToGet The number of Posts to initially retrieve for each Feed.
+ */
+export async function RefreshAllFeeds(postsToGet:number=10){
+    FeedState.FeedList.forEach(feed => {
+        RefreshFeed(feed.description.feedId,new Date(),postsToGet);
+    });
+}
+
+/**
  * Method used to refresh the data held in a currently displayed Feed.
  * @param feedId The ID of the loaded Feed that you want to refresh.
  */

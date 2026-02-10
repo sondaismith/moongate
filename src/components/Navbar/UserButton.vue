@@ -27,7 +27,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { GetBrowsingAgent, LogoutAgent } from '../../lib/api.vue';
+import { LogoutAgent } from '../../lib/api.vue';
 import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { HandleAPIError } from '../../helpers/errors';
@@ -38,9 +38,6 @@ import MdiUserSwitch from '~icons/mdi/user-switch';
 import MingcuteExitDoorLine from '~icons/mingcute/exit-door-line';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
-import { LoginState } from '../../interfaces/AccountInterfaces';
-import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
-import { BroadcastChannelTarget, BroadcastObject } from '../../types/BroadcastChannelTypes';
 
 let optionsMenu:IOptionMenuItem[] = [
     {Icon:MingcuteProfileFill,Label:'View Profile',Action:displayCurrentUsersAccount,Type:ItemType.Option},
@@ -96,22 +93,7 @@ function confirmLogout(){
 async function logoutOfAccount(){
     await LogoutAgent()
     .then(() => {
-        AppState.canBrowse = AppState.isGuestBrowsing = AppState.isAuthBrowsing = false;
-        AppState.currentUsername = "Login Here";
-        AppSettingsState.Settings.savedAccountState = {
-            ...AppSettingsState.Settings.savedAccountState,
-            currentAccount:-1,
-            state:LoginState.Unset
-        }
-        AccountPeekState.lastMouseEvent = new MouseEvent('logout');
-        AccountPeekState.profileData = {did:'',handle:''};
-        //Send logout sync
-        let authSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.LoginState, data:undefined};
-        AppState.SendAppSyncMessage(authSyncMessage);
-        //Refresh displayed Feeds after logout
-        FeedState.FeedList.forEach(feed => {
-            RefreshFeed(feed.description.feedId,new Date(),10);
-        });
+        AppState.UpdateAppStateAfterLogout();
     })
     .catch(err => toast.add(HandleAPIError(err, 'Error logging out')));
 }

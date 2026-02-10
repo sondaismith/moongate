@@ -8,14 +8,15 @@ import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images'
 import { UserFocusModalState } from './UserFocusModalState.vue';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { postDetails } from './PostDetails.vue';
-import { FeedState } from './FeedList.vue';
+import { FeedState, RefreshAllFeeds } from './FeedList.vue';
 import { FeedViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppSettingsState } from './AppSettingsState.vue';
 import { LoginState } from '../interfaces/AccountInterfaces';
 import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { FeedEnums } from '../enums/FeedEnums';
 import { router } from '../main';
-import { BroadcastObject } from '../types/BroadcastChannelTypes';
+import { BroadcastChannelTarget, BroadcastObject } from '../types/BroadcastChannelTypes';
+import { AccountPeekState } from './AccountPeekState.vue';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -119,10 +120,10 @@ export const AppState = reactive({
      * Updates `AppSettingsState` and prints toast message.
      */
     browseAsGuest(){
-        AppState.isAuthBrowsing = false;
-        AppState.isGuestBrowsing = true;
-        AppState.currentUsername = "Guest";
-        AppState.canBrowse = true;
+        this.isAuthBrowsing = false;
+        this.isGuestBrowsing = true;
+        this.currentUsername = "Guest";
+        this.canBrowse = true;
         AppSettingsState.Settings.savedAccountState = {
             ...AppSettingsState.Settings.savedAccountState,
             currentAccount:-1,
@@ -139,22 +140,45 @@ export const AppState = reactive({
     updateAppStateLoginValues(){
         switch (AppSettingsState.Settings.savedAccountState.state) {
             case LoginState.Authorized:
-                AppState.isAuthBrowsing = true;
-                AppState.isGuestBrowsing = false;
-                AppState.currentUsername = "Logged In";
-                AppState.canBrowse = true;
+                this.isAuthBrowsing = true;
+                this.isGuestBrowsing = false;
+                this.currentUsername = "Logged In";
+                this.canBrowse = true;
                 break;
             case LoginState.Guest:
-                AppState.isAuthBrowsing = false;
-                AppState.isGuestBrowsing = true;
-                AppState.currentUsername = "Guest";
-                AppState.canBrowse = true;
+                this.isAuthBrowsing = false;
+                this.isGuestBrowsing = true;
+                this.currentUsername = "Guest";
+                this.canBrowse = true;
                 break;
             default://Unset - no browsing mode choice made
-                AppState.canBrowse = AppState.isGuestBrowsing = AppState.isAuthBrowsing = false;
-                AppState.currentUsername = "Login Here";
+                this.canBrowse = this.isGuestBrowsing = this.isAuthBrowsing = false;
+                this.currentUsername = "Login Here";
                 break;
         }
+    },
+    /**
+     * Method used to update the Application state after logging out of a
+     * guest or authorized account. Mainly used to update visual elements so
+     * they correctly reflect the new "logged out" state. Refreshes displayed
+     * Feeds as part of process. Syncs changes between app intances using
+     * `BroadcastChannel` as well.
+     */
+    UpdateAppStateAfterLogout(){
+        this.canBrowse = this.isGuestBrowsing = this.isAuthBrowsing = false;
+        this.currentUsername = "Login Here";
+        AppSettingsState.Settings.savedAccountState = {
+            ...AppSettingsState.Settings.savedAccountState,
+            currentAccount:-1,
+            state:LoginState.Unset
+        }
+        AccountPeekState.lastMouseEvent = new MouseEvent('logout');
+        AccountPeekState.profileData = {did:'',handle:''};
+        //Send logout sync
+        let authSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.LoginState, data:undefined};
+        AppState.SendAppSyncMessage(authSyncMessage);
+        //Refresh displayed Feeds after logout
+        RefreshAllFeeds();
     },
     /**
      * Is the user browsing Bluesky with a user account. NOTE: if this is

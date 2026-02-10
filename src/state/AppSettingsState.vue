@@ -243,10 +243,6 @@ export const AppSettingsState = reactive({
                 //sync "app settings" between tabs/windows on success
                 let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.AppSettings, data:toRawDeep(cs)};
                 AppState.SendAppSyncMessage(feedSyncMessage);
-                //sync "login state"
-                let currentSession = GetAuthSession();
-                let authSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.LoginState, data:toRawDeep(currentSession)};
-                AppState.SendAppSyncMessage(authSyncMessage);
             })
             .catch(err => {
                 console.log(`Error trying to save settings to IndexedDB`);
