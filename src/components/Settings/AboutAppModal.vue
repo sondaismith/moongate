@@ -38,6 +38,18 @@
             <div class="flex flex-col overflow-y-auto pt-2">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">February 10th 2026</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Updated app so that application state is synced between all open web-based application instances.
+                            <ul class="list-disc list-inside h-full text-sm">
+                                <li>Modifying the displayed Feed List is synced between instances.</li>
+                                <li>Modifying application settings is synced betweeen instances.</li>
+                                <li>Logging in/out or changing browsing modes is synced betweeen instances.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">January 22nd 2026</div>
                     <ul class="list-disc list-inside h-full py-1 text-sm">
                         <li>Updated "View Parent of Post" button that is displayed on "reply posts".
