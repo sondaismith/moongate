@@ -6,6 +6,8 @@ import { isTauri } from '@tauri-apps/api/core';
 import { WebDBAppSettings, web_db } from '../lib/db/web_db';
 import { ATPlatform, LoginState } from '../interfaces/AccountInterfaces';
 import { AppState } from './AppState.vue';
+import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../types/BroadcastChannelTypes';
+import { GetAuthSession } from '../lib/api.vue';
 
 export default{
     name:"AppSettingsState"
@@ -236,9 +238,12 @@ export const AppSettingsState = reactive({
                 isHidingFollowing: cs.isHidingFollowing,
                 savedAccountState:JSON.stringify(cs.savedAccountState),
             })
-            // .then(res => {
-            //     console.log(res);
-            // })
+            .then(res => {
+                console.log(res);
+                //sync "app settings" between tabs/windows on success
+                let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.AppSettings, data:toRawDeep(cs)};
+                AppState.SendAppSyncMessage(feedSyncMessage);
+            })
             .catch(err => {
                 console.log(`Error trying to save settings to IndexedDB`);
                 console.log(err);

@@ -164,14 +164,15 @@ import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { LoginBskyAccount } from '../../lib/api/Login.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
-import { FeedState, RefreshFeed } from '../../state/FeedList.vue';
-import { GetBrowsingAgent } from '../../lib/api.vue';
+import { RefreshAllFeeds } from '../../state/FeedList.vue';
+import { GetAuthSession, GetBrowsingAgent } from '../../lib/api.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { ATPlatform, IAccount, LoginState } from '../../interfaces/AccountInterfaces';
 import RadioBarButton from '../Utilities/RadioBarButton.vue';
 import { GenerateUniqueID } from '../../helpers/generators';
 import ConfirmModal from '../Utilities/ConfirmModal.vue';
+import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes';
 
 /**
  * Asks the User if they're sure they would like to delete the selected
@@ -233,7 +234,7 @@ export default defineComponent({
                 AppState.canBrowse = true;
                 AccountPeekState.lastMouseEvent = new MouseEvent('login');
                 AccountPeekState.profileData = {did:'',handle:''};
-                this.refreshFeeds();//Refresh feeds so we can get likes, blocks etc.
+                RefreshAllFeeds();//Refresh feeds so we can get likes, blocks etc.
                 toast.add({summary:"Login Success", detail:``,severity:'success',group:'tr',life:3000});
             })
             .catch(err => {
@@ -278,6 +279,10 @@ export default defineComponent({
                         AppSettingsState.Settings.savedAccountState.state = LoginState.Authorized;
                     }
                     AppSettingsState.saveSettingsToStore();
+                    //sync "login state"
+                    let currentSession = GetAuthSession();
+                    let authSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.LoginState, data:toRawDeep(currentSession)};
+                    AppState.SendAppSyncMessage(authSyncMessage);
                     this.closeModal();
                 })
                 .catch(err => {
@@ -394,17 +399,6 @@ export default defineComponent({
             if(window.history.state.back != null && (window.history.state.back.includes('/profile') || window.history.state.back.includes('/settings'))) this.$router.go(-1);
             else if(window.history.state.back == null) this.$router.push(`/`);
             else this.$router.push(`/`);
-        },
-        /**
-         * Method that refreshes all the displayed Feeds after the User logs in.
-         * Used to get the displayed elements to reflect the User Account's
-         * preferences/state (liked posts, blocked users, etc.).
-         */
-        refreshFeeds(){
-            FeedState.FeedList.forEach(feed => {
-                RefreshFeed(feed.description.feedId,new Date(),10);
-            });
-            console.log("Refreshed Feeds.");
         },
         /**
          * Switches between using the default Bluesky Account Provider or

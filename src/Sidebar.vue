@@ -119,7 +119,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { FeedState, AddFeedToList, OLDcreateFeedDescription, AddSavedFeed, LoadFeedPostsAsync, SaveFeedChanges } from "./state/FeedList.vue";
+import { FeedState, AddFeedToList, OLDcreateFeedDescription, AddSavedFeed, LoadFeedPostsAsync, SaveFeedChanges, RefreshAllFeeds } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState, toast } from "./state/AppState.vue";
@@ -144,7 +144,7 @@ import { FeedEnums } from "./enums/FeedEnums";
 import FeedEditModal from "./components/Feed/FeedEditModal.vue";
 import UserFocusModal from "./components/User/UserFocusModal.vue";
 import { OptionsMenuState } from "./state/OptionsMenuState.vue";
-import { GetBrowsingAgent } from "./lib/api.vue";
+import { ResumeAuthSession, GetBrowsingAgent } from "./lib/api.vue";
 import { SavedFeeds } from "./lib/db/local_db";
 import { AccountPeekState } from "./state/AccountPeekState.vue";
 import FeedButton from "./components/Navbar/FeedButton.vue";
@@ -163,6 +163,9 @@ import FeedOrderModal from "./components/Feed/FeedOrderModal.vue";
 import AppLogo from "./components/SVG/AppLogo.vue";
 import AboutAppModal from "./components/Settings/AboutAppModal.vue";
 import UserButton from "./components/Navbar/UserButton.vue";
+import { isBroadcastObject } from "./types/BroadcastChannelTypes";
+import { BroadcastChannelTarget } from "./types/BroadcastChannelTypes";
+import { LoginState } from "./interfaces/AccountInterfaces";
 
 
     export default defineComponent({
@@ -407,8 +410,53 @@ import UserButton from "./components/Navbar/UserButton.vue";
                     toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000})
                 });
             },
+            /**
+             * Method that sets up the listener actions for the `BroadcastChannel` used by the
+             * application.
+             */
+            setupBroadcastChannel(){
+                AppState.moongateBroadcastChannel.onmessage = (event) => {
+                    //WIP
+                    if(isBroadcastObject(event.data)){
+                        console.log('This message contains a BroadcastObject object')
+                        // if(event.data.target == BroadcastChannelTarget.FeedColumn){
+                        //     //Update FeedList in other tabs/windows, but DO NOT save change to disk
+                        //     console.log('This message is for updating the FeedColumn state.');
+                        //     FeedState.FeedList = event.data.data;
+                        // }
+                        switch (event.data.target) {
+                            case BroadcastChannelTarget.FeedColumn:
+                                //Update FeedList in other tabs/windows, but DO NOT save change to disk
+                                console.log('This message is for updating the FeedColumn state.');
+                                FeedState.FeedList = event.data.data;
+                                break;
+                            case BroadcastChannelTarget.AppSettings:
+                                //Update App Settings in other tabs/windows, but DO NOT save change to disk
+                                console.log('This message is for updating the "App Settings" state.');
+                                AppSettingsState.Settings = event.data.data;
+                                //Set current account PFP after app setting sync
+                                if(AppSettingsState.Settings.savedAccountState.currentAccount>-1 && AppSettingsState.Settings.savedAccountState.accounts.length>0){
+                                    AppState.currentPFP = AppSettingsState.Settings.savedAccountState.accounts[AppSettingsState.Settings.savedAccountState.currentAccount].avatar;
+                                }
+                                //Sync login state
+                                AppState.updateAppStateLoginValues();
+                                break;
+                            case BroadcastChannelTarget.LoginState:
+                                console.log('This message is for updating the "Authorized Login" state.');
+                                if(AppSettingsState.Settings.savedAccountState.state == LoginState.Authorized && typeof event.data.data == 'undefined') {console.log('this will be a logout action'); AppState.UpdateAppStateAfterLogout(); } //logout
+                                else if(typeof event.data.data != 'undefined') {console.log('this will sync the auth login state'); ResumeAuthSession(event.data.data); RefreshAllFeeds();}
+                                else console.log('this will have been syncing guest browsing')
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    console.log(event);
+                }
+            },
             async appStartupProcedure(){
                 await this.setUpListeners();
+                this.setupBroadcastChannel();
                 await this.loadAppConfig();
                 if(isTauri()) invoke('show_main_window');//unhide main window and focus it via Rust
             },

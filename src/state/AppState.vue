@@ -8,13 +8,15 @@ import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images'
 import { UserFocusModalState } from './UserFocusModalState.vue';
 import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { postDetails } from './PostDetails.vue';
-import { FeedState } from './FeedList.vue';
+import { FeedState, RefreshAllFeeds } from './FeedList.vue';
 import { FeedViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppSettingsState } from './AppSettingsState.vue';
 import { LoginState } from '../interfaces/AccountInterfaces';
 import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { FeedEnums } from '../enums/FeedEnums';
 import { router } from '../main';
+import { BroadcastChannelTarget, BroadcastObject } from '../types/BroadcastChannelTypes';
+import { AccountPeekState } from './AccountPeekState.vue';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
@@ -95,6 +97,16 @@ export default{
  * as theming, current user, etc.
  */
 export const AppState = reactive({
+    /**BroadcastChannel used to keep elements of applications in sync when using multiple tabs/windows. */
+    moongateBroadcastChannel: new BroadcastChannel('moongate_bc'),
+    /**
+     * Method used to send messages used to sync the application state between tabs/windows
+     * via the `BroadcastChannel`.
+     * @param messagePayload The data to sync between tabs/windows.
+     */
+    SendAppSyncMessage(messagePayload:BroadcastObject){
+        this.moongateBroadcastChannel.postMessage(messagePayload);
+    },
     /**Is the app in Dark Mode. If false, the light theme is used. */
     isDarkMode: true,
     /**
@@ -108,16 +120,65 @@ export const AppState = reactive({
      * Updates `AppSettingsState` and prints toast message.
      */
     browseAsGuest(){
-        AppState.isAuthBrowsing = false;
-        AppState.isGuestBrowsing = true;
-        AppState.currentUsername = "Guest";
-        AppState.canBrowse = true;
+        this.isAuthBrowsing = false;
+        this.isGuestBrowsing = true;
+        this.currentUsername = "Guest";
+        this.canBrowse = true;
         AppSettingsState.Settings.savedAccountState = {
             ...AppSettingsState.Settings.savedAccountState,
             currentAccount:-1,
             state:LoginState.Guest
         }
         toast.add({summary:'Browsing', detail:'Viewing content as guest.', severity:'info', group:'tr', life:3000})
+    },
+    /**
+     * Method used to make sure the variables held in `AppState` for determining "Login Status"
+     * are up to date and match what is held in `AppSettingsState.Settings.savedAccountState`.
+     * This method should only need to be used when handling the "App Settings" `BroadcastChannel` message used
+     * to sync application states over multiple tabs/windows.
+     */
+    updateAppStateLoginValues(){
+        switch (AppSettingsState.Settings.savedAccountState.state) {
+            case LoginState.Authorized:
+                this.isAuthBrowsing = true;
+                this.isGuestBrowsing = false;
+                this.currentUsername = "Logged In";
+                this.canBrowse = true;
+                break;
+            case LoginState.Guest:
+                this.isAuthBrowsing = false;
+                this.isGuestBrowsing = true;
+                this.currentUsername = "Guest";
+                this.canBrowse = true;
+                break;
+            default://Unset - no browsing mode choice made
+                this.canBrowse = this.isGuestBrowsing = this.isAuthBrowsing = false;
+                this.currentUsername = "Login Here";
+                break;
+        }
+    },
+    /**
+     * Method used to update the Application state after logging out of a
+     * guest or authorized account. Mainly used to update visual elements so
+     * they correctly reflect the new "logged out" state. Refreshes displayed
+     * Feeds as part of process. Syncs changes between app intances using
+     * `BroadcastChannel` as well.
+     */
+    UpdateAppStateAfterLogout(){
+        this.canBrowse = this.isGuestBrowsing = this.isAuthBrowsing = false;
+        this.currentUsername = "Login Here";
+        AppSettingsState.Settings.savedAccountState = {
+            ...AppSettingsState.Settings.savedAccountState,
+            currentAccount:-1,
+            state:LoginState.Unset
+        }
+        AccountPeekState.lastMouseEvent = new MouseEvent('logout');
+        AccountPeekState.profileData = {did:'',handle:''};
+        //Send logout sync
+        let authSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.LoginState, data:undefined};
+        AppState.SendAppSyncMessage(authSyncMessage);
+        //Refresh displayed Feeds after logout
+        RefreshAllFeeds();
     },
     /**
      * Is the user browsing Bluesky with a user account. NOTE: if this is

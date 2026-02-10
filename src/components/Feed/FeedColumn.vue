@@ -248,6 +248,7 @@ import TrendingTopic from './TrendingTopic.vue';
 import { isOnMobileTouchscreen } from '../../helpers/states';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { HandleAPIError } from '../../helpers/errors';
+import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes';
 
 var colElement;
 
@@ -554,6 +555,11 @@ export default defineComponent({
                     // insert it at its new index
                     FeedState.FeedList.splice(FeedState.newFeedColumnIndex-1, 0, elRemoved);
                     SaveFeedChanges()//Save changes to disk.
+                    .then(()=>{
+                        //Sync FeedColumn order across app instances
+                        let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
+                        AppState.SendAppSyncMessage(feedSyncMessage);
+                    })
                     .catch(err => {
                         toast.add(HandleAPIError(err, 'Error updating Feed position'));
                     })
