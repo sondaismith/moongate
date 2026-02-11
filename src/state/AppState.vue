@@ -548,5 +548,11 @@ export const AppState = reactive({
     ShowAboutAppModal(){ this.isAboutAppModalVisible = true;},
     /**NOT USED ANYMORE - ROUTING IS USED TO CONTROL MODALS --- Method that causes the "About App" modal to be hidden. */
     HideAboutAppModal(){ this.isAboutAppModalVisible = false;},
+    /**
+     * Value used to determine if Feed data has been loaded after the application is loaded for the first time.
+     * Intended to be used to know if the Feed data needs to be requested when navigating to the main view (`'/'`),
+     * after loading has been prevented because the app started on a route other than the main view (`'/'`).
+     */
+    hasFeedDataBeenLoadedAfterInitiallization:false,
 })
 </script>
