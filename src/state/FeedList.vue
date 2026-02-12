@@ -829,6 +829,7 @@ export async function RefreshAllFeeds(postsToGet:number=10){
     FeedState.FeedList.forEach(feed => {
         RefreshFeed(feed.description.feedId,new Date(),postsToGet);
     });
+    AppState.hasFeedDataBeenLoadedAfterInitiallization = true;
 }
 
 /**
