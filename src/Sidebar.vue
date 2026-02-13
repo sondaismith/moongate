@@ -119,7 +119,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { FeedState, AddFeedToList, OLDcreateFeedDescription, AddSavedFeed, LoadFeedPostsAsync, SaveFeedChanges, RefreshAllFeeds } from "./state/FeedList.vue";
+import { FeedState, AddFeedToList, OLDcreateFeedDescription, AddSavedFeed, SaveFeedChanges, RefreshAllFeeds, LoadAllFeedPostsAsync } from "./state/FeedList.vue";
 import * as PostEnums from "./enums/PostEnums";
 import { postDetails } from "./state/PostDetails.vue";
 import { AppState, toast } from "./state/AppState.vue";
@@ -166,6 +166,7 @@ import UserButton from "./components/Navbar/UserButton.vue";
 import { isBroadcastObject } from "./types/BroadcastChannelTypes";
 import { BroadcastChannelTarget } from "./types/BroadcastChannelTypes";
 import { LoginState } from "./interfaces/AccountInterfaces";
+import { router } from "./main";
 
 
     export default defineComponent({
@@ -393,10 +394,10 @@ import { LoginState } from "./interfaces/AccountInterfaces";
                             for (let i = 0; i < loadedFeeds.length; i++) {
                                 await AddSavedFeed(loadedFeeds[i]);
                             }
-                            for (let i = 0; i < FeedState.FeedList.length; i++) {
-                                await LoadFeedPostsAsync(FeedState.FeedList[i].description); //add await if you want these done sequentially
-                                // await new Promise((resolve) => setTimeout(resolve,200)) //use if you want to add a small delay between each API call
+                            if(router.currentRoute.value.path == '/'){
+                                LoadAllFeedPostsAsync();
                             }
+                            else console.log('blocking loading of feeds in FeedColumn')
                             //Set AppState "loading feeds" to false
                             //Update FeedDescription.latestPostDate value after Posts have been loaded
                             SaveFeedChanges(true).catch(err => {
@@ -429,6 +430,7 @@ import { LoginState } from "./interfaces/AccountInterfaces";
                                 //Update FeedList in other tabs/windows, but DO NOT save change to disk
                                 console.log('This message is for updating the FeedColumn state.');
                                 FeedState.FeedList = event.data.data;
+                                AppState.hasFeedDataBeenLoadedAfterInitiallization = true;
                                 break;
                             case BroadcastChannelTarget.AppSettings:
                                 //Update App Settings in other tabs/windows, but DO NOT save change to disk
@@ -581,6 +583,10 @@ import { LoginState } from "./interfaces/AccountInterfaces";
         mounted(){
             this.getFeedDisplayViewWidth();
             this.placeFeedDisplayCenterLine();
+        },
+        beforeRouteEnter(to, from){
+            if(!AppState.hasFeedDataBeenLoadedAfterInitiallization && from.path != '/' && to.path == '/') {LoadAllFeedPostsAsync(); console.log('reoaded feed list because of travelling to root')}
+
         },
         setup () {
             return {}

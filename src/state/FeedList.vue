@@ -580,6 +580,18 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
 }
 
 /**
+ * Method to be used to load the Feed data for all Feeds held in the
+ * `FeedState.FeedList` collection.
+ */
+export async function LoadAllFeedPostsAsync(){
+    for (let i = 0; i < FeedState.FeedList.length; i++) {
+        await LoadFeedPostsAsync(FeedState.FeedList[i].description); //add await if you want these done sequentially
+        // await new Promise((resolve) => setTimeout(resolve,200)) //use if you want to add a small delay between each API call
+    }
+    AppState.hasFeedDataBeenLoadedAfterInitiallization = true;
+}
+
+/**
  * Method used to get Feed data. It uses the Feed Type to choose the correct process needed
  * to return the correct data.
  * @param feedType The type of Feed this data is for. Of type `FeedEnums.Types`.
@@ -817,6 +829,7 @@ export async function RefreshAllFeeds(postsToGet:number=10){
     FeedState.FeedList.forEach(feed => {
         RefreshFeed(feed.description.feedId,new Date(),postsToGet);
     });
+    AppState.hasFeedDataBeenLoadedAfterInitiallization = true;
 }
 
 /**
