@@ -4,28 +4,37 @@ import { $Typed, AppBskyFeedGetPostThread } from "@atproto/api";
 import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
 let handle1:string = 'tester.da.playwright';
+let handle2:string = 'mock.ofthe.day';
 let displayName1:string = 'I AM A TESTER';
 let displayName2:string = `tester don't play that`;
 let actorSearchResults = CreateActorSearchResults();
 let profile1 = await CreateUserProfile(handle1,displayName2);
 let post1:FeedViewPost;
+let post2:FeedViewPost;
 let postText1 = "Lorem ipsum dipsum, dimsum, mmm I'm hungry";
+let postText2 = "This is the 2nd time I have posted. Yipee!";
 let currentDateTime = new Date();
 await CreateFeedViewPost(handle1,postText1,undefined,displayName2,currentDateTime,undefined,"None").then(res => {
     post1 = res;
-})
+});
+await CreateFeedViewPost(handle2,postText2,undefined,displayName1,currentDateTime,undefined,"None").then(res => {
+    post2 = res;
+});
 
 test.beforeEach(async ({ context }) => {
-    await context.route(/app.bsky.feed.getPostThread/, route => {
-        route.fulfill({
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-            body:JSON.stringify(post1)
-        });
-    });
+    // await context.route(/app.bsky.feed.getPostThread/, route => {
+    //     route.fulfill({
+    //         status: 200,
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body:JSON.stringify(post1)
+    //     });
+    // });
 })
 
-test('Ensure adding Feed in one app instance is reflected in all other instances', async({browser},testInfo) => {
+test('Ensure changes to Feed (creating, re-ordering) in one app instance is reflected in all other instances', async({browser},testInfo) => {
+    //mock feed results
+    let returnedFeeds = [[post2,post1],[post1,post2]]; //allows "different" Feeds to be returned when querying `getAuthorFeed`
+    let feedIndex = 0; //tracks how many `getAuthorFeed` requests have been made, used to return content from array above
     //set up tabs
     const context = await browser.newContext();
     const instance1 = await context.newPage();
@@ -46,11 +55,14 @@ test('Ensure adding Feed in one app instance is reflected in all other instances
         });
     });
     await context.route(/app.bsky.feed.getAuthorFeed/, route => {
+        let f:FeedViewPost[] = [];
+        if(feedIndex<returnedFeeds.length) f = returnedFeeds[feedIndex];
         route.fulfill({
             status: 200,
             headers: { 'Content-Type': 'application/json' },
-            body:JSON.stringify({feed:[post1]})
+            body:JSON.stringify({feed:f})
         });
+        feedIndex++;
     });
 
     //make sure both tabs are on app page
@@ -97,4 +109,33 @@ test('Ensure adding Feed in one app instance is reflected in all other instances
     });
     //assert that new Feed is visible in second app instance
     await expect(instance2.getByText(postText1)).toBeVisible();
+    //add another new feed
+    await instance1.getByTestId('add-feed-button').click();
+    await instance1.getByTestId('feedEditModal-user-feed-button').click();
+    await instance1.getByTestId('feedEditModal-next-page-button').click();
+    await instance1.getByTestId('inlainput-input').fill('username');
+    await instance1.getByTestId('inlainput-input').press('Enter');
+    await expect(instance1.getByTestId('user-search-bar-result').nth(0)).toBeVisible();
+    await instance1.getByTestId('user-search-bar-result').nth(0).click();
+    await expect(instance1.getByText('submit')).toBeVisible();
+    await instance1.getByTestId('feedEditModal-create-button').click();
+    await expect(instance1.getByTestId('feed-edit-modal')).toBeHidden();
+    //screenshot
+    const secondTabBeforeReorder = await instance2.screenshot();
+    await testInfo.attach('image showing status in tab 2 before feeds are reordered', {
+        body: secondTabBeforeReorder,
+        contentType: 'image/png',
+    });
+    //drag the 1st Feed's "reorder" button and drop it on the 2nd Feed
+    await instance1.getByTestId('feedcolumn-reorder-handle').first().dragTo(instance1.getByTestId('feed-column').nth(1));
+    //check that Feed order has changed on 2nd tab
+    await expect(instance2.getByTestId('feed-column').nth(1).getByTestId('focusFeedPost').first()).toContainText(postText2);
+    //wait for toast message(s) to disappear (for screenshots)
+    await expect(instance1.getByText('Feed List Updated')).toHaveCount(0);
+    //screenshot
+    const secondTabAfterReorder = await instance2.screenshot();
+    await testInfo.attach('image showing status in tab 2 after feeds are reordered', {
+        body: secondTabAfterReorder,
+        contentType: 'image/png',
+    });
 })
