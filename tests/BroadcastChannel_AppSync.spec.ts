@@ -21,15 +21,8 @@ await CreateFeedViewPost(handle2,postText2,undefined,displayName1,currentDateTim
     post2 = res;
 });
 
-test.beforeEach(async ({ context }) => {
-    // await context.route(/app.bsky.feed.getPostThread/, route => {
-    //     route.fulfill({
-    //         status: 200,
-    //         headers: { 'Content-Type': 'application/json' },
-    //         body:JSON.stringify(post1)
-    //     });
-    // });
-})
+// test.beforeEach(async ({ context }) => {
+// })
 
 test('Ensure changes to Feed (creating, re-ordering) in one app instance is reflected in all other instances', async({browser},testInfo) => {
     //mock feed results
@@ -194,4 +187,33 @@ test('Ensure changes to Login state (browsing as guest, authorized browsing, log
     await expect(instance2.getByTestId('userbutton-user-avatar')).toBeHidden();
     await instance2.getByTestId('add-feed-button').click();
     await expect(instance2.getByTestId('login-modal')).toBeVisible();
+})
+
+test('Ensure changes to App Settings state (hiding intro message, changing color theme, etc.) in one app instance is reflected in all other instances', async({browser},testInfo) => {
+    //set up tabs
+    const context = await browser.newContext();
+    const instance1 = await context.newPage();
+    const instance2 = await context.newPage();
+
+    //make sure both tabs are on app page
+    await instance1.goto(`/`,{waitUntil:'networkidle'});
+    await instance2.goto(`/`,{waitUntil:'networkidle'});
+
+    //remove intro message on tab 1
+    await instance1.getByText('Dismiss message').click();
+    //check that intro message has also been removed on tab 2
+    await expect(instance2.getByText('Dismiss message')).toBeHidden();
+    //open settings and change color theme
+    await instance1.getByTestId('app-settings-button').click();
+    await instance1.getByText('Dark mode').click();
+    await instance1.goBack();
+    //check that color theme has been changed on tab 2
+    await instance2.getByTestId('app-settings-button').click();
+    await expect(instance2.getByText('Dark mode').locator('svg')).toBeVisible();
+    //screenshot tab 2 "Dark mode" selected control
+    // const secondTabDarkModeCheckbox = await instance2.getByText('Dark mode').locator('svg').screenshot();
+    // await testInfo.attach('image showing "Dark mode" checkbox control selected in tab 2', {
+    //     body: secondTabDarkModeCheckbox,
+    //     contentType: 'image/png',
+    // });
 })
