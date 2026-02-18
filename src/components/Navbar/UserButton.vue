@@ -7,7 +7,7 @@
             rounded-full bg-gray-00 border-[3px]
             border-outline transition-[border] hover:border-loginHighlight overflow-hidden">
             <Transition>
-                <i-mingcute:key-2-line v-if="!AppState.canBrowse || !isVisible" class=" absolute h-full text-2xl transition-colors text-primary group-hover:text-loginHighlight"/>
+                <i-mingcute:key-2-line v-if="!AppState.canBrowse || !isVisible" data-testid="userbutton-browse-mode-unset" class="absolute h-full text-2xl transition-colors text-primary group-hover:text-loginHighlight"/>
                 <div v-else-if="AppState.canBrowse || isVisible" class="absolute flex h-full w-full justify-center">
                     {{ void "User PFP" }}
                     <div data-testid="userbutton-user-avatar" v-if="AppState.isAuthBrowsing" class="absolute flex h-full w-full rounded-full bg-contain"
@@ -17,7 +17,7 @@
                         <i-mingcute:loading-fill class="spinner"/>
                     </div>
                     {{ void "Guest Icon" }}
-                    <i-mingcute:user-question-fill v-if="AppState.isGuestBrowsing" class="absolute h-full text-2xl transition-colors text-primary group-hover:text-loginHighlight z-[1]"/>
+                    <i-mingcute:user-question-fill v-if="AppState.isGuestBrowsing" data-testid="userbutton-browse-mode-guest" class="absolute h-full text-2xl transition-colors text-primary group-hover:text-loginHighlight z-[1]"/>
                 </div>
             </Transition>
         </a>

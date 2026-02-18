@@ -139,3 +139,59 @@ test('Ensure changes to Feed (creating, re-ordering) in one app instance is refl
         contentType: 'image/png',
     });
 })
+
+test('Ensure changes to Login state (browsing as guest, authorized browsing, logging out) in one app instance is reflected in all other instances', async({browser},testInfo) => {
+    //set up tabs
+    const context = await browser.newContext();
+    const instance1 = await context.newPage();
+    const instance2 = await context.newPage();
+    //set API mocks
+    let sessionResponse = CreateLoginSessionResponse(profile1.handle,profile1.did);
+    await context.route(/com.atproto.server.createSession/, route => {
+        route.fulfill({
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+            body:JSON.stringify(sessionResponse)
+        });
+    });
+    await context.route(/app.bsky.actor.getProfile/, route => {
+        route.fulfill({
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+            body:JSON.stringify(profile1)
+        });
+    });
+
+    //make sure both tabs are on app page
+    await instance1.goto(`/`,{waitUntil:'networkidle'});
+    await instance2.goto(`/`,{waitUntil:'networkidle'});
+
+    //test browsing as guest is synced between instances
+    await instance1.getByTestId('userbutton').click();
+    await expect(instance2.getByTestId('userbutton-browse-mode-unset')).toBeVisible();
+    await instance1.getByTestId('browse-as-guest-button').click();
+    await expect(instance2.getByTestId('userbutton-browse-mode-unset')).toBeHidden();
+    await expect(instance2.getByTestId('userbutton-browse-mode-guest')).toBeVisible();
+    //ensure browse as guest state has correctly been passed to 2nd tab by trying to create a new Feed - login prompt should not show
+    await instance2.getByTestId('add-feed-button').click();
+    await expect(instance2.getByTestId('feed-edit-modal')).toBeVisible();
+    await instance2.getByTestId('feedEditModal-back-button').click();
+    await expect(instance2.getByTestId('feed-edit-modal')).toBeHidden();
+    //login to authorized account
+    await instance1.getByTestId('userbutton').click();
+    await instance1.getByTestId('login-to-account-button').click();
+    await instance1.getByTestId('login-username-input').getByRole('textbox').fill('username');
+    await instance1.getByTestId('login-password-input').getByRole('textbox').fill('password');
+    await instance1.getByTestId('login-button').click();
+    //check that authorized login state has been synced to 2nd tab
+    await expect(instance2.getByTestId('userbutton-user-avatar')).toBeVisible();
+    //log out of account
+    await instance1.getByTestId('userbutton').click();
+    await instance1.getByRole('button').getByText('Log Out').first().click();
+    await instance1.getByRole('button').getByText('Yes').first().click();
+    //check that logged out state has been synced to 2nd tab
+    await expect(instance2.getByTestId('userbutton-browse-mode-unset')).toBeVisible();
+    await expect(instance2.getByTestId('userbutton-user-avatar')).toBeHidden();
+    await instance2.getByTestId('add-feed-button').click();
+    await expect(instance2.getByTestId('login-modal')).toBeVisible();
+})
