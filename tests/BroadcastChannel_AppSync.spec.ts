@@ -72,34 +72,34 @@ test('Ensure changes to Feed (creating, re-ordering) in one app instance is refl
     await instance1.getByTestId('inlainput-input').fill('username');
     await instance1.getByTestId('inlainput-input').press('Enter');
     await expect(instance1.getByTestId('user-search-bar-result').nth(0)).toBeVisible();
-    //screenshot
-    const actorResults = await instance1.screenshot();
-    await testInfo.attach('image showing mocked actor search results', {
-        body: actorResults,
-        contentType: 'image/png',
-    });
-    //screenshot
-    const secondTabBefore = await instance2.screenshot();
+    // //screenshot
+    // const actorResults = await instance1.screenshot();
+    // await testInfo.attach('image showing mocked actor search results', {
+    //     body: actorResults,
+    //     contentType: 'image/png',
+    // });
+    // //screenshot
+    // const secondTabBefore = await instance2.screenshot();
     await instance1.getByTestId('user-search-bar-result').nth(0).click();
     await expect(instance1.getByText('submit')).toBeVisible();
     await instance1.getByTestId('feedEditModal-create-button').click();
     await expect(instance1.getByTestId('feed-edit-modal')).toBeHidden();
-    //screenshot
-    const feedCreated = await instance1.screenshot();
-    await testInfo.attach('image showing created user feed in main view', {
-        body: feedCreated,
-        contentType: 'image/png',
-    });
-    await testInfo.attach('image showing tab 2 before Feed sync', {
-        body: secondTabBefore,
-        contentType: 'image/png',
-    });
-    const secondTabAfterSync = await instance2.screenshot();
-    //screenshot
-    await testInfo.attach('image showing status in tab 2 after user feed was created', {
-        body: secondTabAfterSync,
-        contentType: 'image/png',
-    });
+    // //screenshot
+    // const feedCreated = await instance1.screenshot();
+    // await testInfo.attach('image showing created user feed in main view', {
+    //     body: feedCreated,
+    //     contentType: 'image/png',
+    // });
+    // await testInfo.attach('image showing tab 2 before Feed sync', {
+    //     body: secondTabBefore,
+    //     contentType: 'image/png',
+    // });
+    // const secondTabAfterSync = await instance2.screenshot();
+    // //screenshot
+    // await testInfo.attach('image showing status in tab 2 after user feed was created', {
+    //     body: secondTabAfterSync,
+    //     contentType: 'image/png',
+    // });
     //assert that new Feed is visible in second app instance
     await expect(instance2.getByText(postText1)).toBeVisible();
     //add another new feed
@@ -114,23 +114,23 @@ test('Ensure changes to Feed (creating, re-ordering) in one app instance is refl
     await instance1.getByTestId('feedEditModal-create-button').click();
     await expect(instance1.getByTestId('feed-edit-modal')).toBeHidden();
     //screenshot
-    const secondTabBeforeReorder = await instance2.screenshot();
-    await testInfo.attach('image showing status in tab 2 before feeds are reordered', {
-        body: secondTabBeforeReorder,
-        contentType: 'image/png',
-    });
+    // const secondTabBeforeReorder = await instance2.screenshot();
+    // await testInfo.attach('image showing status in tab 2 before feeds are reordered', {
+    //     body: secondTabBeforeReorder,
+    //     contentType: 'image/png',
+    // });
     //drag the 1st Feed's "reorder" button and drop it on the 2nd Feed
     await instance1.getByTestId('feedcolumn-reorder-handle').first().dragTo(instance1.getByTestId('feed-column').nth(1));
     //check that Feed order has changed on 2nd tab
     await expect(instance2.getByTestId('feed-column').nth(1).getByTestId('focusFeedPost').first()).toContainText(postText2);
     //wait for toast message(s) to disappear (for screenshots)
-    await expect(instance1.getByText('Feed List Updated')).toHaveCount(0);
+    // await expect(instance1.getByText('Feed List Updated')).toHaveCount(0);
     //screenshot
-    const secondTabAfterReorder = await instance2.screenshot();
-    await testInfo.attach('image showing status in tab 2 after feeds are reordered', {
-        body: secondTabAfterReorder,
-        contentType: 'image/png',
-    });
+    // const secondTabAfterReorder = await instance2.screenshot();
+    // await testInfo.attach('image showing status in tab 2 after feeds are reordered', {
+    //     body: secondTabAfterReorder,
+    //     contentType: 'image/png',
+    // });
 })
 
 test('Ensure changes to Login state (browsing as guest, authorized browsing, logging out) in one app instance is reflected in all other instances', async({browser},testInfo) => {
