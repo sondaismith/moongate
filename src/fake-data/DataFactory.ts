@@ -6,10 +6,11 @@ import { $Typed } from "@atproto/api/dist/client/util";
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 import { GenerateCID } from "../helpers/generators";
-import { ProfileViewBasic, ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
+import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/client";
 import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
 import { OutputSchema } from "@atproto/api/dist/client/types/com/atproto/server/createSession";
+import { OutputSchema as searchActorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/actor/searchActors";
 import { Main } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 
 /**
@@ -74,8 +75,8 @@ export function CreateNotFoundPost():$Typed<NotFoundPost>{
  * @param postText The text content of the Post.
  * @param includeEmbedLink Should this post contain an external link embed?
  * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
- * @param isPinned Should the created Post be a pinned post?
  * @param postTime The time that the Post was created.
+ * @param isPinned Should the created Post be a pinned post?
  * @param parentState The "state" of the Parent post of the Post being created. Options are No Parent,
  * Standard Parent Post (value currently hardcoded), `NotFoundPost` Parent or `BlockedPost` Parent.
  * @returns The created `FeedViewPost` object.
@@ -686,4 +687,27 @@ export function CreateLoginSessionResponse(handle:string="test-session.bsky.soci
         active: true
     }
     return response;
+}
+
+/**
+ * Method used to mock the a response for calling the `searchActors` Bluesky API method.
+ * @param numActors The number of Actor results to return.
+ * @returns Object representing the Bluesky API response for a `searchActors` call.
+ */
+export function CreateActorSearchResults(numActors:number=3):searchActorsOutputSchema{
+    let results:ProfileView[] = [];
+    let postTime = new Date().toISOString();
+    for (let i = 0; i < numActors; i++) {
+        let j = Math.floor(Math.random()*7);
+        results.push({
+            did:`did:plc:abcdefgmockactor${i}`,
+            displayName:`Mocked Account ${i}`,
+            handle:`user.account${i}.test`,
+            avatar:`http://localhost:1420/src/assets/test-media/posts/image0${j+1}.png`,
+            description:`I am a mocked account for testing purposes. My number is ${i}. ${j}!`,
+            createdAt:postTime,
+            indexedAt:postTime
+        })
+    }
+    return {actors:results};
 }
