@@ -44,7 +44,8 @@ export const postDetails = reactive({
     currentPostData: emptyPostView,
     /**
      * Holds reference to the currently displayed Post thread context. Updated with values
-     * held in the thread navigation history array - `threadNavHistory`.
+     * held in the thread navigation history array - `threadNavHistory`. Used by `PostThreadView`
+     * in `PostFocusModal`.
      */
     currentThreadView : emptyPostThread,
     /**

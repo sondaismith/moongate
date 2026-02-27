@@ -554,5 +554,15 @@ export const AppState = reactive({
      * after loading has been prevented because the app started on a route other than the main view (`'/'`).
      */
     hasFeedDataBeenLoadedAfterInitiallization:false,
+    /**
+     * Holds a `NavigationInfo` object that can be used to determine the last navigation action made using the
+     * router - e.g. did the User navigate backwards or forwards.
+     */
+    routeNavigationInfo:null,
+    /**
+     * Indicates if the event listener that tracks route navigation has been added. Should
+     * be added by `PostFocusModal` only once.
+     */
+    hasRouteNavigationListenerBeenAdded:false
 })
 </script>
