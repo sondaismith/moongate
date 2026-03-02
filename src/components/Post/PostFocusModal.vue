@@ -558,12 +558,22 @@ export default defineComponent({
          * "created()" section.
          */
         toggleScrollToTop(e:Event){},
-        manageReplyContainerState(to:RouteLocationNormalizedLoadedGeneric,from:RouteLocationNormalizedLoadedGeneric){
+        /**
+         * Method used to save the "reply container" scroll position as well as update
+         * the "reply thread branch history" when navigating between "reply threads".
+         * Should only be called in `beforeRouteUpdate()` and `beforeRouteEnter()`
+         * Navigation Guards.
+         * @param to "to" variable provided by Navigation Guard used to call this method.
+         * @param from "from" variable provided by Navigation Guard used to call this method.
+         * @param fromScrollPos Current scroll position of the `PostFocusModal` "reply container".
+         */
+        manageReplyContainerState(to:RouteLocationNormalizedLoadedGeneric,from:RouteLocationNormalizedLoadedGeneric, fromScrollPos:number){
             let replyContainer = document.querySelector('[data-testid=postThreadView]');
             // let scrollPos = replyContainer != null ? replyContainer.scrollTop : 'error finding postThreadView element';
             // console.log(`Scroll position of previous reply container div was: ${scrollPos}px.`);
             //save current "reply area" scroll position before navigating to new view
-            this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:from.path, scrollPos:replyContainer != null ? replyContainer.scrollTop : 0};
+            // this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:from.path, scrollPos:replyContainer != null ? replyContainer.scrollTop : 0};
+            this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:from.path, scrollPos:fromScrollPos};
             //figure out if we are navigating forward to a new `threadBranchHistory` entry or back to an old one
             if(AppState.routeNavigationInfo && AppState.routeNavigationInfo.direction === 'back'){
                 if(this.threadNavIndex-1 >= 0) this.threadNavIndex--;
@@ -797,40 +807,18 @@ export default defineComponent({
             })
         }
         if(from.name?.toString().includes('postfocusmodal')){
+            let replyContainer = document.querySelector('[data-testid=postThreadView]');
+            let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
             next(vm => {
-                vm.manageReplyContainerState(to,from);
+                vm.manageReplyContainerState(to,from,fromScrollPos);
             })
         }
         else next();
     },
     beforeRouteUpdate(to,from){
-        // let replyContainer = document.querySelector('[data-testid=postThreadView]');
-        // let scrollPos = replyContainer != null ? replyContainer.scrollTop : 'error finding postThreadView element';
-        // console.log(`Scroll position of previous reply container div was: ${scrollPos}px.`);
-        // //save current "reply area" scroll position before navigating to new view
-        // this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:from.path, scrollPos:replyContainer != null ? replyContainer.scrollTop : 0};
-        // //figure out if we are navigating forward to a new `threadBranchHistory` entry or back to an old one
-        // if(AppState.routeNavigationInfo && AppState.routeNavigationInfo.direction === 'back'){
-        //     // this.threadNaviagtedBack = false;
-        //     if(this.threadNavIndex-1 >= 0) this.threadNavIndex--;
-        //     console.log('back button pressed');
-        // }
-        // else if(AppState.routeNavigationInfo && AppState.routeNavigationInfo.direction === 'forward'){
-        //     if(this.threadNavIndex+1 < this.threadBranchHistory.length) this.threadNavIndex++;
-        //     console.log('forward button pressed');
-        // }
-        // else{
-        //     if(this.threadNavIndex == this.threadBranchHistory.length-1){//at end of array, can add new records as normal
-        //         this.threadBranchHistory.push({cursor:10,route:to.path,scrollPos:0});
-        //     }
-        //     else{
-        //         this.threadBranchHistory = this.threadBranchHistory.slice(0,this.threadNavIndex+1);//drop records after current index, then add new record
-        //         this.threadBranchHistory.push({cursor:10,route:to.path,scrollPos:0});
-        //     }
-        //     this.threadNavIndex++;
-        // }
-        // AppState.routeNavigationInfo = null;
-        this.manageReplyContainerState(to,from);
+        let replyContainer = document.querySelector('[data-testid=postThreadView]');
+        let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
+        this.manageReplyContainerState(to,from,fromScrollPos);
     },
     async created(){
         /**Defines actions for the `toggleScrollToTop` function */
