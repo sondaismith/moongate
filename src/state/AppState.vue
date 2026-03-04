@@ -556,7 +556,8 @@ export const AppState = reactive({
     hasFeedDataBeenLoadedAfterInitiallization:false,
     /**
      * Holds a `NavigationInfo` object that can be used to determine the last navigation action made using the
-     * router - e.g. did the User navigate backwards or forwards.
+     * router - e.g. did the User navigate backwards or forwards. IMPORTANT: Should always be set to `null` after
+     * processes have finished using value.
      */
     routeNavigationInfo:null,
     /**

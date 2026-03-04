@@ -170,7 +170,7 @@
             {{ void "Replies" }}
             <ReplyBreadcrumb class="px-4" :current-breadcrumb="currentBreadcrumb"/>
             <div v-if="threadNavIndex>0" class="flex px-4 text-primary items-center"
-            @click="decreaseThreadNavIndex">
+            @click="onReplyThreadBackButton">
                 <div class="bg-btn px-1 rounded hover:bg-btnHover cursor-pointer">Back</div>
                 <!-- <div class="flex text-xs flex-wrap">
                     <div v-for="navItem in postDetails.threadNavHistory">{{ navItem.post.author.displayName }} ></div>
@@ -424,6 +424,10 @@ export default defineComponent({
                 }, 300);//timeout used to refresh `RichPostTextBsky` component with updated content
             }
         },
+        /**Method used to programmatically navigate back through web history. */
+        onReplyThreadBackButton(){
+            router.back();
+        },
         /**
          * Method that changes the thread "context" - updates the main post displayed in
          * the `PostFocusModal` component.
@@ -577,6 +581,9 @@ export default defineComponent({
             //figure out if we are navigating forward to a new `threadBranchHistory` entry or back to an old one
             if(AppState.routeNavigationInfo && AppState.routeNavigationInfo.direction === 'back'){
                 if(this.threadNavIndex-1 >= 0) this.threadNavIndex--;
+                else{//if User navigates back to PostFocusModal using browser history - mainly to keep route value synced
+                    this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:to.path, scrollPos:fromScrollPos};
+                }
                 console.log('back button pressed');
             }
             else if(AppState.routeNavigationInfo && AppState.routeNavigationInfo.direction === 'forward'){
@@ -806,14 +813,17 @@ export default defineComponent({
                 document.title = vm.getFocusPostTitle;
             })
         }
-        if(from.name?.toString().includes('postfocusmodal')){
+        if((from.name == 'postfocusmodal' && to.name == 'postfocusmodal with mediaindex') || (from.name == 'postfocusmodal with mediaindex' && to.name == 'postfocusmodal')){
             let replyContainer = document.querySelector('[data-testid=postThreadView]');
             let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
             next(vm => {
                 vm.manageReplyContainerState(to,from,fromScrollPos);
             })
         }
-        else next();
+        else{
+            AppState.routeNavigationInfo = null;
+            next();
+        }
     },
     beforeRouteUpdate(to,from){
         let replyContainer = document.querySelector('[data-testid=postThreadView]');
@@ -833,7 +843,7 @@ export default defineComponent({
         this.lastPostDid = this.postDid;
         if(window.history.state.back != null && !(window.history.state.back as String).includes('/post')) this.routeEntryPoint = window.history.state.back;
         else if(window.history.state.forward != null && !(window.history.state.forward as String).includes('/post')) this.routeEntryPoint = window.history.state.forward;
-        this.threadBranchHistory[0] = {cursor:10,route:router.currentRoute.value.path,scrollPos:0};//Set up "reply branch history" for Post thread
+        this.threadBranchHistory = [{cursor:10,route:router.currentRoute.value.path,scrollPos:0}];//Set up "reply branch history" for Post thread
         console.log(this.handle);
         console.log(this.postDid);
         console.log('PostFocusModal created() running');
