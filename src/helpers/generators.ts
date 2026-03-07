@@ -14,6 +14,23 @@ export async function GenerateCID(encodeWord:string){
     return cid;
 }
 
+/**
+ * Method use to generate a value that can be used as a TID (Timestamp Identifier).
+ * Does not meet the specifications defined here (https://atproto.com/specs/tid),
+ * but it should work fine in Tests.
+ * @returns Simulated TID value.
+ */
+export function GenerateFakeTID(){
+    let tid = "";
+    var lexicographicBase32 = "234567abcdefghijklmnopqrstuvwxyz"
+    const charsLen = lexicographicBase32.length;
+    for (let i = 0; i < 14; i++) {
+        const idx = Math.floor(Math.random()*charsLen);
+        tid += lexicographicBase32.charAt(idx);
+    }
+    return tid;
+}
+
 //Code from Mulan at https://stackoverflow.com/a/27747377
 function dec2hex (dec: number) {
     return dec.toString(16).padStart(2, "0")

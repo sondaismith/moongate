@@ -5,7 +5,7 @@ import { View } from "@atproto/api/dist/client/types/app/bsky/embed/external";
 import { $Typed } from "@atproto/api/dist/client/util";
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
-import { GenerateCID } from "../helpers/generators";
+import { GenerateCID, GenerateFakeTID } from "../helpers/generators";
 import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/client";
 import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
@@ -92,6 +92,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
     await GenerateCID(`author_${handle}_${1}`).then(res => {
         cid = res.toString();
     })
+    let tid = GenerateFakeTID();
     let post:FeedViewPost = {
         post:{
             author:{
@@ -109,7 +110,8 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
                 ],
                 text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
             },
-            uri:'at://did:plc:nowhere',
+            // uri:'at://did:plc:nowhere',
+            uri:`at://${handle}/app.bsky.feed.post/${tid}`,
             embed:includeEmbedLink ? CreateEmbed() : undefined
         },
     }
