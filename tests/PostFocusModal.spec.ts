@@ -1,18 +1,25 @@
 import test, { expect } from "@playwright/test";
-import { CreateActorSearchResults, CreateFeedViewPost, CreateThreadViewPost, CreateUserProfile } from "../src/fake-data/DataFactory";
+import { CreateActorSearchResults, CreateFeedViewPost, CreateThreadViewPost, CreateThreadViewPostWithUnspeccedCID, CreateUserProfile } from "../src/fake-data/DataFactory";
 import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { $Typed, AppBskyFeedGetPostThread } from "@atproto/api";
 import { GenerateFakeTID, GenerateTID } from "../src/helpers/generators";
 
 let handle1:string = 'tester.da.playwright';
 let handle2:string = 'mock.ofthe.day';
+let handle3:string = 'reply.on.parent';
 let displayName1:string = 'I AM A TESTER';
 let displayName2:string = `tester don't play that`;
+let displayName3:string = `REPLIER ONE`;
 let actorSearchResults = CreateActorSearchResults();
 let profile1 = await CreateUserProfile(handle1,displayName2);
 let post1:FeedViewPost;
 let post2:FeedViewPost;
 let threadViewPost1:AppBskyFeedGetPostThread.OutputSchema;
+let threadViewPost2:$Typed<ThreadViewPost>;
+let threadViewPost3:$Typed<ThreadViewPost>;
+let threadViewPost4:$Typed<ThreadViewPost>;
+let threadViewPost5:$Typed<ThreadViewPost>;
+let threadViewPost6:$Typed<ThreadViewPost>;
 let postText1 = "Lorem ipsum dipsum, dimsum, mmm I'm hungry";
 let postText2 = "This is the 2nd time I have posted. Yipee!";
 let currentDateTime = new Date();
@@ -22,8 +29,13 @@ await CreateFeedViewPost(handle1,postText1,undefined,displayName2,currentDateTim
 await CreateFeedViewPost(handle2,postText2,undefined,displayName1,currentDateTime,undefined,"None").then(res => {
     post2 = res;
 });
+threadViewPost2 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 1 on the parent post...',{activate:true,type:'img'},false,displayName3);
+threadViewPost3 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 2 on the parent post...',{activate:true,type:'img'},false,displayName3);
+threadViewPost4 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 3 on the parent post...',{activate:true,type:'img'},false,displayName3);
 await CreateThreadViewPost(handle1,postText1,{activate:true,type:'img'},false,{activate:true,images:true,type:'ext_gif'},displayName1).then(res =>{
-    threadViewPost1 = {thread:res as $Typed<ThreadViewPost>}
+    let threadParent = res;
+    threadParent.replies = [threadViewPost2,threadViewPost3,threadViewPost4];
+    threadViewPost1 = {thread:threadParent as $Typed<ThreadViewPost>}
 })
 
 test('Ensure scroll position for reply container is remembered when navigating through reply tree', async({browser},testInfo) => {
@@ -109,4 +121,7 @@ test('Ensure scroll position for reply container is remembered when navigating t
         body: postFocusModalInitial,
         contentType: 'image/png',
     });
+    //Click on first reply timestamp to view
+    await instance1.getByTestId('post-focus-modal').getByTestId('focusFeedPost-timestamp-button').nth(0).click();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
 })

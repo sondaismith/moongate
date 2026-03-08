@@ -182,7 +182,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
  * @param postText The text content of the Post.
  * @param includeEmbedLink Should this post contain an external link embed?
  * @param includeImage Should this post have an image attached?
- * @param includeReply Should this image have a reply attached?
+ * @param includeReply Should this post have a reply attached?
  * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
  * @param postTime The time this Post was created.
  * @returns The created `ThreadViewPost` object.
@@ -194,6 +194,7 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
     await GenerateCID(`author_${handle}_${1}`).then(res => {
         cid = res.toString();
     })
+    let tid = GenerateFakeTID();
     let profile:ProfileViewBasic={
         did:`did:plc:fake_${1}`,
         handle:handle,
@@ -213,7 +214,8 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
                 ],
                 text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
             },
-            uri:'at://did:plc:nowherezonefake/app.bsky.feed.post/eenymeannuim0',
+            // uri:'at://did:plc:nowherezonefake/app.bsky.feed.post/eenymeannuim0',
+            uri:`at://${handle}/app.bsky.feed.post/${tid}`,
             embed:includeEmbedLink ? CreateEmbed() : undefined
         },
     }
@@ -247,6 +249,77 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
         post.replies = replies;
     }
     return post;
+}
+
+/**
+ * Method used to create a dummy `ThreadViewPost` object for testing purposes that does not
+ * generate a unique CID. Currently used to create many `ThreadViewPost` objects that are
+ * used to create a large Post Thread reply tree.
+ * @param handle The handle of the User who made the Post.
+ * @param postText The text content of the Post.
+ * @param includeEmbedLink Should this post contain an external link embed?
+ * @param includeImage Should this post have an image attached?
+ * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
+ * @param postTime The time this Post was created.
+ * @returns The created `ThreadViewPost` object.
+ */
+export function CreateThreadViewPostWithUnspeccedCID(handle:string, postText:string='', includeImage:{activate:boolean,type:'img'|'ext_gif'}={activate:false,type:"img"},
+    includeEmbedLink:boolean=false, displayName:string='', postTime:Date=new Date()):$Typed<ThreadViewPost>{
+    let cid = `bafyreibmiiqbxwrna3p5uwy3j2ymgwozaymgdgnzumz6g5akqp4tamcwie`;
+    let tid = GenerateFakeTID();
+    let profile:ProfileViewBasic={
+        did:`did:plc:fake_${1}`,
+        handle:handle,
+        displayName: displayName.trim() != '' ? displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' ')
+    }
+    let post:ThreadViewPost = {
+        $type:"app.bsky.feed.defs#threadViewPost",
+        post:{
+            author:profile,
+            cid:cid,
+            indexedAt:postTime.toISOString(),
+            record: {
+                $type: "app.bsky.feed.post",
+                createdAt: postTime.toISOString(),
+                langs: [
+                    "en-US"
+                ],
+                text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
+            },
+            uri:`at://${handle}/app.bsky.feed.post/${tid}`,
+            embed:includeEmbedLink ? CreateEmbed() : undefined
+        },
+    }
+    if(includeImage.activate){
+        if(includeImage.type == "img"){
+            let image:$Typed<AppBskyEmbedImages.View> = {
+                $type:"app.bsky.embed.images#view",
+                images:[
+                    {
+                        thumb: "http://localhost:1420/src/assets/test-media/posts/image08.png",
+                        fullsize: "http://localhost:1420/src/assets/test-media/posts/image08.png",
+                        alt: "",
+                        aspectRatio: {
+                            height: 350,
+                            width: 700
+                        }
+                    }
+                ]
+            }
+            post.post.embed = image;
+        }
+        else if(includeImage.type == "ext_gif"){
+            let extGif:$Typed<AppBskyEmbedExternal.View> = CreateEmbedGIF();
+            // (post.post.record as AppBskyFeedPost.Record).embed = extGif;
+            post.post.embed = extGif;
+        }
+    }
+    // if(includeReply.activate){
+    //     let reply = await CreateThreadViewPost('mr.reply.guy', "Just replin'",{activate:true,type:includeReply.type});
+    //     let replies:$Typed<ThreadViewPost>[] = [reply as $Typed<ThreadViewPost>]
+    //     post.replies = replies;
+    // }
+    return (post as $Typed<ThreadViewPost>);
 }
 
 /**
