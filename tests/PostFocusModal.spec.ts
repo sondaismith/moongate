@@ -1,8 +1,7 @@
 import test, { expect } from "@playwright/test";
-import { CreateActorSearchResults, CreateFeedViewPost, CreateThreadViewPost, CreateThreadViewPostWithUnspeccedCID, CreateUserProfile } from "../src/fake-data/DataFactory";
+import { CreateActorSearchResults, CreateFeedViewPost, CreateThreadViewPost, CreateThreadViewPostWithUnspeccedCID, CreateUserProfile, FindThreadViewPostReply } from "../src/fake-data/DataFactory";
 import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { $Typed, AppBskyFeedGetPostThread } from "@atproto/api";
-import { GenerateFakeTID, GenerateTID } from "../src/helpers/generators";
 
 let handle1:string = 'tester.da.playwright';
 let handle2:string = 'mock.ofthe.day';
@@ -23,19 +22,23 @@ let threadViewPost6:$Typed<ThreadViewPost>;
 let postText1 = "Lorem ipsum dipsum, dimsum, mmm I'm hungry";
 let postText2 = "This is the 2nd time I have posted. Yipee!";
 let currentDateTime = new Date();
-await CreateFeedViewPost(handle1,postText1,undefined,displayName2,currentDateTime,undefined,"None").then(res => {
-    post1 = res;
-});
-await CreateFeedViewPost(handle2,postText2,undefined,displayName1,currentDateTime,undefined,"None").then(res => {
-    post2 = res;
-});
-threadViewPost2 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 1 on the parent post...',{activate:true,type:'img'},false,displayName3);
-threadViewPost3 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 2 on the parent post...',{activate:true,type:'img'},false,displayName3);
-threadViewPost4 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 3 on the parent post...',{activate:true,type:'img'},false,displayName3);
-await CreateThreadViewPost(handle1,postText1,{activate:true,type:'img'},false,{activate:true,images:true,type:'ext_gif'},displayName1).then(res =>{
-    let threadParent = res;
-    threadParent.replies = [threadViewPost2,threadViewPost3,threadViewPost4];
-    threadViewPost1 = {thread:threadParent as $Typed<ThreadViewPost>}
+
+test.beforeAll(async ({browser}) => {
+    await CreateFeedViewPost(handle1,postText1,undefined,displayName2,currentDateTime,undefined,"None").then(res => {
+        post1 = res;
+    });
+    await CreateFeedViewPost(handle2,postText2,undefined,displayName1,currentDateTime,undefined,"None").then(res => {
+        post2 = res;
+    });
+    threadViewPost2 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 1 on the parent post...',{activate:true,type:'img'},false,displayName3);
+    threadViewPost3 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 2 on the parent post...',{activate:true,type:'img'},false,displayName3);
+    threadViewPost4 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 3 on the parent post...',{activate:true,type:'img'},false,displayName3);
+    await CreateThreadViewPost(handle1,postText1,{activate:true,type:'img'},false,{activate:true,images:true,type:'ext_gif'},displayName1).then(res =>{
+        let threadParent = res;
+        threadParent.replies = [threadViewPost2,threadViewPost3,threadViewPost4];
+        threadParent.post.uri = post2.post.uri;
+        threadViewPost1 = {thread:threadParent as $Typed<ThreadViewPost>}
+    })
 })
 
 test('Ensure scroll position for reply container is remembered when navigating through reply tree', async({browser},testInfo) => {
@@ -80,7 +83,11 @@ test('Ensure scroll position for reply container is remembered when navigating t
             let urlSections = postUri.split('/');
             if(urlSections.length>1) postId = urlSections[urlSections.length-1];
         }
-        console.log(`Post id for selected post is: ${postId}`);
+        console.log(`Post id for selected post is: ${postId}`);//DEBUG
+        console.log('Parent ThreadViewPost:');//DEBUG
+        console.log(threadViewPost1.thread);//DEBUG
+        console.log('Looking for matched object...result:');//DEBUG
+        console.log(FindThreadViewPostReply(threadViewPost1.thread,postId));//DEBUG
         route.fulfill({
             status: 200,
             headers: { 'Content-Type': 'application/json' },

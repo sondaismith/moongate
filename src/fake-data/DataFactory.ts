@@ -1,4 +1,4 @@
-import { FeedViewPost, NotFoundPost, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { BlockedPost, FeedViewPost, isThreadViewPost, NotFoundPost, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { IFeedDescription, IFeedListing } from "../interfaces/FeedInterfaces";
 import { FeedEnums } from "../enums/FeedEnums";
 import { View } from "@atproto/api/dist/client/types/app/bsky/embed/external";
@@ -320,6 +320,39 @@ export function CreateThreadViewPostWithUnspeccedCID(handle:string, postText:str
     //     post.replies = replies;
     // }
     return (post as $Typed<ThreadViewPost>);
+}
+
+/**
+ * Recursive method used to find a Post/Reply contained in a `ThreadViewPost` object. Traverses the thread tree
+ * to find a match. Intended to be used to return the correct object when navigating a thread during the testing
+ * of the `PostFocusModal` component.
+ * @param post The `ThreadViewPost` to check for a Post/Reply that matches the URI being navigated to.
+ * @param replyPostTid The TID (Timecode Identifier) associated with the Post/Reply to retrieve.
+ * @returns A `ThreadViewPost` object if a match is found - otherwise `false`.
+ */
+export function FindThreadViewPostReply(post:$Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}, replyPostTid:string):
+$Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}|boolean{
+    // let notFound:NotFoundPost = {$type:"app.bsky.feed.defs#notFoundPost",uri:'at://reply-not-found',notFound:true};
+    // let result:ThreadViewPost|NotFoundPost = notFound;
+    let result;
+
+    if(isThreadViewPost(post)){
+        let postId = '';
+        let urlSections = post.post.uri.split('/');
+        if(urlSections.length>1) postId = urlSections[urlSections.length-1];
+        let replyCount = typeof post.replies != 'undefined' ? post.replies.length : 0;
+
+        if(postId == replyPostTid) return post;//Passed post is match - return post
+        else{
+            for (let i = 0; typeof post.replies != 'undefined' && i < replyCount; i++) {
+                let currentReply = post.replies[i]
+                result = FindThreadViewPostReply(currentReply,replyPostTid)
+                if(result !== false) return result;//one of the replies is a match - return reply
+            }
+            return false;//no match in replies
+        }
+    }
+    else return false;//no match in entire tree
 }
 
 /**
