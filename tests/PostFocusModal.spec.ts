@@ -1,11 +1,12 @@
 import test, { expect } from "@playwright/test";
 import { CreateActorSearchResults, CreateFeedViewPost, CreateThreadViewPost, CreateThreadViewPostWithUnspeccedCID, CreateUserProfile, FindThreadViewPostReply } from "../src/fake-data/DataFactory";
-import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { BlockedPost, FeedViewPost, NotFoundPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { $Typed, AppBskyFeedGetPostThread } from "@atproto/api";
 
 let handle1:string = 'tester.da.playwright';
 let handle2:string = 'mock.ofthe.day';
 let handle3:string = 'reply.on.parent';
+let handle4:string = 'reply.on.reply2';
 let displayName1:string = 'I AM A TESTER';
 let displayName2:string = `tester don't play that`;
 let displayName3:string = `REPLIER ONE`;
@@ -19,6 +20,7 @@ let threadViewPost3:$Typed<ThreadViewPost>;
 let threadViewPost4:$Typed<ThreadViewPost>;
 let threadViewPost5:$Typed<ThreadViewPost>;
 let threadViewPost6:$Typed<ThreadViewPost>;
+let threadViewPost7:$Typed<ThreadViewPost>;
 let postText1 = "Lorem ipsum dipsum, dimsum, mmm I'm hungry";
 let postText2 = "This is the 2nd time I have posted. Yipee!";
 let currentDateTime = new Date();
@@ -33,8 +35,12 @@ test.beforeAll(async ({browser}) => {
     threadViewPost2 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 1 on the parent post...',{activate:true,type:'img'},false,displayName3);
     threadViewPost3 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 2 on the parent post...',{activate:true,type:'img'},false,displayName3);
     threadViewPost4 = CreateThreadViewPostWithUnspeccedCID(handle3,'I am reply 3 on the parent post...',{activate:true,type:'img'},false,displayName3);
+    threadViewPost5 = CreateThreadViewPostWithUnspeccedCID(handle4,'I am reply 1 on reply 2...',{activate:true,type:'img'},false,displayName3);
+    threadViewPost6 = CreateThreadViewPostWithUnspeccedCID(handle4,'I am reply 2 on reply 2...',{activate:true,type:'img'},false,displayName3);
+    threadViewPost7 = CreateThreadViewPostWithUnspeccedCID(handle4,'I am reply 3 on reply 2...',{activate:true,type:'img'},false,displayName3);
     await CreateThreadViewPost(handle1,postText1,{activate:true,type:'img'},false,{activate:true,images:true,type:'ext_gif'},displayName1).then(res =>{
         let threadParent = res;
+        threadViewPost3.replies = [threadViewPost5,threadViewPost6,threadViewPost7]
         threadParent.replies = [threadViewPost2,threadViewPost3,threadViewPost4];
         threadParent.post.uri = post2.post.uri;
         threadViewPost1 = {thread:threadParent as $Typed<ThreadViewPost>}
@@ -78,20 +84,17 @@ test('Ensure scroll position for reply container is remembered when navigating t
         const postUri = postUrl.searchParams.get('uri');
         let postId = '';
         if(postUrl != null && postUri != null){
-            console.log('playwright getPostThread route handling')
-            console.log(postUrl.searchParams.get('uri'));
             let urlSections = postUri.split('/');
             if(urlSections.length>1) postId = urlSections[urlSections.length-1];
         }
-        console.log(`Post id for selected post is: ${postId}`);//DEBUG
-        console.log('Parent ThreadViewPost:');//DEBUG
-        console.log(threadViewPost1.thread);//DEBUG
-        console.log('Looking for matched object...result:');//DEBUG
-        console.log(FindThreadViewPostReply(threadViewPost1.thread,postId));//DEBUG
+        let result:$Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}|boolean = {$type:"app.bsky.feed.defs#notFoundPost",uri:'at://not.found.post/sorry',notFound:true} as $Typed<NotFoundPost>;
+        let searchResult = FindThreadViewPostReply(threadViewPost1.thread,postId);
+        if(searchResult !== false) result = searchResult;
         route.fulfill({
             status: 200,
             headers: { 'Content-Type': 'application/json' },
-            body:JSON.stringify(threadViewPost1)
+            // body:JSON.stringify(threadViewPost1)
+            body:JSON.stringify({thread:result} as AppBskyFeedGetPostThread.OutputSchema)
         });
     });
     //go to app home page
@@ -107,14 +110,6 @@ test('Ensure scroll position for reply container is remembered when navigating t
     await instance1.getByTestId('inlainput-input').fill('username');
     await instance1.getByTestId('inlainput-input').press('Enter');
     await expect(instance1.getByTestId('user-search-bar-result').nth(0)).toBeVisible();
-    // //screenshot
-    // const actorResults = await instance1.screenshot();
-    // await testInfo.attach('image showing mocked actor search results', {
-    //     body: actorResults,
-    //     contentType: 'image/png',
-    // });
-    // //screenshot
-    // const secondTabBefore = await instance2.screenshot();
     await instance1.getByTestId('user-search-bar-result').nth(0).click();
     await expect(instance1.getByText('submit')).toBeVisible();
     await instance1.getByTestId('feedEditModal-create-button').click();
@@ -122,13 +117,27 @@ test('Ensure scroll position for reply container is remembered when navigating t
     //open Post in PostFocusModal
     await instance1.getByTestId('focusFeedPost-timestamp-button').nth(0).click();
     await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
-    // //screenshot
-    const postFocusModalInitial = await instance1.screenshot();
-    await testInfo.attach('image showing postfocusmodal', {
-        body: postFocusModalInitial,
-        contentType: 'image/png',
-    });
-    //Click on first reply timestamp to view
-    await instance1.getByTestId('post-focus-modal').getByTestId('focusFeedPost-timestamp-button').nth(0).click();
+    //Scroll down reply container 100px
+    await instance1.getByTestId('postThreadView').evaluate(e => e.scrollTop += 100);
+    const scrollPosBefore = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(scrollPosBefore).toEqual(100);
+    //Click on 2nd reply timestamp to view (uses dispatch so that playwright does not scroll element into position)
+    await instance1.getByTestId('post-focus-modal').getByTestId('focusFeedPost-timestamp-button').nth(1).dispatchEvent('click');
     await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Focused post should have changed, confirm
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded').getByTestId('postFocusModal-text')).toContainText('reply 2 on the parent');
+    //scroll down to see last reply
+    await instance1.getByTestId('postThreadView').evaluate(e => e.scrollTop += 1000);
+    const replyScrollPosBefore = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    //navigate back to parent post
+    await instance1.goBack();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    const scrollPosAfter = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(scrollPosAfter).toEqual(100);
+    //go forward to reply again
+    await instance1.goForward();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that reply scroll was restored correctly
+    const replyScrollPosAfter = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(replyScrollPosAfter).toEqual(replyScrollPosBefore);
 })

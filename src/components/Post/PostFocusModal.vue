@@ -376,10 +376,11 @@ export default defineComponent({
             .finally(()=>{
                 postDetails.isAwaitingFocusData = false;
                 setTimeout(() => {
-                //Restore scroll position
-                let replyContainer = document.querySelector('[data-testid=postThreadView]');
-                if(replyContainer != null) replyContainer.scrollTop = this.threadBranchHistory[this.threadNavIndex].scrollPos;
-
+                    //Restore scroll position
+                    let replyContainer = document.querySelector('[data-testid=postThreadView]');
+                    if(replyContainer != null){
+                        replyContainer.scrollTop = this.threadBranchHistory[this.threadNavIndex].scrollPos;
+                    }
                 }, 1);
                 document.title = this.getFocusPostTitle;
                 console.log('PostFocusModal - getThreadData "finally" handler has run')
