@@ -114,6 +114,8 @@ test('Ensure scroll position for reply container is remembered when navigating t
     await expect(instance1.getByText('submit')).toBeVisible();
     await instance1.getByTestId('feedEditModal-create-button').click();
     await expect(instance1.getByTestId('feed-edit-modal')).toBeHidden();
+
+    //CHECK THAT THREAD BRANCH HISTORY + SCROLL POSITION RESTORE WORKS AS EXPECTED
     //open Post in PostFocusModal
     await instance1.getByTestId('focusFeedPost-timestamp-button').nth(0).click();
     await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
@@ -140,4 +142,63 @@ test('Ensure scroll position for reply container is remembered when navigating t
     //Check that reply scroll was restored correctly
     const replyScrollPosAfter = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
     expect(replyScrollPosAfter).toEqual(replyScrollPosBefore);
+
+    ///CHECK THREAD BRANCH HISTORY DOES NOT BREAK WHEN USING HISTORY API (back/forwards)
+    //Close `PostFocusModal`
+    await instance1.getByTestId('postFocusModal-close-button').click();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeHidden();
+    //Navigate back to reply in `PostFocusModal`
+    await instance1.goBack();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that the reply container scroll position is 0px
+    let returnScrollPos = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(0);
+    //Scroll down 111px
+    await instance1.getByTestId('postThreadView').evaluate(e => e.scrollTop += 111);
+    returnScrollPos = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(111);
+    //Navigate back again to thread root
+    await instance1.goBack();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that the thread root reply container scroll position is 0px
+    returnScrollPos = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(0);
+    //Scroll down 123px
+    await instance1.getByTestId('postThreadView').evaluate(e => e.scrollTop += 123);
+    returnScrollPos = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(123);
+    //Go forward through browser history to reply
+    await instance1.goForward();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that the reply container scroll position is 0px
+    returnScrollPos = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(0);
+
+    //CHECK THAT THREAD BRANCH HISTORY CAN BE CREATED CORRECTLY AFTER NAVIGATING WITH HISTORY API
+    //Navigate back again to thread root
+    await instance1.goBack();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Scroll down 72px
+    await instance1.getByTestId('postThreadView').evaluate(e => e.scrollTop += 72);
+    returnScrollPos = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(72);
+    //Click on 2nd reply timestamp to view (uses dispatch so that playwright does not scroll element into position)
+    await instance1.getByTestId('post-focus-modal').getByTestId('focusFeedPost-timestamp-button').nth(1).dispatchEvent('click');
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Scroll down 98px
+    await instance1.getByTestId('postThreadView').evaluate(e => e.scrollTop += 98);
+    returnScrollPos = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(98);
+    //Navigate back again to thread root
+    await instance1.goBack();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that the reply container scroll position is 72px
+    returnScrollPos = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(72);
+    //Navigate forward to 2nd reply again
+    await instance1.goForward();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that the reply container scroll position is 98px
+    returnScrollPos = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(98);
 })

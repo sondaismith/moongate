@@ -21,7 +21,7 @@
                 class="flex rounded-lg cursor-pointer bg-btn items-center px-3 text-primary text-sm sm:hidden">View Image</div>
                 <div @click="hideModal" class="flex rounded-lg cursor-pointer bg-btn px-3 items-center text-primary sm:hidden"><i-mingcute:close-fill/></div>
             </div>
-            <SquareButton data-test="postFocusModal-close-button" @click="hideModal"
+            <SquareButton data-testid="postFocusModal-close-button" @click="hideModal"
             class="text-primary bg-btn !rounded-br aspect-square w-10 text-2xl
             ml-auto sm:!rounded-tl-none sm:!rounded-r-none hidden sm:block"
             button-padding="0">
@@ -582,13 +582,16 @@ export default defineComponent({
             //figure out if we are navigating forward to a new `threadBranchHistory` entry or back to an old one
             if(AppState.routeNavigationInfo && AppState.routeNavigationInfo.direction === 'back'){
                 if(this.threadNavIndex-1 >= 0) this.threadNavIndex--;
-                else{//if User navigates back to PostFocusModal using browser history - mainly to keep route value synced
-                    this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:to.path, scrollPos:fromScrollPos};
+                else{//if User navigates back to/through PostFocusModal using browser history and not timestamp buttons - mainly to keep route value synced
+                    this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:to.path, scrollPos:0};
                 }
                 console.log('back button pressed');
             }
             else if(AppState.routeNavigationInfo && AppState.routeNavigationInfo.direction === 'forward'){
                 if(this.threadNavIndex+1 < this.threadBranchHistory.length) this.threadNavIndex++;
+                else{//if User navigates forward through PostFocusModal using browser history and not timestamp buttons - mainly to keep route value synced
+                    this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:to.path, scrollPos:0};
+                }
                 console.log('forward button pressed');
             }
             else{
