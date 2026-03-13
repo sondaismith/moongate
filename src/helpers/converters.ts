@@ -157,10 +157,11 @@ export function CreateBskyWeblink(postUri:string, handle:string=""):string|undef
  * See {@link '../../vite.config.ts'} and {@link '../../.env'} for variables
  * that make the whole thing work..
  * @param mediaURL The URL to convert.
+ * @param fetchAsJpeg Value indicating we are requesting the Bluesky CDN to return the image as a JPEG.
  * @returns The URL to use to download media from Bluesky's servers via
  * the application's proxy.
  */
-export function CreateBskyMediaDownloadURL(mediaURL:string){
+export function CreateBskyMediaDownloadURL(mediaURL:string, fetchAsJpeg:boolean=false){
     //If URL is empty string
     if(mediaURL.trim() == '') throw new Error('Provided URL is empty.');
     //Get environment variables
@@ -171,5 +172,5 @@ export function CreateBskyMediaDownloadURL(mediaURL:string){
     if(!routeRegex.test(mediaURL)) throw new Error('Invalid URL');
     //discard "target" part of URL
     var proxyMediaURL = mediaURL.split(target)[1];
-    return `${proxyMediaURL}`;
+    return `${proxyMediaURL}${fetchAsJpeg?'@jpeg':''}`;
 }

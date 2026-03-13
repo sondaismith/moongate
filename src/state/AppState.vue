@@ -491,7 +491,7 @@ export const AppState = reactive({
         /**The original filename the image had on the server. */
         originalFilename:'',
         /**The file extension of the file to be downloaded. */
-        extension:'.jpg',
+        extension:'.webp',
         /**The handle of the account that posted/shared the image. */
         handle:'',
         /**The text (if any) that was posted along with the image. */
