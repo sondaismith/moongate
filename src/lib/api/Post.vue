@@ -1,5 +1,6 @@
 <script lang="ts">
 import { $Typed, AppBskyEmbedRecordWithMedia, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedPostgate, AppBskyFeedThreadgate, AtUri, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
+import { AppBskyUnspeccedGetPostThreadV2 } from "@atproto/api/src/client/";
 import { GetBrowsingAgent } from "../api.vue";
 import { FeedViewPost, isPostView, isReasonPin, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { AppState, toast } from "../../state/AppState.vue";
@@ -72,6 +73,17 @@ export async function getBlueskyPostThread(postDID: string){
  */
 export async function getPostThread(postURI:string):Promise<AppBskyFeedGetPostThread.Response>{
     var result = await GetBrowsingAgent().getPostThread({uri:postURI});
+    return result;
+}
+
+/**
+ * Method that retrieves a Post ThreadView object from the Bluesky API based on
+ * a Post selected in a Feed view. USes the "unspecced" `getPostThreadV2` API call.
+ * @param postURI The URI of the Post to get ThreadView for.
+ */
+export async function getPostThreadV2(postURI:string):Promise<AppBskyUnspeccedGetPostThreadV2.Response>{
+    // var result = await GetBrowsingAgent().getPostThread({uri:postURI});
+    var result = await GetBrowsingAgent().app.bsky.unspecced.getPostThreadV2({anchor:postURI,sort:"newest"});
     return result;
 }
 

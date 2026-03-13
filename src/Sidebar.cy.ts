@@ -482,7 +482,7 @@ describe('Sidebar Tests', () => {
 
             //---ENSURE POST COUNT IN FEEDCOLUMN HAS UPDATE CORRECTLY AS WELL---
             //Close PostFocusModal
-            cy.get('[data-test="postFocusModal-close-button"]').click();
+            cy.get('[data-testid="postFocusModal-close-button"]').click();
             //Check that reply count increased
             cy.get('[data-test="postInteraction-reply-button"]').eq(1).then($item => {
                 const replyCount = $item.text()

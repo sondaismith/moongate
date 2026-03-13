@@ -1,11 +1,11 @@
-import { FeedViewPost, NotFoundPost, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { BlockedPost, FeedViewPost, isThreadViewPost, NotFoundPost, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs.js";
 import { IFeedDescription, IFeedListing } from "../interfaces/FeedInterfaces";
 import { FeedEnums } from "../enums/FeedEnums";
 import { View } from "@atproto/api/dist/client/types/app/bsky/embed/external";
 import { $Typed } from "@atproto/api/dist/client/util";
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
-import { GenerateCID } from "../helpers/generators";
+import { GenerateCID, GenerateFakeTID } from "../helpers/generators";
 import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/client";
 import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
@@ -92,6 +92,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
     await GenerateCID(`author_${handle}_${1}`).then(res => {
         cid = res.toString();
     })
+    let tid = GenerateFakeTID();
     let post:FeedViewPost = {
         post:{
             author:{
@@ -109,7 +110,8 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
                 ],
                 text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
             },
-            uri:'at://did:plc:nowhere',
+            // uri:'at://did:plc:nowhere',
+            uri:`at://${handle}/app.bsky.feed.post/${tid}`,
             embed:includeEmbedLink ? CreateEmbed() : undefined
         },
     }
@@ -180,7 +182,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
  * @param postText The text content of the Post.
  * @param includeEmbedLink Should this post contain an external link embed?
  * @param includeImage Should this post have an image attached?
- * @param includeReply Should this image have a reply attached?
+ * @param includeReply Should this post have a reply attached?
  * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
  * @param postTime The time this Post was created.
  * @returns The created `ThreadViewPost` object.
@@ -192,6 +194,7 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
     await GenerateCID(`author_${handle}_${1}`).then(res => {
         cid = res.toString();
     })
+    let tid = GenerateFakeTID();
     let profile:ProfileViewBasic={
         did:`did:plc:fake_${1}`,
         handle:handle,
@@ -211,7 +214,8 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
                 ],
                 text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
             },
-            uri:'at://did:plc:nowherezonefake/app.bsky.feed.post/eenymeannuim0',
+            // uri:'at://did:plc:nowherezonefake/app.bsky.feed.post/eenymeannuim0',
+            uri:`at://${handle}/app.bsky.feed.post/${tid}`,
             embed:includeEmbedLink ? CreateEmbed() : undefined
         },
     }
@@ -245,6 +249,110 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
         post.replies = replies;
     }
     return post;
+}
+
+/**
+ * Method used to create a dummy `ThreadViewPost` object for testing purposes that does not
+ * generate a unique CID. Currently used to create many `ThreadViewPost` objects that are
+ * used to create a large Post Thread reply tree.
+ * @param handle The handle of the User who made the Post.
+ * @param postText The text content of the Post.
+ * @param includeEmbedLink Should this post contain an external link embed?
+ * @param includeImage Should this post have an image attached?
+ * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
+ * @param postTime The time this Post was created.
+ * @returns The created `ThreadViewPost` object.
+ */
+export function CreateThreadViewPostWithUnspeccedCID(handle:string, postText:string='', includeImage:{activate:boolean,type:'img'|'ext_gif'}={activate:false,type:"img"},
+    includeEmbedLink:boolean=false, displayName:string='', postTime:Date=new Date()):$Typed<ThreadViewPost>{
+    let cid = `bafyreibmiiqbxwrna3p5uwy3j2ymgwozaymgdgnzumz6g5akqp4tamcwie`;
+    let tid = GenerateFakeTID();
+    let profile:ProfileViewBasic={
+        did:`did:plc:fake_${1}`,
+        handle:handle,
+        displayName: displayName.trim() != '' ? displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' ')
+    }
+    let post:ThreadViewPost = {
+        $type:"app.bsky.feed.defs#threadViewPost",
+        post:{
+            author:profile,
+            cid:cid,
+            indexedAt:postTime.toISOString(),
+            record: {
+                $type: "app.bsky.feed.post",
+                createdAt: postTime.toISOString(),
+                langs: [
+                    "en-US"
+                ],
+                text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
+            },
+            uri:`at://${handle}/app.bsky.feed.post/${tid}`,
+            embed:includeEmbedLink ? CreateEmbed() : undefined
+        },
+    }
+    if(includeImage.activate){
+        if(includeImage.type == "img"){
+            let image:$Typed<AppBskyEmbedImages.View> = {
+                $type:"app.bsky.embed.images#view",
+                images:[
+                    {
+                        thumb: "http://localhost:1420/src/assets/test-media/posts/image08.png",
+                        fullsize: "http://localhost:1420/src/assets/test-media/posts/image08.png",
+                        alt: "",
+                        aspectRatio: {
+                            height: 350,
+                            width: 700
+                        }
+                    }
+                ]
+            }
+            post.post.embed = image;
+        }
+        else if(includeImage.type == "ext_gif"){
+            let extGif:$Typed<AppBskyEmbedExternal.View> = CreateEmbedGIF();
+            // (post.post.record as AppBskyFeedPost.Record).embed = extGif;
+            post.post.embed = extGif;
+        }
+    }
+    // if(includeReply.activate){
+    //     let reply = await CreateThreadViewPost('mr.reply.guy', "Just replin'",{activate:true,type:includeReply.type});
+    //     let replies:$Typed<ThreadViewPost>[] = [reply as $Typed<ThreadViewPost>]
+    //     post.replies = replies;
+    // }
+    return (post as $Typed<ThreadViewPost>);
+}
+
+/**
+ * Recursive method used to find a Post/Reply contained in a `ThreadViewPost` object. Traverses the thread tree
+ * to find a match. Intended to be used to return the correct object when navigating a thread during the testing
+ * of the `PostFocusModal` component.
+ * @param post The `ThreadViewPost` to check for a Post/Reply that matches the URI being navigated to.
+ * @param replyPostTid The TID (Timecode Identifier) associated with the Post/Reply to retrieve.
+ * @returns A `ThreadViewPost` object if a match is found - otherwise `false`.
+ */
+export function FindThreadViewPostReply(post:$Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}, replyPostTid:string):
+$Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}|boolean{
+    // let notFound:NotFoundPost = {$type:"app.bsky.feed.defs#notFoundPost",uri:'at://reply-not-found',notFound:true};
+    // let result:ThreadViewPost|NotFoundPost = notFound;
+    let result;
+
+    if(isThreadViewPost(post)){
+        let postId = '';
+        let urlSections = post.post.uri.split('/');
+        if(urlSections.length>1) postId = urlSections[urlSections.length-1];
+        let replyCount = typeof post.replies != 'undefined' ? post.replies.length : 0;
+
+        if(postId == replyPostTid) return post;//Passed post is match - return post
+        else{
+            for (let i = 0; typeof post.replies != 'undefined' && i < replyCount; i++) {
+                let currentReply = post.replies[i]
+                result = FindThreadViewPostReply(currentReply,replyPostTid)
+                if(result !== false) return result;//one of the replies is a match - return reply
+            }
+            return false;//no match in replies
+        }
+    }
+    else return false;//no match in entire tree
 }
 
 /**

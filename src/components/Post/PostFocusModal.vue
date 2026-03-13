@@ -21,7 +21,7 @@
                 class="flex rounded-lg cursor-pointer bg-btn items-center px-3 text-primary text-sm sm:hidden">View Image</div>
                 <div @click="hideModal" class="flex rounded-lg cursor-pointer bg-btn px-3 items-center text-primary sm:hidden"><i-mingcute:close-fill/></div>
             </div>
-            <SquareButton data-test="postFocusModal-close-button" @click="hideModal"
+            <SquareButton data-testid="postFocusModal-close-button" @click="hideModal"
             class="text-primary bg-btn !rounded-br aspect-square w-10 text-2xl
             ml-auto sm:!rounded-tl-none sm:!rounded-r-none hidden sm:block"
             button-padding="0">
@@ -170,7 +170,7 @@
             {{ void "Replies" }}
             <ReplyBreadcrumb class="px-4" :current-breadcrumb="currentBreadcrumb"/>
             <div v-if="threadNavIndex>0" class="flex px-4 text-primary items-center"
-            @click="decreaseThreadNavIndex">
+            @click="onReplyThreadBackButton">
                 <div class="bg-btn px-1 rounded hover:bg-btnHover cursor-pointer">Back</div>
                 <!-- <div class="flex text-xs flex-wrap">
                     <div v-for="navItem in postDetails.threadNavHistory">{{ navItem.post.author.displayName }} ></div>
@@ -208,6 +208,9 @@ import SquareButton from '../Utilities/SquareButton.vue';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
 import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { debounce } from '../../helpers/debouncer';
+import { PostThreadBranchData } from '../../types/PostTypes';
+import { router } from '../../main';
+import { RouteLocationNormalizedLoadedGeneric } from 'vue-router';
 
 export default defineComponent({
     components:{
@@ -268,11 +271,18 @@ export default defineComponent({
              */
             postThread : emptyPostThread,
             /**
-             * Holds record of how/where the User has navigated down
+             * UNUSED - Holds record of how/where the User has navigated down
              * the Post reply tree. The 1st element will always be a
              * reference to the root Post.
              */
             threadNavHistory: [emptyPostThread] as ThreadViewPost[],
+            /**
+             * Holds record of how/where the User has navigated down
+             * the Post reply tree. Reords the branch "state" as well
+             * (number of replies shown and scroll position). The 1st
+             * element will always be a reference to the root Post.
+             */
+            threadBranchHistory:[] as PostThreadBranchData[],
             /**
              * Determines the currently displayed post from the thread in `PostFocusModal` when
              * used with `postDetails.threadNavHistory[]`. If the value is 0 it will show the
@@ -365,6 +375,13 @@ export default defineComponent({
             })
             .finally(()=>{
                 postDetails.isAwaitingFocusData = false;
+                setTimeout(() => {
+                    //Restore scroll position
+                    let replyContainer = document.querySelector('[data-testid=postThreadView]');
+                    if(replyContainer != null){
+                        replyContainer.scrollTop = this.threadBranchHistory[this.threadNavIndex].scrollPos;
+                    }
+                }, 1);
                 document.title = this.getFocusPostTitle;
                 console.log('PostFocusModal - getThreadData "finally" handler has run')
             });
@@ -407,6 +424,10 @@ export default defineComponent({
                     this.isChangingThreadContext = false;
                 }, 300);//timeout used to refresh `RichPostTextBsky` component with updated content
             }
+        },
+        /**Method used to programmatically navigate back through web history. */
+        onReplyThreadBackButton(){
+            router.back();
         },
         /**
          * Method that changes the thread "context" - updates the main post displayed in
@@ -542,6 +563,49 @@ export default defineComponent({
          * "created()" section.
          */
         toggleScrollToTop(e:Event){},
+        /**
+         * Method used to save the "reply container" scroll position as well as update
+         * the "reply thread branch history" when navigating between "reply threads".
+         * Should only be called in `beforeRouteUpdate()` and `beforeRouteEnter()`
+         * Navigation Guards.
+         * @param to "to" variable provided by Navigation Guard used to call this method.
+         * @param from "from" variable provided by Navigation Guard used to call this method.
+         * @param fromScrollPos Current scroll position of the `PostFocusModal` "reply container".
+         */
+        manageReplyContainerState(to:RouteLocationNormalizedLoadedGeneric,from:RouteLocationNormalizedLoadedGeneric, fromScrollPos:number){
+            let replyContainer = document.querySelector('[data-testid=postThreadView]');
+            // let scrollPos = replyContainer != null ? replyContainer.scrollTop : 'error finding postThreadView element';
+            // console.log(`Scroll position of previous reply container div was: ${scrollPos}px.`);
+            //save current "reply area" scroll position before navigating to new view
+            // this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:from.path, scrollPos:replyContainer != null ? replyContainer.scrollTop : 0};
+            this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:from.path, scrollPos:fromScrollPos};
+            //figure out if we are navigating forward to a new `threadBranchHistory` entry or back to an old one
+            if(AppState.routeNavigationInfo && AppState.routeNavigationInfo.direction === 'back'){
+                if(this.threadNavIndex-1 >= 0) this.threadNavIndex--;
+                else{//if User navigates back to/through PostFocusModal using browser history and not timestamp buttons - mainly to keep route value synced
+                    this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:to.path, scrollPos:0};
+                }
+                console.log('back button pressed');
+            }
+            else if(AppState.routeNavigationInfo && AppState.routeNavigationInfo.direction === 'forward'){
+                if(this.threadNavIndex+1 < this.threadBranchHistory.length) this.threadNavIndex++;
+                else{//if User navigates forward through PostFocusModal using browser history and not timestamp buttons - mainly to keep route value synced
+                    this.threadBranchHistory[this.threadNavIndex] = {...this.threadBranchHistory[this.threadNavIndex], route:to.path, scrollPos:0};
+                }
+                console.log('forward button pressed');
+            }
+            else{
+                if(this.threadNavIndex == this.threadBranchHistory.length-1){//at end of array, can add new records as normal
+                    this.threadBranchHistory.push({cursor:10,route:to.path,scrollPos:0});
+                }
+                else{
+                    this.threadBranchHistory = this.threadBranchHistory.slice(0,this.threadNavIndex+1);//drop records after current index, then add new record
+                    this.threadBranchHistory.push({cursor:10,route:to.path,scrollPos:0});
+                }
+                this.threadNavIndex++;
+            }
+            AppState.routeNavigationInfo = null;
+        }
     },
     computed:{
         /**Checks to see if the current post contains any image media. */
@@ -753,7 +817,22 @@ export default defineComponent({
                 document.title = vm.getFocusPostTitle;
             })
         }
-        else next();
+        if((from.name == 'postfocusmodal' && to.name == 'postfocusmodal with mediaindex') || (from.name == 'postfocusmodal with mediaindex' && to.name == 'postfocusmodal')){
+            let replyContainer = document.querySelector('[data-testid=postThreadView]');
+            let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
+            next(vm => {
+                vm.manageReplyContainerState(to,from,fromScrollPos);
+            })
+        }
+        else{
+            AppState.routeNavigationInfo = null;
+            next();
+        }
+    },
+    beforeRouteUpdate(to,from){
+        let replyContainer = document.querySelector('[data-testid=postThreadView]');
+        let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
+        this.manageReplyContainerState(to,from,fromScrollPos);
     },
     async created(){
         /**Defines actions for the `toggleScrollToTop` function */
@@ -768,9 +847,17 @@ export default defineComponent({
         this.lastPostDid = this.postDid;
         if(window.history.state.back != null && !(window.history.state.back as String).includes('/post')) this.routeEntryPoint = window.history.state.back;
         else if(window.history.state.forward != null && !(window.history.state.forward as String).includes('/post')) this.routeEntryPoint = window.history.state.forward;
+        this.threadBranchHistory = [{cursor:10,route:router.currentRoute.value.path,scrollPos:0}];//Set up "reply branch history" for Post thread
         console.log(this.handle);
         console.log(this.postDid);
         console.log('PostFocusModal created() running');
+        //track when user navigates through browser history
+        if(!AppState.hasRouteNavigationListenerBeenAdded){
+            AppState.hasRouteNavigationListenerBeenAdded = true;
+            router.options.history.listen((to, from, info) => {
+                AppState.routeNavigationInfo = info;
+            });
+        }
         await this.getThreadData();
     },
     mounted(){
