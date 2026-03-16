@@ -22,6 +22,7 @@ declare module 'vue' {
     CustomFeedButtonPlaceholder: typeof import('./src/components/Placeholder/CustomFeedButtonPlaceholder.vue')['default']
     DbDebugModal: typeof import('./src/components/Debug/DbDebugModal.vue')['default']
     EmbedExternal: typeof import('./src/components/Utilities/EmbedExternal.vue')['default']
+    ExternalLink: typeof import('./src/components/Utilities/ExternalLink.vue')['default']
     FeedButton: typeof import('./src/components/Navbar/FeedButton.vue')['default']
     FeedColumn: typeof import('./src/components/Feed/FeedColumn.vue')['default']
     FeedEditModal: typeof import('./src/components/Feed/FeedEditModal.vue')['default']
