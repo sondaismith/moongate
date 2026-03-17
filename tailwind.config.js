@@ -53,6 +53,8 @@ export default {
         feedtypeBtnFocusHighlight: "oklch(from var(--color-feedtype-btn-focus-highlight) l c h / <alpha-value>)",
         savemodalBG: "oklch(from var(--color-savemodal-bg) l c h / <alpha-value>)",
         savemodalFileExtBG: "oklch(from var(--color-savemodal-ext-bg) l c h / <alpha-value>)",
+        savemodalBtn: "oklch(from var(--color-savemodal-btn) l c h / <alpha-value>)",
+        savemodalBtnHover: "oklch(from var(--color-savemodal-btn-hover) l c h / <alpha-value>)",
         embedHoverBG: "oklch(from var(--color-embed-hover-bg) l c h / <alpha-value>)",
         embedHoverBorder: "oklch(from var(--color-embed-hover-border) l c h / <alpha-value>)",
         scrollbarTrack: "oklch(from var(--color-scrollbar-track) l c h / <alpha-value>)",

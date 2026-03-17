@@ -2,7 +2,7 @@
     <div class="absolute flex z-50 w-full h-full">
         <div data-testid="saveMediaModal-close" @click="closeModal" class="absolute w-full h-full bg-slate-800/60 backdrop-blur-sm"></div>
         <div data-testid="saveMediaModal" class="relative flex flex-col max-w-[48rem] w-4/5 m-auto z-50
-        rounded bg-savemodalBG border border-slate-800 overflow-hidden">
+        rounded bg-savemodalBG border border-slate-800 overflow-hidden drop-shadow-lg">
             <div class="px-2 py-1 bg-banner border-b border-slate-500">Save as</div>
             <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
                 <img v-if="!AppState.saveMedia.uri" @contextmenu.prevent :src="AppState.saveMedia.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
@@ -37,24 +37,26 @@
                     :style="{'width' : downloadProgress+'%', 'transition':'width 0.4s ease'}"></div>
                 </div>
                 <SquareButton v-if="isTauri()" @click="saveImage()" title="Save Image [.webp]"
-                :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading">
+                :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading"
+                class="bg-savemodalBtn hover:bg-savemodalBtnHover">
                     Save Image
                 </SquareButton>
                 <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
                 <SquareButton v-else :is-disabled="isDownloading"
                 @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full)"
-                title="Save Image [.webp]">
+                title="Save Image [.webp]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
                     <div>Save Image</div>
                     <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
                 </SquareButton>
                 <SquareButton v-if="isTauri()" @click="saveImage(true)" title="Save Image [.jpg]"
-                :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading">
+                :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading"
+                class="bg-savemodalBtn hover:bg-savemodalBtnHover">
                     Save Image as JPG w/ Metadata
                 </SquareButton>
                 <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
                 <SquareButton v-else :is-disabled="isDownloading"
                 @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full, true)"
-                title="Save Image [.jpg]">
+                title="Save Image [.jpg]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
                     <div>Save Image as JPG w/ Metadata</div>
                     <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
                 </SquareButton>

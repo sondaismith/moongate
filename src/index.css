@@ -27,7 +27,7 @@
         --color-post-focus-bg: oklch(12.9% 0.042 264.695);
         --color-border: oklch(37.2% 0.044 257.287);
         --color-border-lighter: oklch(44.6% 0.043 257.281);
-        --color-banner: oklch(20.8% 0.042 265.755);
+        --color-banner: theme(colors.slate.900);
         --color-user-focus-bg: oklch(27.9% 0.041 260.031);
         --color-disabled: oklch(55.1% 0.027 264.364);
         --color-disabled-bg: oklch(37.2% 0.044 257.287);
@@ -51,8 +51,10 @@
         --color-login-btn: oklch(48.8% 0.243 264.376);
         --color-login-btn-hover: oklch(62.3% 0.214 259.815);
         --color-login-host-hover:theme(colors.slate.950);
-        --color-savemodal-bg: oklch(37.2% 0.044 257.287);
+        --color-savemodal-bg: theme(colors.slate.800);
         --color-savemodal-ext-bg: oklch(27.9% 0.041 260.031);
+        --color-savemodal-btn: #3b6797;
+        --color-savemodal-btn-hover: #6d8fb5;
         --color-embed-hover-bg:oklch(27.9% 0.041 260.031);
         --color-embed-hover-border:oklch(55.4% 0.046 257.417);
         --color-scrollbar-track:theme(colors.slate.700);
@@ -122,7 +124,7 @@
     --color-post-focus-bg: oklch(100% 0 0);
     --color-border: oklch(37.2% 0.044 257.287);
     --color-border-lighter: oklch(55.4% 0.046 257.417);
-    --color-banner: oklch(70.4% 0.04 256.788);
+    --color-banner: theme(colors.slate.400);
     --color-user-focus-bg: oklch(100% 0 0);
     --color-disabled: oklch(70.7% 0.022 261.325);
     --color-disabled-bg: oklch(87.2% 0.01 258.338);
@@ -146,8 +148,10 @@
     --color-login-btn: oklch(62.3% 0.214 259.815);
     --color-login-btn-hover: oklch(70.7% 0.165 254.624);
     --color-login-host-hover:theme(colors.blue.100);
-    --color-savemodal-bg: oklch(86.9% 0.022 252.894);
+    --color-savemodal-bg: theme(colors.slate.200);
     --color-savemodal-ext-bg: oklch(70.4% 0.04 256.788);
+    --color-savemodal-btn: #74a5db;
+    --color-savemodal-btn-hover: #9bbfe8;
     --color-embed-hover-bg:oklch(92.9% 0.013 255.508);
     --color-embed-hover-border:oklch(70.7% 0.165 254.624);
     --color-scrollbar-track:theme(colors.slate.300);

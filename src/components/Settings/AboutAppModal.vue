@@ -39,6 +39,14 @@
             <div class="flex flex-col overflow-y-auto pt-2">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">March 17th 2026</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Fixed issue where image containers could not correctly idenntify the file extension of the new WEBP images the Bluesky CDN delivers by default.</li>
+                        <li>Added ability to choose whether to save images as a WEBP or JPEG.</li>
+                        <li>See details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/288">#288</ExternalLink>)</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">March 13th 2026</div>
                     <ul class="list-disc list-inside h-full py-1 text-sm">
                         <li>Updated app so that the scroll position is saved and restored when navigating a Post Thread with the "Post Focus Modal" (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/286">#286</ExternalLink>).
