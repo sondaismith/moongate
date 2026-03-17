@@ -12,10 +12,11 @@
                         <div class="text-sm sm:text-base font-light">Version: {{ versionDetails.version }}-{{ versionDetails.commitHash }}<span class="align-super text-xs">{{isTauri() ? 'Tauri' : 'Web'}}</span></div>
                         <div class="italic text-[10px] leading-[10px]">{{ versionDetails.buildDate }}</div>
                     </div>
-                    <a :href="repoURL" target="_blank" title="View GitHub Repo" class="ml-auto mr-4 p-2 shadow-none text-xl
-                    transition-colors border-none rounded hover:bg-aboutPageBannerBtnHover focus-visible:bg-aboutPageBannerBtnHover">
+                    <ExternalLink :link-url="repoURL" title="View GitHub Repo" class="text-primary hover:text-primary ml-auto mr-4 p-2
+                    shadow-none text-xl transition-colors border-none rounded hover:bg-aboutPageBannerBtnHover
+                    focus-visible:bg-aboutPageBannerBtnHover">
                         <i-simple-icons:github/>
-                    </a>
+                    </ExternalLink>
                 </div>
             </div>
             <div class="flex flex-col h-full px-4 *:py-1  divide-outline divide-y">
@@ -25,18 +26,33 @@
             </div>
             <div class="flex flex-col md:flex-row md:items-center gap-1 px-4 pb-2 text-sm select-none">
                 <div class="font-bold">Like the app? Support development by buying me a coffee:</div>
-                <a :href="donateURL" target="_blank" class="group flex self-start rounded p-1
+                <ExternalLink :link-url="donateURL" class="group flex self-start rounded p-1 text-primary
                 transition-colors bg-donationButtonBG cursor-pointer outline-none focus-visible:outline-feedtypeBtnFocusHighlight">
                     <div class="flex gap-1 items-center">
                         <i-simple-icons:kofi class="transition-colors group-hover:text-donationButtonIconHover
                         group-focus-visible:text-donationButtonIconHover"/>
                         <div class="text-primary">Support</div>
                     </div>
-                </a>
+                </ExternalLink>
             </div>
             <div class="h-0.5 bg-outline"></div>
             <div class="flex flex-col overflow-y-auto pt-2">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">March 17th 2026</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Fixed issue where image containers could not correctly idenntify the file extension of the new WEBP images the Bluesky CDN delivers by default.</li>
+                        <li>Added ability to choose whether to save images as a WEBP or JPEG.</li>
+                        <li>See details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/288">#288</ExternalLink>)</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">March 13th 2026</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Updated app so that the scroll position is saved and restored when navigating a Post Thread with the "Post Focus Modal" (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/286">#286</ExternalLink>).
+                        </li>
+                    </ul>
+                </div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">February 10th 2026</div>
                     <ul class="list-disc list-inside h-full py-1 text-sm">
@@ -155,13 +171,7 @@
                 </div>
             </div>
             <div class="flex gap-1 px-4 py-2 text-xs">
-                <div>Any issues? Report</div>
-                <a v-if="!isTauri()" target="_blank"
-                :href="issuesURL"
-                class="text-blue-500 hover:text-blue-300 cursor-pointer">here!</a>
-                <a v-else
-                @click="(e) => showOptionsMenu(e,issuesURL)"
-                class="text-blue-500 hover:text-blue-300 cursor-pointer">here!</a>
+                <div>Any issues? Report <ExternalLink :link-url="issuesURL">here!</ExternalLink></div>
             </div>
         </div>
     </div>
@@ -179,14 +189,7 @@ import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import AppLogo from '../SVG/AppLogo.vue';
 import { GetVersion, IVersionDetails } from '../../lib/api/VersionService';
-
-/**
- * Method used to open link in the system's default browser.
- * @param url The URL to open in the default browser.
- */
-async function OpenLink(url:string){
-    await openUrl(url);
-}
+import ExternalLink from '../Utilities/ExternalLink.vue';
 
 export default defineComponent({
     props:{
@@ -196,7 +199,8 @@ export default defineComponent({
         }
     },
     components:{
-        AppLogo
+        AppLogo,
+        ExternalLink,
     },
     data(){
         return{
@@ -220,18 +224,6 @@ export default defineComponent({
         },
         closeModal(){
             this.$router.push('/');
-        },
-        /**
-         * Shows Options Menu allowing user to perform different actions
-         * relating to the selected link.
-         */
-        showOptionsMenu(e:MouseEvent, linkURL:string){
-            e.preventDefault();
-            OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)},Type:ItemType.Option},
-                {Icon:MingcuteCopyLine,Label:'Copy link to clipboard',Action:function(){CopyTextToClipboard(linkURL,'link')},Type:ItemType.Option},
-            ] as IOptionMenuItem[]
-            OptionsMenuState.showOptionMenu(e);
         },
     },
     created() {

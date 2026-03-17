@@ -130,7 +130,7 @@ async function saveImageWithAuthor(image:ViewImage|View, index:number, author:st
         if(author) safeHandle =  author.replace (/\./g,'_');
         AppState.fileSaveDetails.full = `${fileName} by ${safeHandle}`;
         AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
-        AppState.fileSaveDetails.extension = '.jpg'; //Need to create method that parses image URL to determine extension (the @jpeg part)
+        AppState.fileSaveDetails.extension = '.webp'; //Need to create method that parses image URL to determine extension (the @jpeg part)
         AppState.fileSaveDetails.handle = author ? author : '';
         AppState.fileSaveDetails.postText = postText ? postText : '';
 
@@ -231,7 +231,8 @@ export default defineComponent({
         getImageExtension(url:string):string{
             if(url.endsWith('jpeg')) return 'jpg'
             else if(url.endsWith('png')) return 'png'
-            return 'N/A';
+            // return 'N/A';
+            return 'webp';
         },
         /**
          * Shows Options Menu allowing user to perform different actions

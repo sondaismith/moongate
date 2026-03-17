@@ -2,7 +2,7 @@
     <div class="absolute flex z-50 w-full h-full">
         <div data-testid="saveMediaModal-close" @click="closeModal" class="absolute w-full h-full bg-slate-800/60 backdrop-blur-sm"></div>
         <div data-testid="saveMediaModal" class="relative flex flex-col max-w-[48rem] w-4/5 m-auto z-50
-        rounded bg-savemodalBG border border-slate-800 overflow-hidden">
+        rounded bg-savemodalBG border border-slate-800 overflow-hidden drop-shadow-lg">
             <div class="px-2 py-1 bg-banner border-b border-slate-500">Save as</div>
             <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
                 <img v-if="!AppState.saveMedia.uri" @contextmenu.prevent :src="AppState.saveMedia.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
@@ -30,20 +30,34 @@
                     <InLaInput :is-disabled="true" text-label="Save Folder" :model-value="AppState.lastMediaSaveDirectory.trim() != '' ? AppState.lastMediaSaveDirectory : 'Please select save folder'"/>
                 </div>
                 <div v-show="!isFileNameValid" class="text-xs text-red-500">Invalid file name</div>
-                <div v-show="isFileNameTaken" class="text-xs text-orange-300">File already exists, will be overwritten</div>
+                <div v-show="isFileNameTaken" class="text-xs text-orange-300">WEBP File already exists, will be overwritten</div>
+                <div v-show="isFileNameTakenJpg" class="text-xs text-orange-300">JPG File already exists, will be overwritten</div>
                 <div v-if="isTauri()" class="rounded h-3 overflow-hidden bg-slate-400 border border-slate-800">
                     <div class="rounded bg-blue-500 h-full w-0"
                     :style="{'width' : downloadProgress+'%', 'transition':'width 0.4s ease'}"></div>
                 </div>
-                <SquareButton v-if="isTauri()" @click="saveImage" title="Save Image"
-                :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading">
+                <SquareButton v-if="isTauri()" @click="saveImage()" title="Save Image [.webp]"
+                :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading"
+                class="bg-savemodalBtn hover:bg-savemodalBtnHover">
                     Save Image
                 </SquareButton>
                 <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
                 <SquareButton v-else :is-disabled="isDownloading"
                 @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full)"
-                title="Download Image">
+                title="Save Image [.webp]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
                     <div>Save Image</div>
+                    <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
+                </SquareButton>
+                <SquareButton v-if="isTauri()" @click="saveImage(true)" title="Save Image [.jpg]"
+                :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading"
+                class="bg-savemodalBtn hover:bg-savemodalBtnHover">
+                    Save Image as JPG w/ Metadata
+                </SquareButton>
+                <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
+                <SquareButton v-else :is-disabled="isDownloading"
+                @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full, true)"
+                title="Save Image [.jpg]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
+                    <div>Save Image as JPG w/ Metadata</div>
                     <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
                 </SquareButton>
             </div>
@@ -116,8 +130,10 @@ export default defineComponent({
             progressSum:0,
             /**Indicates value `progressSum` needs to reach for download to be completed. */
             progressGoal:0,
-            /**State value indicating if a file with the same name already exists in current directory. */
+            /**State value indicating if a WEBP file with the same name already exists in current directory. */
             isFileNameTaken:false,
+            /**State value indicating if a JPG file with the same name already exists in current directory. */
+            isFileNameTakenJpg:false,
             /**Are we waiting for the related Post's data to be returned. */
             isAwaitingPostData:false,
             /**Post data used to download related image. */
@@ -135,21 +151,27 @@ export default defineComponent({
             });
             if(path) AppState.lastMediaSaveDirectory = path;
             this.checkIfFileNameAlreadyExists();
+            this.checkIfFileNameAlreadyExistsJpg();
         },
         /**
          * Method used to download images with metadata when using the application via
          * desktop app (Tauri web-view).
+         * @param fetchAsJpeg Value indicating if we should request the Bluesky CDN to return the image as a JPEG.
          */
-        async saveImage(){
+        async saveImage(fetchAsJpeg:boolean=false){
             this.progressSum = 0;
             this.progressGoal = 0;
             this.isDownloading = true;
             let downloadURL = '';
             if(!AppState.saveMedia.uri) downloadURL = (AppState.saveMedia as ViewImage).fullsize
             else downloadURL = (AppState.saveMedia as ViewExternal).uri
+            if(fetchAsJpeg){
+                AppState.fileSaveDetails.extension = '.jpg';
+                downloadURL+='@jpeg';
+            }
             await download(
                 downloadURL,
-                `${AppState.lastMediaSaveDirectory}\\${AppState.fileSaveDetails.full}.${AppState.fileSaveDetails.extension}`,
+                `${AppState.lastMediaSaveDirectory}\\${AppState.fileSaveDetails.full}${AppState.fileSaveDetails.extension}`,
                 ({ progress, total }) => {
                     this.progressSum += progress;
                     this.progressGoal = total;
@@ -157,10 +179,10 @@ export default defineComponent({
                 }
             )
             .then(_ => {
-                if(isTauri() && AppState.fileSaveDetails.extension != '.gif'){
+                if(isTauri() && AppState.fileSaveDetails.extension == '.jpg'){
                     //in Tauri webview, not browser
                     invoke('write_metadata_to_file', ({
-                        imageFile:`${AppState.lastMediaSaveDirectory}\\${AppState.fileSaveDetails.full}.${AppState.fileSaveDetails.extension}`,
+                        imageFile:`${AppState.lastMediaSaveDirectory}\\${AppState.fileSaveDetails.full}${AppState.fileSaveDetails.extension}`,
                         userHandle:`@${AppState.fileSaveDetails.handle}`,//AppState.fileSaveDefaultFilename.split(' ').pop()?.split('.')[0],
                         description:AppState.fileSaveDetails.postText
                     }));
@@ -209,10 +231,11 @@ export default defineComponent({
             }
             else{ AppState.fileSaveDetails.full = '' }
             this.checkIfFileNameAlreadyExists();
+            this.checkIfFileNameAlreadyExistsJpg();
         },
         async checkIfFileNameAlreadyExists(){
             if(this.isFileNameValid && this.isFolderSyntaxValid){
-                await exists(`${AppState.lastMediaSaveDirectory}/${AppState.fileSaveDetails.full}.${AppState.fileSaveDetails.extension}`)
+                await exists(`${AppState.lastMediaSaveDirectory}/${AppState.fileSaveDetails.full}.webp`)
                 .then(res => {
                     this.isFileNameTaken = res;
                 })
@@ -220,6 +243,18 @@ export default defineComponent({
             }
             else{
                 this.isFileNameTaken = false;
+            }
+        },
+        async checkIfFileNameAlreadyExistsJpg(){
+            if(this.isFileNameValid && this.isFolderSyntaxValid){
+                await exists(`${AppState.lastMediaSaveDirectory}/${AppState.fileSaveDetails.full}.jpg`)
+                .then(res => {
+                    this.isFileNameTakenJpg = res;
+                })
+                .catch(err => console.log(err));
+            }
+            else{
+                this.isFileNameTakenJpg = false;
             }
         },
         /**
@@ -250,8 +285,10 @@ export default defineComponent({
          * Code is modified from https://muhimasri.com/blogs/how-to-save-files-in-javascript/#download-and-save-a-file-using-the-fetch-api
          * @param url The URL of the file to download. Should begin with 'https://cdn.bsky.app'.
          * @param filename The string to use as the default/starting file name.
+         * @param fetchAsJpeg Value indicating if we are requesting the Bluesky CDN to return the image as a JPEG.
+         *
          */
-        async downloadFileFromBskyCDN(url:string, filename:string) {
+        async downloadFileFromBskyCDN(url:string, filename:string, fetchAsJpeg:boolean=false) {
             const target = `${import.meta.env.VITE_BSKY_MEDIA_DOWNLOAD_PROXY_TARGET}`;
             if(!url.includes(target)){
                 toast.add({summary:'Error', detail:`URL provided to download must be link to Bluesky CDN`, severity:'error', group:'tr', life:3000});
@@ -259,7 +296,7 @@ export default defineComponent({
             }
             else{
                 this.isDownloading = true;
-                await fetch(CreateBskyMediaDownloadURL(url),{
+                await fetch(CreateBskyMediaDownloadURL(url,fetchAsJpeg),{
                     headers:{
                         Accept:
                         "image/png, image/jpeg, image/*",
@@ -370,7 +407,7 @@ export default defineComponent({
                 if(typeof this.handle != 'undefined') safeHandle =  this.handle.replace (/\./g,'_');
                 AppState.fileSaveDetails.full = `${fileName} by ${safeHandle}`;
                 AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
-                AppState.fileSaveDetails.extension = '.jpg'; //Need to create method that parses image URL to determine extension (the @jpeg part)
+                AppState.fileSaveDetails.extension = '.webp'; //Need to create method that parses image URL to determine extension (the @jpeg part)
                 AppState.fileSaveDetails.handle = typeof this.handle != 'undefined' ? this.handle : '';
                 // AppState.fileSaveDetails.postText = postText ? postText : '';
 
@@ -388,6 +425,7 @@ export default defineComponent({
     },
     mounted(){
         this.checkIfFileNameAlreadyExists();
+        this.checkIfFileNameAlreadyExistsJpg();
     },
     beforeUnmount(){
         AppState.saveMedia = {alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'};//"clear" saveMedia variable
