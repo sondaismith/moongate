@@ -1,10 +1,10 @@
 <template>
     <a v-if="!isTauri()" target="_blank"
     :href="linkUrl"
-    class="text-blue-500 hover:text-blue-300 cursor-pointer">{{ linkText }}</a>
+    class="text-blue-500 hover:text-blue-300 cursor-pointer"><slot>{{ defaultText }}</slot></a>
     <a v-else
-    @click="(e) => showOptionsMenu(e,linkUrl)"
-    class="text-blue-500 hover:text-blue-300 cursor-pointer">{{ linkText }}</a>
+    @click="(e) => showOptionsMenu(e,linkUrl)" @keydown.enter="(e) => showOptionsMenu(e,linkUrl)" tabindex="0"
+    class="text-blue-500 hover:text-blue-300 cursor-pointer"><slot>{{ defaultText }}</slot></a>
 </template>
 
 <script lang="ts">
@@ -26,13 +26,17 @@ async function OpenLink(url:string){
     await openUrl(url);
 }
 
+/**Default text label that will be used if content is not provided. */
+let defaultText = '[Please Set Link Text]';
+
+/**
+ * Component that allows for interacting with external links. Clicking a created link
+ * will open in a new tab when on the web, while on Desktop the User can choose to open
+ * the link in their default browser or copy the link.
+ */
 export default defineComponent({
+    name:'ExternalLink',
     props:{
-        /**The text label to use for the external link. */
-        linkText:{
-            type:String,
-            default:'Please Set Link Text'
-        },
         /**The URL link to open when the control is clicked. */
         linkUrl:{
             type:String,
@@ -42,6 +46,8 @@ export default defineComponent({
     data(){
         return{
             isTauri,
+            /**Default text label that will be used if content is not provided. */
+            defaultText,
         }
     },
     methods:{
@@ -49,7 +55,7 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to the selected link.
          */
-        showOptionsMenu(e:MouseEvent, linkURL:string){
+        showOptionsMenu(e:MouseEvent|KeyboardEvent, linkURL:string){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)},Type:ItemType.Option},

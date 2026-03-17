@@ -12,7 +12,7 @@ export const OptionsMenuState = reactive({
     /**Defines the list of menu options that will be displayed. */
     currentMenuItems: [] as IOptionMenuItem[],
     /**Shows the Options Menu. */
-    showOptionMenu(event:MouseEvent){
+    showOptionMenu(event:MouseEvent|KeyboardEvent){
         this.isOptionsMenuVisible = true;
         var menu = document.getElementById('options-btn-menu');//important
         //delay to allow menu dimensions to update after being filled with items
@@ -47,17 +47,17 @@ export const OptionsMenuState = reactive({
         var menuSafePos = {x:0,y:0};
         menuSafePos = {x:event.clientX, y:event.clientY};
         let clickTargetRect = (event.target as Element).getBoundingClientRect();
-        if(event.pointerType == '') menuSafePos = {x:clickTargetRect.x,y:clickTargetRect.y};
+        if(typeof event.pointerType == 'undefined') menuSafePos = {x:clickTargetRect.x,y:clickTargetRect.y};
         var xTarget = menuSafePos.x;
         var yTarget = menuSafePos.y;
         var menuYClearence = viewportHeight - (menuHeight+yTarget);
         var menuXClearence = viewportWidth - (menuWidth+xTarget);
 
         if(menuYClearence < 0){
-            yTarget = event.clientY-menuHeight;
+            yTarget = yTarget-menuHeight;
         }
         if(menuXClearence < 0){
-            xTarget = event.clientX-menuWidth;
+            xTarget = xTarget-menuWidth;
         }
         menuSafePos = {x:xTarget, y:yTarget};
         return menuSafePos;

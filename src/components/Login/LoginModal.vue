@@ -138,7 +138,7 @@
                         <div class="text-sm text-red-500 whitespace-pre-line">{{ validationErrorMessage }}</div>
                         <div class="flex text-sm text-primary">
                             <div>Dont have an account? Create one using the</div>
-                            <a href="https://bsky.app/" target="_blank" class="ml-1 text-blueskyBlue hover:underline">official client</a>
+                            <ExternalLink link-url="http://bsky.app/" class="ml-1 text-blueskyBlue hover:text-blueskyBlue hover:underline">official client</ExternalLink>
                             <div>.</div>
                         </div>
                     </div>
@@ -173,6 +173,7 @@ import RadioBarButton from '../Utilities/RadioBarButton.vue';
 import { GenerateUniqueID } from '../../helpers/generators';
 import ConfirmModal from '../Utilities/ConfirmModal.vue';
 import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes';
+import ExternalLink from '../Utilities/ExternalLink.vue';
 
 /**
  * Asks the User if they're sure they would like to delete the selected
@@ -189,6 +190,7 @@ export default defineComponent({
         SquareButton,
         RadioBarButton,
         ConfirmModal,
+        ExternalLink,
     },
     data(){
         return{
