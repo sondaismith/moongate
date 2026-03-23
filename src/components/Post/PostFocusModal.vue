@@ -304,14 +304,6 @@ export default defineComponent({
             /**Record of the route the User was using before opening this modal. Navigated back to when
              * the modal is closed. */
             routeEntryPoint:'/',
-            /**Records the current window width of the browser. */
-            windowWidth:0,
-            /**Variable that holds the value of the `timeoutID` used to limit the rate at which `windowWidth` will be updated. */
-            windowResizeTimeout:-1,
-            /**The value used to determine that the app is currently in the "mobile view" layout. A window width lower than this value means `usingMobileLayout` will be `true`. */
-            mobileLayoutWidth:640,
-            /**Value indicating whether or not the app is currently in the "mobile view" layout.*/
-            usingMobileLayout:false,
         }
     },
     methods:{
@@ -614,22 +606,6 @@ export default defineComponent({
             }
             AppState.routeNavigationInfo = null;
         },
-        /**
-         * Method used to update the value of the current browser window width.
-         */
-        windowResized(){
-            this.windowWidth = window.innerWidth;
-            if(this.windowWidth<this.mobileLayoutWidth) this.usingMobileLayout = true
-            else this.usingMobileLayout = false;
-            console.log(`Window Width: ${this.windowWidth} -- Using Mobile Layout: ${this.usingMobileLayout}`);
-        },
-        /**
-         * Method used to restrict the rate the `windowWidth` variable is updated via `onresize` event.
-         */
-        updateWindowResizedWithTimeout(){
-            clearTimeout(this.windowResizeTimeout);
-            this.windowResizeTimeout = setTimeout(this.windowResized,200);
-        }
     },
     computed:{
         /**Checks to see if the current post contains any image media. */
@@ -889,17 +865,12 @@ export default defineComponent({
         this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
         (this.$el as HTMLElement).focus();
         document.title = `Loading Post data... | moongate`;
-        //Calculate if app is being displayed with "mobile layout"
-        this.windowWidth = window.innerWidth;
-        if(this.windowWidth<this.mobileLayoutWidth) this.usingMobileLayout = true;
-        window.addEventListener('resize', this.updateWindowResizedWithTimeout)
     },
     beforeUnmount() {
         console.log('Closing PostFocusModal...');
         //Remove keyboard+mouse shortcut listener
         this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
         AppState.handleFocusOnComponentClose();
-        window.removeEventListener('resize', this.updateWindowResizedWithTimeout);
     },
 })
 </script>
