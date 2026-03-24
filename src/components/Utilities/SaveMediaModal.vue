@@ -39,25 +39,25 @@
                 <SquareButton v-if="isTauri()" @click="saveImage()" title="Save Image [.webp]"
                 :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading"
                 class="bg-savemodalBtn hover:bg-savemodalBtnHover">
-                    Save Image
+                    Save Image [WEBP]
                 </SquareButton>
                 <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
                 <SquareButton v-else :is-disabled="isDownloading"
                 @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full)"
                 title="Save Image [.webp]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
-                    <div>Save Image</div>
+                    <div>Save Image [WEBP]</div>
                     <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
                 </SquareButton>
                 <SquareButton v-if="isTauri()" @click="saveImage(true)" title="Save Image [.jpg]"
                 :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading"
                 class="bg-savemodalBtn hover:bg-savemodalBtnHover">
-                    Save Image as JPG w/ Metadata
+                    Save Image w/ Metadata [JPEG]
                 </SquareButton>
                 <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
                 <SquareButton v-else :is-disabled="isDownloading"
                 @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full, true)"
                 title="Save Image [.jpg]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
-                    <div>Save Image as JPG w/ Metadata</div>
+                    <div>Save Image [JPEG]</div>
                     <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
                 </SquareButton>
             </div>
