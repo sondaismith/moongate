@@ -377,7 +377,7 @@ export default defineComponent({
                 postDetails.isAwaitingFocusData = false;
                 setTimeout(() => {
                     //Restore scroll position
-                    let replyContainer = document.querySelector('[data-testid=postThreadView]');
+                    let replyContainer = document.querySelector(this.replyContainerSelector);
                     if(replyContainer != null){
                         replyContainer.scrollTop = this.threadBranchHistory[this.threadNavIndex].scrollPos;
                     }
@@ -573,7 +573,7 @@ export default defineComponent({
          * @param fromScrollPos Current scroll position of the `PostFocusModal` "reply container".
          */
         manageReplyContainerState(to:RouteLocationNormalizedLoadedGeneric,from:RouteLocationNormalizedLoadedGeneric, fromScrollPos:number){
-            let replyContainer = document.querySelector('[data-testid=postThreadView]');
+            // let replyContainer = document.querySelector(this.replyContainerElement);
             // let scrollPos = replyContainer != null ? replyContainer.scrollTop : 'error finding postThreadView element';
             // console.log(`Scroll position of previous reply container div was: ${scrollPos}px.`);
             //save current "reply area" scroll position before navigating to new view
@@ -793,6 +793,15 @@ export default defineComponent({
             }
             let userId = (typeof postDetails.currentThreadView.post.author.displayName != 'undefined') ? postDetails.currentThreadView.post.author.displayName : postDetails.currentThreadView.post.author.handle;
             return postTextClip.trim() != '' ? `${postTextClip}... by ${userId} | moongate` : `${userId}'s Post | moongate`;
+        },
+        /**
+         * Computed variable that returns the CSS selector value that points to the currently
+         * used container for replies based on if the application is displaying in "mobile"
+         * mode or not.
+         */
+        replyContainerSelector(){
+            if(!AppState.usingMobileLayout) return '[data-testid=postThreadView]';
+            else return '[data-testid=post-focus-modal]';
         }
     },
     watch:{
@@ -818,7 +827,7 @@ export default defineComponent({
             })
         }
         if((from.name == 'postfocusmodal' && to.name == 'postfocusmodal with mediaindex') || (from.name == 'postfocusmodal with mediaindex' && to.name == 'postfocusmodal')){
-            let replyContainer = document.querySelector('[data-testid=postThreadView]');
+            let replyContainer = document.querySelector(vm.replyContainerElement);
             let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
             next(vm => {
                 vm.manageReplyContainerState(to,from,fromScrollPos);
@@ -830,7 +839,7 @@ export default defineComponent({
         }
     },
     beforeRouteUpdate(to,from){
-        let replyContainer = document.querySelector('[data-testid=postThreadView]');
+        let replyContainer = document.querySelector(this.replyContainerSelector);
         let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
         this.manageReplyContainerState(to,from,fromScrollPos);
     },
