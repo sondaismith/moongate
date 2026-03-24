@@ -564,6 +564,48 @@ export const AppState = reactive({
      * Indicates if the event listener that tracks route navigation has been added. Should
      * be added by `PostFocusModal` only once.
      */
-    hasRouteNavigationListenerBeenAdded:false
+    hasRouteNavigationListenerBeenAdded:false,
+    /**Records the current window width of the browser. */
+    windowWidth:0,
+    /**Variable that holds the value of the `timeoutID` used to limit the rate at which `windowWidth` will be updated. */
+    windowResizeTimeout:-1,
+    /**The value used to determine that the app is currently in the "mobile view" layout. A window width lower than this value means `usingMobileLayout` will be `true`. */
+    mobileLayoutWidth:640,
+    /**Value indicating whether or not the app is currently in the "mobile view" layout.*/
+    usingMobileLayout:false,
+    /**
+     * Method used to update the value of the current browser window width.
+     */
+    windowResized(){
+        AppState.windowWidth = window.innerWidth;
+        if(AppState.windowWidth<AppState.mobileLayoutWidth) AppState.usingMobileLayout = true
+        else AppState.usingMobileLayout = false;
+        console.log(`Window Width: ${AppState.windowWidth} -- Using Mobile Layout: ${AppState.usingMobileLayout}`);
+    },
+    /**
+     * Method used to restrict the rate the `windowWidth` variable is updated via `onresize` event.
+     * @constructor
+     */
+    updateWindowResizedWithTimeout(){
+        clearTimeout(AppState.windowResizeTimeout);
+        AppState.windowResizeTimeout = setTimeout(AppState.windowResized,200);
+    },
+    /**
+     * Method used to attach {@link AppState.updateWindowResizedWithTimeout() updateWindowResizedWithTimeout()} to the browser/application window
+     * resize event.
+     */
+    setupWindowResizeListener(){
+        //Calculate if app is being displayed with "mobile layout"
+        AppState.windowWidth = window.innerWidth;
+        if(AppState.windowWidth<AppState.mobileLayoutWidth) AppState.usingMobileLayout = true;
+        window.addEventListener('resize', AppState.updateWindowResizedWithTimeout)
+    },
+    /**
+     * Method used to remove {@link AppState.updateWindowResizedWithTimeout() updateWindowResizedWithTimeout()} from the browser/application window
+     * resize event.
+     */
+    removeWindowResizeListener(){
+        window.removeEventListener('resize', AppState.updateWindowResizedWithTimeout);
+    }
 })
 </script>

@@ -583,6 +583,14 @@ import { router } from "./main";
         mounted(){
             this.getFeedDisplayViewWidth();
             this.placeFeedDisplayCenterLine();
+            // AppState.setupWindowResizeListener();
+            //Calculate if app is being displayed with "mobile layout"
+            AppState.windowWidth = window.innerWidth;
+            if(AppState.windowWidth<AppState.mobileLayoutWidth) AppState.usingMobileLayout = true;
+            window.addEventListener('resize', AppState.updateWindowResizedWithTimeout);
+        },
+        beforeUnmount(){
+            AppState.removeWindowResizeListener();
         },
         beforeRouteEnter(to, from){
             if(!AppState.hasFeedDataBeenLoadedAfterInitiallization && from.path != '/' && to.path == '/') {LoadAllFeedPostsAsync(); console.log('reoaded feed list because of travelling to root')}
