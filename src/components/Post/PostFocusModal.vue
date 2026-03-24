@@ -827,7 +827,8 @@ export default defineComponent({
             })
         }
         if((from.name == 'postfocusmodal' && to.name == 'postfocusmodal with mediaindex') || (from.name == 'postfocusmodal with mediaindex' && to.name == 'postfocusmodal')){
-            let replyContainer = document.querySelector(vm.replyContainerElement);
+            //computed value `replyContainerSelector` is only available after navigation has happened (via `vm`) - have to use these hard-coded values
+            let replyContainer = document.querySelector(AppState.usingMobileLayout ? '[data-testid=post-focus-modal]' : '[data-testid=postThreadView]');
             let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
             next(vm => {
                 vm.manageReplyContainerState(to,from,fromScrollPos);
