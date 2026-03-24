@@ -19,7 +19,7 @@
                 :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%'}]"><i-mdi:format-vertical-align-top/></div>
                 <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
                 class="flex rounded-lg cursor-pointer bg-btn items-center px-3 text-primary text-sm sm:hidden">View Image</div>
-                <div @click="hideModal" class="flex rounded-lg cursor-pointer bg-btn px-3 items-center text-primary sm:hidden"><i-mingcute:close-fill/></div>
+                <div data-testid="postFocusModal-close-button-mobile" @click="hideModal" class="flex rounded-lg cursor-pointer bg-btn px-3 items-center text-primary sm:hidden"><i-mingcute:close-fill/></div>
             </div>
             <SquareButton data-testid="postFocusModal-close-button" @click="hideModal"
             class="text-primary bg-btn !rounded-br aspect-square w-10 text-2xl

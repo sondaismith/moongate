@@ -47,7 +47,7 @@ test.beforeAll(async ({browser}) => {
     })
 })
 
-test('Ensure scroll position for reply container is remembered when navigating through reply tree', async({browser},testInfo) => {
+test('Ensure scroll position for reply container is remembered when navigating through reply tree - Desktop layout', async({browser},testInfo) => {
     //mock feed results
     let returnedFeeds = [[post2,post1],[post1,post2]]; //allows "different" Feeds to be returned when querying `getAuthorFeed`
     let feedIndex = 0; //tracks how many `getAuthorFeed` requests have been made, used to return content from array above
@@ -200,5 +200,161 @@ test('Ensure scroll position for reply container is remembered when navigating t
     await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
     //Check that the reply container scroll position is 98px
     returnScrollPos = await instance1.getByTestId('postThreadView').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(98);
+})
+
+test('Ensure scroll position for reply container is remembered when navigating through reply tree - Mobile layout', async({browser},testInfo) => {
+    //mock feed results
+    let returnedFeeds = [[post2,post1],[post1,post2]]; //allows "different" Feeds to be returned when querying `getAuthorFeed`
+    let feedIndex = 0; //tracks how many `getAuthorFeed` requests have been made, used to return content from array above
+    //set up tabs
+    const context = await browser.newContext({viewport:{height:700,width:600}});
+    const instance1 = await context.newPage();
+    //set API mocks
+    await context.route(/app.bsky.actor.searchActors/, route => {
+        route.fulfill({
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+            body:JSON.stringify(actorSearchResults)
+        });
+    });
+    await context.route(/app.bsky.actor.getProfile/, route => {
+            route.fulfill({
+                status: 200,
+                headers: { 'Content-Type': 'application/json' },
+                body:JSON.stringify(profile1)
+            });
+        });
+    await context.route(/app.bsky.feed.getAuthorFeed/, route => {
+        let f:FeedViewPost[] = [];
+        if(feedIndex<returnedFeeds.length) f = returnedFeeds[feedIndex];
+        route.fulfill({
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+            body:JSON.stringify({feed:f})
+        });
+        feedIndex++;
+    });
+    await context.route(/app.bsky.feed.getPostThread/, route => {
+        const postUrl = new URL(route.request().url());
+        const postUri = postUrl.searchParams.get('uri');
+        let postId = '';
+        if(postUrl != null && postUri != null){
+            let urlSections = postUri.split('/');
+            if(urlSections.length>1) postId = urlSections[urlSections.length-1];
+        }
+        let result:$Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}|boolean = {$type:"app.bsky.feed.defs#notFoundPost",uri:'at://not.found.post/sorry',notFound:true} as $Typed<NotFoundPost>;
+        let searchResult = FindThreadViewPostReply(threadViewPost1.thread,postId);
+        if(searchResult !== false) result = searchResult;
+        route.fulfill({
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+            // body:JSON.stringify(threadViewPost1)
+            body:JSON.stringify({thread:result} as AppBskyFeedGetPostThread.OutputSchema)
+        });
+    });
+    //go to app home page
+    await instance1.goto(`/`,{waitUntil:'networkidle'});
+
+    //browse as guest
+    await instance1.getByTestId('add-feed-button').click();
+    await instance1.getByTestId('browse-as-guest-button').click();
+    //add new feed
+    await instance1.getByTestId('add-feed-button').click();
+    await instance1.getByTestId('feedEditModal-user-feed-button').click();
+    await instance1.getByTestId('feedEditModal-next-page-button').click();
+    await instance1.getByTestId('inlainput-input').fill('username');
+    await instance1.getByTestId('inlainput-input').press('Enter');
+    await expect(instance1.getByTestId('user-search-bar-result').nth(0)).toBeVisible();
+    await instance1.getByTestId('user-search-bar-result').nth(0).click();
+    await expect(instance1.getByText('submit')).toBeVisible();
+    await instance1.getByTestId('feedEditModal-create-button').click();
+    await expect(instance1.getByTestId('feed-edit-modal')).toBeHidden();
+
+    //CHECK THAT THREAD BRANCH HISTORY + SCROLL POSITION RESTORE WORKS AS EXPECTED
+    //open Post in PostFocusModal
+    await instance1.getByTestId('focusFeedPost-timestamp-button').nth(0).click();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Scroll down reply container 100px
+    await instance1.getByTestId('post-focus-modal').evaluate(e => e.scrollTop += 100);
+    const scrollPosBefore = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    expect(scrollPosBefore).toEqual(100);
+    //Click on 2nd reply timestamp to view (uses dispatch so that playwright does not scroll element into position)
+    await instance1.getByTestId('post-focus-modal').getByTestId('focusFeedPost-timestamp-button').nth(1).dispatchEvent('click');
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Focused post should have changed, confirm
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded').getByTestId('postFocusModal-text')).toContainText('reply 2 on the parent');
+    //scroll down to see last reply
+    await instance1.getByTestId('post-focus-modal').evaluate(e => e.scrollTop += 1000);
+    const replyScrollPosBefore = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    //navigate back to parent post
+    await instance1.goBack();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    const scrollPosAfter = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    expect(scrollPosAfter).toEqual(100);
+    //go forward to reply again
+    await instance1.goForward();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that reply scroll was restored correctly
+    const replyScrollPosAfter = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    expect(replyScrollPosAfter).toEqual(replyScrollPosBefore);
+
+    ///CHECK THREAD BRANCH HISTORY DOES NOT BREAK WHEN USING HISTORY API (back/forwards)
+    //Close `PostFocusModal`
+    await instance1.getByTestId('postFocusModal-close-button-mobile').click();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeHidden();
+    //Navigate back to reply in `PostFocusModal`
+    await instance1.goBack();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that the reply container scroll position is 0px
+    let returnScrollPos = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(0);
+    //Scroll down 111px
+    await instance1.getByTestId('post-focus-modal').evaluate(e => e.scrollTop += 111);
+    returnScrollPos = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(111);
+    //Navigate back again to thread root
+    await instance1.goBack();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that the thread root reply container scroll position is 0px
+    returnScrollPos = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(0);
+    //Scroll down 123px
+    await instance1.getByTestId('post-focus-modal').evaluate(e => e.scrollTop += 123);
+    returnScrollPos = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(123);
+    //Go forward through browser history to reply
+    await instance1.goForward();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that the reply container scroll position is 0px
+    returnScrollPos = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(0);
+
+    //CHECK THAT THREAD BRANCH HISTORY CAN BE CREATED CORRECTLY AFTER NAVIGATING WITH HISTORY API
+    //Navigate back again to thread root
+    await instance1.goBack();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Scroll down 72px
+    await instance1.getByTestId('post-focus-modal').evaluate(e => e.scrollTop += 72);
+    returnScrollPos = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(72);
+    //Click on 2nd reply timestamp to view (uses dispatch so that playwright does not scroll element into position)
+    await instance1.getByTestId('post-focus-modal').getByTestId('focusFeedPost-timestamp-button').nth(1).dispatchEvent('click');
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Scroll down 98px
+    await instance1.getByTestId('post-focus-modal').evaluate(e => e.scrollTop += 98);
+    returnScrollPos = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(98);
+    //Navigate back again to thread root
+    await instance1.goBack();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that the reply container scroll position is 72px
+    returnScrollPos = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
+    expect(returnScrollPos).toEqual(72);
+    //Navigate forward to 2nd reply again
+    await instance1.goForward();
+    await expect(instance1.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    //Check that the reply container scroll position is 98px
+    returnScrollPos = await instance1.getByTestId('post-focus-modal').evaluate((e) => {return e.scrollTop});
     expect(returnScrollPos).toEqual(98);
 })
