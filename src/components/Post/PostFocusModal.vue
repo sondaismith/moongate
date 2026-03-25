@@ -130,6 +130,13 @@
                 :post-text="(postDetails.currentThreadView.post.record as Record).text"
                 :post-facets="(postDetails.currentThreadView.post.record as Record).facets"
                 :is-changing-thread-context="isChangingThreadContext"/>
+                {{ void "Quoted Post (if applicable)" }}
+                <div v-if="typeof postDetails.currentThreadView.post.embed != 'undefined'" class="py-2 text-sm">
+                    <FocusFeedPost v-if="typeof postDetails.currentThreadView.post.embed != 'undefined' && AppBskyEmbedRecord.isView(postDetails.currentThreadView.post.embed)"
+                    :post-data="postDetails.currentThreadView.post.embed.record" :hide-post-metrics="true"/>
+                    <FocusFeedPost v-else-if="typeof postDetails.currentThreadView.post.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed)"
+                    :post-data="postDetails.currentThreadView.post.embed.record.record" :hide-post-metrics="true"/>
+                </div>
                 {{ void "Post Metadata" }}
                 <div class="flex flex-col gap-2">
                     <div class="flex flex-wrap gap-1s leading-5 py-0.5 border-b-[1px] border-slate-600">
@@ -193,7 +200,7 @@ import { isView as isImageView, ViewImage } from '@atproto/api/dist/client/types
 import { isView as isVideoView, View as ViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia, AppBskyFeedPost } from '@atproto/api';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyFeedPost } from '@atproto/api';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import PostInteractionIcons from './PostInteractionIcons.vue';
@@ -211,6 +218,7 @@ import { debounce } from '../../helpers/debouncer';
 import { PostThreadBranchData } from '../../types/PostTypes';
 import { router } from '../../main';
 import { RouteLocationNormalizedLoadedGeneric } from 'vue-router';
+import FocusFeedPost from '../Feed/FocusFeedPost.vue';
 
 export default defineComponent({
     components:{
@@ -225,6 +233,7 @@ export default defineComponent({
         SlideshowArrow,
         VerifiedBadge,
         SquareButton,
+        FocusFeedPost
     },
     props:{
         // /**
@@ -256,6 +265,7 @@ export default defineComponent({
     },
     data(){
         return{
+            AppBskyEmbedRecord,
             imageCollection: [],
             postDetails,
             convertToLongTimestamp,
