@@ -12,7 +12,7 @@
                 <img @contextmenu="(e) => {e.preventDefault()}" :src="(fullscreenImage as ViewExternal).uri ? (fullscreenImage as ViewExternal).uri : (fullscreenImage as ViewImage).fullsize" class="max-h-full max-w-full"/>
             </div>
         </Transition>
-        <div class="sticky sm:absolute top-0 z-20 flex justify-center h-10 w-full sm:w-auto shrink-0 bg-postFocusBG sm:bg-transparent border-b border-outline">
+        <!-- <div class="sticky sm:absolute top-0 z-20 flex justify-center h-10 w-full sm:w-auto shrink-0 bg-postFocusBG sm:bg-transparent border-b border-outline">
             {{ void "Close Button" }}
             <div class="self-center flex justify-between w-full h-full px-4 py-2 sm:px-0">
                 <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer bg-btn items-center py-1 px-3 text-primary sm:hidden transition-opacity"
@@ -27,7 +27,7 @@
             button-padding="0">
                 <i-mingcute:close-fill/>
             </SquareButton>
-        </div>
+        </div> -->
         {{ void "Media Section" }}
         <div v-if="hasImageMedia || hasEmbedGIFMedia || isVideoView(postDetails.currentThreadView.post.embed)"
         class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
@@ -81,17 +81,19 @@
             flex items-center gap-2 px-2 py-1 text-primary">
                 <div class="flex items-center gap-1">
                     <SquareButton data-testid="postFocusModal-control-bar-close-button" @click="onReplyThreadBackButton()"
-                    class="text-primary shadow-none hover:bg-btnHover text-2xl"
+                    class="text-primary shadow-none hover:bg-btnHover text-2xl" title="Back"
                     button-padding="0">
                         <i-mingcute:arrow-left-line/>
                     </SquareButton>
                     <div class="text-lg font-bold">Post</div>
                 </div>
                 <div class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as Record).text">{{ (postDetails.currentThreadView.post.record as Record).text }}</div>
-                <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer bg-btn items-center py-1 px-3 text-primary transition-opacity ml-auto"
-                :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]"><i-mdi:format-vertical-align-top/></div>
+                <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary transition-opacity h-full ml-auto"
+                :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top"><i-mingcute:arrow-to-up-fill/></div>
                 <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
-                class="flex rounded-lg cursor-pointer bg-btn items-center px-3 text-primary text-sm sm:hidden">Image</div>
+                class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary sm:hidden h-full" title="View Image"><i-mdi:insert-photo/></div>
+                <div class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
+                title="Close Thread" @click="hideModal"><i-mingcute:exit-fill/></div>
             </div>
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
             <div data-testid="postFocusModal-focus-post-loading" v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
@@ -582,7 +584,9 @@ export default defineComponent({
          * Method used to scroll to top of `PostFocusModal`.
          */
         scrollToTopOfModal(){
-            let mainContainer = document.getElementById('post-focus-modal-details');
+            let scrollElement = 'post-focus-modal-details';
+            if(AppState.usingMobileLayout) scrollElement = 'post-focus-modal';
+            let mainContainer = document.getElementById(scrollElement);
             if(mainContainer) mainContainer.scrollBy({top:-mainContainer.scrollTop,behavior:'smooth'});
         },
         /**
