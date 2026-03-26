@@ -75,7 +75,24 @@
         </div>
         <div v-else @click="hideModal" class="w-full h-full hidden sm:block"></div>
         {{ void "Comments Section" }}
-        <div class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto">
+        <div data-testid="post-focus-modal-details" id="post-focus-modal-details" @scroll.passive="toggleScrollToTop" class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto sm:overflow-y-auto">
+            {{ void "Sticky Control bar" }}
+            <div class="sticky top-0 z-10 bg-postFocusBG border-b border-outline shadow-scroll-underline shadow-postFocusModalDetailsShadow/10
+            flex items-center gap-2 px-2 py-1 text-primary">
+                <div class="flex items-center gap-1">
+                    <SquareButton data-testid="postFocusModal-control-bar-close-button" @click="onReplyThreadBackButton()"
+                    class="text-primary shadow-none hover:bg-btnHover text-2xl"
+                    button-padding="0">
+                        <i-mingcute:arrow-left-line/>
+                    </SquareButton>
+                    <div class="text-lg font-bold">Post</div>
+                </div>
+                <div class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as Record).text">{{ (postDetails.currentThreadView.post.record as Record).text }}</div>
+                <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer bg-btn items-center py-1 px-3 text-primary transition-opacity ml-auto"
+                :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]"><i-mdi:format-vertical-align-top/></div>
+                <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
+                class="flex rounded-lg cursor-pointer bg-btn items-center px-3 text-primary text-sm sm:hidden">Image</div>
+            </div>
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
             <div data-testid="postFocusModal-focus-post-loading" v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
                 <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
@@ -102,7 +119,7 @@
                     </div>
                 </div>
             </div>
-            <div data-testid="postFocusModal-focus-post-loaded" v-else class="p-4 pb-1 sticky top-10 sm:top-0 z-10 bg-postFocusBG border-b border-outline shadow-lg sm:shadow-none shadow-postFocusModalDetailsShadow/10">
+            <div data-testid="postFocusModal-focus-post-loaded" v-else class="p-4 pb-1 top-10 sm:top-0 z-10s bg-postFocusBG border-b border-outline shadow-lg sm:shadow-none shadow-postFocusModalDetailsShadow/10">
                 {{ void "User Info/Actions" }}
                 <div class="flex gap-1">
                     <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
@@ -565,7 +582,7 @@ export default defineComponent({
          * Method used to scroll to top of `PostFocusModal`.
          */
         scrollToTopOfModal(){
-            let mainContainer = document.getElementById('post-focus-modal');
+            let mainContainer = document.getElementById('post-focus-modal-details');
             if(mainContainer) mainContainer.scrollBy({top:-mainContainer.scrollTop,behavior:'smooth'});
         },
         /**
