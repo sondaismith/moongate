@@ -28,6 +28,26 @@
                 <i-mingcute:close-fill/>
             </SquareButton>
         </div> -->
+        {{ void "Sticky Control bar - mobile version" }}
+        <div v-if="AppState.usingMobileLayout" class="sticky top-0 z-10 bg-postFocusBG border-b border-outline shadow-scroll-underline shadow-postFocusModalDetailsShadow/10
+        flex items-center gap-2 px-2 py-1 text-primary">
+            <div class="flex items-center gap-1">
+                <SquareButton data-testid="postFocusModal-control-bar-close-button" @click="onReplyThreadBackButton()"
+                class="text-primary shadow-none hover:bg-btnHover text-2xl" title="Back"
+                button-padding="0">
+                    <i-mingcute:arrow-left-line/>
+                </SquareButton>
+                <div class="text-lg font-bold">Post</div>
+            </div>
+            <div v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="animate-pulse h-4 w-full rounded-sm bg-slate-500/30"></div>
+            <div v-else class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as Record).text">{{ (postDetails.currentThreadView.post.record as Record).text }}</div>
+            <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary transition-opacity h-full ml-auto"
+            :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top"><i-mingcute:arrow-to-up-fill/></div>
+            <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
+            class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary sm:hidden h-full" title="View Image"><i-mdi:insert-photo/></div>
+            <div class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
+            title="Close Thread" @click="hideModal"><i-mingcute:exit-fill/></div>
+        </div>
         {{ void "Media Section" }}
         <div v-if="hasImageMedia || hasEmbedGIFMedia || isVideoView(postDetails.currentThreadView.post.embed)"
         class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
@@ -77,7 +97,7 @@
         {{ void "Comments Section" }}
         <div data-testid="post-focus-modal-details" id="post-focus-modal-details" @scroll.passive="toggleScrollToTop" class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto sm:overflow-y-auto">
             {{ void "Sticky Control bar" }}
-            <div class="sticky top-0 z-10 bg-postFocusBG border-b border-outline shadow-scroll-underline shadow-postFocusModalDetailsShadow/10
+            <div v-if="!AppState.usingMobileLayout" class="sticky top-0 z-10 bg-postFocusBG border-b border-outline shadow-scroll-underline shadow-postFocusModalDetailsShadow/10
             flex items-center gap-2 px-2 py-1 text-primary">
                 <div class="flex items-center gap-1">
                     <SquareButton data-testid="postFocusModal-control-bar-close-button" @click="onReplyThreadBackButton()"
@@ -87,7 +107,8 @@
                     </SquareButton>
                     <div class="text-lg font-bold">Post</div>
                 </div>
-                <div class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as Record).text">{{ (postDetails.currentThreadView.post.record as Record).text }}</div>
+                <div v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="animate-pulse h-4 w-full rounded-sm bg-slate-500/30"></div>
+                <div v-else class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as Record).text">{{ (postDetails.currentThreadView.post.record as Record).text }}</div>
                 <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary transition-opacity h-full ml-auto"
                 :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top"><i-mingcute:arrow-to-up-fill/></div>
                 <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
@@ -100,24 +121,24 @@
                 <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
                     <div class="flex gap-2 mb-1">
                         <div class="drop-shadow-md">
-                            <div class="rounded-full bg-slate-500 aspect-square size-10"></div>
+                            <div class="rounded-full bg-slate-500/30 aspect-square size-10"></div>
                         </div>
                         <div class="flex flex-col gap-1 w-full">
-                            <div class="h-4 w-24 rounded-sm bg-slate-500"></div>
-                            <div class="h-3 w-full rounded-sm bg-slate-500"></div>
+                            <div class="h-4 w-24 rounded-sm bg-slate-500/30"></div>
+                            <div class="h-3 w-full rounded-sm bg-slate-500/30"></div>
                         </div>
-                        <div class="w-48 h-8 rounded-full bg-slate-500"></div>
+                        <div class="w-48 h-8 rounded-full bg-slate-500/30"></div>
                     </div>
-                    <div class="h-4 w-full rounded-sm bg-slate-500"></div>
-                    <div class="h-4 w-full rounded-sm bg-slate-500"></div>
-                    <div class="h-4 w-4/5 rounded-sm bg-slate-500"></div>
-                    <div class="h-3 max-w-40 mt-1 rounded-sm bg-slate-500"></div>
+                    <div class="h-4 w-full rounded-sm bg-slate-500/30"></div>
+                    <div class="h-4 w-full rounded-sm bg-slate-500/30"></div>
+                    <div class="h-4 w-4/5 rounded-sm bg-slate-500/30"></div>
+                    <div class="h-3 max-w-40 mt-1 rounded-sm bg-slate-500/30"></div>
                     <div class="flex justify-between h-8 mt-1 w-full pt-2 border-t border-slate-500">
-                        <div class="w-10 rounded-md bg-slate-500"></div>
-                        <div class="w-10 rounded-md bg-slate-500"></div>
-                        <div class="w-10 rounded-md bg-slate-500"></div>
-                        <div class="w-10 rounded-md bg-slate-500"></div>
-                        <div class="w-10 rounded-md bg-slate-500"></div>
+                        <div class="w-10 rounded-md bg-slate-500/30"></div>
+                        <div class="w-10 rounded-md bg-slate-500/30"></div>
+                        <div class="w-10 rounded-md bg-slate-500/30"></div>
+                        <div class="w-10 rounded-md bg-slate-500/30"></div>
+                        <div class="w-10 rounded-md bg-slate-500/30"></div>
                     </div>
                 </div>
             </div>
@@ -173,22 +194,22 @@
             {{ void "Replies Loading Placeholder/Skeleton" }}
             <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s pt-4 px-4 w-full">
                 <div class="animate-pulse flex w-full overflow-hidden gap-2">
-                    <div class="rounded-full bg-slate-500 aspect-square size-10"></div>
+                    <div class="rounded-full bg-slate-500/30 aspect-square size-10"></div>
                     <div class="flex flex-col gap-1 w-full">
                         <div class="flex gap-2 h-5 mb-1">
-                            <div class="w-full rounded-sm bg-slate-500"></div>
-                            <div class="h-4 w-full rounded-sm bg-slate-500"></div>
-                            <div class="h-4 w-28 rounded-sm bg-slate-500"></div>
+                            <div class="w-full rounded-sm bg-slate-500/30"></div>
+                            <div class="h-4 w-full rounded-sm bg-slate-500/30"></div>
+                            <div class="h-4 w-28 rounded-sm bg-slate-500/30"></div>
                         </div>
-                        <div class="h-4 w-40 rounded-sm bg-slate-500"></div>
-                        <div class="h-4 w-48 rounded-sm bg-slate-500"></div>
-                        <div class="h-4 w-36 rounded-sm bg-slate-500"></div>
+                        <div class="h-4 w-40 rounded-sm bg-slate-500/30"></div>
+                        <div class="h-4 w-48 rounded-sm bg-slate-500/30"></div>
+                        <div class="h-4 w-36 rounded-sm bg-slate-500/30"></div>
                         <div class="flex justify-between h-6 mt-2 w-full">
-                            <div class="w-10 rounded-md bg-slate-500"></div>
-                            <div class="w-10 rounded-md bg-slate-500"></div>
-                            <div class="w-10 rounded-md bg-slate-500"></div>
-                            <div class="w-10 rounded-md bg-slate-500"></div>
-                            <div class="w-10 rounded-md bg-slate-500"></div>
+                            <div class="w-10 rounded-md bg-slate-500/30"></div>
+                            <div class="w-10 rounded-md bg-slate-500/30"></div>
+                            <div class="w-10 rounded-md bg-slate-500/30"></div>
+                            <div class="w-10 rounded-md bg-slate-500/30"></div>
+                            <div class="w-10 rounded-md bg-slate-500/30"></div>
                         </div>
                     </div>
                 </div>
@@ -284,6 +305,7 @@ export default defineComponent({
     },
     data(){
         return{
+            AppState,
             AppBskyEmbedRecord,
             imageCollection: [],
             postDetails,
