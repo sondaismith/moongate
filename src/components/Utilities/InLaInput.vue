@@ -18,7 +18,7 @@
 <script lang="ts">
 import { isTauri } from '@tauri-apps/api/core';
 import { defineComponent } from 'vue'
-import { toast } from '../../state/AppState.vue';
+import { CopyTextToClipboard, toast } from '../../state/AppState.vue';
 
 interface Emits{
     /**Triggered when the passed `modelValue` is updated by the control. */
@@ -96,33 +96,7 @@ export default defineComponent({
         },
         /**Allows the User to quickly copy the text contained in this control. */
         copyText(){
-            if(navigator.clipboard){//Modern method - requires app to serve page(s) over HTTPS
-                try{
-                    navigator.clipboard.writeText(this.modelValue ? this.modelValue : '');
-                    toast.add({summary:'Text Copied',severity:'success', group:'bc', life:1000});
-                }
-                catch(err){
-                    console.error('Unable to copy to clipboard', err);
-                    toast.add({summary:'Error copying text',severity:'error', group:'bc', life:1000});
-                }
-            }
-            else{
-                //Unsecured text copy
-                const textArea = document.createElement("textarea");
-                textArea.value = this.modelValue ? this.modelValue : '';
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                try{
-                    document.execCommand('copy');
-                    toast.add({summary:'Text Copied',severity:'success', group:'bc', life:1000});
-                }
-                catch(err){
-                    console.error('Unable to copy to clipboard', err);
-                    toast.add({summary:'Error copying text',severity:'error', group:'bc', life:1000});
-                }
-                document.body.removeChild(textArea);
-            }
+            CopyTextToClipboard(typeof this.modelValue != 'undefined' ? this.modelValue : '');
         }
     },
     setup () {

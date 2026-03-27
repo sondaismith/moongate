@@ -67,7 +67,7 @@ import { CreateBskyWeblink, getCompactNumberValue } from '../../helpers/converte
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AppState, toast } from '../../state/AppState.vue';
+import { AppState, CopyTextToClipboard, toast } from '../../state/AppState.vue';
 import { PostActions } from '../../enums/PostEnums';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import { BookmarkPost, DeletePost, RemoveBookmark } from '../../lib/api/Post.vue';
@@ -77,8 +77,10 @@ import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 
 function CopyPostLink(postUri:string, handle:string=""){
     let link = CreateBskyWeblink(postUri, handle);
-    if(link) navigator.clipboard.writeText(link);
-    //Need to add toast or something to alert the User that link has been copied
+    if(typeof link != 'undefined')
+        CopyTextToClipboard(link, 'link');
+    else
+        toast.add({summary:'Error creating Link',severity:'error', group:'bc', life:1000});
 }
 
 /**
