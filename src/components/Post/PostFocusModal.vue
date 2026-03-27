@@ -1,5 +1,5 @@
 <template>
-    <div data-testid="post-focus-modal" id="post-focus-modal" tabindex="0" @scroll.passive="toggleScrollToTop"
+    <div data-testid="post-focus-modal-main" id="post-focus-modal-main" tabindex="0" @scroll.passive="toggleScrollToTop"
     class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
         {{ void "Fullscreen Image" }}
         <Transition>
@@ -32,7 +32,7 @@
         <div v-if="AppState.usingMobileLayout" class="sticky top-0 z-10 bg-postFocusBG border-b border-outline shadow-scroll-underline shadow-postFocusModalDetailsShadow/10
         flex items-center gap-2 px-2 py-1 text-primary">
             <div class="flex items-center gap-1">
-                <SquareButton data-testid="postFocusModal-control-bar-close-button" @click="onReplyThreadBackButton()"
+                <SquareButton data-testid="postFocusModal-control-bar-back-button" @click="onReplyThreadBackButton()"
                 class="text-primary shadow-none hover:bg-btnHover text-2xl" title="Back"
                 button-padding="0">
                     <i-mingcute:arrow-left-line/>
@@ -45,7 +45,7 @@
             :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top"><i-mingcute:arrow-to-up-fill/></div>
             <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
             class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary sm:hidden h-full" title="View Image"><i-mdi:insert-photo/></div>
-            <div class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
+            <div data-testid="postFocusModal-control-bar-close-button" class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
             title="Close Thread" @click="hideModal"><i-mingcute:exit-fill/></div>
         </div>
         {{ void "Media Section" }}
@@ -95,12 +95,12 @@
         </div>
         <div v-else @click="hideModal" class="w-full h-full hidden sm:block"></div>
         {{ void "Comments Section" }}
-        <div data-testid="post-focus-modal-details" id="post-focus-modal-details" @scroll.passive="toggleScrollToTop" class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto sm:overflow-y-auto">
+        <div data-testid="post-focus-modal-side" id="post-focus-modal-side" @scroll.passive="toggleScrollToTop" class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto sm:overflow-y-auto">
             {{ void "Sticky Control bar" }}
             <div v-if="!AppState.usingMobileLayout" class="sticky top-0 z-10 bg-postFocusBG border-b border-outline shadow-scroll-underline shadow-postFocusModalDetailsShadow/10
             flex items-center gap-2 px-2 py-1 text-primary">
                 <div class="flex items-center gap-1">
-                    <SquareButton data-testid="postFocusModal-control-bar-close-button" @click="onReplyThreadBackButton()"
+                    <SquareButton data-testid="postFocusModal-control-bar-back-button" @click="onReplyThreadBackButton()"
                     class="text-primary shadow-none hover:bg-btnHover text-2xl" title="Back"
                     button-padding="0">
                         <i-mingcute:arrow-left-line/>
@@ -113,7 +113,7 @@
                 :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top"><i-mingcute:arrow-to-up-fill/></div>
                 <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
                 class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary sm:hidden h-full" title="View Image"><i-mdi:insert-photo/></div>
-                <div class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
+                <div data-testid="postFocusModal-control-bar-close-button" class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
                 title="Close Thread" @click="hideModal"><i-mingcute:exit-fill/></div>
             </div>
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
@@ -215,14 +215,11 @@
                 </div>
             </div>
             {{ void "Replies" }}
-            <ReplyBreadcrumb class="px-4" :current-breadcrumb="currentBreadcrumb"/>
+            <!-- <ReplyBreadcrumb class="px-4" :current-breadcrumb="currentBreadcrumb"/>
             <div v-if="threadNavIndex>0" class="flex px-4 text-primary items-center"
             @click="onReplyThreadBackButton">
                 <div class="bg-btn px-1 rounded hover:bg-btnHover cursor-pointer">Back</div>
-                <!-- <div class="flex text-xs flex-wrap">
-                    <div v-for="navItem in postDetails.threadNavHistory">{{ navItem.post.author.displayName }} ></div>
-                </div> -->
-            </div>
+            </div> -->
             <PostThreadView v-if="!postDetails.isAwaitingFocusData" @update-thread-context="updateThreadContextFromPost"
             :is-changing-thread-context="isChangingThreadContext" :current-thread-view="postDetails.currentThreadView"/>
         </div>
@@ -355,6 +352,10 @@ export default defineComponent({
             /**Record of the route the User was using before opening this modal. Navigated back to when
              * the modal is closed. */
             routeEntryPoint:'/',
+            /**The `data-testid` selector for the reply container used when using the Desktop layout. */
+            replyContainerElementDesktop:'[data-testid=post-focus-modal-side]',
+            /**The `data-testid` selector for the reply container used when using the Mobile layout. */
+            replyContainerElementMobile:'[data-testid=post-focus-modal-main]'
         }
     },
     methods:{
@@ -606,8 +607,9 @@ export default defineComponent({
          * Method used to scroll to top of `PostFocusModal`.
          */
         scrollToTopOfModal(){
-            let scrollElement = 'post-focus-modal-details';
-            if(AppState.usingMobileLayout) scrollElement = 'post-focus-modal';
+            let scrollElement = this.replyContainerElementDesktop;
+            if(AppState.usingMobileLayout) scrollElement = this.replyContainerElementMobile;
+            scrollElement = scrollElement.split('=')[1].split(']')[0];
             let mainContainer = document.getElementById(scrollElement);
             if(mainContainer) mainContainer.scrollBy({top:-mainContainer.scrollTop,behavior:'smooth'});
         },
@@ -853,8 +855,8 @@ export default defineComponent({
          * mode or not.
          */
         replyContainerSelector(){
-            if(!AppState.usingMobileLayout) return '[data-testid=postThreadView]';
-            else return '[data-testid=post-focus-modal]';
+            if(!AppState.usingMobileLayout) return this.replyContainerElementDesktop;
+            else return this.replyContainerElementMobile;
         }
     },
     watch:{
@@ -881,7 +883,7 @@ export default defineComponent({
         }
         if((from.name == 'postfocusmodal' && to.name == 'postfocusmodal with mediaindex') || (from.name == 'postfocusmodal with mediaindex' && to.name == 'postfocusmodal')){
             //computed value `replyContainerSelector` is only available after navigation has happened (via `vm`) - have to use these hard-coded values
-            let replyContainer = document.querySelector(AppState.usingMobileLayout ? '[data-testid=post-focus-modal]' : '[data-testid=postThreadView]');
+            let replyContainer = document.querySelector(AppState.usingMobileLayout ? '[data-testid=post-focus-modal-main]' : '[data-testid=post-focus-modal-side]');
             let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
             next(vm => {
                 vm.manageReplyContainerState(to,from,fromScrollPos);
