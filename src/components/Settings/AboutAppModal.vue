@@ -39,9 +39,17 @@
             <div class="flex flex-col overflow-y-auto pt-2">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">March 27th 2026</div>
+                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                        <li>Updated display when viewing a Post Thread so that the quoted post in a Quote Retweet (QRT) is displayed underneath the main post content.</li>
+                        <li>Post Thread view now has a "control bar" at the top of the component to provide post context as well as useful functions ('scroll to top', 'view post image' etc.).</li>
+                        <li>See details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/294">#294</ExternalLink>)</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">March 17th 2026</div>
                     <ul class="list-disc list-inside h-full py-1 text-sm">
-                        <li>Fixed issue where image containers could not correctly idenntify the file extension of the new WEBP images the Bluesky CDN delivers by default.</li>
+                        <li>Fixed issue where image containers could not correctly identify the file extension of the new WEBP images the Bluesky CDN delivers by default.</li>
                         <li>Added ability to choose whether to save images as a WEBP or JPEG.</li>
                         <li>See details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/288">#288</ExternalLink>)</li>
                     </ul>
