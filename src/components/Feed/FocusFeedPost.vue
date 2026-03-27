@@ -166,8 +166,10 @@
                     :post-data="postToShow.embed.record" :post-reason="postReason"
                     @focus-post-avatar-clicked="callFocusPostAvatarClicked" @thread-reply-clicked="emitThreadReplyClicked(postToShow.embed.record.uri)"/>
                     {{ void "Post Interaction Buttons/Icons" }}
-                    <PostInteractionIcons class="pb-0 !bg-lime-300s" :post-data="postToShow"/>
+                    <PostInteractionIcons v-if="!hidePostMetrics" class="pb-0 !bg-lime-300s" :post-data="postToShow"/>
                 </div>
+                {{ void "Spacer for when interaction icons are hidden (usually when displaying Quoted post)" }}
+                <div v-if="hidePostMetrics" class="h-1.5"></div>
             </div>
         </div>
     </div>
@@ -220,6 +222,11 @@ export default defineComponent({
             default:false
         },
         isReplyStyle:{
+            type:Boolean,
+            default:false
+        },
+        /**Should the associated Post's metrics (number of likes etc.) be hidden? */
+        hidePostMetrics:{
             type:Boolean,
             default:false
         },

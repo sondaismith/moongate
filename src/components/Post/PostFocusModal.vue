@@ -1,5 +1,5 @@
 <template>
-    <div data-testid="post-focus-modal" id="post-focus-modal" tabindex="0" @scroll.passive="toggleScrollToTop"
+    <div data-testid="post-focus-modal-main" id="post-focus-modal-main" tabindex="0" @scroll.passive="toggleScrollToTop"
     class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
         {{ void "Fullscreen Image" }}
         <Transition>
@@ -12,7 +12,7 @@
                 <img @contextmenu="(e) => {e.preventDefault()}" :src="(fullscreenImage as ViewExternal).uri ? (fullscreenImage as ViewExternal).uri : (fullscreenImage as ViewImage).fullsize" class="max-h-full max-w-full"/>
             </div>
         </Transition>
-        <div class="sticky sm:absolute top-0 z-20 flex justify-center h-10 w-full sm:w-auto shrink-0 bg-postFocusBG sm:bg-transparent border-b border-outline">
+        <!-- <div class="sticky sm:absolute top-0 z-20 flex justify-center h-10 w-full sm:w-auto shrink-0 bg-postFocusBG sm:bg-transparent border-b border-outline">
             {{ void "Close Button" }}
             <div class="self-center flex justify-between w-full h-full px-4 py-2 sm:px-0">
                 <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer bg-btn items-center py-1 px-3 text-primary sm:hidden transition-opacity"
@@ -27,6 +27,26 @@
             button-padding="0">
                 <i-mingcute:close-fill/>
             </SquareButton>
+        </div> -->
+        {{ void "Sticky Control bar - mobile version" }}
+        <div v-if="AppState.usingMobileLayout" class="sticky top-0 z-10 bg-postFocusBG border-b border-outline shadow-scroll-underline shadow-postFocusModalDetailsShadow/10
+        flex items-center gap-2 px-2 py-1 text-primary">
+            <div class="flex items-center gap-1">
+                <SquareButton data-testid="postFocusModal-control-bar-back-button" @click="onReplyThreadBackButton()"
+                class="text-primary shadow-none hover:bg-btnHover text-2xl" title="Back"
+                button-padding="0">
+                    <i-mingcute:arrow-left-line/>
+                </SquareButton>
+                <div class="text-lg font-bold">Post</div>
+            </div>
+            <div v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="animate-pulse h-4 w-full rounded-sm bg-slate-500/30"></div>
+            <div v-else class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as Record).text">{{ (postDetails.currentThreadView.post.record as Record).text }}</div>
+            <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary transition-opacity h-full ml-auto"
+            :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top"><i-mingcute:arrow-to-up-fill/></div>
+            <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
+            class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary sm:hidden h-full" title="View Image"><i-mdi:insert-photo/></div>
+            <div data-testid="postFocusModal-control-bar-close-button" class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
+            title="Close Thread" @click="hideModal"><i-mingcute:exit-fill/></div>
         </div>
         {{ void "Media Section" }}
         <div v-if="hasImageMedia || hasEmbedGIFMedia || isVideoView(postDetails.currentThreadView.post.embed)"
@@ -75,34 +95,54 @@
         </div>
         <div v-else @click="hideModal" class="w-full h-full hidden sm:block"></div>
         {{ void "Comments Section" }}
-        <div class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto">
+        <div data-testid="post-focus-modal-side" id="post-focus-modal-side" @scroll.passive="toggleScrollToTop" class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto sm:overflow-y-auto">
+            {{ void "Sticky Control bar" }}
+            <div v-if="!AppState.usingMobileLayout" class="sticky top-0 z-10 bg-postFocusBG border-b border-outline shadow-scroll-underline shadow-postFocusModalDetailsShadow/10
+            flex items-center gap-2 px-2 py-1 text-primary">
+                <div class="flex items-center gap-1">
+                    <SquareButton data-testid="postFocusModal-control-bar-back-button" @click="onReplyThreadBackButton()"
+                    class="text-primary shadow-none hover:bg-btnHover text-2xl" title="Back"
+                    button-padding="0">
+                        <i-mingcute:arrow-left-line/>
+                    </SquareButton>
+                    <div class="text-lg font-bold">Post</div>
+                </div>
+                <div v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="animate-pulse h-4 w-full rounded-sm bg-slate-500/30"></div>
+                <div v-else class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as Record).text">{{ (postDetails.currentThreadView.post.record as Record).text }}</div>
+                <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary transition-opacity h-full ml-auto"
+                :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top"><i-mingcute:arrow-to-up-fill/></div>
+                <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
+                class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary sm:hidden h-full" title="View Image"><i-mdi:insert-photo/></div>
+                <div data-testid="postFocusModal-control-bar-close-button" class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
+                title="Close Thread" @click="hideModal"><i-mingcute:exit-fill/></div>
+            </div>
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
             <div data-testid="postFocusModal-focus-post-loading" v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
                 <div class="animate-pulse flex flex-col w-full overflow-hidden gap-1">
                     <div class="flex gap-2 mb-1">
                         <div class="drop-shadow-md">
-                            <div class="rounded-full bg-slate-500 aspect-square size-10"></div>
+                            <div class="rounded-full bg-slate-500/30 aspect-square size-10"></div>
                         </div>
                         <div class="flex flex-col gap-1 w-full">
-                            <div class="h-4 w-24 rounded-sm bg-slate-500"></div>
-                            <div class="h-3 w-full rounded-sm bg-slate-500"></div>
+                            <div class="h-4 w-24 rounded-sm bg-slate-500/30"></div>
+                            <div class="h-3 w-full rounded-sm bg-slate-500/30"></div>
                         </div>
-                        <div class="w-48 h-8 rounded-full bg-slate-500"></div>
+                        <div class="w-48 h-8 rounded-full bg-slate-500/30"></div>
                     </div>
-                    <div class="h-4 w-full rounded-sm bg-slate-500"></div>
-                    <div class="h-4 w-full rounded-sm bg-slate-500"></div>
-                    <div class="h-4 w-4/5 rounded-sm bg-slate-500"></div>
-                    <div class="h-3 max-w-40 mt-1 rounded-sm bg-slate-500"></div>
+                    <div class="h-4 w-full rounded-sm bg-slate-500/30"></div>
+                    <div class="h-4 w-full rounded-sm bg-slate-500/30"></div>
+                    <div class="h-4 w-4/5 rounded-sm bg-slate-500/30"></div>
+                    <div class="h-3 max-w-40 mt-1 rounded-sm bg-slate-500/30"></div>
                     <div class="flex justify-between h-8 mt-1 w-full pt-2 border-t border-slate-500">
-                        <div class="w-10 rounded-md bg-slate-500"></div>
-                        <div class="w-10 rounded-md bg-slate-500"></div>
-                        <div class="w-10 rounded-md bg-slate-500"></div>
-                        <div class="w-10 rounded-md bg-slate-500"></div>
-                        <div class="w-10 rounded-md bg-slate-500"></div>
+                        <div class="w-10 rounded-md bg-slate-500/30"></div>
+                        <div class="w-10 rounded-md bg-slate-500/30"></div>
+                        <div class="w-10 rounded-md bg-slate-500/30"></div>
+                        <div class="w-10 rounded-md bg-slate-500/30"></div>
+                        <div class="w-10 rounded-md bg-slate-500/30"></div>
                     </div>
                 </div>
             </div>
-            <div data-testid="postFocusModal-focus-post-loaded" v-else class="p-4 pb-1 sticky top-10 sm:top-0 z-10 bg-postFocusBG border-b border-outline shadow-lg sm:shadow-none shadow-postFocusModalDetailsShadow/10">
+            <div data-testid="postFocusModal-focus-post-loaded" v-else class="p-4 pb-1 top-10 sm:top-0 z-10s bg-postFocusBG border-b border-outline shadow-lg sm:shadow-none shadow-postFocusModalDetailsShadow/10">
                 {{ void "User Info/Actions" }}
                 <div class="flex gap-1">
                     <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
@@ -130,6 +170,13 @@
                 :post-text="(postDetails.currentThreadView.post.record as Record).text"
                 :post-facets="(postDetails.currentThreadView.post.record as Record).facets"
                 :is-changing-thread-context="isChangingThreadContext"/>
+                {{ void "Quoted Post (if applicable)" }}
+                <div v-if="typeof postDetails.currentThreadView.post.embed != 'undefined'" class="py-2 text-sm">
+                    <FocusFeedPost v-if="typeof postDetails.currentThreadView.post.embed != 'undefined' && AppBskyEmbedRecord.isView(postDetails.currentThreadView.post.embed)"
+                    :post-data="postDetails.currentThreadView.post.embed.record" :hide-post-metrics="true"/>
+                    <FocusFeedPost v-else-if="typeof postDetails.currentThreadView.post.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed)"
+                    :post-data="postDetails.currentThreadView.post.embed.record.record" :hide-post-metrics="true"/>
+                </div>
                 {{ void "Post Metadata" }}
                 <div class="flex flex-col gap-2">
                     <div class="flex flex-wrap gap-1s leading-5 py-0.5 border-b-[1px] border-slate-600">
@@ -147,35 +194,32 @@
             {{ void "Replies Loading Placeholder/Skeleton" }}
             <div v-if="postDetails.isAwaitingFocusData" class="flex flex-col rounded bg-slate-400s pt-4 px-4 w-full">
                 <div class="animate-pulse flex w-full overflow-hidden gap-2">
-                    <div class="rounded-full bg-slate-500 aspect-square size-10"></div>
+                    <div class="rounded-full bg-slate-500/30 aspect-square size-10"></div>
                     <div class="flex flex-col gap-1 w-full">
                         <div class="flex gap-2 h-5 mb-1">
-                            <div class="w-full rounded-sm bg-slate-500"></div>
-                            <div class="h-4 w-full rounded-sm bg-slate-500"></div>
-                            <div class="h-4 w-28 rounded-sm bg-slate-500"></div>
+                            <div class="w-full rounded-sm bg-slate-500/30"></div>
+                            <div class="h-4 w-full rounded-sm bg-slate-500/30"></div>
+                            <div class="h-4 w-28 rounded-sm bg-slate-500/30"></div>
                         </div>
-                        <div class="h-4 w-40 rounded-sm bg-slate-500"></div>
-                        <div class="h-4 w-48 rounded-sm bg-slate-500"></div>
-                        <div class="h-4 w-36 rounded-sm bg-slate-500"></div>
+                        <div class="h-4 w-40 rounded-sm bg-slate-500/30"></div>
+                        <div class="h-4 w-48 rounded-sm bg-slate-500/30"></div>
+                        <div class="h-4 w-36 rounded-sm bg-slate-500/30"></div>
                         <div class="flex justify-between h-6 mt-2 w-full">
-                            <div class="w-10 rounded-md bg-slate-500"></div>
-                            <div class="w-10 rounded-md bg-slate-500"></div>
-                            <div class="w-10 rounded-md bg-slate-500"></div>
-                            <div class="w-10 rounded-md bg-slate-500"></div>
-                            <div class="w-10 rounded-md bg-slate-500"></div>
+                            <div class="w-10 rounded-md bg-slate-500/30"></div>
+                            <div class="w-10 rounded-md bg-slate-500/30"></div>
+                            <div class="w-10 rounded-md bg-slate-500/30"></div>
+                            <div class="w-10 rounded-md bg-slate-500/30"></div>
+                            <div class="w-10 rounded-md bg-slate-500/30"></div>
                         </div>
                     </div>
                 </div>
             </div>
             {{ void "Replies" }}
-            <ReplyBreadcrumb class="px-4" :current-breadcrumb="currentBreadcrumb"/>
+            <!-- <ReplyBreadcrumb class="px-4" :current-breadcrumb="currentBreadcrumb"/>
             <div v-if="threadNavIndex>0" class="flex px-4 text-primary items-center"
             @click="onReplyThreadBackButton">
                 <div class="bg-btn px-1 rounded hover:bg-btnHover cursor-pointer">Back</div>
-                <!-- <div class="flex text-xs flex-wrap">
-                    <div v-for="navItem in postDetails.threadNavHistory">{{ navItem.post.author.displayName }} ></div>
-                </div> -->
-            </div>
+            </div> -->
             <PostThreadView v-if="!postDetails.isAwaitingFocusData" @update-thread-context="updateThreadContextFromPost"
             :is-changing-thread-context="isChangingThreadContext" :current-thread-view="postDetails.currentThreadView"/>
         </div>
@@ -193,7 +237,7 @@ import { isView as isImageView, ViewImage } from '@atproto/api/dist/client/types
 import { isView as isVideoView, View as ViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia, AppBskyFeedPost } from '@atproto/api';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyFeedPost } from '@atproto/api';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import PostInteractionIcons from './PostInteractionIcons.vue';
@@ -211,6 +255,7 @@ import { debounce } from '../../helpers/debouncer';
 import { PostThreadBranchData } from '../../types/PostTypes';
 import { router } from '../../main';
 import { RouteLocationNormalizedLoadedGeneric } from 'vue-router';
+import FocusFeedPost from '../Feed/FocusFeedPost.vue';
 
 export default defineComponent({
     components:{
@@ -225,6 +270,7 @@ export default defineComponent({
         SlideshowArrow,
         VerifiedBadge,
         SquareButton,
+        FocusFeedPost
     },
     props:{
         // /**
@@ -256,6 +302,8 @@ export default defineComponent({
     },
     data(){
         return{
+            AppState,
+            AppBskyEmbedRecord,
             imageCollection: [],
             postDetails,
             convertToLongTimestamp,
@@ -304,6 +352,10 @@ export default defineComponent({
             /**Record of the route the User was using before opening this modal. Navigated back to when
              * the modal is closed. */
             routeEntryPoint:'/',
+            /**The `data-testid` selector for the reply container used when using the Desktop layout. */
+            replyContainerElementDesktop:'[data-testid=post-focus-modal-side]',
+            /**The `data-testid` selector for the reply container used when using the Mobile layout. */
+            replyContainerElementMobile:'[data-testid=post-focus-modal-main]'
         }
     },
     methods:{
@@ -555,7 +607,10 @@ export default defineComponent({
          * Method used to scroll to top of `PostFocusModal`.
          */
         scrollToTopOfModal(){
-            let mainContainer = document.getElementById('post-focus-modal');
+            let scrollElement = this.replyContainerElementDesktop;
+            if(AppState.usingMobileLayout) scrollElement = this.replyContainerElementMobile;
+            scrollElement = scrollElement.split('=')[1].split(']')[0];
+            let mainContainer = document.getElementById(scrollElement);
             if(mainContainer) mainContainer.scrollBy({top:-mainContainer.scrollTop,behavior:'smooth'});
         },
         /**
@@ -800,8 +855,8 @@ export default defineComponent({
          * mode or not.
          */
         replyContainerSelector(){
-            if(!AppState.usingMobileLayout) return '[data-testid=postThreadView]';
-            else return '[data-testid=post-focus-modal]';
+            if(!AppState.usingMobileLayout) return this.replyContainerElementDesktop;
+            else return this.replyContainerElementMobile;
         }
     },
     watch:{
@@ -828,7 +883,7 @@ export default defineComponent({
         }
         if((from.name == 'postfocusmodal' && to.name == 'postfocusmodal with mediaindex') || (from.name == 'postfocusmodal with mediaindex' && to.name == 'postfocusmodal')){
             //computed value `replyContainerSelector` is only available after navigation has happened (via `vm`) - have to use these hard-coded values
-            let replyContainer = document.querySelector(AppState.usingMobileLayout ? '[data-testid=post-focus-modal]' : '[data-testid=postThreadView]');
+            let replyContainer = document.querySelector(AppState.usingMobileLayout ? '[data-testid=post-focus-modal-main]' : '[data-testid=post-focus-modal-side]');
             let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
             next(vm => {
                 vm.manageReplyContainerState(to,from,fromScrollPos);
