@@ -53,9 +53,9 @@
         class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
             {{ void "Media Container" }}
             <div data-testid="postFocusModal-media-container" class="flex items-center h-full w-full justify-center overflow-hidden p-5 sm:pt-10">
-                <div class="flex h-full w-10 shrink-0 items-center mr-auto">
+                <!-- <div class="flex h-full w-10 shrink-0 items-center mr-auto">
                     <SlideshowArrow v-if="canDecreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Left" @button-clicked="decreaseCurrentMediaIndex"/>
-                </div>
+                </div> -->
                 <div v-if="postDetails.isAwaitingFocusData" class="h-full w-2/3">
                     <div class="h-full w-full rounded-sm border-0 bg-slate-500 animate-pulse mx-auto"></div>
                 </div>
@@ -63,10 +63,20 @@
                 class="rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
                 :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[currentMediaIndex] as ViewImage).fullsize+')'}">
                 </div> -->
-                <ImageContainer v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
+                <!-- <ImageContainer v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
                 @image-clicked="showImageFullscreen" :show-fullsize="true" :media-embed="{$type:'app.bsky.embed.images#view', images: [getEmbededImageObjects.images[currentMediaIndex]]} as AppBskyEmbedImages.View" :is-large-container-view="true"
                 :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postDetails.currentThreadView.post.author.handle"
-                :post-id="getEndOfPostUri" :media-index="currentMediaIndex"/>
+                :post-id="getEndOfPostUri" :media-index="currentMediaIndex"/> -->
+
+                <Swiper v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData" :modules="modules" :slides-per-view="1" :space-between="40" navigation :keyboard="{enabled:true}"
+                @after-init="getSwiperRef" @active-index-change="updateCurrentMediaIndex" class="text-primary h-full w-full">
+                    <SwiperSlide v-for="(image, index) in getEmbededImageObjects.images">
+                        <ImageContainer
+                        @image-clicked="showImageFullscreen" :show-fullsize="true" :media-embed="{$type:'app.bsky.embed.images#view', images: [getEmbededImageObjects.images[index]]} as AppBskyEmbedImages.View" :is-large-container-view="true"
+                        :images-to-display="image" :author="postDetails.currentThreadView.post.author.handle"
+                        :post-id="getEndOfPostUri" :media-index="currentMediaIndex"/>
+                    </SwiperSlide>
+                </Swiper>
                 <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
                 class="relative flex flex-col max-w-full h-full justify-center p-5"
                 :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
@@ -74,9 +84,9 @@
                 </video-container>
                 <EmbedExternal v-else-if="hasEmbedGIFMedia" @image-clicked="showImageFullscreen" :embed="getEmbedGIFMedia" :show-fullsize="true"
                 :author="postDetails.currentThreadView.post.author.handle" :post-id="getEndOfPostUri"/>
-                <div class="flex h-full w-10 shrink-0 items-center ml-auto">
+                <!-- <div class="flex h-full w-10 shrink-0 items-center ml-auto">
                     <SlideshowArrow v-if="canIncreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Right" @button-clicked="increaseCurrentMediaIndex"/>
-                </div>
+                </div> -->
             </div>
             <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mb-8 p-2 h-16 animate-pulse text-sm bg-slate-500/30"></div>
             <div v-else-if="hasEmbededImagesWithAltText" class="flex rounded-lg mx-8 mb-8 p-2 text-sm bg-slate-500/20">
@@ -256,6 +266,12 @@ import { PostThreadBranchData } from '../../types/PostTypes';
 import { router } from '../../main';
 import { RouteLocationNormalizedLoadedGeneric } from 'vue-router';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import { Navigation, Keyboard } from 'swiper/modules'
+import { Swiper as SwiperClass } from 'swiper/types'
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/keyboard';
 
 export default defineComponent({
     components:{
@@ -270,7 +286,9 @@ export default defineComponent({
         SlideshowArrow,
         VerifiedBadge,
         SquareButton,
-        FocusFeedPost
+        FocusFeedPost,
+        Swiper,
+        SwiperSlide
     },
     props:{
         // /**
@@ -304,6 +322,8 @@ export default defineComponent({
         return{
             AppState,
             AppBskyEmbedRecord,
+            swiper: {} as SwiperClass,
+            modules:[Navigation, Keyboard],
             imageCollection: [],
             postDetails,
             convertToLongTimestamp,
@@ -375,10 +395,12 @@ export default defineComponent({
         showImageFullscreen(image:ViewImage|ViewExternal){
             this.fullscreenImage = image;
             this.isImageFullscreen = true;
+            this.swiper.keyboard.disable();
         },
         hideImageFullscreen(){
             this.isImageFullscreen = false;
             this.fullscreenImage = {} as ViewImage|ViewExternal;
+            this.swiper.keyboard.enable();
         },
         hideModal(){
             this.$router.push(this.routeEntryPoint);
@@ -661,6 +683,22 @@ export default defineComponent({
             }
             AppState.routeNavigationInfo = null;
         },
+        /**
+         * Creates a reference to the Swiper element so that we can do things to it
+         * (like disabling it when the "fullscreen" image).
+         * @param swiper Swiper object retrieved via `after-init` event.
+         */
+        getSwiperRef(swiper:SwiperClass){
+            this.swiper = swiper;
+        },
+        /**
+         * Updates the `currentMediaIndex` when the active index of the `Swiper` component
+         * in `PostFocusModal` changes.
+         * @param swiper Swiper object retrieved via `active-index-change` event.
+         */
+        updateCurrentMediaIndex(swiper:SwiperClass){
+            this.currentMediaIndex = swiper.activeIndex;
+        }
     },
     computed:{
         /**Checks to see if the current post contains any image media. */
@@ -898,6 +936,16 @@ export default defineComponent({
         let replyContainer = document.querySelector(this.replyContainerSelector);
         let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
         this.manageReplyContainerState(to,from,fromScrollPos);
+        if(this.isImageFullscreen){//if fullscreen view is open, do not navigate - just close the fullscreen view
+            this.hideImageFullscreen();
+            return false;
+        }
+    },
+    beforeRouteLeave(){
+        if(this.isImageFullscreen){//if fullscreen view is open, do not navigate - just close the fullscreen view
+            this.hideImageFullscreen();
+            return false;
+        }
     },
     async created(){
         /**Defines actions for the `toggleScrollToTop` function */
@@ -927,14 +975,14 @@ export default defineComponent({
     },
     mounted(){
         //Add keyboard+mouse shortcut listener
-        this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
+        // this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
         (this.$el as HTMLElement).focus();
         document.title = `Loading Post data... | moongate`;
     },
     beforeUnmount() {
         console.log('Closing PostFocusModal...');
         //Remove keyboard+mouse shortcut listener
-        this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
+        // this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
         AppState.handleFocusOnComponentClose();
     },
 })
