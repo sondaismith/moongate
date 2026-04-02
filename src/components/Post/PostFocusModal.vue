@@ -56,6 +56,8 @@
                 <!-- <div class="flex h-full w-10 shrink-0 items-center mr-auto">
                     <SlideshowArrow v-if="canDecreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Left" @button-clicked="decreaseCurrentMediaIndex"/>
                 </div> -->
+                <div v-if="postDetails.isAwaitingFocusData" class="absolute bottom-0 right-5 animate-pulse bg-slate-300/30 h-10 w-10"></div>
+                <div v-else-if="getEmbededImageObjects.images.length>1" class="absolute bottom-0 right-5 bg-blue-200/30 p-2 w-10">{{currentMediaIndex+1}}/{{ getEmbededImageObjects.images.length }}</div>
                 <div v-if="postDetails.isAwaitingFocusData" class="h-full w-2/3">
                     <div class="h-full w-full rounded-sm border-0 bg-slate-500 animate-pulse mx-auto"></div>
                 </div>
@@ -68,8 +70,9 @@
                 :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postDetails.currentThreadView.post.author.handle"
                 :post-id="getEndOfPostUri" :media-index="currentMediaIndex"/> -->
 
-                <Swiper v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData" :modules="modules" :slides-per-view="1" :space-between="40" navigation :keyboard="{enabled:true}"
-                @after-init="getSwiperRef" @active-index-change="updateCurrentMediaIndex" class="text-primary h-full w-full">
+                <Swiper v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData" :modules="modules" :slides-per-view="1" :space-between="40" :initial-slide="clickedMediaIndex"
+                navigation :keyboard="{enabled:true}" @after-init="getSwiperRef" @active-index-change="updateCurrentMediaIndex"
+                class="text-primary h-full w-full">
                     <SwiperSlide v-for="(image, index) in getEmbededImageObjects.images">
                         <ImageContainer
                         @image-clicked="showImageFullscreen" :show-fullsize="true" :media-embed="{$type:'app.bsky.embed.images#view', images: [getEmbededImageObjects.images[index]]} as AppBskyEmbedImages.View" :is-large-container-view="true"
@@ -267,11 +270,12 @@ import { router } from '../../main';
 import { RouteLocationNormalizedLoadedGeneric } from 'vue-router';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Navigation, Keyboard } from 'swiper/modules'
+import { Navigation, Keyboard, Pagination } from 'swiper/modules'
 import { Swiper as SwiperClass } from 'swiper/types'
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/keyboard';
+import 'swiper/css/pagination'
 
 export default defineComponent({
     components:{
@@ -323,7 +327,7 @@ export default defineComponent({
             AppState,
             AppBskyEmbedRecord,
             swiper: {} as SwiperClass,
-            modules:[Navigation, Keyboard],
+            modules:[Navigation, Keyboard, Pagination],
             imageCollection: [],
             postDetails,
             convertToLongTimestamp,
