@@ -52,12 +52,12 @@
         <div v-if="hasImageMedia || hasEmbedGIFMedia || isVideoView(postDetails.currentThreadView.post.embed)"
         class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
             {{ void "Media Container" }}
-            <div data-testid="postFocusModal-media-container" class="flex items-center h-full w-full justify-center overflow-hidden p-5 sm:pt-10">
+            <div v-if="postDetails.isAwaitingFocusData" class="absolutes z-10 select-none mx-auto mt-5 animate-pulse bg-blue-200/30 h-10 w-10"></div>
+            <div v-else-if="getEmbededImageObjects.images.length>1" class="absolutes z-10 select-none mx-auto mt-5 bg-blue-200/30 p-2 w-10">{{currentMediaIndex+1}}/{{ getEmbededImageObjects.images.length }}</div>
+            <div data-testid="postFocusModal-media-container" class="flex items-center h-full w-full justify-center overflow-hidden p-5">
                 <!-- <div class="flex h-full w-10 shrink-0 items-center mr-auto">
                     <SlideshowArrow v-if="canDecreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Left" @button-clicked="decreaseCurrentMediaIndex"/>
                 </div> -->
-                <div v-if="postDetails.isAwaitingFocusData" class="absolute bottom-0 right-5 animate-pulse bg-slate-300/30 h-10 w-10"></div>
-                <div v-else-if="getEmbededImageObjects.images.length>1" class="absolute bottom-0 right-5 bg-blue-200/30 p-2 w-10">{{currentMediaIndex+1}}/{{ getEmbededImageObjects.images.length }}</div>
                 <div v-if="postDetails.isAwaitingFocusData" class="h-full w-2/3">
                     <div class="h-full w-full rounded-sm border-0 bg-slate-500 animate-pulse mx-auto"></div>
                 </div>
