@@ -12,22 +12,6 @@
                 <img @contextmenu="(e) => {e.preventDefault()}" :src="(fullscreenImage as ViewExternal).uri ? (fullscreenImage as ViewExternal).uri : (fullscreenImage as ViewImage).fullsize" class="max-h-full max-w-full"/>
             </div>
         </Transition>
-        <!-- <div class="sticky sm:absolute top-0 z-20 flex justify-center h-10 w-full sm:w-auto shrink-0 bg-postFocusBG sm:bg-transparent border-b border-outline">
-            {{ void "Close Button" }}
-            <div class="self-center flex justify-between w-full h-full px-4 py-2 sm:px-0">
-                <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer bg-btn items-center py-1 px-3 text-primary sm:hidden transition-opacity"
-                :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%'}]"><i-mdi:format-vertical-align-top/></div>
-                <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
-                class="flex rounded-lg cursor-pointer bg-btn items-center px-3 text-primary text-sm sm:hidden">View Image</div>
-                <div data-testid="postFocusModal-close-button-mobile" @click="hideModal" class="flex rounded-lg cursor-pointer bg-btn px-3 items-center text-primary sm:hidden"><i-mingcute:close-fill/></div>
-            </div>
-            <SquareButton data-testid="postFocusModal-close-button" @click="hideModal"
-            class="text-primary bg-btn !rounded-br aspect-square w-10 text-2xl
-            ml-auto sm:!rounded-tl-none sm:!rounded-r-none hidden sm:block"
-            button-padding="0">
-                <i-mingcute:close-fill/>
-            </SquareButton>
-        </div> -->
         {{ void "Sticky Control bar - mobile version" }}
         <div v-if="AppState.usingMobileLayout" class="sticky top-0 z-10 bg-postFocusBG border-b border-outline shadow-scroll-underline shadow-postFocusModalDetailsShadow/10
         flex items-center gap-2 px-2 py-1 text-primary">
@@ -55,21 +39,9 @@
             <div v-if="postDetails.isAwaitingFocusData" class="rounded-lg z-10 select-none mx-auto mt-5 animate-pulse bg-slate-500/20 h-10 w-10"></div>
             <div v-else-if="getEmbededImageObjects.images.length>1" class="rounded-lg z-10 select-none mx-auto mt-5 bg-slate-500/20 p-2 w-10">{{currentMediaIndex+1}}/{{ getEmbededImageObjects.images.length }}</div>
             <div data-testid="postFocusModal-media-container" class="flex items-center h-full w-full justify-center overflow-hidden p-5">
-                <!-- <div class="flex h-full w-10 shrink-0 items-center mr-auto">
-                    <SlideshowArrow v-if="canDecreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Left" @button-clicked="decreaseCurrentMediaIndex"/>
-                </div> -->
                 <div v-if="postDetails.isAwaitingFocusData" class="h-full w-2/3">
                     <div class="h-full w-full rounded-sm border-0 bg-slate-500 animate-pulse mx-auto"></div>
                 </div>
-                <!-- <div v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
-                class="rounded-sm h-full w-full bg-center bg-contain bg-no-repeat"
-                :style="{'background-image' : 'url('+(getEmbededImageViewImageObjects[currentMediaIndex] as ViewImage).fullsize+')'}">
-                </div> -->
-                <!-- <ImageContainer v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData"
-                @image-clicked="showImageFullscreen" :show-fullsize="true" :media-embed="{$type:'app.bsky.embed.images#view', images: [getEmbededImageObjects.images[currentMediaIndex]]} as AppBskyEmbedImages.View" :is-large-container-view="true"
-                :images-to-display="[getEmbededImageViewImageObjects[currentMediaIndex]]" :author="postDetails.currentThreadView.post.author.handle"
-                :post-id="getEndOfPostUri" :media-index="currentMediaIndex"/> -->
-
                 <Swiper v-else-if="hasImageMedia && !postDetails.isAwaitingFocusData" :modules="modules" :slides-per-view="1" :space-between="40" :initial-slide="clickedMediaIndex"
                 navigation :keyboard="{enabled:true}" @after-init="getSwiperRef" @active-index-change="updateCurrentMediaIndex"
                 class="text-primary h-full w-full">
@@ -87,9 +59,6 @@
                 </video-container>
                 <EmbedExternal v-else-if="hasEmbedGIFMedia" @image-clicked="showImageFullscreen" :embed="getEmbedGIFMedia" :show-fullsize="true"
                 :author="postDetails.currentThreadView.post.author.handle" :post-id="getEndOfPostUri"/>
-                <!-- <div class="flex h-full w-10 shrink-0 items-center ml-auto">
-                    <SlideshowArrow v-if="canIncreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Right" @button-clicked="increaseCurrentMediaIndex"/>
-                </div> -->
             </div>
             <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mb-8 p-2 h-16 animate-pulse text-sm bg-slate-500/30"></div>
             <div v-else-if="hasEmbededImagesWithAltText" class="flex rounded-lg mx-8 mb-8 p-2 text-sm bg-slate-500/20">
