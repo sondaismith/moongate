@@ -52,8 +52,8 @@
         <div v-if="hasImageMedia || hasEmbedGIFMedia || isVideoView(postDetails.currentThreadView.post.embed)"
         class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
             {{ void "Media Container" }}
-            <div v-if="postDetails.isAwaitingFocusData" class="absolutes z-10 select-none mx-auto mt-5 animate-pulse bg-blue-200/30 h-10 w-10"></div>
-            <div v-else-if="getEmbededImageObjects.images.length>1" class="absolutes z-10 select-none mx-auto mt-5 bg-blue-200/30 p-2 w-10">{{currentMediaIndex+1}}/{{ getEmbededImageObjects.images.length }}</div>
+            <div v-if="postDetails.isAwaitingFocusData" class="rounded-lg z-10 select-none mx-auto mt-5 animate-pulse bg-slate-500/20 h-10 w-10"></div>
+            <div v-else-if="getEmbededImageObjects.images.length>1" class="rounded-lg z-10 select-none mx-auto mt-5 bg-slate-500/20 p-2 w-10">{{currentMediaIndex+1}}/{{ getEmbededImageObjects.images.length }}</div>
             <div data-testid="postFocusModal-media-container" class="flex items-center h-full w-full justify-center overflow-hidden p-5">
                 <!-- <div class="flex h-full w-10 shrink-0 items-center mr-auto">
                     <SlideshowArrow v-if="canDecreaseMediaIndex && !postDetails.isAwaitingFocusData" arrow-direction="Left" @button-clicked="decreaseCurrentMediaIndex"/>
@@ -427,6 +427,15 @@ export default defineComponent({
             // else if(!e.repeat) console.log('Other key pressed: '+e.key);
         },
         /**
+         * Method used to close the `PostFocusModal` if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape'){
+                this.hideModal();
+            }
+        },
+        /**
          * Method used to retrieve the Post/Post thread data via the Bluesky
          * API.
          * NOTE: Only used when modal is first used. To change the Post Thread
@@ -459,6 +468,7 @@ export default defineComponent({
                     if(replyContainer != null){
                         replyContainer.scrollTop = this.threadBranchHistory[this.threadNavIndex].scrollPos;
                     }
+                    (this.$el as HTMLElement).focus();
                 }, 1);
                 document.title = this.getFocusPostTitle;
                 console.log('PostFocusModal - getThreadData "finally" handler has run')
@@ -980,6 +990,7 @@ export default defineComponent({
     mounted(){
         //Add keyboard+mouse shortcut listener
         // this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
         (this.$el as HTMLElement).focus();
         document.title = `Loading Post data... | moongate`;
     },
@@ -987,6 +998,7 @@ export default defineComponent({
         console.log('Closing PostFocusModal...');
         //Remove keyboard+mouse shortcut listener
         // this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
         AppState.handleFocusOnComponentClose();
     },
 })
