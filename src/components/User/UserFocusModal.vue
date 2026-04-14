@@ -12,8 +12,7 @@
                 <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.banner" class="max-h-full max-w-full"/>
             </div>
         </TransitionGroup>
-        <div class="relative z-20 flex flex-col max-w-[40rem] w-full sm:w-2/3s h-[95%] sm:h-4/5
-        mx-2 sm:mx-auto my-auto rounded bg-focusBG text-primary drop-shadow-lg overflow-hidden">
+        <div class="relative z-20 flex flex-col max-w-[40rem] w-full h-full sm:mx-auto my-auto bg-focusBG text-primary drop-shadow-lg overflow-hidden">
             {{ void "Control Bar" }}
             <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8 shrink-0 w-full self-start
             border-b border-outlineLighter *:w-12 *:shadow-none *:rounded-none *:border-none">
@@ -161,7 +160,7 @@
                             <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory && !isAccountBlocked" :post-text="UserFocusModalState.currentUserPageDetails.ProfileData ? UserFocusModalState.currentUserPageDetails.ProfileData.description : 'No Description'"/>
                             <AccountModerationLabel :is-muted="isAccountMuted" :is-blocked="isAccountBlocked"/>
                         </div>
-                        <div v-if="!isAccountBlocked" id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
+                        <div v-if="!isAccountBlocked" id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG shadow-scroll-underline"
                         :style="{'top':userSummaryBottomPos+'px'}">
                             <div @click="viewFeed" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View User's Feed (Posts, Retweets)">
@@ -196,7 +195,7 @@
                         </div>
                         {{ void "General Posts" }}
                         <div v-if="(isViewingFeed || isViewingPosts || isViewingReplies || isViewingLikes) && !isAccountBlocked"
-                        class="flex flex-col flex-wrap items-start py-2 px-4 gap-2 max-w-[30rem] w-full">
+                        class="flex flex-col flex-wrap items-start py-2 px-4 pt-4 gap-2 max-w-[30rem] w-full">
                             {{ void "Placeholder Post" }}
                             <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
                                 <div class="flex h-10 gap-2">
