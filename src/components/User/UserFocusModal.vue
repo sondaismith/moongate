@@ -14,32 +14,16 @@
         </TransitionGroup>
         <div class="relative z-20 flex flex-col max-w-[40rem] w-full h-full sm:mx-auto my-auto bg-focusBG text-primary drop-shadow-lg overflow-hidden">
             {{ void "Control Bar" }}
-            <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8 shrink-0 w-full self-start
-            border-b border-outlineLighter *:w-12 *:shadow-none *:rounded-none *:border-none">
-                <!-- <SquareButton :is-disabled="!hasPrevNavRecords"
-                title="Go to previous User Feed page" @click="goToPreviousNavHistory"
-                class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
-                focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
-                    <i-mingcute:arrow-left-fill
-                    class="text-2xl"
-                    :class="[{'text-disabled' : !hasPrevNavRecords}]"/>
-                </SquareButton>
-                <SquareButton :is-disabled="!hasNextNavRecords"
-                title="Go to next User Feed page" @click="goToNextNavHistory(true)"
-                class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
-                focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
-                    <i-mingcute:arrow-right-fill
-                    class="text-2xl"
-                    :class="[{'text-disabled' : !hasNextNavRecords}]"/>
-                </SquareButton> -->
+            <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8s px-2 py-1 items-center shrink-0 w-full self-start
+            border-b border-outlineLighter *:shadow-none">
                 <SquareButton
                 title="Refresh page" :is-disabled="awaitingProfileData || isAwaitingTabSwitchData || !isHandleValid" @click="refreshPage"
-                class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
-                focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
+                class="transition-colors enabled:hover:bg-navbarBtnHover focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText"
+                button-padding="0">
                     <i-mingcute:refresh-3-fill class="text-2xl"/>
                 </SquareButton>
                 <SquareButton @click="closeModal" title="Close User Feed Modal"
-                class="ml-auto bg-btn hover:bg-red-600 focus-visible:bg-red-600">
+                class="ml-auto bg-btn hover:bg-red-600 focus-visible:bg-red-600 border border-outline" button-padding="0">
                     <i-mingcute:close-fill class="text-2xl"/>
                 </SquareButton>
             </div>
@@ -130,7 +114,7 @@
                                             :user-did="UserFocusModalState.currentUserPageDetails.ProfileData.did" :is-disabled="!AppState.isAuthBrowsing || isAccountBlocked"/>
                                         <!-- </Transition> -->
                                         <PillButton @click="showUserOptionsMenu($event,UserFocusModalState.currentUserPageDetails.ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
-                                        focus-visible:bg-btnHover">...</PillButton>
+                                        focus-visible:bg-btnHover shadow-none">...</PillButton>
                                     </div>
                                 </div>
                                 <div v-if="!isAccountBlocked" class="flex mt-2">
