@@ -181,48 +181,90 @@
                         <div v-if="(isViewingFeed || isViewingPosts || isViewingReplies || isViewingLikes) && !isAccountBlocked"
                         class="flex flex-col flex-wrap items-start py-2 px-4 pt-4 gap-2 max-w-[30rem] w-full">
                             {{ void "Placeholder Post" }}
-                            <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
-                                <div class="flex h-10 gap-2">
-                                    <div class="rounded-full size-10 bg-slate-500"></div>
-                                    <div class="flex flex-col gap-1 overflow-hidden">
-                                        <div class="h-5 w-24 rounded bg-slate-500"></div>
-                                        <div class="h-4 w-20 rounded bg-slate-500"></div>
+                            <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="flex flex-col w-full gap-2">
+                                <div class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
+                                    <div class="flex h-10 gap-2">
+                                        <div class="rounded-full size-10 bg-slate-500"></div>
+                                        <div class="flex flex-col gap-1 overflow-hidden">
+                                            <div class="h-5 w-24 rounded bg-slate-500"></div>
+                                            <div class="h-4 w-20 rounded bg-slate-500"></div>
+                                        </div>
+                                        <div class="h-3 w-20 rounded bg-slate-500 ml-auto"></div>
                                     </div>
-                                    <div class="h-3 w-20 rounded bg-slate-500 ml-auto"></div>
+                                    <div class="flex flex-col w-full gap-1 mt-1">
+                                        <div class="h-5 w-3/5 rounded bg-slate-500"></div>
+                                        <div class="h-5 w-4/5 rounded bg-slate-500"></div>
+                                        <div class="h-5 w-2/5 rounded bg-slate-500"></div>
+                                    </div>
+                                    <div class="h-48 rounded-lg p-2 border border-slate-600">
+                                        <div class="w-full h-full rounded bg-slate-500"></div>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="flex flex-col w-full gap-1 mt-1">
-                                    <div class="h-5 w-3/5 rounded bg-slate-500"></div>
-                                    <div class="h-5 w-4/5 rounded bg-slate-500"></div>
-                                    <div class="h-5 w-2/5 rounded bg-slate-500"></div>
-                                </div>
-                                <div class="h-48 rounded-lg p-2 border border-slate-600">
-                                    <div class="w-full h-full rounded bg-slate-500"></div>
-                                </div>
-                                <div class="flex justify-between">
-                                    <div class="flex gap-1">
-                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
-                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                <div class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
+                                    <div class="flex h-10 gap-2">
+                                        <div class="rounded-full size-10 bg-slate-500"></div>
+                                        <div class="flex flex-col gap-1 overflow-hidden">
+                                            <div class="h-5 w-24 rounded bg-slate-500"></div>
+                                            <div class="h-4 w-20 rounded bg-slate-500"></div>
+                                        </div>
+                                        <div class="h-3 w-20 rounded bg-slate-500 ml-auto"></div>
                                     </div>
-                                    <div class="flex gap-1">
-                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
-                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    <div class="flex flex-col w-full gap-1 mt-1">
+                                        <div class="h-5 w-3/5 rounded bg-slate-500"></div>
+                                        <div class="h-5 w-4/5 rounded bg-slate-500"></div>
+                                        <div class="h-5 w-2/5 rounded bg-slate-500"></div>
                                     </div>
-                                    <div class="flex gap-1">
-                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
-                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    <div class="h-48 rounded-lg p-2 border border-slate-600">
+                                        <div class="w-full h-full rounded bg-slate-500"></div>
                                     </div>
-                                    <div class="flex gap-1">
-                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
-                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
-                                    </div>
-                                    <div class="flex gap-1">
-                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
-                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    <div class="flex justify-between">
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div v-else-if="!awaitingProfileData && !isNavigatingHistory" v-for="n in UserFocusModalState.currentUserPageDetails.FeedData.data as FeedViewPost[]"
-                            class="w-full shrink-0s">
+                            class="w-full">
                                 <FocusFeedPost :post-data="({$type:'app.bsky.feed.defs#postView',...n.post} as PostView)" :post-reason="n.reason" :reply-ref="n.reply" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
                             <div v-if="!awaitingProfileData && !UserFocusModalState.currentUserPageDetails.FeedData.cursor"
