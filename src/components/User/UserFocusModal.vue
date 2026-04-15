@@ -1101,6 +1101,20 @@ export default defineComponent({
         // this.setUserSummaryBottomPos();
         window.addEventListener('popstate', this.onNavigateBack);
     },
+    beforeRouteUpdate(){
+        if(this.isBannerFullscreen || this.isPFPFullscreen){
+            this.hideBannerFullscreen();
+            this.hidePFPFullscreen();
+            return false;
+        }
+    },
+    beforeRouteLeave(){
+        if(this.isBannerFullscreen || this.isPFPFullscreen){
+            this.hideBannerFullscreen();
+            this.hidePFPFullscreen();
+            return false;
+        }
+    },
     mounted() {
         //Add keyboard shortcut listener
         let modal = document.getElementById('user-focus-container');
