@@ -1,14 +1,14 @@
 <template>
-    <button class="relative group !border-transparent outline-none flex rounded cursor-pointer
+    <button class="relative group outline-none flex rounded cursor-pointer
     justify-center items-center gap-1 transition-colors"
     :class="[$attrs.class ? $attrs.class : 'bg-sky-500 hover:bg-sky-700 hover:border-sky-700 h-10',
         isDisabled || isAwaitingResponse ? '!bg-disabledBG !text-disabled pointer-events-nones select-none !cursor-not-allowed' : '',
-        `p-${focusPadding}`
+        `p-${focusPadding}`, buttonBorder ? `border ${borderColorClass}` : '!border-transparent'
     ]"
     :disabled="isDisabled || isAwaitingResponse">
         <div v-if="!isAwaitingResponse" class="flex items-center justify-center w-full h-full rounded border-2 border-transparent
         group-focus-visible:border-feedtypeBtnFocusHighlight"
-        :class="`p-${buttonPadding}`">
+        :class="[`p-${buttonPadding}`]">
             <slot></slot>
         </div>
         <i-mingcute:loading-fill v-else class="spinner"/>
@@ -48,6 +48,20 @@ export default defineComponent({
         focusPadding:{
             type:String,
             default:'0.5'
+        },
+        /**
+         * Does this button have a border?
+         */
+        buttonBorder:{
+            type:Boolean,
+            default:false
+        },
+        /**
+         * The class used to determine the color of the button's border color.
+         */
+        borderColorClass:{
+            type:String,
+            default:''
         }
     },
 })

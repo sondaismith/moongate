@@ -39,33 +39,47 @@
             <div class="flex flex-col overflow-y-auto pt-2">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">April 5th 2026</div>
+                    <ul class="list-disc pl-4 py-1 text-sm">
+                        <li>Updated how images are displayed when in the "Post Focus" view so that the User can swipe through any attached images.</li>
+                        <li>
+                            <span class="flex items-center gap-1">
+                                <span>The User can now close the "Post Focus" view by pressing the</span>
+                                <span class="flex items-center p-0.5 gap-1 px-1 rounded-md bg-primary/20"><i-mdi:keyboard-outline/><span>Esc</span></span>
+                                <span>key.</span>
+                            </span>
+                        </li>
+                        <li>See more details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/298">#298</ExternalLink>)</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">March 27th 2026</div>
-                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                    <ul class="list-disc pl-4 py-1 text-sm">
                         <li>Updated display when viewing a Post Thread so that the quoted post in a Quote Retweet (QRT) is displayed underneath the main post content.</li>
                         <li>Post Thread view now has a "control bar" at the top of the component to provide post context as well as useful functions ('scroll to top', 'view post image' etc.).</li>
-                        <li>See details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/294">#294</ExternalLink>)</li>
+                        <li>See more details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/294">#294</ExternalLink>)</li>
                     </ul>
                 </div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">March 17th 2026</div>
-                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                    <ul class="list-disc pl-4 py-1 text-sm">
                         <li>Fixed issue where image containers could not correctly identify the file extension of the new WEBP images the Bluesky CDN delivers by default.</li>
                         <li>Added ability to choose whether to save images as a WEBP or JPEG.</li>
-                        <li>See details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/288">#288</ExternalLink>)</li>
+                        <li>See more details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/288">#288</ExternalLink>)</li>
                     </ul>
                 </div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">March 13th 2026</div>
-                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                    <ul class="list-disc pl-4 py-1 text-sm">
                         <li>Updated app so that the scroll position is saved and restored when navigating a Post Thread with the "Post Focus Modal" (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/286">#286</ExternalLink>).
                         </li>
                     </ul>
                 </div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">February 10th 2026</div>
-                    <ul class="list-disc list-inside h-full py-1 text-sm">
+                    <ul class="list-disc pl-4 py-1 text-sm">
                         <li>Updated app so that application state is synced between all open web-based application instances.
-                            <ul class="list-disc list-inside h-full text-sm">
+                            <ul class="list-disc pl-4 text-sm">
                                 <li>Modifying the displayed Feed List is synced between instances.</li>
                                 <li>Modifying application settings is synced betweeen instances.</li>
                                 <li>Logging in/out or changing browsing modes is synced betweeen instances.</li>

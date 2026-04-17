@@ -12,35 +12,18 @@
                 <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.banner" class="max-h-full max-w-full"/>
             </div>
         </TransitionGroup>
-        <div class="relative z-20 flex flex-col max-w-[40rem] w-full sm:w-2/3s h-[95%] sm:h-4/5
-        mx-2 sm:mx-auto my-auto rounded bg-focusBG text-primary drop-shadow-lg overflow-hidden">
+        <div class="relative z-20 flex flex-col max-w-[40rem] w-full h-full sm:mx-auto my-auto bg-focusBG text-primary drop-shadow-lg overflow-hidden">
             {{ void "Control Bar" }}
-            <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8 shrink-0 w-full self-start
-            border-b border-outlineLighter *:w-12 *:shadow-none *:rounded-none *:border-none">
-                <!-- <SquareButton :is-disabled="!hasPrevNavRecords"
-                title="Go to previous User Feed page" @click="goToPreviousNavHistory"
-                class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
-                focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
-                    <i-mingcute:arrow-left-fill
-                    class="text-2xl"
-                    :class="[{'text-disabled' : !hasPrevNavRecords}]"/>
-                </SquareButton>
-                <SquareButton :is-disabled="!hasNextNavRecords"
-                title="Go to next User Feed page" @click="goToNextNavHistory(true)"
-                class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
-                focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
-                    <i-mingcute:arrow-right-fill
-                    class="text-2xl"
-                    :class="[{'text-disabled' : !hasNextNavRecords}]"/>
-                </SquareButton> -->
+            <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8s px-2 py-1 items-center shrink-0 w-full self-start
+            border-b border-outlineLighter *:shadow-none">
                 <SquareButton
                 title="Refresh page" :is-disabled="awaitingProfileData || isAwaitingTabSwitchData || !isHandleValid" @click="refreshPage"
-                class="enabled:bg-navbarBtn transition-colors enabled:hover:bg-navbarBtnHover
-                focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText">
+                class="transition-colors enabled:hover:bg-navbarBtnHover focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText"
+                button-padding="0">
                     <i-mingcute:refresh-3-fill class="text-2xl"/>
                 </SquareButton>
                 <SquareButton @click="closeModal" title="Close User Feed Modal"
-                class="ml-auto bg-btn hover:bg-red-600 focus-visible:bg-red-600">
+                class="ml-auto bg-btn hover:bg-red-600 focus-visible:bg-red-600 border border-outline" button-padding="0">
                     <i-mingcute:close-fill class="text-2xl"/>
                 </SquareButton>
             </div>
@@ -131,7 +114,7 @@
                                             :user-did="UserFocusModalState.currentUserPageDetails.ProfileData.did" :is-disabled="!AppState.isAuthBrowsing || isAccountBlocked"/>
                                         <!-- </Transition> -->
                                         <PillButton @click="showUserOptionsMenu($event,UserFocusModalState.currentUserPageDetails.ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
-                                        focus-visible:bg-btnHover">...</PillButton>
+                                        focus-visible:bg-btnHover shadow-none">...</PillButton>
                                     </div>
                                 </div>
                                 <div v-if="!isAccountBlocked" class="flex mt-2">
@@ -161,7 +144,7 @@
                             <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory && !isAccountBlocked" :post-text="UserFocusModalState.currentUserPageDetails.ProfileData ? UserFocusModalState.currentUserPageDetails.ProfileData.description : 'No Description'"/>
                             <AccountModerationLabel :is-muted="isAccountMuted" :is-blocked="isAccountBlocked"/>
                         </div>
-                        <div v-if="!isAccountBlocked" id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG"
+                        <div v-if="!isAccountBlocked" id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG shadow-scroll-underline"
                         :style="{'top':userSummaryBottomPos+'px'}">
                             <div @click="viewFeed" class="w-full hover:bg-btnHover cursor-pointer"
                             title="View User's Feed (Posts, Retweets)">
@@ -196,50 +179,92 @@
                         </div>
                         {{ void "General Posts" }}
                         <div v-if="(isViewingFeed || isViewingPosts || isViewingReplies || isViewingLikes) && !isAccountBlocked"
-                        class="flex flex-col flex-wrap items-start py-2 px-4 gap-2 max-w-[30rem] w-full">
+                        class="flex flex-col flex-wrap items-start py-2 px-4 pt-4 gap-2 max-w-[30rem] w-full">
                             {{ void "Placeholder Post" }}
-                            <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
-                                <div class="flex h-10 gap-2">
-                                    <div class="rounded-full size-10 bg-slate-500"></div>
-                                    <div class="flex flex-col gap-1 overflow-hidden">
-                                        <div class="h-5 w-24 rounded bg-slate-500"></div>
-                                        <div class="h-4 w-20 rounded bg-slate-500"></div>
+                            <div v-if="awaitingProfileData || isAwaitingTabSwitchData" class="flex flex-col w-full gap-2">
+                                <div class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
+                                    <div class="flex h-10 gap-2">
+                                        <div class="rounded-full size-10 bg-slate-500"></div>
+                                        <div class="flex flex-col gap-1 overflow-hidden">
+                                            <div class="h-5 w-24 rounded bg-slate-500"></div>
+                                            <div class="h-4 w-20 rounded bg-slate-500"></div>
+                                        </div>
+                                        <div class="h-3 w-20 rounded bg-slate-500 ml-auto"></div>
                                     </div>
-                                    <div class="h-3 w-20 rounded bg-slate-500 ml-auto"></div>
+                                    <div class="flex flex-col w-full gap-1 mt-1">
+                                        <div class="h-5 w-3/5 rounded bg-slate-500"></div>
+                                        <div class="h-5 w-4/5 rounded bg-slate-500"></div>
+                                        <div class="h-5 w-2/5 rounded bg-slate-500"></div>
+                                    </div>
+                                    <div class="h-48 rounded-lg p-2 border border-slate-600">
+                                        <div class="w-full h-full rounded bg-slate-500"></div>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="flex flex-col w-full gap-1 mt-1">
-                                    <div class="h-5 w-3/5 rounded bg-slate-500"></div>
-                                    <div class="h-5 w-4/5 rounded bg-slate-500"></div>
-                                    <div class="h-5 w-2/5 rounded bg-slate-500"></div>
-                                </div>
-                                <div class="h-48 rounded-lg p-2 border border-slate-600">
-                                    <div class="w-full h-full rounded bg-slate-500"></div>
-                                </div>
-                                <div class="flex justify-between">
-                                    <div class="flex gap-1">
-                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
-                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                <div class="flex flex-col w-full p-2 gap-2 rounded-lg border border-slate-600 animate-pulse">
+                                    <div class="flex h-10 gap-2">
+                                        <div class="rounded-full size-10 bg-slate-500"></div>
+                                        <div class="flex flex-col gap-1 overflow-hidden">
+                                            <div class="h-5 w-24 rounded bg-slate-500"></div>
+                                            <div class="h-4 w-20 rounded bg-slate-500"></div>
+                                        </div>
+                                        <div class="h-3 w-20 rounded bg-slate-500 ml-auto"></div>
                                     </div>
-                                    <div class="flex gap-1">
-                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
-                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    <div class="flex flex-col w-full gap-1 mt-1">
+                                        <div class="h-5 w-3/5 rounded bg-slate-500"></div>
+                                        <div class="h-5 w-4/5 rounded bg-slate-500"></div>
+                                        <div class="h-5 w-2/5 rounded bg-slate-500"></div>
                                     </div>
-                                    <div class="flex gap-1">
-                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
-                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    <div class="h-48 rounded-lg p-2 border border-slate-600">
+                                        <div class="w-full h-full rounded bg-slate-500"></div>
                                     </div>
-                                    <div class="flex gap-1">
-                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
-                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
-                                    </div>
-                                    <div class="flex gap-1">
-                                        <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
-                                        <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                    <div class="flex justify-between">
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <div class="h-5 w-6 rounded-lg bg-slate-500"></div>
+                                            <div class="h-5 w-8 rounded-lg bg-slate-500"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div v-else-if="!awaitingProfileData && !isNavigatingHistory" v-for="n in UserFocusModalState.currentUserPageDetails.FeedData.data as FeedViewPost[]"
-                            class="w-full shrink-0s">
+                            class="w-full">
                                 <FocusFeedPost :post-data="({$type:'app.bsky.feed.defs#postView',...n.post} as PostView)" :post-reason="n.reason" :reply-ref="n.reply" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
                             <div v-if="!awaitingProfileData && !UserFocusModalState.currentUserPageDetails.FeedData.cursor"
@@ -1101,6 +1126,20 @@ export default defineComponent({
         await this.updateDisplayedData();
         // this.setUserSummaryBottomPos();
         window.addEventListener('popstate', this.onNavigateBack);
+    },
+    beforeRouteUpdate(){
+        if(this.isBannerFullscreen || this.isPFPFullscreen){
+            this.hideBannerFullscreen();
+            this.hidePFPFullscreen();
+            return false;
+        }
+    },
+    beforeRouteLeave(){
+        if(this.isBannerFullscreen || this.isPFPFullscreen){
+            this.hideBannerFullscreen();
+            this.hidePFPFullscreen();
+            return false;
+        }
     },
     mounted() {
         //Add keyboard shortcut listener
