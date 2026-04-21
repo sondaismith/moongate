@@ -25,14 +25,14 @@
                 </div>
                 <div class="flex items-center ml-auto">
                         <!-- <div title="Add - DEBUG" @click="addNewPost" class="cursor-pointer hover:text-cyan-400"><i-mingcute:plus-fill/></div> -->
-                        <SquareButton data-testid="feedColumn-refresh-button" title="Refresh" @click="refreshFeed(feedData?.description.feedId)" button-padding="0" focus-padding="0"
+                        <SquareButton data-testid="feedColumn-refresh-button" title="Refresh" @click="refreshFeed(feedData?.description.feedId)" button-padding-x="0" button-padding-y="0" focus-padding="0"
                         class="text-2xl cursor-pointer bg-transparent text-primary hover:text-cyan-400 bg-[auto_0] bg-gradient-to-t from-slate-400 to-slate-800
                         focus-visible:text-cyan-400 hover:border-transparent shadow-none disabled:!bg-transparent"
                         :class="{'!cursor-not-allowed !text-disabledBG hover:text-disabledBG refresh-timeout' : isAwaitingRefreshTimeout}"
                         :is-disabled="isAwaitingRefreshTimeout">
                             <i-mingcute:refresh-3-fill/>
                         </SquareButton>
-                        <SquareButton title="Options" @click="toggleFeedColumnOptionsMenu()" button-padding="0" focus-padding="0"
+                        <SquareButton title="Options" @click="toggleFeedColumnOptionsMenu()" button-padding-x="0" button-padding-y="0" focus-padding="0"
                         class="text-2xl cursor-pointer bg-transparent text-primary hover:text-cyan-400  focus-visible:text-cyan-400
                         hover:border-transparent shadow-none">
                             <i-mingcute:settings-6-fill/>

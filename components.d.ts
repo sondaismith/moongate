@@ -66,7 +66,6 @@ declare module 'vue' {
     'IMdi:spy': typeof import('~icons/mdi/spy')['default']
     'IMdi:twitterRetweet': typeof import('~icons/mdi/twitter-retweet')['default']
     'IMdi:userOff': typeof import('~icons/mdi/user-off')['default']
-    IMdiKeyboardOutline: typeof import('~icons/mdi/keyboard-outline')['default']
     'IMingcute:addCircleFill': typeof import('~icons/mingcute/add-circle-fill')['default']
     'IMingcute:addFill': typeof import('~icons/mingcute/add-fill')['default']
     'IMingcute:arrowLeftLine': typeof import('~icons/mingcute/arrow-left-line')['default']

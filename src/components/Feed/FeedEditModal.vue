@@ -4,9 +4,17 @@
         <div data-testid="feedEditModal-close" @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full bg-slate-800/40 backdrop-blur-sm"></div>
         {{void "Modal Control"}}
         <div class="z-20 flex flex-col gap-1 w-[95%] md:max-w-[1024px] h-[92%] mx-auto my-auto rounded bg-feedColumnBG
-            p-4 drop-shadow-lg backdrop-blur-0">
-            <div class="flex flex-col gap-1">
-                <div class="flex gap-2">
+            pb-4 [&>:not(:first-child)]:px-4 drop-shadow-lg backdrop-blur-0 overflow-hiddens">
+            <div class="flex px-4 py-2 bg-aboutPageBanner items-center justify-between text-primary border-b border-outline">
+                <div class="text-lg font-semibold select-none">Adding Feeds</div>
+                <!-- <button class="flex gap-1 items-center px-2 py-0.5 rounded bg-btn hover:bg-btnHover hover:border-hover disabled:bg-disabledBG
+                disabled:border-transparent disabled:text-disabled">View Queue</button> -->
+                <SquareButton data-testid="feedEditModal-view-queue-button" class="bg-btn hover:bg-btnHover" button-padding-x="2" button-padding-y="0">
+                    View Queue
+                </SquareButton>
+            </div>
+            <div class="flex flex-col">
+                <div class="flex gap-2 items-center">
                     <div class="text-2xl">{{modalPages[currentPage].title}}</div>
                     <div v-if="AppState.isCreatingFeed" class="flex bg-green-600 rounded-full px-2 py-1 items-center self-center">Creating</div>
                     <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div>

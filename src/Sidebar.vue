@@ -114,6 +114,7 @@
         <Transition name="peek">
             <AccountPeek v-show="AccountPeekState.isUserPeeking"/>
         </Transition>
+        <FeedEditModal/>
     </div>
 </template>
 
