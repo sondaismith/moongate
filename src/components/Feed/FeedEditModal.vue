@@ -9,7 +9,7 @@
                 <div class="text-lg font-semibold select-none">Adding Feeds</div>
                 <!-- <button class="flex gap-1 items-center px-2 py-0.5 rounded bg-btn hover:bg-btnHover hover:border-hover disabled:bg-disabledBG
                 disabled:border-transparent disabled:text-disabled">View Queue</button> -->
-                <SquareButton data-testid="feedEditModal-view-queue-button" class="bg-btn hover:bg-btnHover" button-padding-x="2" button-padding-y="0">
+                <SquareButton v-if="numberOfFeedsInStack>0" data-testid="feedEditModal-view-queue-button" class="bg-btn hover:bg-btnHover" button-padding-x="2" button-padding-y="0">
                     View Queue
                 </SquareButton>
             </div>
@@ -33,17 +33,8 @@
             <div class="flex flex-col relative grow overflow-hidden">
                 <Transition>
                     <div v-if="currentPage == 0" class="h-full w-full">
-                        <div class="flex flex-col gap-2">
+                        <div class="flex flex-col h-full gap-2">
                             <div class="flex items-start flex-wrap gap-1">
-                                <!-- <PillButton data-testid="feedEditModal-user-feed-button" @click="selectFeedType(FeedEnums.Types.User)"
-                                class="px-4 py-2 border-2 border-outlineLighter bg-slate-700">User</PillButton>
-                                <PillButton data-testid="feedEditModal-tag-feed-button" @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
-                                <PillButton data-testid="feedEditModal-trending-feed-button" @click="selectFeedType(FeedEnums.Types.Trending)">Trending</PillButton>
-                                <PillButton :disabled="!AppState.isAuthBrowsing"
-                                @click="selectFeedType(FeedEnums.Types.Notifications)"
-                                :title="!AppState.isAuthBrowsing ? 'Login Required' : ''">
-                                    Notifications
-                                </PillButton> -->
                                 <!-- <PillButton :disabled="true">Mentions</PillButton>
                                 <PillButton :disabled="true">DMs</PillButton> -->
                                 <div class="flex flex-wrap gap-2">
@@ -76,6 +67,109 @@
                                     <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
                                         <div v-if="!AppState.isAuthBrowsing" class="font-medium text-feedHighlight">Login Required</div>
                                         Notifications will create a Feed Column that displays all of the currently logged in User's notifications.
+                                    </div>
+                                </TransitionGroup>
+                            </div>
+                            <div v-if="selectedFeedType.trim() != ''" class="flex h-full border border-outline rounded p-1 overflow-hidden">
+                                <TransitionGroup>
+                                    <UserSearchBar data-testid="feedEditModal-user-search-bar" class="w-full"
+                                    v-if="selectedFeedType == FeedEnums.Types.User"
+                                    @user-selected="selectUser" :data-list="searchResults"/>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="w-full">
+                                        <InLaInput data-testid="feedEditModal-tag-input" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag"/>
+                                        <div class="flex flex-col mt-1 overflow-x-hidden">
+                                            <div class="mb-1">Discovered Tags:</div>
+                                            <div data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap">
+                                                <div v-for="n, index in validTags" :key="index"
+                                                class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 break-all">
+                                                    {{ n }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex w-full h-full">
+                                        <div class="flex flex-col gap-1 w-full">
+                                            <FilterBar :filter-vmodel="feedFilters.feedGenerator.searchTerm" :show-clear-button="viewingFeedGenSearchResults"
+                                            placeholder-text="Search Feeds..."
+                                            :disabled="awaitingInitialCustomFeedData || awaitingSearchCustomFeedData"
+                                            @update:filter-vmodel="newValue => feedFilters.feedGenerator.searchTerm = newValue"
+                                            @clear-filter-clicked="getCustomFeeds" @enter-key-up="searchForFeedGenerators"/>
+                                            <div v-if="selectedFeedItems.length>0" class="pt-1 w-full max-h-16 min-h-16 border-b pb-1 border-outline overflow-y-auto">
+                                                <div class="flex gap-1">
+                                                    <div tabindex="-1" class="flex flex-wrap gap-1 w-full items-start">
+                                                        <button v-for="n in selectedFeedGenerators" @click="toggleFeedGeneratorSelection(n.generator.uri)"
+                                                        :title="'Remove &quot;'+n.generator.displayName+'&quot; Feed'"
+                                                        class="flex shrink-0 grow-0 items-center gap-1 bg-itemTagBG transition-colors border-2 border-transparent
+                                                        active:bg-itemTagBGActive hover:border-itemTagBorder active:border-itemTagBGActive focus-visible:border-itemTagBorder
+                                                        outline-none rounded p-0.5 px-1 text-primary text-xs text-nowrap cursor-pointer shadow-none">
+                                                            <div>{{ n.generator.displayName }}</div>
+                                                            <i-mingcute:close-circle-line/>
+                                                        </button>
+                                                    </div>
+                                                    <SquareButton v-if="selectedFeedItems.length>0" @click="clearSelectedFeeds" title="Clear All Selected Feeds"
+                                                    class="self-start h-auto sticky top-0 ml-auto bg-deleteBtnBG hover:bg-deleteBtnBGHover active:bg-deleteBtnBGActive text-white text-sm text-nowrap"
+                                                    focus-padding="0.5" button-padding="0.5">
+                                                        Clear Selected
+                                                    </SquareButton>
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-col gap-1 h-full overflow-y-auto preload-gutter">
+                                                <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline">
+                                                    <div class="text-lg">Discover New Feeds</div>
+                                                    <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
+                                                    <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded<span v-if="selectedFeedItems.length>0">, {{ selectedFeedItems.length }} selected</span></div>
+                                                </div>
+                                                <div v-if="!awaitingInitialCustomFeedData && !awaitingSearchCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
+                                                    <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
+                                                    @feed-generator-selected="toggleFeedGeneratorSelection" :selected="n.selected"/>
+                                                    <button v-if="!viewingFeedGenSearchResults" @click="loadMoreFeedGenerators" :disabled="awaitingAdditionalCustomFeedData"
+                                                    class="flex gap-1 items-center justify-center py-1 w-full rounded bg-btn hover:bg-btnHover
+                                                    hover:border-hover disabled:bg-disabledBG disabled:border-transparent disabled:text-disabled">
+                                                        <i-mingcute:loading-fill v-if="awaitingAdditionalCustomFeedData" class="spinner"/>
+                                                        <i-mingcute:plus-fill v-else/>
+                                                        <div>Load More</div>
+                                                    </button>
+                                                </div>
+                                                <div v-else-if="awaitingInitialCustomFeedData || awaitingSearchCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
+                                                    <CustomFeedButtonPlaceholder v-for="n in 5" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
+                                                </div>
+                                                <div v-else-if="viewingFeedGenSearchResults && customFeedData.length<1" class="pt-2">
+                                                    <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
+                                                        <div class="flex gap-1 items-center">
+                                                            <div class="text-lg font-semibold">No Results</div>
+                                                            <i-mingcute:search-3-line/>
+                                                        </div>
+                                                        <hr class="border-outline"/>
+                                                        <div class="text-sm">No Results found matching "{{ feedFilters.feedGenerator.lastSearchTerm }}"</div>
+                                                    </div>
+                                                </div>
+                                                <div v-else class="pt-2">
+                                                    <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
+                                                        <div class="flex gap-1 items-center">
+                                                            <div class="text-lg font-semibold">Error Retrieving Feed Generators</div>
+                                                            <i-mingcute:wifi-off-line/>
+                                                        </div>
+                                                        <hr class="border-outline"/>
+                                                        <div class="text-sm">Feed Generators could not be reached at this time</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Trending">
+                                        <div>Trending</div>
+                                        <FeedStackButton :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" :stack-index="0" @feed-stack-item-selected="toggleSingularFeedItem"/>
+                                        <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
+                                    </div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Following">
+                                        <div>Following</div>
+                                        <FeedStackButton :feed-type="FeedEnums.Types.Following" :selected="isFollowingTypeInStack" :stack-index="0" @feed-stack-item-selected="toggleSingularFeedItem"/>
+                                        <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
+                                    </div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
+                                        <div>Notification</div>
+                                        <FeedStackButton :feed-type="FeedEnums.Types.Notifications" :selected="isNotificationTypeInStack" :stack-index="0" @feed-stack-item-selected="toggleSingularFeedItem"/>
+                                        <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
                                     </div>
                                 </TransitionGroup>
                             </div>
@@ -316,7 +410,7 @@ import { isUserVerified } from '../../helpers/states';
 import { getCompactNumberValue } from '../../helpers/converters';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import CustomFeedButton from './CustomFeedButton.vue';
-import { IFeedCreationStatus, IFeedGeneratorSelection } from '../../interfaces/FeedInterfaces';
+import { IFeedCreationStatus, IFeedGeneratorSelection, IFeedStackItem } from '../../interfaces/FeedInterfaces';
 import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
 import { AppBskyFeedDefs } from '@atproto/api/dist/client';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
@@ -324,6 +418,7 @@ import FilterBar from '../Utilities/FilterBar.vue';
 import { PropType } from 'vue';
 import ImageLoader from '../Utilities/ImageLoader.vue';
 import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes.ts';
+import FeedStackButton from '../Utilities/FeedStackButton.vue';
 
 export default defineComponent({
     components:{
@@ -336,6 +431,7 @@ export default defineComponent({
         CustomFeedButtonPlaceholder,
         FilterBar,
         ImageLoader,
+        FeedStackButton,
     },
     props:{
         feedType: Object as PropType<FeedEnums.Types>,
@@ -374,14 +470,20 @@ export default defineComponent({
             feedTypeOptions:[
                 {id:0, name:'User',value:FeedEnums.Types.User},
                 {id:1, name:'Tag',value:FeedEnums.Types.Tag},
-                {id:2, name:'Trending',value:FeedEnums.Types.Trending},
-                {id:3, name:'Custom Feed',value:FeedEnums.Types.FeedGenerator},
+                {id:2, name:'Custom Feed',value:FeedEnums.Types.FeedGenerator},
+                {id:3, name:'Trending',value:FeedEnums.Types.Trending},
                 {id:4, name:'Following',value:FeedEnums.Types.Following},
                 {id:5, name:'Notifications',value:FeedEnums.Types.Notifications},
             ],
             selectedFeedType:"",
             feedTypeSelected:false,
             feedSpecificationsSet:false,
+            /**Indicates if a Trending Type Feed is currently in the Feed Stack waiting to be created. */
+            isTrendingTypeInStack:false,
+            /**Indicates if a Following Type Feed is currently in the Feed Stack waiting to be created. */
+            isFollowingTypeInStack:false,
+            /**Indicates if a Notification Type Feed is currently in the Feed Stack waiting to be created. */
+            isNotificationTypeInStack:false,
             searchResults:[
                 {did:'asjdy8383h31', name:'Jimmy', handle:'brainblast', pfp:'src/assets/test-media/posts/image04.png'},
                 {did:'033jo3hcbccs', name:'James', handle:'serectserviced'},
@@ -405,6 +507,8 @@ export default defineComponent({
             customFeedData: [] as IFeedGeneratorSelection[],
             /**Object that holds all the Feed Generators the User has selected. */
             selectedFeedItems: [] as AppBskyFeedDefs.GeneratorView[],
+            /**Object that holds all the Feeds that have been queued for creation. */
+            feedStackItems: [] as IFeedStackItem[],
             /**Array used to display the status of each attempt to create a Feed from multiple selection. */
             feedCreationStatus: [] as IFeedCreationStatus[],
             // [{
@@ -655,6 +759,24 @@ export default defineComponent({
                     if(indexToRemove>-1) this.selectedFeedItems.splice(indexToRemove,1);
                 }
                 else this.selectedFeedItems.push(this.customFeedData[index].generator);
+            }
+        },
+        /**Method that adds or removes singular Feed Types from the "Feed Stack". */
+        toggleSingularFeedItem(feedType:FeedEnums.Types,index:number){
+            if(index > -1){
+                switch (feedType) {
+                    case FeedEnums.Types.Trending:
+                        this.isTrendingTypeInStack = !this.isTrendingTypeInStack;
+                        break;
+                    case FeedEnums.Types.Following:
+                        this.isFollowingTypeInStack = !this.isFollowingTypeInStack;
+                        break;
+                    case FeedEnums.Types.Notifications:
+                        this.isNotificationTypeInStack = !this.isNotificationTypeInStack;
+                        break;
+                    default:
+                        break;
+                }
             }
         },
         toggleJustMentions(){
@@ -911,6 +1033,10 @@ export default defineComponent({
                     break;
             }
             return title;
+        },
+        /**Calculates the number of Feeds that are currently in the "Feed Stack". */
+        numberOfFeedsInStack(){
+            return this.feedStackItems.length + (this.isTrendingTypeInStack ? 1 : 0)+ (this.isFollowingTypeInStack ? 1 : 0)+ (this.isNotificationTypeInStack ? 1 : 0);
         }
     },
     watch:{

@@ -156,6 +156,19 @@ interface IFeedGeneratorSelection{
     selected:boolean
 }
 
+interface IFeedStackItem{
+    /**DID used to get feed content for User-type feeds. */
+    did:string,
+    /**The handle of the Feed. */
+    feedHandle: string,
+    /**Hashtag filters used by Tag-type feeds. */
+    tags:string,
+    /**The type of Feed this is. */
+    type:FeedEnums.Types,
+    /**The icon used by this Feed. */
+    icon:FeedEnums.Icons,
+}
+
 interface IFeedCreationStatus{
     message:string,
     attempted:boolean,
@@ -163,4 +176,4 @@ interface IFeedCreationStatus{
 }
 
 export type {IFeedDescription, IFeedListing, IFeedReturnedPostResults, IFeedColumnSettings,
-IFeedDBData, IFeedIconTypes, IFeedGeneratorSelection, IFeedCreationStatus}
+IFeedDBData, IFeedIconTypes, IFeedGeneratorSelection, IFeedStackItem, IFeedCreationStatus}
