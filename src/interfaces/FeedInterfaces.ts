@@ -4,6 +4,7 @@ import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs"
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications"
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs"
 import { AppBskyFeedDefs } from "@atproto/api/dist/client"
+import { ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs"
 
 // interface IFeedCollection{
 //     feedName: string
@@ -161,6 +162,8 @@ interface IFeedStackItem{
     did:string,
     /**The handle of the Feed. */
     feedHandle: string,
+    /**Profile Data associated with User-type feed. */
+    profileData:ProfileViewDetailed|undefined,
     /**Hashtag filters used by Tag-type feeds. */
     tags:string,
     /**The type of Feed this is. */

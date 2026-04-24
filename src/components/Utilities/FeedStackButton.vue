@@ -17,13 +17,19 @@
                 <div v-if="isSingularFeedType" class="flex items-center h-8">Selected</div>
                 <div v-else class="flex flex-col overflow-hidden">
                     <div class="text-base leading-4 text-nowrap overflow-hidden text-ellipsis">{{ typeof displayName != 'undefined' && displayName != '' ? displayName : 'PROP MISSING' }}</div>
-                    <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">Feed by @{{ typeof handle != 'undefined' && handle != '' ? handle : 'PROP MISSING' }}</div>
+                    <div v-if="feedType == FeedEnums.Types.User" class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">@{{ typeof handle != 'undefined' && handle != '' ? handle : 'PROP MISSING' }}</div>
+                    <div v-if="feedType == FeedEnums.Types.FeedGenerator" class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">Feed by @{{ typeof handle != 'undefined' && handle != '' ? handle : 'PROP MISSING' }}</div>
                 </div>
                 <!-- <button v-if="!displayOnly" @click.stop="clickedPinFeed" :title="'Save &quot;'+feedGeneratorView?.displayName+'&quot; Feed'" class="ml-auto mr-1 px-2 rounded-none bg-btn hover:bg-btnHover">Pin</button> -->
             </div>
             <div v-if="!isSingularFeedType">
                 <div class="text-sm">{{ typeof description != 'undefined' && description != '' ? description : 'Please supply the `:feed-generator-view` prop' }}</div>
                 <!-- <div class="text-xs font-semibold mt-auto">Liked By: {{ feedGeneratorView ? feedGeneratorView.likeCount : 'PROP MISSING' }} users</div> -->
+                <div v-if="feedType == FeedEnums.Types.User" class="flex gap-2 text-sm text-secondary">
+                    <div v-if="!AppSettingsState.Settings.isHidingFollowers" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(profileData?.followersCount) }}</div> <div>followers</div></div>
+                    <div v-if="!AppSettingsState.Settings.isHidingFollowing" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(profileData?.followsCount) }}</div> <div>following</div></div>
+                    <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(profileData?.postsCount) }}</div> <div>posts</div></div>
+                </div>
             </div>
         </div>
     </button>
@@ -53,25 +59,29 @@ import { defineComponent, PropType } from 'vue'
 import { getCompactNumberValue } from '../../helpers/converters';
 import ImageLoader from './ImageLoader.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
+import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 export default defineComponent({
     props:{
-        displayName:String,
-        handle:String,
         atUri:String,
         tags:Object as PropType<string[]>,
-        description:String,
-        avatar:String,
         feedType:{
-            type: Object as PropType<FeedEnums.Types>,
+            type: String as PropType<FeedEnums.Types>,
             required:true
         },
         selected:Boolean,
-        /**The index that points to the record in the "Feed Stack" related to the information displayed in this control. */
-        stackIndex:{
-            type:Number,
-            required:true
+        /**
+         * `ProfileViewDetailed` data for a User-type Feed.
+         */
+        profileData:{
+            type: Object as PropType<ProfileViewDetailed>
         },
+        // /**The index that points to the record in the "Feed Stack" related to the information displayed in this control. */
+        // stackIndex:{
+        //     type:Number,
+        //     required:true
+        // },
         hideRadioButton:{
             type: Boolean,
             default: false
@@ -86,6 +96,7 @@ export default defineComponent({
     },
     data(){
         return{
+            AppSettingsState,
             getCompactNumberValue,
             FeedEnums,
         }
@@ -136,7 +147,27 @@ export default defineComponent({
                 this.feedType == FeedEnums.Types.Notifications)
                 return true;
             else return false;
-        }
+        },
+        /**"Handle" value to use based on the Feed type. */
+        handle():string{
+            if(this.feedType == FeedEnums.Types.User && typeof this.profileData != 'undefined') return this.profileData.handle;
+            else return 'Not yet implemented for Feed Type';
+        },
+        /**"Display Name" value to use based on the Feed type. */
+        displayName():string|undefined{
+            if(this.feedType == FeedEnums.Types.User && typeof this.profileData != 'undefined') return this.profileData.displayName;
+            else return 'Not yet implemented for Feed Type';
+        },
+        /**"Description" value to use based on the Feed type. */
+        description():string|undefined{
+            if(this.feedType == FeedEnums.Types.User && typeof this.profileData != 'undefined') return this.profileData.description;
+            else return 'Not yet implemented for Feed Type';
+        },
+        /**"Avatar URL" value to use based on the Feed type. */
+        avatar():string|undefined{
+            if(this.feedType == FeedEnums.Types.User && typeof this.profileData != 'undefined') return this.profileData.avatar;
+            else return 'Not yet implemented for Feed Type';
+        },
     }
 })
 </script>

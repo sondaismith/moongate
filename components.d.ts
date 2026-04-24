@@ -156,6 +156,7 @@ declare module 'vue' {
     UserFocusModal: typeof import('./src/components/User/UserFocusModal.vue')['default']
     Userlink: typeof import('./src/components/Utilities/Userlink.vue')['default']
     UserSearchBar: typeof import('./src/components/Utilities/UserSearchBar.vue')['default']
+    UserSearchBar2: typeof import('./src/components/Utilities/UserSearchBar2.vue')['default']
     VerifiedBadge: typeof import('./src/components/Utilities/VerifiedBadge.vue')['default']
     VideoContainer: typeof import('./src/components/Utilities/VideoContainer.vue')['default']
     VideoPlayer: typeof import('./src/components/Utilities/VideoPlayer.vue')['default']

@@ -3,7 +3,7 @@
     class="absolute z-10 flex w-full h-full text-primary focus-visible:outline-none">
         <div data-testid="feedEditModal-close" @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full bg-slate-800/40 backdrop-blur-sm"></div>
         {{void "Modal Control"}}
-        <div class="z-20 flex flex-col gap-1 w-[95%] md:max-w-[1024px] h-[92%] mx-auto my-auto rounded bg-feedColumnBG
+        <div class="z-20 flex flex-col gap-1 w-full md:max-w-[1024px] h-full md:h-[92%] mx-auto my-auto rounded bg-feedColumnBG
             pb-4 [&>:not(:first-child)]:px-4 drop-shadow-lg backdrop-blur-0 overflow-hiddens">
             <div class="flex px-4 py-2 bg-aboutPageBanner items-center justify-between text-primary border-b border-outline">
                 <div class="text-lg font-semibold select-none">Adding Feeds</div>
@@ -12,6 +12,7 @@
                 <SquareButton v-if="numberOfFeedsInStack>0" data-testid="feedEditModal-view-queue-button" class="bg-btn hover:bg-btnHover" button-padding-x="2" button-padding-y="0">
                     View Queue
                 </SquareButton>
+                <div>Number of Feeds:{{ feedStackItems.length }}</div>
             </div>
             <div class="flex flex-col">
                 <div class="flex gap-2 items-center">
@@ -72,9 +73,17 @@
                             </div>
                             <div v-if="selectedFeedType.trim() != ''" class="flex h-full border border-outline rounded p-1 overflow-hidden">
                                 <TransitionGroup>
-                                    <UserSearchBar data-testid="feedEditModal-user-search-bar" class="w-full"
+                                    <!-- <UserSearchBar data-testid="feedEditModal-user-search-bar" class="w-full"
                                     v-if="selectedFeedType == FeedEnums.Types.User"
-                                    @user-selected="selectUser" :data-list="searchResults"/>
+                                    @user-selected="selectUser" :data-list="searchResults"/> -->
+                                    <div v-if="selectedFeedType == FeedEnums.Types.User" class="flex flex-col gap-1 h-full w-full overflow-hidden">
+                                        <UserSearchBar2 :search-term-v-model="feedFilters.userSearch.searchTerm" :feed-stack-ref="feedStackItems"
+                                        :user-results-ref="userAccountSearchResults" placeholder-text="Search for Users..." @user-selected="selectUser"
+                                        @filter-bar-update="newValue => feedFilters.userSearch.searchTerm = newValue" @search-submitted="submitSearch"
+                                        :disabled="awaitingUserSearchResults"/>
+                                        <!-- <FeedStackButton v-for="u in feedStackItems.filter(x => x.type == FeedEnums.Types.User)"
+                                        :feed-type="FeedEnums.Types.User" :profile-data="u.profileData"/> -->
+                                    </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="w-full">
                                         <InLaInput data-testid="feedEditModal-tag-input" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag"/>
                                         <div class="flex flex-col mt-1 overflow-x-hidden">
@@ -419,6 +428,9 @@ import { PropType } from 'vue';
 import ImageLoader from '../Utilities/ImageLoader.vue';
 import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes.ts';
 import FeedStackButton from '../Utilities/FeedStackButton.vue';
+import UserSearchBar2 from '../Utilities/UserSearchBar2.vue';
+import { SearchForAccounts } from '../../lib/api/Feed.vue';
+import { HandleAPIError } from '../../helpers/errors';
 
 export default defineComponent({
     components:{
@@ -426,6 +438,7 @@ export default defineComponent({
         SquareButton,
         InLaInput,
         UserSearchBar,
+        UserSearchBar2,
         CheckBox,
         CustomFeedButton,
         CustomFeedButtonPlaceholder,
@@ -455,6 +468,9 @@ export default defineComponent({
                     handle:'',
                     displayName:''
                 } as ProfileViewDetailed,
+                userSearch:{
+                    searchTerm:'',
+                },
                 notifications:{
                     justNotifs:false,
                 },
@@ -493,6 +509,17 @@ export default defineComponent({
             ],
             searchTerm:'',
             debouncedSearchTerm:'',
+            /**Are we waiting for results from a User Account search to be returned? */
+            awaitingUserSearchResults:false,
+            /**Are we trying to download detailed User Profile data from a User search result being selected? */
+            awaitingDetailsUserProfileData:false,
+            /**
+             * A cache of `ProfileViewDetailed` records for all the User account results that were selected.
+             * Used to prevent a large number of request from being made against the API.
+            */
+            userAccountCache:[] as ProfileViewDetailed[],
+            /**Array that holds the results from the latest User Account search. */
+            userAccountSearchResults:[] as IUserSearchResult[],
             /**Current text used to filter the displayed Feed Generators. */
             customFeedFilterText:'',
             /**Are we waiting for the 1st collection Custom Feed GeneratorView objects to be returned? */
@@ -591,16 +618,70 @@ export default defineComponent({
             //this.forwardOnePage();
         },
         /**
+         * Method used to "submit" the search term entered into the control
+         * on Enter Key or button press.
+         */
+        async submitSearch(){
+            if(!this.awaitingUserSearchResults && this.feedFilters.userSearch.searchTerm.trim().length>0){
+                this.awaitingUserSearchResults = true;
+                console.log(`Search term: ${this.feedFilters.userSearch.searchTerm}`);//DEBUG
+                var searchResult:ProfileView[] = [];
+                await SearchForAccounts(`${this.feedFilters.userSearch.searchTerm}`)
+                .then(res => {
+                    searchResult = res.data.actors
+                    this.userAccountSearchResults = [];//clear results
+                    searchResult.forEach(element => {
+                        let matchIndex = this.feedStackItems.findIndex(x=>x.did == element.did);
+                        this.userAccountSearchResults.push({profileData:element,selected:(matchIndex > -1 ? true : false),awaitingDetailedData:false});
+                    });
+                    console.log(this.userAccountSearchResults);
+                })
+                .catch(err => toast.add(HandleAPIError(err, 'Error getting User search results')))
+                .finally(()=>{
+                    this.awaitingUserSearchResults = false;
+                });
+            }
+        },
+        /**
          * Method that fires when a user is selected in the
          * `UserSearchBar` control.
          * @param user Object representing the chosen user.
          */
-        selectUser(user:ProfileView){
-            this.getUserProfileViewDetailed(user.did)
-            .then(res => {
-                if(typeof res != 'undefined') this.feedFilters.user = res
-            })
-            this.forwardOnePage();
+        selectUser(user:ProfileView, index:number){
+            let matchIndex = this.feedStackItems.findIndex(x => x.did == user.did);
+            //If selected item is being deselected...
+            if(matchIndex>-1){
+                this.feedStackItems.splice(matchIndex,1);
+                this.userAccountSearchResults[index].selected = false;
+            }
+            else{//User account is being selected...
+                //Detailed Profile data needs to be stored in a temp cache so a large number of request cannot be fired off
+                //if the User spams clicking User Account results
+
+                /**Value is greater than -1 if detailed profile data is already in cache. */
+                let cacheIndex = this.userAccountCache.findIndex(x=>x.did == user.did);
+                if(cacheIndex>-1){
+                    this.feedStackItems.push({did:user.did,feedHandle:user.handle,profileData:this.userAccountCache[cacheIndex],icon:FeedEnums.Icons.User,tags:'',type:FeedEnums.Types.User});
+                    this.userAccountSearchResults[index].selected = true;
+                }
+                else{//we need to request data from API
+                    this.userAccountSearchResults[index].awaitingDetailedData = true;
+                    this.getUserProfileViewDetailed(user.did)
+                    .then(res => {
+                        if(typeof res != 'undefined'){
+                            //Add new User account data to cache, add to feed stack and indicate account has been selected in search results
+                            if(this.userAccountCache.length+1>20) this.userAccountCache.shift(); //Limits cache to holding 20 records
+                            this.userAccountCache.push(res);
+                            this.feedStackItems.push({did:res.did,feedHandle:res.handle,profileData:res,icon:FeedEnums.Icons.User,tags:'',type:FeedEnums.Types.User});
+                            this.userAccountSearchResults[index].selected = true;
+                        }
+                    })
+                    .catch(err => toast.add(HandleAPIError(err, 'Error getting detailed User Profile data')))
+                    .finally(()=>{
+                        this.userAccountSearchResults[index].awaitingDetailedData = false;
+                    })
+                }
+            }
         },
         /**
          * Method used to get detailed Bluesky profile information for a specific

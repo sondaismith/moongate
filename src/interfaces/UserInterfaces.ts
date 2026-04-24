@@ -1,6 +1,6 @@
 
 import { IFeedReturnedPostResults } from '../interfaces/FeedInterfaces';
-import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { ProfileView, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { BookmarkView } from '@atproto/api/dist/client/types/app/bsky/bookmark/defs';
 import { FeedEnums } from '../enums/FeedEnums'
 
@@ -27,22 +27,12 @@ interface IUser{
  * `UserSearchBar` component.
  */
 export interface IUserSearchResult{
-    /**
-     * The unique identifier for the User.
-     */
-    did:string,
-    /**
-     * The User's display name.
-     */
-    name:string,
-    /**
-     * The User's account handle.
-     */
-    handle:string,
-    /**
-     * Profile picture of User, if available.
-     */
-    pfp?:string,
+    /**Profile data of returned User Account search result. */
+    profileData:ProfileView,
+    /**Has the displayed User Account been selected (is it currently held in the "feed stack"?). */
+    selected:boolean,
+    /**Are we waiting for `ProfileViewDetailed` data related to the associated User to be retrieved for the "feed stack"? */
+    awaitingDetailedData:boolean
 }
 
 export interface INavigationHistory{
