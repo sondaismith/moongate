@@ -1,5 +1,5 @@
 <template>
-    <button v-if="!displayOnly" @click="clickedFeedStackItem" :title="buttonTitleText"
+    <button v-if="!displayOnly" @click="removeFeedStackItem" :title="buttonTitleText"
     class="flex gap-2 p-3 text-left hover:bg-customFeedBtnBGHover
     active:bg-customFeedBtnBGActive focus-visible:bg-customFeedBtnBGHover border border-outline rounded"
     :class="[{'border-blueskyBlue bg-customFeedBtnBGHover' : selected},{'hover:bg-transparent active:bg-transparent focus-visible:bg-transparent' : displayOnly}]">
@@ -45,11 +45,18 @@
                     <div class="text-base leading-4 text-nowrap overflow-hidden text-ellipsis">{{ typeof displayName != 'undefined' && displayName != '' ? displayName : 'PROP MISSING' }}</div>
                     <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">Feed by @{{ typeof handle != 'undefined' && handle != '' ? handle : 'PROP MISSING' }}</div>
                 </div>
-                <button @click="clickedFeedStackItem" :title="'Remove &quot;'+displayName+'&quot; Feed'"
+                <button @click="removeFeedStackItem" :title="'Remove &quot;'+displayName+'&quot; Feed'"
                 class="self-center ml-auto mr-0.5 rounded p-1 border bg-deleteBtnBG active:bg-deleteBtnBGActive text-xs text-white hover:border-primary shadow-none">Remove</button>
             </div>
-            <div class="text-sm">{{ typeof description != 'undefined' && description != '' ? description : 'Please supply the `:feed-generator-view` prop' }}</div>
-            <!-- <div class="text-xs font-semibold mt-auto">Liked By: {{ feedGeneratorView ? feedGeneratorView.likeCount : 'PROP MISSING' }} users</div> -->
+            <div v-if="!isSingularFeedType">
+                <div class="text-sm">{{ typeof description != 'undefined' && description != '' ? description : 'Please supply the `:feed-generator-view` prop' }}</div>
+                <!-- <div class="text-xs font-semibold mt-auto">Liked By: {{ feedGeneratorView ? feedGeneratorView.likeCount : 'PROP MISSING' }} users</div> -->
+                <div v-if="feedType == FeedEnums.Types.User" class="flex gap-2 text-sm text-secondary">
+                    <div v-if="!AppSettingsState.Settings.isHidingFollowers" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(profileData?.followersCount) }}</div> <div>followers</div></div>
+                    <div v-if="!AppSettingsState.Settings.isHidingFollowing" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(profileData?.followsCount) }}</div> <div>following</div></div>
+                    <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(profileData?.postsCount) }}</div> <div>posts</div></div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -68,6 +75,11 @@ export default defineComponent({
         tags:Object as PropType<string[]>,
         feedType:{
             type: String as PropType<FeedEnums.Types>,
+            required:true
+        },
+        /**The index in the Feed Stack (most likely in `FeedEditModal`) where the data being passed to this component came from. */
+        feedStackIndex:{
+            type:Number,
             required:true
         },
         selected:Boolean,
@@ -106,7 +118,7 @@ export default defineComponent({
     },
     emits:{
         /**Emit used to indicate a specific settings category has been clicked. */
-        feedStackItemSelected:(type:FeedEnums.Types,index:number) => {
+        clickedRemoveStackItem:(type:FeedEnums.Types,index:number,identifier:string) => {
             return {feedType:type, stackIndex:index};
         }
     },
@@ -114,10 +126,18 @@ export default defineComponent({
         /**
          * Emits message when the main control area is clicked.
          */
-        clickedFeedStackItem(){
-            // if(!this.displayOnly){
-                this.$emit('feedStackItemSelected',this.feedType,this.stackIndex);
-            // }
+        removeFeedStackItem(){
+            if(this.displayOnly){
+                let identifier = '';
+                switch (this.feedType) {
+                    case FeedEnums.Types.User:
+                        identifier = typeof this.profileData != 'undefined' ? this.profileData.did : 'profile data missing'
+                        break;
+                    default:
+                        break;
+                }
+                this.$emit('clickedRemoveStackItem',this.feedType,this.feedStackIndex,identifier);
+            }
         },
         /**
          * Method that runs when the "Pin" button is clicked. Used to add

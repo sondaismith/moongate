@@ -1,10 +1,11 @@
 <template>
     <div class="flex flex-col h-full overflow-hidden">
         <FilterBar :filter-vmodel="searchTermVModel" :placeholder-text="placeholderText" @update:filter-vmodel="emitVModelUpdate"
-        v-on:enter-key-up="submitSearch" :disabled="disabled"/>
-        <div v-if="searchTerm.trim() != ''" class="flex border-t-0
+        v-on:enter-key-up="submitSearch" :show-clear-button="searchTerm.trim().length>0 || userResultsRef.length>0" clear-button-text="Clear Results" @clear-filter-clicked="clearUserAccountResults"
+        :disabled="disabled"/>
+        <div v-if="searchTerm.trim() != '' || userResultsRef.length>0" class="flex border-t-0
         border-inherit border-outline rounded-b bg-feedColumnBG overflow-auto"
-        :class="[filteredUsers.length<1 ? 'border-none' : 'border']">
+        :class="[userResultsRef.length<1 ? 'border-none' : 'border']">
             <div data-testid="userSearchBar-returned-users-container" class="relative flex flex-col w-full">
                 <button :disabled="disabled" @click="emitUserSelected(result.profileData,index)" data-testid="user-search-bar-result"
                 class="group flex items-center cursor-pointer disabled:cursor-not-allowed rounded-none hover:bg-searchbarResultHover disabled:bg-disabledBG
@@ -92,7 +93,7 @@ export default defineComponent({
             userResults: [] as {profileData:ProfileView, selected:boolean}[]
         }
     },
-    emits:['filterBarUpdate','userSelected','searchSubmitted'],
+    emits:['filterBarUpdate','userSelected','searchSubmitted','clearResultsClicked'],
     methods:{
         emitVModelUpdate(newValue:string){
             this.searchTerm = newValue;
@@ -109,35 +110,17 @@ export default defineComponent({
          * on Enter Key or button press.
          */
         async submitSearch(){
-            // if(!this.isWaitingForResult && this.searchTerm.trim().length>0){
-            //     this.isWaitingForResult = true;
-            //     console.log(`Search term: ${this.searchTerm}`);//DEBUG
-            //     //DEBUG - simulating API call
-            //     setTimeout(() => {
-            //         this.debouncedSearchTerm = this.searchTerm;//DEBUG, updates the display filter
-            //         this.isWaitingForResult = false;
-            //         var searchbar = (document.getElementById('user-searchbar')?.children[0] as HTMLElement)
-            //         searchbar.focus();
-            //     },500);
-            //     var searchResult:ProfileView[] = [];
-            //     await SearchForAccounts(`${this.searchTerm}`)
-            //     .then(res => {
-            //         searchResult = res.data.actors
-            //         // this.payloadToUserSearchResult(searchResult);
-            //         this.apiData = searchResult;
-            //         this.userResults = [];//clear results
-            //         this.apiData.forEach(element => {
-            //             this.userResults.push({profileData:element,selected:false});
-            //         });
-            //         console.log(this.userResults);
-            //     })
-            //     .catch(err => toast.add(HandleAPIError(err, 'Error getting User search results')));
-            // }
-            // else{
-            //     this.debouncedSearchTerm = this.searchTerm;//DEBUG, just here to allow clear
-            // }
-            this.$emit('searchSubmitted',this.searchTerm);
+            if(this.searchTerm.trim().length>0)
+                this.$emit('searchSubmitted',this.searchTerm);
         },
+        /**
+         * Method used to clear the latest User accounts that have been returned.
+         * Emits message to parent component to clear the entered search term and
+         * the User Account results array.
+         */
+        clearUserAccountResults(){
+            this.$emit('clearResultsClicked');
+        }
     },
     computed:{
         filteredUsers(){

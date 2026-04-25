@@ -77,8 +77,9 @@ export const routes:RouteRecordRaw[] = [
     { path:'/profile/:handle/post/:postId/download', name:'savemediamodal direct', components:{ user_prompt:SaveMediaModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/profile/:handle/post/:postId/:clickedMediaIndex/download', name:'saving media', components:{ user_prompt:SaveMediaModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/feed/', name:'create feed', meta:{title:'Selecting Feed Type | moongate'}, components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
-    { path:'/create/feed/:feedType', name:'feed type selected', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
-    { path:'/create/feed/:feedType/:summary', name:'create feed summary', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
+    { path:'/create/feed/summary', name:'review feed queue', meta:{title:'Reviewing Feed Queue | moongate'}, components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
+    // { path:'/create/feed/:feedType', name:'feed type selected', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
+    // { path:'/create/feed/:feedType/:summary', name:'create feed summary', components:{ modal:FeedEditModal }, beforeEnter:[keepDefaultView], props:true },
     { path:'/create/post/', name:'create post', components:{ user_prompt:CreatePost }, beforeEnter:[keepDefaultView], props:true },
     { path: '/:pathMatch(.*)*', redirect:'/' }, //catches all invalid routes
 ]
