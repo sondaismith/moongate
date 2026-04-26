@@ -161,9 +161,11 @@ interface IFeedStackItem{
     /**DID used to get feed content for User-type feeds. */
     did:string,
     /**The handle of the Feed. */
-    feedHandle: string,
+    handle: string,
+    /** Value used to identify/declare a Feed. If value is left undefined handle value should be used. */
+    name?:string,
     /**Profile Data associated with User-type feed. */
-    profileData:ProfileViewDetailed|undefined,
+    profileData?:ProfileViewDetailed,
     /**Hashtag filters used by Tag-type feeds. */
     tags:string,
     /**The type of Feed this is. */

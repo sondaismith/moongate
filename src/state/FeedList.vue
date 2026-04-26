@@ -1,7 +1,7 @@
 <script lang="ts">
 import { reactive } from 'vue';
 import {FeedEnums} from '../enums/FeedEnums';
-import { IFeedColumnSettings, IFeedDescription, IFeedListing, IFeedDBData, IFeedReturnedPostResults } from '../interfaces/FeedInterfaces';
+import { IFeedColumnSettings, IFeedDescription, IFeedListing, IFeedDBData, IFeedReturnedPostResults, IFeedStackItem } from '../interfaces/FeedInterfaces';
 import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { getAuthorFeed, getTagPosts } from '../lib/api/Feed.vue';
 import { HandleAPIError, IsError } from '../helpers/errors';
@@ -117,19 +117,20 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
  * description and post collection needed and returns it as an `IFeedListing`.
  * NOTE: Must toggle AppState.isCreatingFeed before calling method.
  * @param feedType The type of Feed to prepare data for.
- * @param userData If this is to be a User-type Feed this parameter needs to be passed in.
+ * @param feedData `IFeedStackItem` that holds all the data needed to create the Feed.
  * @param tags If this is to be a Tag-type Feed this parameter needs to be passed in - is a space
  * separated collection of hashtags.
  */
-export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSearchResult={did:'',name:'',handle:''},tags:string=''):Promise<IFeedListing>{
+export async function PrepareFeedData(feedType:FeedEnums.Types,feedData:IFeedStackItem={did:'',name:'',handle:'',tags:'',type:FeedEnums.Types.User,icon:FeedEnums.Icons.User},tags:string=''):Promise<IFeedListing>{
     /**Object that will hold the returned Feed data. */
     var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
-    if(userData.did.trim() == '' && userData.handle.trim() != ''){
-        //get DID associated with handle
-        await GetBrowsingAgent().getProfile({actor: userData.handle})
-        .then(res => userData.did = res.data.did);
-    }
-    await GetFeedDataForFeedType(feedType,userData.did,tags,'',defaultNumOfPostsToLoad)
+    //DID shouldn't need to be retrieved
+    // if(feedData.did.trim() == '' && feedData.handle.trim() != ''){
+    //     //get DID associated with handle
+    //     await GetBrowsingAgent().getProfile({actor: feedData.handle})
+    //     .then(res => feedData.did = res.data.did);
+    // }
+    await GetFeedDataForFeedType(feedData.type,feedData.did,feedData.tags,'',defaultNumOfPostsToLoad)
     .then(res => {
         feedResult = res;
     })
@@ -164,7 +165,7 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
         latestPostDate:'',
         latestPostCID:''
     }
-    await GenerateFeedDescription(usedFeedId,1,feedType,userData.did,feedResult.data,
+    await GenerateFeedDescription(usedFeedId,1,feedType,feedData.did,feedResult.data,
     undefined,tags)
     .then(res => {
         desc = res;

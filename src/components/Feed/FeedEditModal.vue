@@ -403,7 +403,7 @@
                 </div>
             </div>
             <Transition>
-                <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator && attemptingToCreateFeed"
+                <div v-if="attemptingToCreateFeed"
                 class="absolute z-10 flex justify-center h-full w-full right-0 bottom-0 rounded bg-slate-800/70">
                     <div class="flex flex-col gap-1 items-center justify-center">
                         <TransitionGroup name="list">
@@ -672,7 +672,7 @@ export default defineComponent({
                 /**Value is greater than -1 if detailed profile data is already in cache. */
                 let cacheIndex = this.userAccountCache.findIndex(x=>x.did == user.did);
                 if(cacheIndex>-1){
-                    this.feedStackItems.push({did:user.did,feedHandle:user.handle,profileData:this.userAccountCache[cacheIndex],icon:FeedEnums.Icons.User,tags:'',type:FeedEnums.Types.User});
+                    this.feedStackItems.push({did:user.did,handle:user.handle,profileData:this.userAccountCache[cacheIndex],icon:FeedEnums.Icons.User,tags:'',type:FeedEnums.Types.User});
                     this.userAccountSearchResults[index].selected = true;
                 }
                 else{//we need to request data from API
@@ -683,7 +683,7 @@ export default defineComponent({
                             //Add new User account data to cache, add to feed stack and indicate account has been selected in search results
                             if(this.userAccountCache.length+1>20) this.userAccountCache.shift(); //Limits cache to holding 20 records
                             this.userAccountCache.push(res);
-                            this.feedStackItems.push({did:res.did,feedHandle:res.handle,profileData:res,icon:FeedEnums.Icons.User,tags:'',type:FeedEnums.Types.User});
+                            this.feedStackItems.push({did:res.did,handle:res.handle,profileData:res,icon:FeedEnums.Icons.User,tags:'',type:FeedEnums.Types.User});
                             this.userAccountSearchResults[index].selected = true;
                         }
                     })
@@ -949,80 +949,138 @@ export default defineComponent({
             this.feedCreationStatus = [];
             let successes = 0;
             let lastFeedItem = false;
-            if(this.selectedFeedType == FeedEnums.Types.FeedGenerator){
-                for (let i = 0; i < this.selectedFeedItems.length; i++) {
-                    lastFeedItem = (i == this.selectedFeedItems.length-1);
-                    let feedSourceData:IUserSearchResult = {
-                        did: this.selectedFeedItems[i].uri,
-                        handle: this.selectedFeedItems[i].creator.handle,
-                        name: this.selectedFeedItems[i].displayName
-                    }
-                    this.feedCreationStatus.push({
-                        message:`Attempting to create "${feedSourceData.name}" Feed...`,
-                        attempted:false,
-                        success:false
-                    });
 
-                    await PrepareFeedData(this.selectedFeedType as FeedEnums.Types,
-                    feedSourceData,
-                    this.feedFilters.tag)
-                    .then(res => {
-                        //Create the Feed
-                        if(AppState.isCreatingFeed){
-                            AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false,lastFeedItem);
-                            this.feedCreationStatus[i] = {
-                                message:`Created "${feedSourceData.name}" Feed!`,
-                                attempted:true,
-                                success:true
-                            };
-                            successes++;
-                        }
-                    })
-                    .catch(err => {
-                        console.log(err);
-                        toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+            for (let i = 0; i < this.feedStackItems.length; i++) {
+                lastFeedItem = (i == this.feedStackItems.length-1);
+                const stackItem = this.feedStackItems[i];
+                let feedName = `${typeof stackItem.name != 'undefined' ? stackItem.name : `@${stackItem.handle}`}`;
+                this.feedCreationStatus.push({
+                    message:`Attempting to create "${feedName}" Feed...`,
+                    attempted:false,
+                    success:false
+                });
+
+                //Get Feed data via API
+                await PrepareFeedData(this.selectedFeedType as FeedEnums.Types,
+                stackItem,
+                this.feedFilters.tag)
+                .then(res => {
+                    //Add Feed to display list
+                    if(AppState.isCreatingFeed){
+                        AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false,lastFeedItem);
                         this.feedCreationStatus[i] = {
-                            message:`Failed to create "${feedSourceData.name}" Feed...`,
+                            message:`Created "${feedName}" Feed!`,
                             attempted:true,
-                            success:false
+                            success:true
                         };
-                        // setTimeout(() => {
-                        //     this.attemptingToCreateFeed = false;
-                        // }, 800);
-                    });
-                };
-                //DEBUG CODE
-                // for (let i = 0; i < 5; i++) {
-                //     this.feedCreationStatus.push({
-                //         message:`Attempting to create "Feed ${i}" Feed...`,
-                //         attempted:false,
-                //         success:false
-                //     });
-                //     await new Promise((resolve) => setTimeout(resolve,800));
-                //     this.feedCreationStatus[i] = {
-                //         message:`Created "Feed ${i}" Feed!`,
-                //         attempted:true,
-                //         success:true
-                //     };
-                // }
-                if(successes>0){
-                    let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
-                    AppState.SendAppSyncMessage(feedSyncMessage);
-                    setTimeout(() => {
-                        this.closeModal();
-                    }, 3000);
-                }
-                else{
-                    this.feedCreationStatus.push({
-                        message:'Failed to create Feeds...',
+                        successes++;
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                    toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+                    this.feedCreationStatus[i] = {
+                        message:`Failed to create "${feedName}" Feed...`,
                         attempted:true,
                         success:false
-                    })
-                    setTimeout(() => {
-                        this.attemptingToCreateFeed = false;
-                    }, 3000);
-                }
+                    };
+                    // setTimeout(() => {
+                    //     this.attemptingToCreateFeed = false;
+                    // }, 800);
+                });
             }
+            if(successes>0){
+                let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
+                AppState.SendAppSyncMessage(feedSyncMessage);
+                setTimeout(() => {
+                    this.closeModal();
+                }, 3000);
+            }
+            else{
+                this.feedCreationStatus.push({
+                    message:'Failed to create Feeds...',
+                    attempted:true,
+                    success:false
+                })
+                setTimeout(() => {
+                    this.attemptingToCreateFeed = false;
+                }, 3000);
+            }
+
+            // if(this.selectedFeedType == FeedEnums.Types.FeedGenerator){
+            //     for (let i = 0; i < this.selectedFeedItems.length; i++) {
+            //         lastFeedItem = (i == this.selectedFeedItems.length-1);
+            //         let feedSourceData:IUserSearchResult = {
+            //             did: this.selectedFeedItems[i].uri,
+            //             handle: this.selectedFeedItems[i].creator.handle,
+            //             name: this.selectedFeedItems[i].displayName
+            //         }
+            //         this.feedCreationStatus.push({
+            //             message:`Attempting to create "${feedSourceData.name}" Feed...`,
+            //             attempted:false,
+            //             success:false
+            //         });
+
+            //         await PrepareFeedData(this.selectedFeedType as FeedEnums.Types,
+            //         feedSourceData,
+            //         this.feedFilters.tag)
+            //         .then(res => {
+            //             //Create the Feed
+            //             if(AppState.isCreatingFeed){
+            //                 AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false,lastFeedItem);
+            //                 this.feedCreationStatus[i] = {
+            //                     message:`Created "${feedSourceData.name}" Feed!`,
+            //                     attempted:true,
+            //                     success:true
+            //                 };
+            //                 successes++;
+            //             }
+            //         })
+            //         .catch(err => {
+            //             console.log(err);
+            //             toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+            //             this.feedCreationStatus[i] = {
+            //                 message:`Failed to create "${feedSourceData.name}" Feed...`,
+            //                 attempted:true,
+            //                 success:false
+            //             };
+            //             // setTimeout(() => {
+            //             //     this.attemptingToCreateFeed = false;
+            //             // }, 800);
+            //         });
+            //     };
+            //     //DEBUG CODE
+            //     // for (let i = 0; i < 5; i++) {
+            //     //     this.feedCreationStatus.push({
+            //     //         message:`Attempting to create "Feed ${i}" Feed...`,
+            //     //         attempted:false,
+            //     //         success:false
+            //     //     });
+            //     //     await new Promise((resolve) => setTimeout(resolve,800));
+            //     //     this.feedCreationStatus[i] = {
+            //     //         message:`Created "Feed ${i}" Feed!`,
+            //     //         attempted:true,
+            //     //         success:true
+            //     //     };
+            //     // }
+            //     if(successes>0){
+            //         let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
+            //         AppState.SendAppSyncMessage(feedSyncMessage);
+            //         setTimeout(() => {
+            //             this.closeModal();
+            //         }, 3000);
+            //     }
+            //     else{
+            //         this.feedCreationStatus.push({
+            //             message:'Failed to create Feeds...',
+            //             attempted:true,
+            //             success:false
+            //         })
+            //         setTimeout(() => {
+            //             this.attemptingToCreateFeed = false;
+            //         }, 3000);
+            //     }
+            // }
         },
         closeModal(){
             // AppState.ToggleCreateFeedModal();
@@ -1180,6 +1238,7 @@ export default defineComponent({
         // else if(typeof this.feedType != 'undefined' && !Object.values(FeedEnums.Types).includes(this.feedType)){//invalid feed type
         //     this.$router.replace('/create/feed');
         // }
+        AppState.isCreatingFeed = true;
         document.title = this.getFeedTypeTitle;
     },
     mounted(){
@@ -1212,7 +1271,10 @@ export default defineComponent({
             }
         }
         (this.$el as HTMLElement).focus();
-    }
+    },
+    beforeUnmount() {
+        AppState.isCreatingFeed = false;
+    },
     // watch:{
     //     'feedFilters.tag': debounce(function (newVal){
 
