@@ -119,6 +119,7 @@ export default defineComponent({
          * the User Account results array.
          */
         clearUserAccountResults(){
+            this.searchTerm = '';
             this.$emit('clearResultsClicked');
         }
     },

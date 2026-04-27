@@ -162,12 +162,18 @@ interface IFeedStackItem{
     did:string,
     /**The handle of the Feed. */
     handle: string,
-    /** Value used to identify/declare a Feed. If value is left undefined handle value should be used. */
+    /**
+     * Value used to identify/declare a Feed.
+     *
+     * NOTE: For User-type Feeds - if value is left undefined handle value should be used.
+     *
+     * NOTE: For Tag-type Feeds - this value is used as the search term to return Posts using the hashtags.
+     * */
     name?:string,
     /**Profile Data associated with User-type feed. */
     profileData?:ProfileViewDetailed,
     /**Hashtag filters used by Tag-type feeds. */
-    tags:string,
+    tags:string[],
     /**The type of Feed this is. */
     type:FeedEnums.Types,
     /**The icon used by this Feed. */

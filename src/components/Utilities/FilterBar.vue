@@ -1,6 +1,6 @@
 <template>
     <div class="flex border border-outline rounded-sm p-1 gap-1 focus-within:border-blue-500 transition-colors" :class="{'bg-primary/10 cursor-not-allowed' : disabled}">
-        <input :disabled="disabled" type="text" autocomplete="off" :placeholder="placeholderText" :value="filterVmodel"
+        <input :disabled="disabled" type="text" autocomplete="off" autocapitalize="off" :placeholder="placeholderText" :value="filterVmodel"
         @keyup.enter="$emit('enterKeyUp')"
         @input="$emit('update:filterVmodel',$event.target.value)"
         class="h-full w-full px-2 py-1 bg-transparent rounded-sm outline-none shadow-none"

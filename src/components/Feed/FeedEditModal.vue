@@ -91,7 +91,7 @@
                                             <div data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap">
                                                 <div v-for="n, index in validTags" :key="index"
                                                 class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 break-all">
-                                                    {{ n }}
+                                                    #{{ n }}
                                                 </div>
                                             </div>
                                         </div>
@@ -182,14 +182,14 @@
                             </div>
                         </div>
                     </div>
-                    <div data-testid="feedEditModal-options-page" v-else-if="currentPage == 1" class="flex flex-col h-full w-full p-2 overflow-y-scroll">
+                    <div data-testid="feedEditModal-options-page" v-else-if="currentPage == 1" class="flex flex-col h-full w-full p-2 overflow-y-auto">
                         <div v-if="feedStackItems.length == 0">
                             No Feeds have been selected. Click the 'back' button to move back to the Feed selection page.
                         </div>
                         <div v-else class="flex flex-wrap gap-2 pl-1 pr-2">
                             <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
-                            v-for="u, index in feedStackItems"
-                            :feed-type="FeedEnums.Types.User" :profile-data="u.profileData" :feed-stack-index="index"
+                            v-for="stackItem, index in feedStackItems"
+                            :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-index="index"
                             :display-only="true" @clicked-remove-stack-item="removeFeedStackItem"/>
                         </div>
                         {{ void 'Old Summary Page Code - REMOVE BEFORE BRANCH MERGE' }}
@@ -672,7 +672,7 @@ export default defineComponent({
                 /**Value is greater than -1 if detailed profile data is already in cache. */
                 let cacheIndex = this.userAccountCache.findIndex(x=>x.did == user.did);
                 if(cacheIndex>-1){
-                    this.feedStackItems.push({did:user.did,handle:user.handle,profileData:this.userAccountCache[cacheIndex],icon:FeedEnums.Icons.User,tags:'',type:FeedEnums.Types.User});
+                    this.feedStackItems.push({did:user.did,handle:user.handle,profileData:this.userAccountCache[cacheIndex],icon:FeedEnums.Icons.User,tags:[],type:FeedEnums.Types.User});
                     this.userAccountSearchResults[index].selected = true;
                 }
                 else{//we need to request data from API
@@ -683,7 +683,7 @@ export default defineComponent({
                             //Add new User account data to cache, add to feed stack and indicate account has been selected in search results
                             if(this.userAccountCache.length+1>20) this.userAccountCache.shift(); //Limits cache to holding 20 records
                             this.userAccountCache.push(res);
-                            this.feedStackItems.push({did:res.did,handle:res.handle,profileData:res,icon:FeedEnums.Icons.User,tags:'',type:FeedEnums.Types.User});
+                            this.feedStackItems.push({did:res.did,handle:res.handle,profileData:res,icon:FeedEnums.Icons.User,tags:[],type:FeedEnums.Types.User});
                             this.userAccountSearchResults[index].selected = true;
                         }
                     })
@@ -747,13 +747,25 @@ export default defineComponent({
             return s.join(' ');
         },
         /**
+         * Used by the Tag entry input control on Enter key press. If the entered tags are
+         * valid, it adds them to the "feed stack" as a single Feed specification.
+         * OLD
          * Used by the Tag entry input control on Enter key press. Used to check if the
          * input values are valid before moving forward to the Feed creation details
          * summary page.
          */
         trySubmitTags(){
             if(this.isTagSpecsEntryComplete){
-                this.forwardOnePage();
+                // let tagString = this.validTags.join(' ');
+                let tagDisplayName:string|undefined;
+                if(typeof this.validTags != 'undefined' && this.validTags.length>0){
+                    let tagCopy = [...this.validTags];
+                    tagCopy[0] = `#${tagCopy[0]}`;
+                    tagDisplayName = tagCopy.join(' #');
+                }
+                this.feedStackItems.push({did:'',handle:'',name:tagDisplayName != 'undefined' ? tagDisplayName : '',icon:FeedEnums.Icons.Tag,tags:this.validTags,type:FeedEnums.Types.Tag});
+                this.feedFilters.tag = '';
+                // this.forwardOnePage();
             }
         },
         async testGetNotifs(){
@@ -961,9 +973,7 @@ export default defineComponent({
                 });
 
                 //Get Feed data via API
-                await PrepareFeedData(this.selectedFeedType as FeedEnums.Types,
-                stackItem,
-                this.feedFilters.tag)
+                await PrepareFeedData(stackItem.type,stackItem)
                 .then(res => {
                     //Add Feed to display list
                     if(AppState.isCreatingFeed){
@@ -1095,7 +1105,7 @@ export default defineComponent({
          * no illegal hashtag characters. Currently the allowed length is unlimited.
          */
         validTags(){
-            const tagRegex = new RegExp(`${/#[^/\\!@\-()$%\^&\+~|[\]{}#,;'"`.<>=\s]+/.source}`,'g');
+            const tagRegex = new RegExp(`${/[^/\\!@\-()$%\^&\+~|[\]{}#,;'"`.<>=\s]+/.source}`,'g');
             //content must be longer than 1 character
             if(this.feedFilters.tag.length>1){
                 var result = [];
@@ -1112,9 +1122,7 @@ export default defineComponent({
          * Tag-type Feed creation process to progress to the summary/creation page.
          */
         isTagSpecsEntryComplete(){
-            return (this.validTags.length>0) &&
-            this.selectedFeedType == FeedEnums.Types.Tag &&
-            this.currentPage != this.totalPages-1 && this.currentPage != 0;
+            return (this.validTags.length>0);
         },
         /**
          * Validates that a Feed Type was selected from available

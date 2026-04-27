@@ -121,16 +121,13 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
  * @param tags If this is to be a Tag-type Feed this parameter needs to be passed in - is a space
  * separated collection of hashtags.
  */
-export async function PrepareFeedData(feedType:FeedEnums.Types,feedData:IFeedStackItem={did:'',name:'',handle:'',tags:'',type:FeedEnums.Types.User,icon:FeedEnums.Icons.User},tags:string=''):Promise<IFeedListing>{
+export async function PrepareFeedData(feedType:FeedEnums.Types,feedData:IFeedStackItem={did:'',name:'',handle:'',tags:[],type:FeedEnums.Types.User,icon:FeedEnums.Icons.User}):Promise<IFeedListing>{
     /**Object that will hold the returned Feed data. */
     var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
-    //DID shouldn't need to be retrieved
-    // if(feedData.did.trim() == '' && feedData.handle.trim() != ''){
-    //     //get DID associated with handle
-    //     await GetBrowsingAgent().getProfile({actor: feedData.handle})
-    //     .then(res => feedData.did = res.data.did);
-    // }
-    await GetFeedDataForFeedType(feedData.type,feedData.did,feedData.tags,'',defaultNumOfPostsToLoad)
+    /**List of hashtags (without the #) separated by whitespace. */
+    let tagString = typeof feedData.name != 'undefined' ? feedData.name : '';
+    if(feedData.type == FeedEnums.Types.Tag && tagString.trim() == '') throw new Error("Tag list is empty string");
+    await GetFeedDataForFeedType(feedData.type,feedData.did,tagString,'',defaultNumOfPostsToLoad)
     .then(res => {
         feedResult = res;
     })
@@ -166,7 +163,7 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,feedData:IFeedSta
         latestPostCID:''
     }
     await GenerateFeedDescription(usedFeedId,1,feedType,feedData.did,feedResult.data,
-    undefined,tags)
+    undefined,tagString)
     .then(res => {
         desc = res;
     });
