@@ -28,8 +28,12 @@ export default defineComponent({
             {
                 did:'',
                 handle:this.userlinkValue ? this.userlinkValue.slice(1) : '' ,
-                name:''
-            })
+                name:'',
+                type:FeedEnums.Types.User,
+                icon:FeedEnums.Icons.User,
+                tags:[]
+            }
+            )
             .then(res => AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false))
             .catch(err => {
                 toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});

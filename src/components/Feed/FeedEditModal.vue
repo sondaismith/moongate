@@ -51,6 +51,7 @@
                                         <div class="flex items-center gap-1 px-2 border-2 border-transparent group-focus-visible:border-feedtypeBtnFocusHighlight rounded-md">
                                             <FeedIcon :icon="item.value"/>
                                             <div>{{ item.name }}</div>
+                                            <div class="flex rounded-full px-1 min-w-6 aspect-square bg-slate-100 shadow-scroll-inner-window text-sm items-center justify-center">{{feedStackItems.filter(x=>x.type == item.value).length}}</div>
                                         </div>
                                     </button>
                                 </div>
@@ -94,6 +95,12 @@
                                                     #{{ n }}
                                                 </div>
                                             </div>
+                                        </div>
+                                        <div class="flex flex-wrap gap-2 pl-1 pr-2">
+                                            <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
+                                            v-for="stackItem, index in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
+                                            :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-index="index"
+                                            :display-only="true" @clicked-remove-stack-item="removeFeedStackItem"/>
                                         </div>
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex w-full h-full">

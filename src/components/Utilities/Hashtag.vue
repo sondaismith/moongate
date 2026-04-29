@@ -16,11 +16,10 @@ export default defineComponent({
     },
     methods:{
         createTagFeed(){
-            //Should cause a FeedColumn displaying posts
-            //matching the clicked tag
-            // alert('ooh!');
-            this.$toast.add({summary:'Creating Feed...', detail:`Creating feed for ${this.tagValue}`, group:'tr', life:3000});
-            PrepareFeedData(FeedEnums.Types.Tag,undefined,this.tagValue).then(res => AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false));
+            let tagText = typeof this.tagValue !='undefined' ? this.tagValue : '';
+            this.$toast.add({summary:'Creating Feed...', detail:`Creating feed for #${this.tagValue}`, group:'tr', life:3000});
+            PrepareFeedData(FeedEnums.Types.Tag,{did:'',handle:'',type:FeedEnums.Types.Tag,icon:FeedEnums.Icons.Tag,tags:[tagText],name:`#${tagText}`})
+            .then(res => AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false));
         }
     }
 })
