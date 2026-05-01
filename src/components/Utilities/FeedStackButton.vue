@@ -37,7 +37,7 @@
         <div class="flex flex-col gap-2 w-full overflow-hidden">
             <div class="flex gap-1 items-center">
                 <div class="flex bg-blueskyBlue aspect-square shrink-0 w-8 items-center justify-center">
-                    <ImageLoader v-if="feedType == FeedEnums.Types.User && typeof avatar != 'undefined' && avatar != ''"
+                    <ImageLoader v-if="typeof avatar != 'undefined' && avatar != ''"
                     :img-url="avatar" loader-type="spinner" :fill-container="true"/>
                     <FeedIcon v-else-if="feedType == FeedEnums.Types.Tag" :icon="FeedEnums.Icons.Hashtag"/>
                     <i-mingcute:radar-2-fill v-else class="text-white h-6 w-6"/>
@@ -47,16 +47,23 @@
                     <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">{{ typeof handle != 'undefined' && handle != '' ? handle : 'PROP MISSING' }}</div>
                 </div>
                 <button @click="removeFeedStackItem" :title="'Remove &quot;'+displayName+'&quot; Feed'"
-                class="self-center ml-auto mr-0.5 rounded p-1 border bg-deleteBtnBG active:bg-deleteBtnBGActive text-xs text-white hover:border-primary shadow-none">Remove</button>
+                class="group self-center ml-auto mr-0.5 rounded p-0.5 border-0 bg-deleteBtnBG hover:bg-deleteBtnBGHover active:bg-deleteBtnBGActive
+                text-xs text-white shadow-none outline-none">
+                    <div class="flex p-0.5 px-1 items-center justify-center w-full h-full rounded border-2 border-transparent
+                    group-focus-visible:border-feedtypeBtnFocusHighlight">
+                    Remove
+                    </div>
+                </button>
             </div>
             <div v-if="!isSingularFeedType" class="flex flex-col gap-1 grow justify-between">
-                <div class="text-sm">{{ typeof description != 'undefined' && description != '' ? description : 'Please supply the `:feed-generator-view` prop' }}</div>
+                <div class="text-sm">{{ typeof description != 'undefined' && description != '' ? description : 'No Description Provided' }}</div>
                 <!-- <div class="text-xs font-semibold mt-auto">Liked By: {{ feedGeneratorView ? feedGeneratorView.likeCount : 'PROP MISSING' }} users</div> -->
-                <div v-if="feedType == FeedEnums.Types.User" class="flex gap-2 text-sm text-secondary">
+                <div v-if="feedType == FeedEnums.Types.User" class="flex gap-2 text-sm">
                     <div v-if="!AppSettingsState.Settings.isHidingFollowers" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(profileData?.followersCount) }}</div> <div>followers</div></div>
                     <div v-if="!AppSettingsState.Settings.isHidingFollowing" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(profileData?.followsCount) }}</div> <div>following</div></div>
                     <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(profileData?.postsCount) }}</div> <div>posts</div></div>
                 </div>
+                <div v-if="feedType == FeedEnums.Types.FeedGenerator" class="text-sm mt-auto"><span class="font-bold">{{ typeof generatorData != 'undefined' ? getCompactNumberValue(generatorData.likeCount) : 'PROP MISSING' }}</span> users liked</div>
             </div>
         </div>
     </div>
@@ -70,6 +77,7 @@ import { FeedEnums } from '../../enums/FeedEnums';
 import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import FeedIcon from '../Feed/FeedIcon.vue';
+import { AppBskyFeedDefs } from '@atproto/api/dist/client';
 
 export default defineComponent({
     props:{
@@ -92,6 +100,12 @@ export default defineComponent({
          */
         profileData:{
             type: Object as PropType<ProfileViewDetailed>
+        },
+        /**
+         * `AppBskyFeedDefs.GeneratorView` data for a "Feed Generator" type Feed.
+         */
+        generatorData:{
+            type: Object as PropType<AppBskyFeedDefs.GeneratorView>
         },
         // /**The index that points to the record in the "Feed Stack" related to the information displayed in this control. */
         // stackIndex:{
@@ -177,7 +191,7 @@ export default defineComponent({
         handle():string{
             if(this.feedType == FeedEnums.Types.User && typeof this.profileData != 'undefined') return `@${this.profileData.handle}`;
             else if(this.feedType == FeedEnums.Types.Tag) return 'Hashtag Feed';
-            else if(this.feedType == FeedEnums.Types.FeedGenerator) return `Feed By @put feed gen handle here`;
+            else if(this.feedType == FeedEnums.Types.FeedGenerator) return `Feed By @${typeof this.generatorData != 'undefined' ? this.generatorData.creator.handle : '[GeneratorData] prop is missing'}`;
             else return 'Not yet implemented for Feed Type';
         },
         /**"Display Name" value to use based on the Feed type. */
@@ -188,6 +202,7 @@ export default defineComponent({
                 case FeedEnums.Types.User:
                     return typeof this.profileData != 'undefined' ? this.profileData.displayName : 'ERROR: Profile data is missing';
                 case FeedEnums.Types.Tag:
+                case FeedEnums.Types.FeedGenerator:
                     return this.feedName;
                 default:
                     break;
@@ -197,12 +212,16 @@ export default defineComponent({
         description():string|undefined{
             if(this.feedType == FeedEnums.Types.User && typeof this.profileData != 'undefined') return this.profileData.description;
             else if(this.feedType == FeedEnums.Types.Tag) return `Will display Posts including the following hashtags: ${this.displayName}`;
+            else if(this.feedType == FeedEnums.Types.FeedGenerator){
+                if(typeof this.generatorData != 'undefined') return `${this.generatorData.description}`;
+            }
             else return 'Not yet implemented for Feed Type';
         },
         /**"Avatar URL" value to use based on the Feed type. */
         avatar():string|undefined{
             if(this.feedType == FeedEnums.Types.User && typeof this.profileData != 'undefined') return this.profileData.avatar;
-            else return 'Not yet implemented for Feed Type';
+            if(this.feedType == FeedEnums.Types.FeedGenerator && typeof this.generatorData != 'undefined') return this.generatorData.avatar;
+            else return undefined;
         },
     }
 })

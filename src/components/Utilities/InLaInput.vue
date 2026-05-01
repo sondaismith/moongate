@@ -4,7 +4,7 @@
             class="peer bg-searchbarBG leading-8 px-2 pt-3 h-11
             border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight rounded-md focus-visible:!outline focus-visible:!outline-transparent
             disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none
-            w-full" :class="$attrs.class" :type="isPasswordInput ? 'password' : 'text'" autocapitalize="off"
+            w-full" :class="$attrs.class" :type="isPasswordInput ? 'password' : 'text'" autocapitalize="off" :placeholder="placeholderText"
             :disabled="isDisabled ? true : false"/>
         <div class="absolute top-[-2px] left-2 select-none text-feedTimestamp text-secondary">
             {{ textLabel ? textLabel : "Unset Label" }}
@@ -33,6 +33,10 @@ export default defineComponent({
         /**Used to set the initial value displayed in the control. */
         modelValue:{
             type: String,
+        },
+        /**Placeholder text to use for input box. */
+        placeholderText:{
+            type:String
         },
         /**Sets the text label that will be displayed in the control. */
         textLabel:{

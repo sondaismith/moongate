@@ -80,27 +80,31 @@
                                     <div v-if="selectedFeedType == FeedEnums.Types.User" class="flex flex-col gap-1 h-full w-full overflow-hidden">
                                         <UserSearchBar2 :search-term-v-model="feedFilters.userSearch.searchTerm" :feed-stack-ref="feedStackItems"
                                         :user-results-ref="userAccountSearchResults" placeholder-text="Search for Users..." @user-selected="selectUser"
-                                        @filter-bar-update="newValue => feedFilters.userSearch.searchTerm = newValue" @search-submitted="submitSearch"
+                                        @filter-bar-update="newValue => feedFilters.userSearch.searchTerm = newValue" @search-submitted="submitUserSearch"
                                         @clear-results-clicked="clearUserAccountResults" :disabled="awaitingUserSearchResults"/>
                                         <!-- <FeedStackButton v-for="u in feedStackItems.filter(x => x.type == FeedEnums.Types.User)"
                                         :feed-type="FeedEnums.Types.User" :profile-data="u.profileData"/> -->
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="w-full">
-                                        <InLaInput data-testid="feedEditModal-tag-input" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag"/>
-                                        <div class="flex flex-col mt-1 overflow-x-hidden">
-                                            <div class="mb-1">Discovered Tags:</div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col gap-1 w-full">
+                                        <InLaInput data-testid="feedEditModal-tag-input" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag" placeholder-text="Enter Tags here..."/>
+                                        <div class="flex flex-col gap-1 mt-1 overflow-x-hidden">
+                                            <div class="border-b">Discovered Tags:</div>
+                                            <div v-if="validTags.length<1" class="rounded-md p-1 bg-btnSubtle text-secondaryHover animate-pulses">No tags found</div>
                                             <div data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap">
                                                 <div v-for="n, index in validTags" :key="index"
-                                                class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 break-all">
+                                                class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 text-white break-all">
                                                     #{{ n }}
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="flex flex-wrap gap-2 pl-1 pr-2">
-                                            <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
-                                            v-for="stackItem, index in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
-                                            :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-index="index"
-                                            :display-only="true" @clicked-remove-stack-item="removeFeedStackItem"/>
+                                        <div class="flex flex-col gap-1 mt-1    ">
+                                            <div class="border-b">Tag Feeds</div>
+                                            <div class="flex flex-wrap gap-2 pl-1 pr-2">
+                                                <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
+                                                v-for="stackItem, index in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
+                                                :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-index="index"
+                                                :display-only="true" @clicked-remove-stack-item="removeFeedStackItem"/>
+                                            </div>
                                         </div>
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex w-full h-full">
@@ -113,12 +117,13 @@
                                             <div v-if="selectedFeedItems.length>0" class="pt-1 w-full max-h-16 min-h-16 border-b pb-1 border-outline overflow-y-auto">
                                                 <div class="flex gap-1">
                                                     <div tabindex="-1" class="flex flex-wrap gap-1 w-full items-start">
-                                                        <button v-for="n in selectedFeedGenerators" @click="toggleFeedGeneratorSelection(n.generator.uri)"
-                                                        :title="'Remove &quot;'+n.generator.displayName+'&quot; Feed'"
+                                                        <!-- <button v-for="n in selectedFeedGenerators" @click="toggleFeedGeneratorSelection(n.generator.uri)" -->
+                                                        <button v-for="n in selectedFeedItems" @click="toggleFeedGeneratorSelection(n.uri)"
+                                                        :title="'Remove &quot;'+n.displayName+'&quot; Feed'"
                                                         class="flex shrink-0 grow-0 items-center gap-1 bg-itemTagBG transition-colors border-2 border-transparent
                                                         active:bg-itemTagBGActive hover:border-itemTagBorder active:border-itemTagBGActive focus-visible:border-itemTagBorder
                                                         outline-none rounded p-0.5 px-1 text-primary text-xs text-nowrap cursor-pointer shadow-none">
-                                                            <div>{{ n.generator.displayName }}</div>
+                                                            <div>{{ n.displayName }}</div>
                                                             <i-mingcute:close-circle-line/>
                                                         </button>
                                                     </div>
@@ -133,7 +138,7 @@
                                                 <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline">
                                                     <div class="text-lg">Discover New Feeds</div>
                                                     <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
-                                                    <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded<span v-if="selectedFeedItems.length>0">, {{ selectedFeedItems.length }} selected</span></div>
+                                                    <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded</div>
                                                 </div>
                                                 <div v-if="!awaitingInitialCustomFeedData && !awaitingSearchCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
                                                     <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
@@ -196,8 +201,8 @@
                         <div v-else class="flex flex-wrap gap-2 pl-1 pr-2">
                             <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
                             v-for="stackItem, index in feedStackItems"
-                            :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-index="index"
-                            :display-only="true" @clicked-remove-stack-item="removeFeedStackItem"/>
+                            :feed-stack-index="index" :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name"
+                            :generator-data="stackItem.generatorData" :display-only="true" @clicked-remove-stack-item="removeFeedStackItem"/>
                         </div>
                         {{ void 'Old Summary Page Code - REMOVE BEFORE BRANCH MERGE' }}
                         <div v-if="false">
@@ -636,10 +641,10 @@ export default defineComponent({
             //this.forwardOnePage();
         },
         /**
-         * Method used to "submit" the search term entered into the control
+         * Method used to "submit" the search term entered into the control for User accounts
          * on Enter Key or button press.
          */
-        async submitSearch(){
+        async submitUserSearch(){
             if(!this.awaitingUserSearchResults && this.feedFilters.userSearch.searchTerm.trim().length>0){
                 this.awaitingUserSearchResults = true;
                 console.log(`Search term: ${this.feedFilters.userSearch.searchTerm}`);//DEBUG
@@ -804,9 +809,9 @@ export default defineComponent({
             this.viewingFeedGenSearchResults = false;
             this.defaultFeedData = [];
             this.customFeedData = [];
-            this.selectedFeedItems = [];
             this.feedFilters.feedGenerator.searchTerm = '';
             this.feedFilters.feedGenerator.lastSearchTerm = '';
+            this.customFeedDataCursor = '';
             //Get "Discover" Feed
             GetBrowsingAgent().app.bsky.feed.getFeedGenerators({feeds:['at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot']})
             .then(res => {
@@ -830,7 +835,14 @@ export default defineComponent({
                 console.log(err);
                 toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
             })
-            .finally(()=>{this.awaitingInitialCustomFeedData = false;})
+            .finally(()=>{
+                //Compare returned results against items in Feed Stack and mark them as selected if they have already been added to the stack
+                this.customFeedData.forEach(element => {
+                    let matchIndex = this.feedStackItems.findIndex(x=>x.did == element.generator.uri);
+                    if(matchIndex>-1) element.selected = true;
+                });
+                this.awaitingInitialCustomFeedData = false;
+            })
         },
         /**Method used to load additional Feed Generators through Bluesky's API after the 1st request. */
         async loadMoreFeedGenerators(){
@@ -838,7 +850,9 @@ export default defineComponent({
             GetBrowsingAgent().app.bsky.unspecced.getPopularFeedGenerators({limit:10,cursor:this.customFeedDataCursor})
             .then(res => {
                 res.data.feeds.forEach(element => {
-                    this.customFeedData.push({generator:element,selected:false});
+                    //Compare returned results against items in Feed Stack and mark them as selected if they have already been added to the stack
+                    let matchIndex = this.feedStackItems.findIndex(x=>x.did == element.uri);
+                    this.customFeedData.push({generator:element,selected:matchIndex>-1 ? true : false});
                 });
                 this.customFeedDataCursor = res.data.cursor;
             })
@@ -859,11 +873,13 @@ export default defineComponent({
                 this.awaitingSearchCustomFeedData = true;
                 this.awaitingAdditionalCustomFeedData = true;
                 this.customFeedData = [];
-                this.selectedFeedItems = [];
+                // this.selectedFeedItems = [];
                 GetBrowsingAgent().app.bsky.unspecced.getPopularFeedGenerators({limit:100,query:searchTerm})
                 .then(res => {
                     res.data.feeds.forEach(element => {
-                        this.customFeedData.push({generator:element,selected:false});
+                        //Compare returned results against items in Feed Stack and mark them as selected if they have already been added to the stack
+                        let matchIndex = this.feedStackItems.findIndex(x=>x.did == element.uri);
+                        this.customFeedData.push({generator:element,selected:matchIndex>-1 ? true : false});
                     });
                     this.customFeedDataCursor = res.data.cursor;
                     this.awaitingSearchCustomFeedData = false;
@@ -882,6 +898,11 @@ export default defineComponent({
             this.customFeedData.forEach(fd => {
                 fd.selected = false;
             });
+            this.selectedFeedItems.forEach(fi=>{
+                //Remove all selected custom feeds from Feed Stack before emptying
+                let stackMatchIndex = this.feedStackItems.findIndex(i=>i.generatorData?.uri == fi.uri);
+                if(stackMatchIndex>-1) this.feedStackItems.splice(stackMatchIndex,1);
+            })
             this.selectedFeedItems = [];
         },
         /**Method that selects or deselects a specific Feed Generator in the displayed list. */
@@ -892,10 +913,20 @@ export default defineComponent({
                 this.customFeedData[index].selected = !this.customFeedData[index].selected;
                 //Update "selected items" array
                 if(!this.customFeedData[index].selected){
-                    let indexToRemove = this.selectedFeedItems.findIndex(f=>f.uri == atUri);
-                    if(indexToRemove>-1) this.selectedFeedItems.splice(indexToRemove,1);
+                    //Sync deselection state between selectedFeedItems (mini buttons) and Feed Stack
+                    let selectedIndexToRemove = this.selectedFeedItems.findIndex(f=>f.uri == atUri);
+                    if(selectedIndexToRemove>-1) this.selectedFeedItems.splice(selectedIndexToRemove,1);
+                    let stackIndexToRemove = this.feedStackItems.findIndex(i=>i.generatorData?.uri == atUri);
+                    if(stackIndexToRemove>-1) this.feedStackItems.splice(stackIndexToRemove,1);
+
                 }
-                else this.selectedFeedItems.push(this.customFeedData[index].generator);
+                else{
+                    //Sync selection state between selectedFeedItems (mini buttons) and Feed Stack
+                    let generator = this.customFeedData[index].generator;
+                    this.selectedFeedItems.push(generator);
+                    this.feedStackItems.push({did:generator.uri,handle:generator.creator.handle,generatorData:generator,
+                        type:FeedEnums.Types.FeedGenerator,icon:FeedEnums.Icons.FeedGenerator,tags:[],name:generator.displayName});
+                }
             }
         },
         /**Method that adds or removes singular Feed Types from the "Feed Stack". */
@@ -1218,6 +1249,12 @@ export default defineComponent({
                 document.title = this.getFeedTypeTitle;//Update page title when view Feed summary
             }
             else if(typeof oldSummary != 'undefined' && newSummary != oldSummary && oldSummary.toLocaleLowerCase() == 'summary') this.currentPage = 1; //go back to Feed options page
+        },
+        /**Used to load default Custom Feed Generators when selecting the "Custom Feed" feed type button. */
+        selectedFeedType(newType:string,oldType:string){
+            if(oldType != FeedEnums.Types.FeedGenerator && newType == FeedEnums.Types.FeedGenerator){
+                this.getCustomFeeds();
+            }
         }
     },
     beforeRouteEnter(to, from, next){

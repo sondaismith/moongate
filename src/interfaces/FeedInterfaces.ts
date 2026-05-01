@@ -172,6 +172,8 @@ interface IFeedStackItem{
     name?:string,
     /**Profile Data associated with User-type feed. */
     profileData?:ProfileViewDetailed,
+    /**GeneratorView data for a "Feed Generator" type Feed. */
+    generatorData?:AppBskyFeedDefs.GeneratorView,
     /**Hashtag filters used by Tag-type feeds. */
     tags:string[],
     /**The type of Feed this is. */
