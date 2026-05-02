@@ -99,6 +99,13 @@ export default {
         postBookmark: "oklch(from var(--color-post-bookmark) l c h / <alpha-value>)",
         postBookmarkHover: "oklch(from var(--color-post-bookmark-hover) l c h / <alpha-value>)",
         postBookmarkActive: "oklch(from var(--color-post-bookmark-active) l c h / <alpha-value>)",
+        feedTypeButton: "oklch(from var(--color-feed-type-btn) l c h / <alpha-value>)",
+        feedTypeButtonHover: "oklch(from var(--color-feed-type-btn-hover) l c h / <alpha-value>)",
+        feedTypeButtonActive: "oklch(from var(--color-feed-type-btn-active) l c h / <alpha-value>)",
+        feedTypeButtonDisabled: "oklch(from var(--color-feed-type-btn-disabled) l c h / <alpha-value>)",
+        feedTypeButtonCounter: "oklch(from var(--color-feed-type-btn-counter) l c h / <alpha-value>)",
+        feedTypeButtonCounterHover: "oklch(from var(--color-feed-type-btn-counter-hover) l c h / <alpha-value>)",
+        feedTypeButtonCounterDisabled: "oklch(from var(--color-feed-type-btn-counter-disabled) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

@@ -9,9 +9,9 @@
                 <div class="text-lg font-semibold select-none">Adding Feeds</div>
                 <!-- <button class="flex gap-1 items-center px-2 py-0.5 rounded bg-btn hover:bg-btnHover hover:border-hover disabled:bg-disabledBG
                 disabled:border-transparent disabled:text-disabled">View Queue</button> -->
-                <SquareButton v-if="numberOfFeedsInStack>0" data-testid="feedEditModal-view-queue-button" class="bg-btn hover:bg-btnHover" button-padding-x="2" button-padding-y="0">
+                <!-- <SquareButton v-if="numberOfFeedsInStack>0" data-testid="feedEditModal-view-queue-button" class="bg-btn hover:bg-btnHover" button-padding-x="2" button-padding-y="0">
                     View Queue
-                </SquareButton>
+                </SquareButton> -->
                 <div>Number of Feeds:{{ feedStackItems.length }}</div>
             </div>
             <div class="flex flex-col py-1">
@@ -19,7 +19,6 @@
                     <div class="text-2xl">{{modalPages[currentPage].title}}</div>
                     <div v-if="AppState.isCreatingFeed" class="flex bg-green-600 rounded-full px-2 py-1 items-center self-center">Creating</div>
                     <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div>
-                    <div v-if="selectedFeedType.trim() != '' && currentPage != 0" class="flex border border-blue-600 rounded-full px-2 py-1 items-center self-center">{{ feedTypeOptions.find(x=> x.value == selectedFeedType)?.name.split(' ')[0] }} Feed</div>
                 </div>
                 {{ void "Pages" }}
                 <div class="flex items-center w-full">
@@ -44,14 +43,23 @@
                                     tabindex="0"
                                     :data-testid="`feedEditModal-${item.name.toLowerCase()}-feed-button`"
                                     class="group flex gap-1 cursor-pointer items-center border-2 outline-none border-transparent rounded-md transition-colors
-                                    bg-btn select-none p-[1px] overflow-hidden"
+                                    bg-feedTypeButton select-none p-[1px] overflow-hidden active:bg-feedTypeButtonActive"
                                     :class="[item.value == selectedFeedType ? '!border-feedtypeBtnSelected' : '',
-                                        !AppState.isAuthBrowsing && (item.value == FeedEnums.Types.Notifications || item.value == FeedEnums.Types.Following) ? 'bg-disabled' : 'hover:bg-feedTypeBtnHover'
+                                        !AppState.isAuthBrowsing && (item.value == FeedEnums.Types.Notifications || item.value == FeedEnums.Types.Following) ? '!bg-feedTypeButtonDisabled' : 'hover:bg-feedTypeButtonHover'
                                     ]">
                                         <div class="flex items-center gap-1 px-2 border-2 border-transparent group-focus-visible:border-feedtypeBtnFocusHighlight rounded-md">
                                             <FeedIcon :icon="item.value"/>
                                             <div>{{ item.name }}</div>
-                                            <div class="flex rounded-full px-1 min-w-6 aspect-square bg-slate-100 shadow-scroll-inner-window text-sm items-center justify-center">{{feedStackItems.filter(x=>x.type == item.value).length}}</div>
+                                            <div v-if="item.value == FeedEnums.Types.Trending" class="flex rounded-full px-1s min-w-5 aspect-square bg-feedTypeButtonCounter group-hover:bg-feedTypeButtonCounterHover
+                                            group-active:bg-feedTypeButtonCounterHover transition-colors text-white shadow-scroll-inner-window text-sm items-center justify-center"
+                                            :class="[{'!bg-radioButtonSelected' : isTrendingTypeInStack}]">
+                                                <i-mingcute:check-fill v-if="isTrendingTypeInStack" class="p-0.5"/>
+                                            </div>
+                                            <div v-else class="flex rounded-full px-1s min-w-5 aspect-square bg-feedTypeButtonCounter group-hover:bg-feedTypeButtonCounterHover group-active:bg-feedTypeButtonCounterHover transition-colors
+                                            text-white shadow-scroll-inner-window text-sm items-center justify-center"
+                                            :class="[{'!bg-radioButtonSelected' : getFeedCountForType(item.value)},
+                                            !AppState.isAuthBrowsing && (item.value == FeedEnums.Types.Notifications || item.value == FeedEnums.Types.Following) ? '!bg-feedTypeButtonCounterDisabled' : '']">
+                                            {{getFeedCountForType(item.value)}}</div>
                                         </div>
                                     </button>
                                 </div>
@@ -103,7 +111,7 @@
                                                 <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
                                                 v-for="stackItem, index in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
                                                 :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-index="index"
-                                                :display-only="true" @clicked-remove-stack-item="removeFeedStackItem"/>
+                                                :display-only="true" @clicked-toggle-stack-item="removeFeedStackItem"/>
                                             </div>
                                         </div>
                                     </div>
@@ -179,7 +187,7 @@
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Trending">
                                         <div>Trending</div>
-                                        <FeedStackButton :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" :feed-stack-index="0" @feed-stack-item-selected="toggleSingularFeedItem"/>
+                                        <FeedStackButton :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" :feed-stack-index="0"  @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                         <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Following">
@@ -202,7 +210,7 @@
                             <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
                             v-for="stackItem, index in feedStackItems"
                             :feed-stack-index="index" :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name"
-                            :generator-data="stackItem.generatorData" :display-only="true" @clicked-remove-stack-item="removeFeedStackItem"/>
+                            :generator-data="stackItem.generatorData" :display-only="true" @clicked-toggle-stack-item="removeFeedStackItem"/>
                         </div>
                         {{ void 'Old Summary Page Code - REMOVE BEFORE BRANCH MERGE' }}
                         <div v-if="false">
@@ -726,6 +734,15 @@ export default defineComponent({
                     userResultIndexToDeselect = this.userAccountSearchResults.findIndex(x=>x.profileData.did == identifier);
                     if(userResultIndexToDeselect>-1) this.userAccountSearchResults[userResultIndexToDeselect].selected = false;
                     break;
+                case FeedEnums.Types.Trending:
+                    this.isTrendingTypeInStack = false;
+                    break;
+                case FeedEnums.Types.Following:
+                    this.isFollowingTypeInStack = false;
+                    break;
+                case FeedEnums.Types.Notifications:
+                    this.isNotificationTypeInStack = false;
+                    break;
                 default:
                     break;
             }
@@ -934,6 +951,13 @@ export default defineComponent({
             if(index > -1){
                 switch (feedType) {
                     case FeedEnums.Types.Trending:
+                        if(this.isTrendingTypeInStack){
+                            let stackIndex = this.feedStackItems.findIndex(x=>x.type == FeedEnums.Types.Trending);
+                            if(stackIndex>-1) this.feedStackItems.splice(stackIndex,1);
+                        }
+                        else{
+                            this.feedStackItems.push({did:'',handle:'',icon:FeedEnums.Icons.Trending,tags:[],type:FeedEnums.Types.Trending,name:'Trending'})
+                        }
                         this.isTrendingTypeInStack = !this.isTrendingTypeInStack;
                         break;
                     case FeedEnums.Types.Following:
@@ -1130,6 +1154,19 @@ export default defineComponent({
             //     }
             // }
         },
+        /**Method that returns the total number of a specified Feed type that are currently in the "Feed Stack". */
+        getFeedCountForType(feedType:FeedEnums.Types){
+            switch (feedType) {
+                case FeedEnums.Types.User:
+                    return this.numberOfUserFeedsInStack;
+                case FeedEnums.Types.Tag:
+                    return this.numberOfTagFeedsInStack;
+                case FeedEnums.Types.FeedGenerator:
+                    return this.numberOfCustomFeedsInStack;
+                default:
+                    break;
+            }
+        },
         closeModal(){
             // AppState.ToggleCreateFeedModal();
             // AppState.HideEditFeedModal();
@@ -1232,6 +1269,18 @@ export default defineComponent({
         /**Calculates the number of Feeds that are currently in the "Feed Stack". */
         numberOfFeedsInStack(){
             return this.feedStackItems.length + (this.isTrendingTypeInStack ? 1 : 0)+ (this.isFollowingTypeInStack ? 1 : 0)+ (this.isNotificationTypeInStack ? 1 : 0);
+        },
+        /**Calculates the number of "User Feeds" that are currently in the "Feed Stack". */
+        numberOfUserFeedsInStack(){
+            return this.feedStackItems.filter(x=>x.type == FeedEnums.Types.User).length;
+        },
+        /**Calculates the number of "Tag Feeds" that are currently in the "Feed Stack". */
+        numberOfTagFeedsInStack(){
+            return this.feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag).length;
+        },
+        /**Calculates the number of "Custom Feeds" that are currently in the "Feed Stack". */
+        numberOfCustomFeedsInStack(){
+            return this.feedStackItems.filter(x=>x.type == FeedEnums.Types.FeedGenerator).length;
         }
     },
     watch:{

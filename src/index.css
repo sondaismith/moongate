@@ -17,7 +17,7 @@
         --color-btn: oklch(55.4% 0.046 257.417);
         --color-btn-text: oklch(86.9% 0.022 252.894);
         --color-btn-subtle:oklch(37.2% 0.044 257.287);
-        --color-btn-hover: oklch(37.2% 0.044 257.287);
+        --color-btn-hover:theme(colors.slate.700);
         --color-sidebar: oklch(20.8% 0.042 265.755);
         --color-feed-btn: oklch(20.8% 0.042 265.755);
         --color-feedtype-btn-hover: oklch(70.4% 0.04 256.788);
@@ -98,6 +98,13 @@
         --color-post-bookmark:theme(colors.orange.500);
         --color-post-bookmark-hover:theme(colors.orange.400);
         --color-post-bookmark-active:theme(colors.orange.600);
+        --color-feed-type-btn:theme(colors.slate.500);
+        --color-feed-type-btn-hover:theme(colors.slate.700);
+        --color-feed-type-btn-active:theme(colors.slate.800);
+        --color-feed-type-btn-disabled:theme(colors.gray.700);
+        --color-feed-type-btn-counter:theme(colors.slate.600);
+        --color-feed-type-btn-counter-hover:theme(colors.slate.500);
+        --color-feed-type-btn-counter-disabled:theme(colors.gray.400);
     }
 }
 
@@ -196,4 +203,11 @@
     --color-post-bookmark:theme(colors.orange.500);
     --color-post-bookmark-hover:theme(colors.orange.400);
     --color-post-bookmark-active:theme(colors.orange.600);
+    --color-feed-type-btn:theme(colors.slate.300);
+    --color-feed-type-btn-active:theme(colors.slate.500);
+    --color-feed-type-btn-hover:theme(colors.slate.400);
+    --color-feed-type-btn-disabled:theme(colors.gray.400);
+    --color-feed-type-btn-counter:theme(colors.slate.400);
+    --color-feed-type-btn-counter-hover:theme(colors.slate.500);
+    --color-feed-type-btn-counter-disabled:theme(colors.gray.500);
 }

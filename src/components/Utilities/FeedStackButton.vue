@@ -1,5 +1,5 @@
 <template>
-    <button v-if="!displayOnly" @click="removeFeedStackItem" :title="buttonTitleText"
+    <button v-if="!displayOnly" @click="toggleFeedStackItem" :title="buttonTitleText"
     class="flex gap-2 p-3 text-left hover:bg-customFeedBtnBGHover
     active:bg-customFeedBtnBGActive focus-visible:bg-customFeedBtnBGHover border border-outline rounded"
     :class="[{'border-blueskyBlue bg-customFeedBtnBGHover' : selected},{'hover:bg-transparent active:bg-transparent focus-visible:bg-transparent' : displayOnly}]">
@@ -36,17 +36,18 @@
     <div v-else class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
         <div class="flex flex-col gap-2 w-full overflow-hidden">
             <div class="flex gap-1 items-center">
-                <div class="flex bg-blueskyBlue aspect-square shrink-0 w-8 items-center justify-center">
+                <div class="flex bg-blueskyBlue text-white aspect-square shrink-0 w-8 items-center justify-center">
                     <ImageLoader v-if="typeof avatar != 'undefined' && avatar != ''"
                     :img-url="avatar" loader-type="spinner" :fill-container="true"/>
                     <FeedIcon v-else-if="feedType == FeedEnums.Types.Tag" :icon="FeedEnums.Icons.Hashtag"/>
+                    <FeedIcon v-else-if="feedType == FeedEnums.Types.Trending" :icon="FeedEnums.Icons.Trending"/>
                     <i-mingcute:radar-2-fill v-else class="text-white h-6 w-6"/>
                 </div>
                 <div class="flex flex-col overflow-hidden">
                     <div class="text-base leading-5 text-nowrap overflow-hidden text-ellipsis">{{ typeof displayName != 'undefined' && displayName != '' ? displayName : 'PROP MISSING' }}</div>
                     <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">{{ typeof handle != 'undefined' && handle != '' ? handle : 'PROP MISSING' }}</div>
                 </div>
-                <button @click="removeFeedStackItem" :title="'Remove &quot;'+displayName+'&quot; Feed'"
+                <button @click="toggleFeedStackItem" :title="'Remove &quot;'+displayName+'&quot; Feed'"
                 class="group self-center ml-auto mr-0.5 rounded p-0.5 border-0 bg-deleteBtnBG hover:bg-deleteBtnBGHover active:bg-deleteBtnBGActive
                 text-xs text-white shadow-none outline-none">
                     <div class="flex p-0.5 px-1 items-center justify-center w-full h-full rounded border-2 border-transparent
@@ -55,7 +56,7 @@
                     </div>
                 </button>
             </div>
-            <div v-if="!isSingularFeedType" class="flex flex-col gap-1 grow justify-between">
+            <div class="flex flex-col gap-1 grow justify-between">
                 <div class="text-sm">{{ typeof description != 'undefined' && description != '' ? description : 'No Description Provided' }}</div>
                 <!-- <div class="text-xs font-semibold mt-auto">Liked By: {{ feedGeneratorView ? feedGeneratorView.likeCount : 'PROP MISSING' }} users</div> -->
                 <div v-if="feedType == FeedEnums.Types.User" class="flex gap-2 text-sm">
@@ -137,7 +138,7 @@ export default defineComponent({
     },
     emits:{
         /**Emit used to indicate a specific settings category has been clicked. */
-        clickedRemoveStackItem:(type:FeedEnums.Types,index:number,identifier:string) => {
+        clickedToggleStackItem:(type:FeedEnums.Types,index:number,identifier:string) => {
             return {feedType:type, stackIndex:index};
         }
     },
@@ -145,8 +146,8 @@ export default defineComponent({
         /**
          * Emits message when the main control area is clicked.
          */
-        removeFeedStackItem(){
-            if(this.displayOnly){
+        toggleFeedStackItem(){
+            // if(this.displayOnly){
                 let identifier = '';
                 switch (this.feedType) {
                     case FeedEnums.Types.User:
@@ -155,8 +156,8 @@ export default defineComponent({
                     default:
                         break;
                 }
-                this.$emit('clickedRemoveStackItem',this.feedType,this.feedStackIndex,identifier);
-            }
+                this.$emit('clickedToggleStackItem',this.feedType,this.feedStackIndex,identifier);
+            // }
         },
         /**
          * Method that runs when the "Pin" button is clicked. Used to add
@@ -192,6 +193,7 @@ export default defineComponent({
             if(this.feedType == FeedEnums.Types.User && typeof this.profileData != 'undefined') return `@${this.profileData.handle}`;
             else if(this.feedType == FeedEnums.Types.Tag) return 'Hashtag Feed';
             else if(this.feedType == FeedEnums.Types.FeedGenerator) return `Feed By @${typeof this.generatorData != 'undefined' ? this.generatorData.creator.handle : '[GeneratorData] prop is missing'}`;
+            else if(this.feedType == FeedEnums.Types.Trending) return `Feed List by Bluesky`;
             else return 'Not yet implemented for Feed Type';
         },
         /**"Display Name" value to use based on the Feed type. */
@@ -203,6 +205,7 @@ export default defineComponent({
                     return typeof this.profileData != 'undefined' ? this.profileData.displayName : 'ERROR: Profile data is missing';
                 case FeedEnums.Types.Tag:
                 case FeedEnums.Types.FeedGenerator:
+                case FeedEnums.Types.Trending:
                     return this.feedName;
                 default:
                     break;
@@ -215,6 +218,7 @@ export default defineComponent({
             else if(this.feedType == FeedEnums.Types.FeedGenerator){
                 if(typeof this.generatorData != 'undefined') return `${this.generatorData.description}`;
             }
+            else if(this.feedType == FeedEnums.Types.Trending) return `Will display a list of the current trending topics on Bluesky.`;
             else return 'Not yet implemented for Feed Type';
         },
         /**"Avatar URL" value to use based on the Feed type. */
