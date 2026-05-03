@@ -55,10 +55,19 @@
                                             :class="[{'!bg-radioButtonSelected' : isTrendingTypeInStack}]">
                                                 <i-mingcute:check-fill v-if="isTrendingTypeInStack" class="p-0.5"/>
                                             </div>
+                                            <div v-else-if="item.value == FeedEnums.Types.Following" class="flex rounded-full px-1s min-w-5 aspect-square bg-feedTypeButtonCounter group-hover:bg-feedTypeButtonCounterHover
+                                            group-active:bg-feedTypeButtonCounterHover transition-colors text-white shadow-scroll-inner-window text-sm items-center justify-center"
+                                            :class="[{'!bg-radioButtonSelected' : isFollowingTypeInStack}, {'!bg-feedTypeButtonCounterDisabled' : !AppState.isAuthBrowsing}]">
+                                                <i-mingcute:check-fill v-if="isFollowingTypeInStack" class="p-0.5"/>
+                                            </div>
+                                            <div v-else-if="item.value == FeedEnums.Types.Notifications" class="flex rounded-full px-1s min-w-5 aspect-square bg-feedTypeButtonCounter group-hover:bg-feedTypeButtonCounterHover
+                                            group-active:bg-feedTypeButtonCounterHover transition-colors text-white shadow-scroll-inner-window text-sm items-center justify-center"
+                                            :class="[{'!bg-radioButtonSelected' : isNotificationTypeInStack}, {'!bg-feedTypeButtonCounterDisabled' : !AppState.isAuthBrowsing}]">
+                                                <i-mingcute:check-fill v-if="isNotificationTypeInStack" class="p-0.5"/>
+                                            </div>
                                             <div v-else class="flex rounded-full px-1s min-w-5 aspect-square bg-feedTypeButtonCounter group-hover:bg-feedTypeButtonCounterHover group-active:bg-feedTypeButtonCounterHover transition-colors
                                             text-white shadow-scroll-inner-window text-sm items-center justify-center"
-                                            :class="[{'!bg-radioButtonSelected' : getFeedCountForType(item.value)},
-                                            !AppState.isAuthBrowsing && (item.value == FeedEnums.Types.Notifications || item.value == FeedEnums.Types.Following) ? '!bg-feedTypeButtonCounterDisabled' : '']">
+                                            :class="[{'!bg-radioButtonSelected' : getFeedCountForType(item.value)}]">
                                             {{getFeedCountForType(item.value)}}</div>
                                         </div>
                                     </button>
@@ -190,13 +199,13 @@
                                         <FeedStackButton :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" :feed-stack-index="0"  @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                         <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Following">
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Following && AppState.isAuthBrowsing">
                                         <div>Following</div>
-                                        <FeedStackButton :feed-type="FeedEnums.Types.Following" :selected="isFollowingTypeInStack" :feed-stack-index="0" @feed-stack-item-selected="toggleSingularFeedItem"/>
+                                        <FeedStackButton :feed-type="FeedEnums.Types.Following" :selected="isFollowingTypeInStack" :feed-stack-index="0" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Notifications && AppState.isAuthBrowsing">
                                         <div>Notification</div>
-                                        <FeedStackButton :feed-type="FeedEnums.Types.Notifications" :selected="isNotificationTypeInStack" :feed-stack-index="0" @feed-stack-item-selected="toggleSingularFeedItem"/>
+                                        <FeedStackButton :feed-type="FeedEnums.Types.Notifications" :selected="isNotificationTypeInStack" :feed-stack-index="0" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                     </div>
                                 </TransitionGroup>
                             </div>
@@ -629,7 +638,7 @@ export default defineComponent({
         backOnePage(){
             if(this.currentPage-1 > -1){
                 console.log(this.$route);
-                this.$router.push('/create/feed/');
+                this.$router.push('/create/feed');
                 this.feedTypeSelected = false;
                 this.feedSpecificationsSet = false;
                 // if(this.currentPage >= 1) this.$router.push(this.$route.path.substring(0, this.$route.path.lastIndexOf('/')));
@@ -961,9 +970,23 @@ export default defineComponent({
                         this.isTrendingTypeInStack = !this.isTrendingTypeInStack;
                         break;
                     case FeedEnums.Types.Following:
+                        if(this.isFollowingTypeInStack){
+                            let stackIndex = this.feedStackItems.findIndex(x=>x.type == FeedEnums.Types.Following);
+                            if(stackIndex>-1) this.feedStackItems.splice(stackIndex,1);
+                        }
+                        else{
+                            this.feedStackItems.push({did:'',handle:'',icon:FeedEnums.Icons.Following,tags:[],type:FeedEnums.Types.Following,name:'Following'})
+                        }
                         this.isFollowingTypeInStack = !this.isFollowingTypeInStack;
                         break;
                     case FeedEnums.Types.Notifications:
+                        if(this.isNotificationTypeInStack){
+                            let stackIndex = this.feedStackItems.findIndex(x=>x.type == FeedEnums.Types.Notifications);
+                            if(stackIndex>-1) this.feedStackItems.splice(stackIndex,1);
+                        }
+                        else{
+                            this.feedStackItems.push({did:'',handle:'',icon:FeedEnums.Icons.Notifications,tags:[],type:FeedEnums.Types.Notifications,name:'Notifications'})
+                        }
                         this.isNotificationTypeInStack = !this.isNotificationTypeInStack;
                         break;
                     default:
@@ -1309,7 +1332,7 @@ export default defineComponent({
     beforeRouteEnter(to, from, next){
         if(!AppState.canBrowse) next({path:'/login'});
         else{
-            if(to.path == '/create/feed/'){
+            if(to.path == '/create/feed'){
                 next(vm =>{
                     vm.$data.currentPage = 0;
                 })
@@ -1320,12 +1343,6 @@ export default defineComponent({
                 })
             }
             else next();
-        }
-    },
-    beforeRouteUpdate(to, from, next){
-        //Prevent creating Following or Notification feeds if not logged in
-        if((to.path.includes('/following') || to.path.includes('/notification')) && !AppState.isAuthBrowsing){
-            next({path:'/create/feed'});
         }
     },
     async created(){

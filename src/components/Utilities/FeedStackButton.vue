@@ -36,15 +36,18 @@
     <div v-else class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
         <div class="flex flex-col gap-2 w-full overflow-hidden">
             <div class="flex gap-1 items-center">
-                <div class="flex bg-blueskyBlue text-white aspect-square shrink-0 w-8 items-center justify-center">
+                <div class="flex text-white aspect-square shrink-0 w-8 items-center justify-center"
+                :class="[{'bg-blueskyBlue' : typeof avatar == 'undefined'}]">
                     <ImageLoader v-if="typeof avatar != 'undefined' && avatar != ''"
                     :img-url="avatar" loader-type="spinner" :fill-container="true"/>
                     <FeedIcon v-else-if="feedType == FeedEnums.Types.Tag" :icon="FeedEnums.Icons.Hashtag"/>
                     <FeedIcon v-else-if="feedType == FeedEnums.Types.Trending" :icon="FeedEnums.Icons.Trending"/>
+                    <FeedIcon v-else-if="feedType == FeedEnums.Types.Following" :icon="FeedEnums.Icons.Following"/>
+                    <FeedIcon v-else-if="feedType == FeedEnums.Types.Notifications" :icon="FeedEnums.Icons.Notifications"/>
                     <i-mingcute:radar-2-fill v-else class="text-white h-6 w-6"/>
                 </div>
                 <div class="flex flex-col overflow-hidden">
-                    <div class="text-base leading-5 text-nowrap overflow-hidden text-ellipsis">{{ typeof displayName != 'undefined' && displayName != '' ? displayName : 'PROP MISSING' }}</div>
+                    <div class="text-base leading-5 text-nowrap overflow-hidden text-ellipsis" :class="[{'opacity-20' : displayName == ''}]">{{ displayName != '' ? displayName : '[No Display Name]' }}</div>
                     <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">{{ typeof handle != 'undefined' && handle != '' ? handle : 'PROP MISSING' }}</div>
                 </div>
                 <button @click="toggleFeedStackItem" :title="'Remove &quot;'+displayName+'&quot; Feed'"
@@ -194,6 +197,8 @@ export default defineComponent({
             else if(this.feedType == FeedEnums.Types.Tag) return 'Hashtag Feed';
             else if(this.feedType == FeedEnums.Types.FeedGenerator) return `Feed By @${typeof this.generatorData != 'undefined' ? this.generatorData.creator.handle : '[GeneratorData] prop is missing'}`;
             else if(this.feedType == FeedEnums.Types.Trending) return `Feed List by Bluesky`;
+            else if(this.feedType == FeedEnums.Types.Following) return `Shows latest posts from following`;
+            else if(this.feedType == FeedEnums.Types.Notifications) return `Shows account notifications`;
             else return 'Not yet implemented for Feed Type';
         },
         /**"Display Name" value to use based on the Feed type. */
@@ -202,13 +207,16 @@ export default defineComponent({
             // else return 'Not yet implemented for Feed Type';
             switch (this.feedType) {
                 case FeedEnums.Types.User:
-                    return typeof this.profileData != 'undefined' ? this.profileData.displayName : 'ERROR: Profile data is missing';
+                    let dn = typeof this.profileData != 'undefined' ? this.profileData.displayName : 'ERROR: Profile data is missing';
+                    return dn;
                 case FeedEnums.Types.Tag:
                 case FeedEnums.Types.FeedGenerator:
                 case FeedEnums.Types.Trending:
+                case FeedEnums.Types.Following:
+                case FeedEnums.Types.Notifications:
                     return this.feedName;
                 default:
-                    break;
+                    return 'ERROR: Feed type not handled';
             }
         },
         /**"Description" value to use based on the Feed type. */
@@ -218,7 +226,9 @@ export default defineComponent({
             else if(this.feedType == FeedEnums.Types.FeedGenerator){
                 if(typeof this.generatorData != 'undefined') return `${this.generatorData.description}`;
             }
-            else if(this.feedType == FeedEnums.Types.Trending) return `Will display a list of the current trending topics on Bluesky.`;
+            else if(this.feedType == FeedEnums.Types.Trending) return `Displays a list of the current trending topics on Bluesky.`;
+            else if(this.feedType == FeedEnums.Types.Following) return `Displays the latest posts from the Users you follow.`;
+            else if(this.feedType == FeedEnums.Types.Notifications) return `Displays account notifications (likes, follows etc.)`;
             else return 'Not yet implemented for Feed Type';
         },
         /**"Avatar URL" value to use based on the Feed type. */

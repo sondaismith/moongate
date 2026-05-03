@@ -18,7 +18,8 @@
                             <i-mingcute:check-fill v-if="result.selected" class="h-full w-full p-0.5 text-white"/>
                             <i-mingcute:loading-fill v-if="result.awaitingDetailedData" class="spinner mx-auto h-3 shrink-0 text-black"/>
                         </div>
-                        <div class="flex rounded-full size-10 min-w-10 aspect-square bg-sky-400 justify-center items-center bg-cover overflow-hidden">
+                        <div class="flex rounded-full size-10 min-w-10 aspect-square justify-center items-center bg-cover overflow-hidden"
+                        :class="[{'bg-searchbarHandle' : typeof result.profileData.avatar == 'undefined'}]">
                             <ImageLoader v-if="typeof result.profileData.avatar != 'undefined'" :img-url="result.profileData.avatar" :fill-container="true" :loader-type="'spinner'"/>
                             <i-mingcute:user-add-fill v-else/>
                         </div>
