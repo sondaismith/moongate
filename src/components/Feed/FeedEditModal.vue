@@ -33,7 +33,7 @@
             <div class="flex flex-col relative grow !px-0 overflow-hidden shadow-scroll-inner-bottom">
                 <Transition>
                     <div v-if="currentPage == 0" class="h-full w-full px-2">
-                        <div class="flex flex-col h-full gap-2 py-2">
+                        <div class="flex flex-col h-full gap-2 pt-2">
                             <div class="flex items-start flex-wrap gap-1 px-2">
                                 <!-- <PillButton :disabled="true">Mentions</PillButton>
                                 <PillButton :disabled="true">DMs</PillButton> -->
@@ -89,12 +89,12 @@
                                     </div>
                                 </TransitionGroup>
                             </div>
-                            <div v-if="selectedFeedType.trim() != ''" class="flex h-full border border-outline rounded p-1 overflow-hidden">
+                            <div v-if="selectedFeedType.trim() != ''" class="flex items-start h-full rounded overflow-hidden">
                                 <TransitionGroup>
                                     <!-- <UserSearchBar data-testid="feedEditModal-user-search-bar" class="w-full"
                                     v-if="selectedFeedType == FeedEnums.Types.User"
                                     @user-selected="selectUser" :data-list="searchResults"/> -->
-                                    <div v-if="selectedFeedType == FeedEnums.Types.User" class="flex flex-col gap-1 h-full w-full overflow-hidden">
+                                    <div v-if="selectedFeedType == FeedEnums.Types.User" class="flex flex-col mx-2 gap-1 h-full w-full overflow-hidden">
                                         <UserSearchBar2 :search-term-v-model="feedFilters.userSearch.searchTerm" :feed-stack-ref="feedStackItems"
                                         :user-results-ref="userAccountSearchResults" placeholder-text="Search for Users..." @user-selected="selectUser"
                                         @filter-bar-update="newValue => feedFilters.userSearch.searchTerm = newValue" @search-submitted="submitUserSearch"
@@ -102,9 +102,9 @@
                                         <!-- <FeedStackButton v-for="u in feedStackItems.filter(x => x.type == FeedEnums.Types.User)"
                                         :feed-type="FeedEnums.Types.User" :profile-data="u.profileData"/> -->
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col gap-1 w-full">
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mx-2 gap-1 w-full">
                                         <InLaInput data-testid="feedEditModal-tag-input" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag" placeholder-text="Enter Tags here..."/>
-                                        <div class="flex flex-col gap-1 mt-1 overflow-x-hidden">
+                                        <div class="flex flex-col shrink-0 gap-1 mt-1 overflow-x-hidden">
                                             <div class="border-b">Discovered Tags:</div>
                                             <div v-if="validTags.length<1" class="rounded-md p-1 bg-btnSubtle text-secondaryHover animate-pulses">No tags found</div>
                                             <div data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap">
@@ -114,9 +114,9 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="flex flex-col gap-1 mt-1    ">
-                                            <div class="border-b">Tag Feeds</div>
-                                            <div class="flex flex-wrap gap-2 pl-1 pr-2">
+                                        <div class="flex flex-col mt-1 h-full overflow-hidden">
+                                            <div class="border-b pb-1 shadow-scroll-underline shadow-postFocusModalDetailsShadow/10">Tag Feeds</div>
+                                            <div class="flex flex-wrap gap-2 pl-1 pr-2 py-2 overflow-y-auto">
                                                 <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
                                                 v-for="stackItem, index in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
                                                 :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-index="index"
@@ -124,7 +124,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex w-full h-full">
+                                    <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex mx-2 w-full h-full">
                                         <div class="flex flex-col gap-1 w-full">
                                             <FilterBar :filter-vmodel="feedFilters.feedGenerator.searchTerm" :show-clear-button="viewingFeedGenSearchResults"
                                             placeholder-text="Search Feeds..."
@@ -152,12 +152,12 @@
                                                 </div>
                                             </div>
                                             <div class="flex flex-col gap-1 h-full overflow-y-auto preload-gutter">
-                                                <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline">
+                                                <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline shadow-postFocusModalDetailsShadow/10">
                                                     <div class="text-lg">Discover New Feeds</div>
                                                     <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
                                                     <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded</div>
                                                 </div>
-                                                <div v-if="!awaitingInitialCustomFeedData && !awaitingSearchCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
+                                                <div v-if="!awaitingInitialCustomFeedData && !awaitingSearchCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-2 pb-3 pl-1 pr-2">
                                                     <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
                                                     @feed-generator-selected="toggleFeedGeneratorSelection" :selected="n.selected"/>
                                                     <button v-if="!viewingFeedGenSearchResults" @click="loadMoreFeedGenerators" :disabled="awaitingAdditionalCustomFeedData"
@@ -194,18 +194,16 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Trending">
-                                        <div>Trending</div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Trending" class="flex flex-col p-2 w-full">
                                         <FeedStackButton :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" :feed-stack-index="0"  @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                         <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Following && AppState.isAuthBrowsing">
-                                        <div>Following</div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Following && AppState.isAuthBrowsing" class="flex flex-col p-2 w-full">
                                         <FeedStackButton :feed-type="FeedEnums.Types.Following" :selected="isFollowingTypeInStack" :feed-stack-index="0" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Notifications && AppState.isAuthBrowsing">
-                                        <div>Notification</div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Notifications && AppState.isAuthBrowsing" class="flex flex-col gap-2 p-2 w-full">
                                         <FeedStackButton :feed-type="FeedEnums.Types.Notifications" :selected="isNotificationTypeInStack" :feed-stack-index="0" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                        <!-- <CheckBox class="px-3 self-start" @value-toggled="toggleJustMentions" :model-value="feedFilters.notifications.justNotifs" :checkbox-size="1.25" :text-gap="0.5">Mentions Only</CheckBox> -->
                                     </div>
                                 </TransitionGroup>
                             </div>

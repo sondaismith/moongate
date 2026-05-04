@@ -1,14 +1,17 @@
 <template>
-    <div class="flex gap-1 cursor-pointer transition-colors"
+    <button class="group flex rounded cursor-pointer transition-colors shadow-none hover:border-transparent
+    active:bg-transparent active:border-transparent"
+    :style="`gap:${textGap}rem`"
     @click="toggleValue">
-        <div class="flex shrink-0 size-4 box-content my-auto rounded bg-btn border border-outline
-        items-center justify-center hover:bg-checkboxHover overflow-hidden">
+        <div class="flex shrink-0 my-auto rounded bg-btn border border-outline
+        items-center justify-center group-hover:bg-checkboxHover group-active:bg-checkboxHover overflow-hidden"
+        :style="`height:${checkboxSize}rem; width:${checkboxSize}rem`">
             <!-- <div class="relative h-full w-full leading-4 text-center align-middle bg-red-400">x</div> -->
-                <i-mdi:check v-if="modelValue" class="bg-green-400s h-full"/>
+                <i-mdi:check v-if="modelValue" class="h-full"/>
         </div>
         <!-- <div>Show Post after creation?</div> -->
         <slot></slot>
-    </div>
+    </button>
 </template>
 
 <script lang="ts">
@@ -17,7 +20,17 @@ import { defineComponent } from 'vue'
 export default defineComponent({
     props:{
         /**The current value of the checkbox. */
-        modelValue:Boolean
+        modelValue:Boolean,
+        /**Spacing gap between Checkbox and label in rem units. Default is 0.25. */
+        textGap:{
+            type:Number,
+            default:0.25
+        },
+        /**Dimensions (width & height) of checkbox square in rem units. Default is 1. */
+        checkboxSize:{
+            type:Number,
+            default:1,
+        }
     },
     data(){
         return{
