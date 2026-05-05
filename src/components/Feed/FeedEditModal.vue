@@ -102,24 +102,32 @@
                                         <!-- <FeedStackButton v-for="u in feedStackItems.filter(x => x.type == FeedEnums.Types.User)"
                                         :feed-type="FeedEnums.Types.User" :profile-data="u.profileData"/> -->
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mx-2 gap-1 w-full">
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mx-2 gap-1 w-full h-full overflow-hidden">
                                         <InLaInput data-testid="feedEditModal-tag-input" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag" placeholder-text="Enter Tags here..."/>
                                         <div class="flex flex-col shrink-0 gap-2 mt-1 overflow-hidden">
                                             <div class="border-b">Discovered Tags:</div>
-                                            <TransitionGroup>
-                                                <InsetLabel v-if="validTags.length<1">No Tags found</InsetLabel>
-                                                <div v-else data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap max-h-32 overflow-y-auto">
-                                                    <div v-for="n, index in validTags" :key="index"
-                                                    class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 text-white break-all">
-                                                        #{{ n }}
-                                                    </div>
+                                            <div v-if="validTags.length<1" class="flex flex-col max-h-32 items-center justify-center">
+                                                <div class="flex flex-col items-center">
+                                                    <div>No Tags Found</div>
+                                                    <div class="text-xs">Enter tags above to get started</div>
                                                 </div>
-                                            </TransitionGroup>
+                                            </div>
+                                            <div v-else data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap max-h-32 items-start overflow-y-auto">
+                                                <div v-for="n, index in validTags" :key="index"
+                                                class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 text-white break-all">
+                                                    #{{ n }}
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="flex flex-col mt-1 h-full overflow-hidden">
                                             <div class="border-b pb-1 shadow-scroll-underline shadow-postFocusModalDetailsShadow/10">Tag Feeds</div>
-                                            <div class="flex flex-wrap gap-2 pr-2 py-2 overflow-y-auto">
-                                                <InsetLabel v-if="numberOfTagFeedsInStack<1" class="w-full">No Tag Feeds added to Queue</InsetLabel>
+                                            <div v-if="numberOfTagFeedsInStack<1" class="flex flex-col pt-2 max-h-32 items-center justify-center">
+                                                <div class="flex flex-col items-center">
+                                                    <div>No Tags Feeds Queued</div>
+                                                    <div class="text-xs">Submited Tag Feeds will show here</div>
+                                                </div>
+                                            </div>
+                                            <div v-else class="flex flex-wrap gap-2 pr-2 py-2 pt-3 overflow-y-auto">
                                                 <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
                                                 v-for="stackItem, index in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
                                                 :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-index="index"
