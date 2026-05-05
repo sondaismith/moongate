@@ -38,7 +38,10 @@ function CreateUserFeed(userDid:string,userHandle:string){
     {
         did:userDid,
         handle:userHandle,
-        name:''
+        name:'',
+        icon:FeedEnums.Icons.User,
+        type:FeedEnums.Types.User,
+        tags:[]
     })
     .then(res => {
         AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false,true,true);
