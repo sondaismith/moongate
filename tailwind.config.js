@@ -106,6 +106,9 @@ export default {
         feedTypeButtonCounter: "oklch(from var(--color-feed-type-btn-counter) l c h / <alpha-value>)",
         feedTypeButtonCounterHover: "oklch(from var(--color-feed-type-btn-counter-hover) l c h / <alpha-value>)",
         feedTypeButtonCounterDisabled: "oklch(from var(--color-feed-type-btn-counter-disabled) l c h / <alpha-value>)",
+        noResultsInsetBG: "oklch(from var(--color-inset-label-bg) l c h / <alpha-value>)",
+        noResultsInsetText: "oklch(from var(--color-inset-label-text) l c h / <alpha-value>)",
+        noResultsInsetInnerShadowColor: "var(--color-inset-label-inner-shadow-color)",
       },
       fontSize:{
         feedPostName: '0.75rem',

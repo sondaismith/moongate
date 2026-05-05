@@ -104,19 +104,22 @@
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mx-2 gap-1 w-full">
                                         <InLaInput data-testid="feedEditModal-tag-input" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag" placeholder-text="Enter Tags here..."/>
-                                        <div class="flex flex-col shrink-0 gap-1 mt-1 overflow-x-hidden">
+                                        <div class="flex flex-col shrink-0 gap-2 mt-1 overflow-hidden">
                                             <div class="border-b">Discovered Tags:</div>
-                                            <div v-if="validTags.length<1" class="rounded-md p-1 bg-btnSubtle text-secondaryHover animate-pulses">No tags found</div>
-                                            <div data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap">
-                                                <div v-for="n, index in validTags" :key="index"
-                                                class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 text-white break-all">
-                                                    #{{ n }}
+                                            <TransitionGroup>
+                                                <InsetLabel v-if="validTags.length<1">No Tags found</InsetLabel>
+                                                <div v-else data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap max-h-32 overflow-y-auto">
+                                                    <div v-for="n, index in validTags" :key="index"
+                                                    class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 text-white break-all">
+                                                        #{{ n }}
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </TransitionGroup>
                                         </div>
                                         <div class="flex flex-col mt-1 h-full overflow-hidden">
                                             <div class="border-b pb-1 shadow-scroll-underline shadow-postFocusModalDetailsShadow/10">Tag Feeds</div>
-                                            <div class="flex flex-wrap gap-2 pl-1 pr-2 py-2 overflow-y-auto">
+                                            <div class="flex flex-wrap gap-2 pr-2 py-2 overflow-y-auto">
+                                                <InsetLabel v-if="numberOfTagFeedsInStack<1" class="w-full">No Tag Feeds added to Queue</InsetLabel>
                                                 <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
                                                 v-for="stackItem, index in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
                                                 :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-index="index"
@@ -475,6 +478,7 @@ import ImageLoader from '../Utilities/ImageLoader.vue';
 import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes.ts';
 import FeedStackButton from '../Utilities/FeedStackButton.vue';
 import UserSearchBar2 from '../Utilities/UserSearchBar2.vue';
+import InsetLabel from '../Utilities/InsetLabel.vue';
 import { SearchForAccounts } from '../../lib/api/Feed.vue';
 import { HandleAPIError } from '../../helpers/errors';
 
@@ -491,6 +495,7 @@ export default defineComponent({
         FilterBar,
         ImageLoader,
         FeedStackButton,
+        InsetLabel,
     },
     props:{
         feedType: Object as PropType<FeedEnums.Types>,
