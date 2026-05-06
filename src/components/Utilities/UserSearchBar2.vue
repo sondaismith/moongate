@@ -1,8 +1,16 @@
 <template>
     <div class="flex flex-col h-full overflow-hidden">
         <FilterBar :filter-vmodel="searchTermVModel" :placeholder-text="placeholderText" @update:filter-vmodel="emitVModelUpdate"
-        v-on:enter-key-up="submitSearch" :show-clear-button="searchTerm.trim().length>0 || userResultsRef.length>0" clear-button-text="Clear Results" @clear-filter-clicked="clearUserAccountResults"
+        @enter-key-up="submitSearch" @submit-clicked="submitSearch" :show-submit-button="isSearchTermValid" submit-button-text="Search"
+        :show-clear-button="userResultsRef.length>0"
+        clear-button-text="Clear Results" @clear-filter-clicked="clearUserAccountResults"
         :disabled="disabled"/>
+        <div v-if="searchTerm.trim() != '' && !isSearchTermValid" class="border-x border-outline bg-searchbarValidationBG p-1 pl-3 grow-0 shrink-0 text-sm text-searchbarValidationText select-none">
+            <div>Search term must be longer than 2 characters</div>
+        </div>
+        <div v-if="lastResultsTerm != ''" class="border-x border-outline bg-searchbarShowingResultsBG p-2 pl-3 grow-0 shrink-0 text-sm text-searchbarShowingResultsText select-none">
+            <div>Showing results for: "{{ lastResultsTerm }}"</div>
+        </div>
         <div v-if="searchTerm.trim() != '' || userResultsRef.length>0" class="flex border-t-0
         border-inherit border-outline rounded-b bg-feedColumnBG overflow-auto"
         :class="[userResultsRef.length<1 ? 'border-none' : 'border']">
@@ -62,7 +70,13 @@ export default defineComponent({
     props:{
         /**Is the control currently disabled? */
         disabled:Boolean,
+        /**Search term currently being entered into the control.*/
         searchTermVModel:{
+            type:String,
+            required:true
+        },
+        /**String value of the last search term submitted. */
+        lastResultsTerm:{
             type:String,
             required:true
         },
@@ -111,7 +125,7 @@ export default defineComponent({
          * on Enter Key or button press.
          */
         async submitSearch(){
-            if(this.searchTerm.trim().length>0)
+            if(this.isSearchTermValid)
                 this.$emit('searchSubmitted',this.searchTerm);
         },
         /**
@@ -134,6 +148,10 @@ export default defineComponent({
             // return this.searchResults;
             return [];
         },
+        /**Has a valid search term been entered into the control? */
+        isSearchTermValid(){
+            return this.searchTerm.trim().length>2;
+        }
     },
 })
 </script>

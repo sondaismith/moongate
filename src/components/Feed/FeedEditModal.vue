@@ -95,15 +95,16 @@
                                     v-if="selectedFeedType == FeedEnums.Types.User"
                                     @user-selected="selectUser" :data-list="searchResults"/> -->
                                     <div v-if="selectedFeedType == FeedEnums.Types.User" class="flex flex-col mx-2 gap-1 h-full w-full overflow-hidden">
-                                        <UserSearchBar2 :search-term-v-model="feedFilters.userSearch.searchTerm" :feed-stack-ref="feedStackItems"
-                                        :user-results-ref="userAccountSearchResults" placeholder-text="Search for Users..." @user-selected="selectUser"
+                                        <UserSearchBar2 :search-term-v-model="feedFilters.userSearch.searchTerm" :last-results-term="feedFilters.userSearch.lastResultsTerm"
+                                        :feed-stack-ref="feedStackItems" :user-results-ref="userAccountSearchResults" placeholder-text="Search for Users..."
+                                        @user-selected="selectUser"
                                         @filter-bar-update="newValue => feedFilters.userSearch.searchTerm = newValue" @search-submitted="submitUserSearch"
                                         @clear-results-clicked="clearUserAccountResults" :disabled="awaitingUserSearchResults"/>
                                         <!-- <FeedStackButton v-for="u in feedStackItems.filter(x => x.type == FeedEnums.Types.User)"
                                         :feed-type="FeedEnums.Types.User" :profile-data="u.profileData"/> -->
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mx-2 gap-1 w-full h-full overflow-hidden">
-                                        <InLaInput data-testid="feedEditModal-tag-input" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag" placeholder-text="Enter Tags here..."/>
+                                        <InLaInput data-testid="feedEditModal-tag-input" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag" placeholder-text="Enter Tags here. Press Enter to submit."/>
                                         <div class="flex flex-col shrink-0 gap-2 mt-1 overflow-hidden">
                                             <div class="border-b">Discovered Tags:</div>
                                             <div v-if="validTags.length<1" class="flex flex-col max-h-32 items-center justify-center">
@@ -138,10 +139,11 @@
                                     <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex mx-2 w-full h-full">
                                         <div class="flex flex-col gap-1 w-full">
                                             <FilterBar :filter-vmodel="feedFilters.feedGenerator.searchTerm" :show-clear-button="viewingFeedGenSearchResults"
-                                            placeholder-text="Search Feeds..."
+                                            :show-submit-button="feedFilters.feedGenerator.searchTerm.trim().length>1"
+                                            placeholder-text="Search Feeds..." submit-button-text="Search"
                                             :disabled="awaitingInitialCustomFeedData || awaitingSearchCustomFeedData"
                                             @update:filter-vmodel="newValue => feedFilters.feedGenerator.searchTerm = newValue"
-                                            @clear-filter-clicked="getCustomFeeds" @enter-key-up="searchForFeedGenerators"/>
+                                            @clear-filter-clicked="getCustomFeeds" @enter-key-up="searchForFeedGenerators" @submit-clicked="searchForFeedGenerators"/>
                                             <div v-if="selectedFeedItems.length>0" class="pt-1 w-full max-h-16 min-h-16 border-b pb-1 border-outline overflow-y-auto">
                                                 <div class="flex gap-1">
                                                     <div tabindex="-1" class="flex flex-wrap gap-1 w-full items-start">
@@ -527,6 +529,7 @@ export default defineComponent({
                 } as ProfileViewDetailed,
                 userSearch:{
                     searchTerm:'',
+                    lastResultsTerm:''
                 },
                 notifications:{
                     justNotifs:false,
@@ -681,6 +684,7 @@ export default defineComponent({
                 .then(res => {
                     searchResult = res.data.actors
                     this.userAccountSearchResults = [];//clear results
+                    this.feedFilters.userSearch.lastResultsTerm = this.feedFilters.userSearch.searchTerm;
                     searchResult.forEach(element => {
                         let matchIndex = this.feedStackItems.findIndex(x=>x.did == element.did);
                         this.userAccountSearchResults.push({profileData:element,selected:(matchIndex > -1 ? true : false),awaitingDetailedData:false});
@@ -740,7 +744,7 @@ export default defineComponent({
          */
         clearUserAccountResults(){
             this.userAccountSearchResults = [];
-            this.feedFilters.userSearch.searchTerm = '';
+            this.feedFilters.userSearch.searchTerm = this.feedFilters.userSearch.lastResultsTerm = '';
         },
         /**
          * Method used to remove a record from the Feed Stack at a

@@ -48,6 +48,10 @@
         --color-searchbar-focus-highlight: oklch(54.6% 0.245 262.881);
         --color-searchbar-result-hover: oklch(37.3% 0.034 259.733);
         --color-searchbar-handle: oklch(68.5% 0.169 237.323);
+        --color-searchbar-validation-bg:theme(colors.red.500);
+        --color-searchbar-validation-text:theme(colors.red.950);
+        --color-searchbar-showing-results-bg:theme(colors.slate.900);
+        --color-searchbar-showing-results-text:theme(colors.slate.500);
         --color-login-btn: oklch(48.8% 0.243 264.376);
         --color-login-btn-hover: oklch(62.3% 0.214 259.815);
         --color-login-host-hover:theme(colors.slate.950);
@@ -155,6 +159,10 @@
     --color-searchbar-focus-highlight: oklch(54.6% 0.245 262.881);
     --color-searchbar-result-hover: oklch(87.2% 0.01 258.338);
     --color-searchbar-handle: oklch(68.5% 0.169 237.323);
+    --color-searchbar-validation-bg:theme(colors.red.500);
+    --color-searchbar-validation-text:theme(colors.red.100);
+    --color-searchbar-showing-results-bg:theme(colors.slate.300);
+    --color-searchbar-showing-results-text:theme(colors.slate.500);
     --color-login-btn: oklch(62.3% 0.214 259.815);
     --color-login-btn-hover: oklch(70.7% 0.165 254.624);
     --color-login-host-hover:theme(colors.blue.100);
