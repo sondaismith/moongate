@@ -158,6 +158,8 @@ interface IFeedGeneratorSelection{
 }
 
 interface IFeedStackItem{
+    /**Unique identifier for stack item. Recommended to use `generators.GenerateCID()` to assign value at object creation if no other unique identifier is available. */
+    id:string,
     /**DID used to get feed content for User-type feeds. */
     did:string,
     /**The handle of the Feed. */

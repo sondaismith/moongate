@@ -4,21 +4,22 @@
         <div data-testid="feedEditModal-close" @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full bg-slate-800/40 backdrop-blur-sm"></div>
         {{void "Modal Control"}}
         <div class="z-20 flex flex-col w-full md:max-w-[1024px] h-full md:h-[92%] mx-auto my-auto rounded bg-feedColumnBG
-            pb-4 [&>:not(:first-child)]:px-4 drop-shadow-lg backdrop-blur-0 overflow-hiddens">
-            <div class="flex px-4 py-2 bg-aboutPageBanner items-center justify-between text-primary border-b border-outline">
+            pb-4 [&>*]:px-4 drop-shadow-lg backdrop-blur-0 overflow-hiddens">
+            <div class="flex px-4s py-2 bg-aboutPageBanner items-center justify-between text-primary border-b border-outline">
                 <div class="text-lg font-semibold select-none">Adding Feeds</div>
                 <!-- <button class="flex gap-1 items-center px-2 py-0.5 rounded bg-btn hover:bg-btnHover hover:border-hover disabled:bg-disabledBG
                 disabled:border-transparent disabled:text-disabled">View Queue</button> -->
                 <!-- <SquareButton v-if="numberOfFeedsInStack>0" data-testid="feedEditModal-view-queue-button" class="bg-btn hover:bg-btnHover" button-padding-x="2" button-padding-y="0">
                     View Queue
                 </SquareButton> -->
-                <div>Number of Feeds:{{ feedStackItems.length }}</div>
+                <div class="text-secondary"># of Feeds:{{ feedStackItems.length }}</div>
             </div>
             <div class="flex flex-col py-1">
-                <div class="flex gap-2 items-center">
-                    <div class="text-2xl">{{modalPages[currentPage].title}}</div>
-                    <div v-if="AppState.isCreatingFeed" class="flex bg-green-600 rounded-full px-2 py-1 items-center self-center">Creating</div>
-                    <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div>
+                <div class="flex gap-2s flex-wrap items-baseline">
+                    <div class="text-2xl pr-2">{{modalPages[currentPage].title}}</div>
+                    <div class="text-secondary text-sm">{{ modalPages[currentPage].instruction }}</div>
+                    <!-- <div v-if="AppState.isCreatingFeed" class="flex bg-green-600 rounded-full px-2 py-1 items-center self-center">Creating</div>
+                    <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div> -->
                 </div>
                 {{ void "Pages" }}
                 <div class="flex items-center w-full">
@@ -29,12 +30,11 @@
                     </template>
                 </div>
             </div>
-            <div class="pb-1 shadow-scroll-underline shadow-postFocusModalDetailsShadow/10">{{ modalPages[currentPage].instruction }}</div>
-            <div class="flex flex-col relative grow !px-0 overflow-hidden shadow-scroll-inner-bottom">
+            <div class="flex flex-col relative grow !px-0s overflow-hidden shadow-scroll-inner-bottom">
                 <Transition>
-                    <div v-if="currentPage == 0" class="h-full w-full px-2">
+                    <div v-if="currentPage == 0" class="h-full w-full px-2s">
                         <div class="flex flex-col h-full gap-2 pt-2">
-                            <div class="flex items-start flex-wrap gap-1 px-2">
+                            <div class="flex items-start flex-wrap gap-1 px-2s">
                                 <!-- <PillButton :disabled="true">Mentions</PillButton>
                                 <PillButton :disabled="true">DMs</PillButton> -->
                                 <div class="flex flex-wrap gap-2">
@@ -73,7 +73,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <div v-if="selectedFeedType.trim() != ''" class="flex self-start mx-2 border border-outline rounded p-1">
+                            <div v-if="selectedFeedType.trim() != ''" class="flex self-start border border-outline rounded p-1 text-sm">
                                 <TransitionGroup>
                                     <div v-if="selectedFeedType == FeedEnums.Types.User">A User feed allows you to see all the content shared by a specific User account (Posts, Shares, Replies, etc.)</div>
                                     <div v-else-if="selectedFeedType == FeedEnums.Types.Tag">A Tag Feed displays the latest posts matching specified hashtags.</div>
@@ -94,7 +94,7 @@
                                     <!-- <UserSearchBar data-testid="feedEditModal-user-search-bar" class="w-full"
                                     v-if="selectedFeedType == FeedEnums.Types.User"
                                     @user-selected="selectUser" :data-list="searchResults"/> -->
-                                    <div v-if="selectedFeedType == FeedEnums.Types.User" class="flex flex-col mx-2 gap-1 h-full w-full overflow-hidden">
+                                    <div v-if="selectedFeedType == FeedEnums.Types.User" class="flex flex-col gap-1 h-full w-full overflow-hidden">
                                         <UserSearchBar2 :search-term-v-model="feedFilters.userSearch.searchTerm" :last-results-term="feedFilters.userSearch.lastResultsTerm"
                                         :feed-stack-ref="feedStackItems" :user-results-ref="userAccountSearchResults" placeholder-text="Search for Users..."
                                         @user-selected="selectUser"
@@ -103,14 +103,14 @@
                                         <!-- <FeedStackButton v-for="u in feedStackItems.filter(x => x.type == FeedEnums.Types.User)"
                                         :feed-type="FeedEnums.Types.User" :profile-data="u.profileData"/> -->
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mx-2 gap-1 w-full h-full overflow-hidden">
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col gap-1 w-full h-full overflow-hidden">
                                         <InLaInput data-testid="feedEditModal-tag-input" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag" placeholder-text="Enter Tags here. Press Enter to submit."/>
                                         <div class="flex flex-col shrink-0 gap-2 mt-1 overflow-hidden">
                                             <div class="border-b">Discovered Tags:</div>
-                                            <div v-if="validTags.length<1" class="flex flex-col max-h-32 items-center justify-center">
+                                            <div v-if="validTags.length<1" class="flex flex-col max-h-32 items-center justify-center select-none">
                                                 <div class="flex flex-col items-center">
                                                     <div>No Tags Found</div>
-                                                    <div class="text-xs">Enter tags above to get started</div>
+                                                    <div class="text-xs italic">Enter tags above to get started</div>
                                                 </div>
                                             </div>
                                             <div v-else data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap max-h-32 items-start overflow-y-auto">
@@ -122,21 +122,21 @@
                                         </div>
                                         <div class="flex flex-col mt-1 h-full overflow-hidden">
                                             <div class="border-b pb-1 shadow-scroll-underline shadow-postFocusModalDetailsShadow/10">Tag Feeds</div>
-                                            <div v-if="numberOfTagFeedsInStack<1" class="flex flex-col pt-2 max-h-32 items-center justify-center">
+                                            <div v-if="numberOfTagFeedsInStack<1" class="flex flex-col pt-2 max-h-32 justify-center select-none">
                                                 <div class="flex flex-col items-center">
                                                     <div>No Tags Feeds Queued</div>
-                                                    <div class="text-xs">Submited Tag Feeds will show here</div>
+                                                    <div class="text-xs italic">Submited Tag Feeds will show here</div>
                                                 </div>
                                             </div>
                                             <div v-else class="flex flex-wrap gap-2 pr-2 py-2 pt-3 overflow-y-auto">
                                                 <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
-                                                v-for="stackItem, index in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
-                                                :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-index="index"
+                                                v-for="stackItem in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
+                                                :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-identifier="stackItem.id"
                                                 :display-only="true" @clicked-toggle-stack-item="removeFeedStackItem"/>
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex mx-2 w-full h-full">
+                                    <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex w-full h-full">
                                         <div class="flex flex-col gap-1 w-full">
                                             <FilterBar :filter-vmodel="feedFilters.feedGenerator.searchTerm" :show-clear-button="viewingFeedGenSearchResults"
                                             :show-submit-button="feedFilters.feedGenerator.searchTerm.trim().length>1"
@@ -207,29 +207,33 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Trending" class="flex flex-col p-2 w-full">
-                                        <FeedStackButton :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" :feed-stack-index="0"  @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Trending" class="flex flex-col w-full">
+                                        <FeedStackButton :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" feed-stack-identifier="this_is_trending_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                         <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Following && AppState.isAuthBrowsing" class="flex flex-col p-2 w-full">
-                                        <FeedStackButton :feed-type="FeedEnums.Types.Following" :selected="isFollowingTypeInStack" :feed-stack-index="0" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Following && AppState.isAuthBrowsing" class="flex flex-col w-full">
+                                        <FeedStackButton :feed-type="FeedEnums.Types.Following" :selected="isFollowingTypeInStack" feed-stack-identifier="this_is_following_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Notifications && AppState.isAuthBrowsing" class="flex flex-col gap-2 p-2 w-full">
-                                        <FeedStackButton :feed-type="FeedEnums.Types.Notifications" :selected="isNotificationTypeInStack" :feed-stack-index="0" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Notifications && AppState.isAuthBrowsing" class="flex flex-col gap-2 w-full">
+                                        <FeedStackButton :feed-type="FeedEnums.Types.Notifications" :selected="isNotificationTypeInStack" feed-stack-identifier="this_is_notification_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                         <!-- <CheckBox class="px-3 self-start" @value-toggled="toggleJustMentions" :model-value="feedFilters.notifications.justNotifs" :checkbox-size="1.25" :text-gap="0.5">Mentions Only</CheckBox> -->
                                     </div>
                                 </TransitionGroup>
                             </div>
                         </div>
                     </div>
-                    <div data-testid="feedEditModal-options-page" v-else-if="currentPage == 1" class="flex flex-col h-full w-full p-2 overflow-y-auto">
-                        <div v-if="feedStackItems.length == 0">
-                            No Feeds have been selected. Click the 'back' button to move back to the Feed selection page.
+                    <div data-testid="feedEditModal-options-page" v-else-if="currentPage == 1" class="flex flex-col h-full w-full py-2 overflow-y-auto">
+                        <div v-if="feedStackItems.length == 0" class="flex flex-col items-center">
+                            <div class="flex gap-1 items-center">
+                                <i-mingcute:warning-fill class="text-2xl"/>
+                                <div>No Feeds currently in Queue</div>
+                            </div>
+                            <div class="text-sm text-secondary text-center">Click the 'back' button to move back to the Feed selection page</div>
                         </div>
                         <div v-else class="flex flex-wrap gap-2 pl-1 pr-2">
                             <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
-                            v-for="stackItem, index in feedStackItems"
-                            :feed-stack-index="index" :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name"
+                            v-for="stackItem in feedStackItems"
+                            :feed-stack-identifier="stackItem.id" :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name"
                             :generator-data="stackItem.generatorData" :display-only="true" @clicked-toggle-stack-item="removeFeedStackItem"/>
                         </div>
                         {{ void 'Old Summary Page Code - REMOVE BEFORE BRANCH MERGE' }}
@@ -491,6 +495,7 @@ import UserSearchBar2 from '../Utilities/UserSearchBar2.vue';
 import InsetLabel from '../Utilities/InsetLabel.vue';
 import { SearchForAccounts } from '../../lib/api/Feed.vue';
 import { HandleAPIError } from '../../helpers/errors';
+import { GenerateCID } from '../../helpers/generators';
 
 export default defineComponent({
     components:{
@@ -517,8 +522,8 @@ export default defineComponent({
             AppState,
             AppSettingsState,
             modalPages:[
-                { title:'What type of Feed is it?', instruction: 'Select Below:'},
-                { title:'Does this look alright?', instruction: 'Confirm Feed(s) below:'},
+                { title:'What type of Feed is it?', instruction: 'Select below'},
+                { title:'Does this look alright?', instruction: 'Confirm Feed(s)'},
             ],
             feedFilters:{
                 tag:'',
@@ -702,7 +707,7 @@ export default defineComponent({
          * `UserSearchBar` control.
          * @param user Object representing the chosen user.
          */
-        selectUser(user:ProfileView, index:number){
+        async selectUser(user:ProfileView, index:number){
             let matchIndex = this.feedStackItems.findIndex(x => x.did == user.did);
             //If selected item is being deselected...
             if(matchIndex>-1){
@@ -716,18 +721,18 @@ export default defineComponent({
                 /**Value is greater than -1 if detailed profile data is already in cache. */
                 let cacheIndex = this.userAccountCache.findIndex(x=>x.did == user.did);
                 if(cacheIndex>-1){
-                    this.feedStackItems.push({did:user.did,handle:user.handle,profileData:this.userAccountCache[cacheIndex],icon:FeedEnums.Icons.User,tags:[],type:FeedEnums.Types.User});
+                    this.feedStackItems.push({id:user.did,did:user.did,handle:user.handle,profileData:this.userAccountCache[cacheIndex],icon:FeedEnums.Icons.User,tags:[],type:FeedEnums.Types.User});
                     this.userAccountSearchResults[index].selected = true;
                 }
                 else{//we need to request data from API
                     this.userAccountSearchResults[index].awaitingDetailedData = true;
-                    this.getUserProfileViewDetailed(user.did)
+                    await this.getUserProfileViewDetailed(user.did)
                     .then(res => {
                         if(typeof res != 'undefined'){
                             //Add new User account data to cache, add to feed stack and indicate account has been selected in search results
                             if(this.userAccountCache.length+1>20) this.userAccountCache.shift(); //Limits cache to holding 20 records
                             this.userAccountCache.push(res);
-                            this.feedStackItems.push({did:res.did,handle:res.handle,profileData:res,icon:FeedEnums.Icons.User,tags:[],type:FeedEnums.Types.User});
+                            this.feedStackItems.push({id:res.did,did:res.did,handle:res.handle,profileData:res,icon:FeedEnums.Icons.User,tags:[],type:FeedEnums.Types.User});
                             this.userAccountSearchResults[index].selected = true;
                         }
                     })
@@ -751,7 +756,7 @@ export default defineComponent({
          * specific index.
          * @param indexToRemove The index of the record in the Feed Stack to remove.
          */
-        removeFeedStackItem(feedType:FeedEnums.Types,indexToRemove:number,identifier:string){
+        removeFeedStackItem(feedType:FeedEnums.Types,identifier:string){
             let userResultIndexToDeselect = -1;
             switch (feedType) {
                 case FeedEnums.Types.User:
@@ -770,7 +775,8 @@ export default defineComponent({
                 default:
                     break;
             }
-            this.feedStackItems.splice(indexToRemove,1);
+            let stackIndexToRemove = this.feedStackItems.findIndex(x=>x.id==identifier);
+            if(stackIndexToRemove>-1) this.feedStackItems.splice(stackIndexToRemove,1);
             //Needs to also remove the record from the User account results (or the results need to be cleared when navigating away from the first page)
         },
         /**
@@ -807,7 +813,7 @@ export default defineComponent({
          * input values are valid before moving forward to the Feed creation details
          * summary page.
          */
-        trySubmitTags(){
+        async trySubmitTags(){
             if(this.isTagSpecsEntryComplete){
                 // let tagString = this.validTags.join(' ');
                 let tagDisplayName:string|undefined;
@@ -816,8 +822,10 @@ export default defineComponent({
                     tagCopy[0] = `#${tagCopy[0]}`;
                     tagDisplayName = tagCopy.join(' #');
                 }
-                this.feedStackItems.push({did:'',handle:'',name:tagDisplayName != 'undefined' ? tagDisplayName : '',icon:FeedEnums.Icons.Tag,tags:this.validTags,type:FeedEnums.Types.Tag});
-                this.feedFilters.tag = '';
+                await GenerateCID(this.validTags.toString()).then(res => {
+                    this.feedStackItems.push({id:res.toString(),did:'',handle:'',name:tagDisplayName != 'undefined' ? tagDisplayName : '',icon:FeedEnums.Icons.Tag,tags:this.validTags,type:FeedEnums.Types.Tag});
+                    this.feedFilters.tag = '';
+                })
                 // this.forwardOnePage();
             }
         },
@@ -965,14 +973,14 @@ export default defineComponent({
                     //Sync selection state between selectedFeedItems (mini buttons) and Feed Stack
                     let generator = this.customFeedData[index].generator;
                     this.selectedFeedItems.push(generator);
-                    this.feedStackItems.push({did:generator.uri,handle:generator.creator.handle,generatorData:generator,
+                    this.feedStackItems.push({id:generator.uri,did:generator.uri,handle:generator.creator.handle,generatorData:generator,
                         type:FeedEnums.Types.FeedGenerator,icon:FeedEnums.Icons.FeedGenerator,tags:[],name:generator.displayName});
                 }
             }
         },
         /**Method that adds or removes singular Feed Types from the "Feed Stack". */
-        toggleSingularFeedItem(feedType:FeedEnums.Types,index:number){
-            if(index > -1){
+        toggleSingularFeedItem(feedType:FeedEnums.Types){
+            // if(index > -1){
                 switch (feedType) {
                     case FeedEnums.Types.Trending:
                         if(this.isTrendingTypeInStack){
@@ -980,7 +988,7 @@ export default defineComponent({
                             if(stackIndex>-1) this.feedStackItems.splice(stackIndex,1);
                         }
                         else{
-                            this.feedStackItems.push({did:'',handle:'',icon:FeedEnums.Icons.Trending,tags:[],type:FeedEnums.Types.Trending,name:'Trending'})
+                            this.feedStackItems.push({id:'this_is_trending_feed',did:'',handle:'',icon:FeedEnums.Icons.Trending,tags:[],type:FeedEnums.Types.Trending,name:'Trending'})
                         }
                         this.isTrendingTypeInStack = !this.isTrendingTypeInStack;
                         break;
@@ -990,7 +998,7 @@ export default defineComponent({
                             if(stackIndex>-1) this.feedStackItems.splice(stackIndex,1);
                         }
                         else{
-                            this.feedStackItems.push({did:'',handle:'',icon:FeedEnums.Icons.Following,tags:[],type:FeedEnums.Types.Following,name:'Following'})
+                            this.feedStackItems.push({id:'this_is_following_feed',did:'',handle:'',icon:FeedEnums.Icons.Following,tags:[],type:FeedEnums.Types.Following,name:'Following'})
                         }
                         this.isFollowingTypeInStack = !this.isFollowingTypeInStack;
                         break;
@@ -1000,14 +1008,14 @@ export default defineComponent({
                             if(stackIndex>-1) this.feedStackItems.splice(stackIndex,1);
                         }
                         else{
-                            this.feedStackItems.push({did:'',handle:'',icon:FeedEnums.Icons.Notifications,tags:[],type:FeedEnums.Types.Notifications,name:'Notifications'})
+                            this.feedStackItems.push({id:'this_is_notification_feed',did:'',handle:'',icon:FeedEnums.Icons.Notifications,tags:[],type:FeedEnums.Types.Notifications,name:'Notifications'})
                         }
                         this.isNotificationTypeInStack = !this.isNotificationTypeInStack;
                         break;
                     default:
                         break;
                 }
-            }
+            // }
         },
         toggleJustMentions(){
             this.feedFilters.notifications.justNotifs = !this.feedFilters.notifications.justNotifs;

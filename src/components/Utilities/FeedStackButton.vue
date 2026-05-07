@@ -93,9 +93,9 @@ export default defineComponent({
             type: String as PropType<FeedEnums.Types>,
             required:true
         },
-        /**The index in the Feed Stack (most likely in `FeedEditModal`) where the data being passed to this component came from. */
-        feedStackIndex:{
-            type:Number,
+        /**The unique identifier for the array item in the Feed Stack where the data being passed to this component came from. */
+        feedStackIdentifier:{
+            type:String,
             required:true
         },
         selected:Boolean,
@@ -141,8 +141,8 @@ export default defineComponent({
     },
     emits:{
         /**Emit used to indicate a specific settings category has been clicked. */
-        clickedToggleStackItem:(type:FeedEnums.Types,index:number,identifier:string) => {
-            return {feedType:type, stackIndex:index};
+        clickedToggleStackItem:(type:FeedEnums.Types,identifier:string) => {
+            return {feedType:type,id:identifier};
         }
     },
     methods:{
@@ -159,7 +159,7 @@ export default defineComponent({
                     default:
                         break;
                 }
-                this.$emit('clickedToggleStackItem',this.feedType,this.feedStackIndex,identifier);
+                this.$emit('clickedToggleStackItem',this.feedType,this.feedStackIdentifier);
             // }
         },
         /**
