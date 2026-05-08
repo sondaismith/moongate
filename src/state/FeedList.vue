@@ -121,7 +121,7 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
  * @param tags If this is to be a Tag-type Feed this parameter needs to be passed in - is a space
  * separated collection of hashtags.
  */
-export async function PrepareFeedData(feedType:FeedEnums.Types,feedData:IFeedStackItem={did:'',name:'',handle:'',tags:[],type:FeedEnums.Types.User,icon:FeedEnums.Icons.User}):Promise<IFeedListing>{
+export async function PrepareFeedData(feedType:FeedEnums.Types,feedData:IFeedStackItem={id:'',did:'',name:'',handle:'',tags:[],type:FeedEnums.Types.User,icon:FeedEnums.Icons.User}):Promise<IFeedListing>{
     /**Object that will hold the returned Feed data. */
     var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
     //Handles getting DID when called by `Userlink` component

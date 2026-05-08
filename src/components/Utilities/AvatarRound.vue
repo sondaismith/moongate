@@ -36,6 +36,7 @@ function CreateUserFeed(userDid:string,userHandle:string){
     toast.add({summary:"Creating Feed...", detail:`Creating feed for @${userHandle}`,severity:'info',group:'tr',life:3000});
     PrepareFeedData(FeedEnums.Types.User,
     {
+        id:userDid,
         did:userDid,
         handle:userHandle,
         name:'',

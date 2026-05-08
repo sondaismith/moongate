@@ -46,8 +46,7 @@ import { GetBrowsingAgent } from '../../lib/api.vue';
 import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import { toast } from '../../state/AppState.vue';
-import { IUserSearchResult } from '../../interfaces/UserInterfaces';
-import ImageLoader from '../Utilities/ImageLoader.vue';
+import { IFeedStackItem } from '../../interfaces/FeedInterfaces';
 
 export default defineComponent({
     props:{
@@ -118,14 +117,19 @@ export default defineComponent({
                 let startOfProfile = this.trend.link.indexOf('\/profile');
                 let endOfProfile = this.trend.link.indexOf('\/feed');
                 let handleToUse = this.trend.link.substring(startOfProfile+9,endOfProfile);
-                let feedSourceData:IUserSearchResult = {
+                let feedSourceData:IFeedStackItem = {
+                    id:'',
                     did:'',
                     handle:'',
-                    name:''
+                    name:'',
+                    tags:[],
+                    type:FeedEnums.Types.FeedGenerator,//Created feed is a "custom feed"
+                    icon:FeedEnums.Icons.FeedGenerator,
                 }
                 await GetBrowsingAgent().resolveHandle({handle:handleToUse})
                 .then(res =>{
                     feedSourceData.did = `at://${res.data.did}/app.bsky.feed.generator/${urlParts[urlParts.length-1]}`;
+                    feedSourceData.id = feedSourceData.did;
                     feedSourceData.handle = handleToUse;
                     feedSourceData.name = this.trend?.displayName ? this.trend.displayName : "N/A";
                 })
