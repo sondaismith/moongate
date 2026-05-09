@@ -148,7 +148,7 @@
                                                 <div class="flex gap-1">
                                                     <div tabindex="-1" class="flex flex-wrap gap-1 w-full items-start">
                                                         <!-- <button v-for="n in selectedFeedGenerators" @click="toggleFeedGeneratorSelection(n.generator.uri)" -->
-                                                        <button v-for="n in selectedFeedItems" @click="toggleFeedGeneratorSelection(n.uri)"
+                                                        <button v-for="n in selectedFeedItems" @click="removeFeedStackItem(FeedEnums.Types.FeedGenerator,n.uri)"
                                                         :title="'Remove &quot;'+n.displayName+'&quot; Feed'"
                                                         class="flex shrink-0 grow-0 items-center gap-1 bg-itemTagBG transition-colors border-2 border-transparent
                                                         active:bg-itemTagBGActive hover:border-itemTagBorder active:border-itemTagBGActive focus-visible:border-itemTagBorder
@@ -597,7 +597,12 @@ export default defineComponent({
             defaultFeedData:[] as IFeedGeneratorSelection[],
             /**Object that holds the most popular custom Feed Generator objects. */
             customFeedData: [] as IFeedGeneratorSelection[],
-            /**Object that holds all the Feed Generators the User has selected. */
+            /**
+             * Object that holds all the Feed Generators the User has selected.
+             * Used by the pill-like controls that can be used to quickly
+             * deselect/remove any of the Custom Feeds that have been selected,
+             * even if they are currently not visible in the search results.
+             */
             selectedFeedItems: [] as AppBskyFeedDefs.GeneratorView[],
             /**Object that holds all the Feeds that have been queued for creation. */
             feedStackItems: [] as IFeedStackItem[],
@@ -711,13 +716,11 @@ export default defineComponent({
             let matchIndex = this.feedStackItems.findIndex(x => x.did == user.did);
             //If selected item is being deselected...
             if(matchIndex>-1){
-                this.feedStackItems.splice(matchIndex,1);
-                this.userAccountSearchResults[index].selected = false;
+                this.removeFeedStackItem(FeedEnums.Types.User,user.did,matchIndex);
             }
             else{//User account is being selected...
                 //Detailed Profile data needs to be stored in a temp cache so a large number of request cannot be fired off
                 //if the User spams clicking User Account results
-
                 /**Value is greater than -1 if detailed profile data is already in cache. */
                 let cacheIndex = this.userAccountCache.findIndex(x=>x.did == user.did);
                 if(cacheIndex>-1){
@@ -752,16 +755,33 @@ export default defineComponent({
             this.feedFilters.userSearch.searchTerm = this.feedFilters.userSearch.lastResultsTerm = '';
         },
         /**
-         * Method used to remove a record from the Feed Stack at a
-         * specific index.
-         * @param indexToRemove The index of the record in the Feed Stack to remove.
+         * Method used to remove a Feed reference from the Feed Stack as well as related
+         * data structures.
+         * @param feedType The `FeedEnum.Type` type of the Feed Stack item to remove.
+         * @param identifier The unique identifier used to find the item in the Feed Stack to remove.
+         * @param index OPTIONAL: The index of the record in the Feed Stack to remove. Used when the index has already been found before calling this method.
          */
-        removeFeedStackItem(feedType:FeedEnums.Types,identifier:string){
-            let userResultIndexToDeselect = -1;
+        removeFeedStackItem(feedType:FeedEnums.Types,identifier:string,index=-1){
             switch (feedType) {
                 case FeedEnums.Types.User:
-                    userResultIndexToDeselect = this.userAccountSearchResults.findIndex(x=>x.profileData.did == identifier);
+                    //Deselect from User search results
+                    let userResultIndexToDeselect = this.userAccountSearchResults.findIndex(x=>x.profileData.did == identifier);
                     if(userResultIndexToDeselect>-1) this.userAccountSearchResults[userResultIndexToDeselect].selected = false;
+                    //Remove from Feed Stack
+                    if(index>-1) this.feedStackItems.splice(index,1);
+                    else {
+                        let feedStackUserIndex = this.feedStackItems.findIndex(x => x.did == identifier);
+                        if(feedStackUserIndex>-1) this.feedStackItems.splice(feedStackUserIndex,1);
+                    }
+                    break;
+                case FeedEnums.Types.FeedGenerator:
+                    //Sync deselection state between selectedFeedItems (mini buttons) and Feed Stack
+                    let selectedIndexToRemove = this.selectedFeedItems.findIndex(f=>f.uri == identifier);
+                    if(selectedIndexToRemove>-1) this.selectedFeedItems.splice(selectedIndexToRemove,1);
+                    let stackIndexToRemove = this.feedStackItems.findIndex(i=>i.generatorData?.uri == identifier);
+                    if(stackIndexToRemove>-1) this.feedStackItems.splice(stackIndexToRemove,1);
+                    let customFeedDataIndex = this.customFeedData.findIndex(x => x.generator.uri == identifier);
+                    this.customFeedData[customFeedDataIndex].selected = !this.customFeedData[customFeedDataIndex].selected;
                     break;
                 case FeedEnums.Types.Trending:
                     this.isTrendingTypeInStack = false;
@@ -775,8 +795,19 @@ export default defineComponent({
                 default:
                     break;
             }
-            let stackIndexToRemove = this.feedStackItems.findIndex(x=>x.id==identifier);
-            if(stackIndexToRemove>-1) this.feedStackItems.splice(stackIndexToRemove,1);
+            //Removal method is the same, the individual variable toggles are handled above
+            switch (feedType) {
+                case FeedEnums.Types.Tag:
+                case FeedEnums.Types.Trending:
+                case FeedEnums.Types.Following:
+                case FeedEnums.Types.Notifications:
+                    let stackIndexToRemove = this.feedStackItems.findIndex(x=>x.id==identifier);
+                    if(stackIndexToRemove>-1) this.feedStackItems.splice(stackIndexToRemove,1);
+                    break;
+
+                default:
+                    break;
+            }
             //Needs to also remove the record from the User account results (or the results need to be cleared when navigating away from the first page)
         },
         /**
@@ -955,22 +986,15 @@ export default defineComponent({
             this.selectedFeedItems = [];
         },
         /**Method that selects or deselects a specific Feed Generator in the displayed list. */
-        toggleFeedGeneratorSelection(atUri:string|undefined){
+        toggleFeedGeneratorSelection(atUri:string){
             let index = this.customFeedData.findIndex(x => x.generator.uri == atUri);
             if(index > -1){
-                //Toggle selection in array used as "View" source
-                this.customFeedData[index].selected = !this.customFeedData[index].selected;
-                //Update "selected items" array
-                if(!this.customFeedData[index].selected){
-                    //Sync deselection state between selectedFeedItems (mini buttons) and Feed Stack
-                    let selectedIndexToRemove = this.selectedFeedItems.findIndex(f=>f.uri == atUri);
-                    if(selectedIndexToRemove>-1) this.selectedFeedItems.splice(selectedIndexToRemove,1);
-                    let stackIndexToRemove = this.feedStackItems.findIndex(i=>i.generatorData?.uri == atUri);
-                    if(stackIndexToRemove>-1) this.feedStackItems.splice(stackIndexToRemove,1);
-
+                if(this.customFeedData[index].selected){
+                    this.removeFeedStackItem(FeedEnums.Types.FeedGenerator,atUri);
                 }
                 else{
                     //Sync selection state between selectedFeedItems (mini buttons) and Feed Stack
+                    this.customFeedData[index].selected = !this.customFeedData[index].selected;
                     let generator = this.customFeedData[index].generator;
                     this.selectedFeedItems.push(generator);
                     this.feedStackItems.push({id:generator.uri,did:generator.uri,handle:generator.creator.handle,generatorData:generator,

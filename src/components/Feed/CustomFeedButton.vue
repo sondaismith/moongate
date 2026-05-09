@@ -53,7 +53,10 @@ import ImageLoader from '../Utilities/ImageLoader.vue';
 
 export default defineComponent({
     props:{
-        feedGeneratorView: Object as PropType<AppBskyFeedDefs.GeneratorView>,
+        feedGeneratorView:{
+            type: Object as PropType<AppBskyFeedDefs.GeneratorView>,
+            required:true
+        },
         selected:Boolean,
         hideRadioButton:{
             type: Boolean,
@@ -77,7 +80,7 @@ export default defineComponent({
     },
     emits:{
         /**Emit used to indicate a specific settings category has been clicked. */
-        feedGeneratorSelected:(atUri:string|undefined) => {
+        feedGeneratorSelected:(atUri:string) => {
             return atUri;
         }
     },
@@ -87,7 +90,7 @@ export default defineComponent({
          */
         clickedFeedGenerator(){
             // if(!this.displayOnly){
-                this.$emit('feedGeneratorSelected',this.feedGeneratorView?.uri);
+                this.$emit('feedGeneratorSelected',this.feedGeneratorView.uri);
             // }
         },
         /**
