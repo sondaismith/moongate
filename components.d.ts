@@ -149,6 +149,7 @@ declare module 'vue' {
     SlideshowArrow: typeof import('./src/components/Utilities/SlideshowArrow.vue')['default']
     SpoilerOverlay: typeof import('./src/components/Utilities/SpoilerOverlay.vue')['default']
     SquareButton: typeof import('./src/components/Utilities/SquareButton.vue')['default']
+    TagEntry: typeof import('./src/components/Utilities/TagEntry.vue')['default']
     ToContainerTop: typeof import('./src/components/Utilities/ToContainerTop.vue')['default']
     ToggleButton: typeof import('./src/components/Utilities/ToggleButton.vue')['default']
     Tooltip: typeof import('./src/components/Decorations/Tooltip.vue')['default']

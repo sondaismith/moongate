@@ -104,22 +104,7 @@
                                         :feed-type="FeedEnums.Types.User" :profile-data="u.profileData"/> -->
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col gap-1 w-full h-full overflow-hidden">
-                                        <InLaInput data-testid="feedEditModal-tag-input" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag" placeholder-text="Enter Tags here. Press Enter to submit."/>
-                                        <div class="flex flex-col shrink-0 gap-2 mt-1 overflow-hidden">
-                                            <div class="border-b">Discovered Tags:</div>
-                                            <div v-if="validTags.length<1" class="flex flex-col max-h-32 items-center justify-center select-none">
-                                                <div class="flex flex-col items-center">
-                                                    <div>No Tags Found</div>
-                                                    <div class="text-xs italic">Enter tags above to get started</div>
-                                                </div>
-                                            </div>
-                                            <div v-else data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap max-h-32 items-start overflow-y-auto">
-                                                <div v-for="n, index in validTags" :key="index"
-                                                class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 text-white break-all">
-                                                    #{{ n }}
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <TagEntry class="m-1" @submit-clicked="trySubmitTags"/>
                                         <div class="flex flex-col mt-1 h-full overflow-hidden">
                                             <div class="border-b pb-1 shadow-scroll-underline shadow-postFocusModalDetailsShadow/10">Tag Feeds</div>
                                             <div v-if="numberOfTagFeedsInStack<1" class="flex flex-col pt-2 max-h-32 justify-center select-none">
@@ -236,102 +221,6 @@
                             :feed-stack-identifier="stackItem.id" :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name"
                             :generator-data="stackItem.generatorData" :display-only="true" @clicked-toggle-stack-item="removeFeedStackItem"/>
                         </div>
-                        {{ void 'Old Summary Page Code - REMOVE BEFORE BRANCH MERGE' }}
-                        <div v-if="false">
-                            <InLaInput data-testid="feedEditModal-tag-input" v-if="selectedFeedType == FeedEnums.Types.Tag" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag"/>
-                            <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mt-1 overflow-x-hidden">
-                                <div class="mb-1">Discovered Tags:</div>
-                                <div data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap">
-                                    <div v-for="n, index in validTags" :key="index"
-                                    class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 break-all">
-                                        {{ n }}
-                                    </div>
-                                </div>
-                            </div>
-                            <UserSearchBar data-testid="feedEditModal-user-search-bar"
-                            v-if="selectedFeedType == FeedEnums.Types.User"
-                            @user-selected="selectUser" :data-list="searchResults"/>
-                            <div v-if="selectedFeedType == FeedEnums.Types.Trending">
-                                <div>No Options Currently</div>
-                                <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
-                            </div>
-                            <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex h-full">
-                                <div class="flex flex-col gap-1 w-full">
-                                    <FilterBar :filter-vmodel="feedFilters.feedGenerator.searchTerm" :show-clear-button="viewingFeedGenSearchResults"
-                                    placeholder-text="Search Feeds..."
-                                    :disabled="awaitingInitialCustomFeedData || awaitingSearchCustomFeedData"
-                                    @update:filter-vmodel="newValue => feedFilters.feedGenerator.searchTerm = newValue"
-                                    @clear-filter-clicked="getCustomFeeds" @enter-key-up="searchForFeedGenerators"/>
-                                    <div v-if="selectedFeedItems.length>0" class="pt-1 w-full max-h-16 min-h-16 border-b pb-1 border-outline overflow-y-auto">
-                                        <div class="flex gap-1">
-                                            <div tabindex="-1" class="flex flex-wrap gap-1 w-full items-start">
-                                                <button v-for="n in selectedFeedGenerators" @click="toggleFeedGeneratorSelection(n.generator.uri)"
-                                                :title="'Remove &quot;'+n.generator.displayName+'&quot; Feed'"
-                                                class="flex shrink-0 grow-0 items-center gap-1 bg-itemTagBG transition-colors border-2 border-transparent
-                                                active:bg-itemTagBGActive hover:border-itemTagBorder active:border-itemTagBGActive focus-visible:border-itemTagBorder
-                                                outline-none rounded p-0.5 px-1 text-primary text-xs text-nowrap cursor-pointer shadow-none">
-                                                    <div>{{ n.generator.displayName }}</div>
-                                                    <i-mingcute:close-circle-line/>
-                                                </button>
-                                            </div>
-                                            <SquareButton v-if="selectedFeedItems.length>0" @click="clearSelectedFeeds" title="Clear All Selected Feeds"
-                                            class="self-start h-auto sticky top-0 ml-auto bg-deleteBtnBG hover:bg-deleteBtnBGHover active:bg-deleteBtnBGActive text-white text-sm text-nowrap"
-                                            focus-padding="0.5" button-padding="0.5">
-                                                Clear Selected
-                                            </SquareButton>
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-col gap-1 h-full overflow-y-auto preload-gutter">
-                                        <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline">
-                                            <div class="text-lg">Discover New Feeds</div>
-                                            <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
-                                            <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded<span v-if="selectedFeedItems.length>0">, {{ selectedFeedItems.length }} selected</span></div>
-                                        </div>
-                                        <div v-if="!awaitingInitialCustomFeedData && !awaitingSearchCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
-                                            <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
-                                            @feed-generator-selected="toggleFeedGeneratorSelection" :selected="n.selected"/>
-                                            <button v-if="!viewingFeedGenSearchResults" @click="loadMoreFeedGenerators" :disabled="awaitingAdditionalCustomFeedData"
-                                            class="flex gap-1 items-center justify-center py-1 w-full rounded bg-btn hover:bg-btnHover
-                                            hover:border-hover disabled:bg-disabledBG disabled:border-transparent disabled:text-disabled">
-                                                <i-mingcute:loading-fill v-if="awaitingAdditionalCustomFeedData" class="spinner"/>
-                                                <i-mingcute:plus-fill v-else/>
-                                                <div>Load More</div>
-                                            </button>
-                                        </div>
-                                        <div v-else-if="awaitingInitialCustomFeedData || awaitingSearchCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
-                                            <CustomFeedButtonPlaceholder v-for="n in 5" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
-                                        </div>
-                                        <div v-else-if="viewingFeedGenSearchResults && customFeedData.length<1" class="pt-2">
-                                            <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
-                                                <div class="flex gap-1 items-center">
-                                                    <div class="text-lg font-semibold">No Results</div>
-                                                    <i-mingcute:search-3-line/>
-                                                </div>
-                                                <hr class="border-outline"/>
-                                                <div class="text-sm">No Results found matching "{{ feedFilters.feedGenerator.lastSearchTerm }}"</div>
-                                            </div>
-                                        </div>
-                                        <div v-else class="pt-2">
-                                            <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
-                                                <div class="flex gap-1 items-center">
-                                                    <div class="text-lg font-semibold">Error Retrieving Feed Generators</div>
-                                                    <i-mingcute:wifi-off-line/>
-                                                </div>
-                                                <hr class="border-outline"/>
-                                                <div class="text-sm">Feed Generators could not be reached at this time</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-if="selectedFeedType == FeedEnums.Types.Following">
-                                <div>No Options</div>
-                            </div>
-                            <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
-                                <CheckBox @value-toggled="toggleJustMentions" :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
-                                <!-- <SquareButton @click="testGetNotifs">Load Notifs</SquareButton> -->
-                            </div>
-                        </div>
                     </div>
                     <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 2"
                     class="flex flex-col gap-1 h-full overflow-hidden">
@@ -345,68 +234,6 @@
                                 <i-mingcute:information-line class="size-5 shrink-0"/>
                                 <div>Please note: Some Feeds may not be able to be created/viewed without using a Bluesky account,
                                 while others may no longer be active/available.</div>
-                        </div>
-                        <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ validTags.join(', ') }}</div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.User"
-                        class="flex flex-col overflow-auto divide-y divide-outline">
-                            <div v-if="!isAwaitingProfileData" class="flex flex-col gap-1 w-full">
-                                <div class="flex rounded-full overflow-hidden h-20 mx-auto aspect-square bg-searchbarHandle justify-center items-center bg-cover text-2xl">
-                                    <i-mingcute:user-add-fill v-if="typeof feedFilters.user.avatar == 'undefined'"/>
-                                    <ImageLoader v-else :img-url="feedFilters.user.avatar" :fill-container="true" loader-type="spinner"/>
-                                </div>
-                                <div class="flex w-full overflow-hidden flex-col items-start">
-                                    <div class="flex gap-1 items-center w-full overflow-hidden">
-                                        <div class="whitespace-nowrap overflow-hidden text-ellipsis">{{ feedFilters.user.displayName }}</div>
-                                        <VerifiedBadge v-if="isUserVerified(feedFilters.user)" class="size-4"/>
-                                    </div>
-                                    <div class="text-xs text-searchbarHandle">@{{ feedFilters.user.handle }}</div>
-                                </div>
-                                <div class="flex gap-2 text-sm text-secondary">
-                                    <div v-if="!AppSettingsState.Settings.isHidingFollowers" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followersCount) }}</div> <div>followers</div></div>
-                                    <div v-if="!AppSettingsState.Settings.isHidingFollowing" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followsCount) }}</div> <div>following</div></div>
-                                    <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.postsCount) }}</div> <div>posts</div></div>
-                                </div>
-                                <div class="w-full text-secondary text-xs whitespace-pre-wrap">
-                                    {{feedFilters.user.description ? feedFilters.user.description : 'No Description'}}
-                                </div>
-                            </div>
-                            <div v-else class="animate-pulse flex flex-col gap-2 w-full p-2">
-                                <div class="flex rounded-full h-20 mx-auto aspect-square bg-slate-500 justify-center items-center bg-cover text-2xl">
-                                    <i-mingcute:user-add-fill/>
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <div class="rounded-sm h-4 w-32 bg-slate-500"></div>
-                                    <div class="rounded-sm h-4 w-40 bg-slate-500"></div>
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <div class="rounded-sm h-4 w-full bg-slate-500"></div>
-                                    <div class="rounded-sm h-4 w-full bg-slate-500"></div>
-                                    <div class="rounded-sm h-4 w-1/3 bg-slate-500"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">
-                            <div>No Options Currently</div>
-                        </div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex flex-col gap-2 overflow-y-auto preload-gutter">
-                            <div class="flex items-center gap-1 bg-feedColumnBG sticky top-0 pb-1 shadow-scroll-underline">
-                                <div class="text-xl font-bold">Selected Feeds</div>
-                                <div class="text-sm text-secondary">{{ selectedFeedItems.length }} item(s)</div>
-                            </div>
-                            <div v-if="selectedFeedItems.length>0" class="flex flex-wrap gap-1 pt-1">
-                                <CustomFeedButton v-for="fg in selectedFeedItems" :feed-generator-view="fg"
-                                :display-only="true" @feed-generator-selected="toggleFeedGeneratorSelection" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
-                            </div>
-                            <div v-else>
-                                <div class="font-bold">No Feeds Selected</div>
-                                <div class="text-sm">Please return to the previous page and select a Feed Generator.</div>
-                            </div>
-                        </div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.Following">
-                            <div>No Options</div>
-                        </div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
-                            <div>Mentions Only? {{ feedFilters.notifications.justNotifs }}</div>
                         </div>
                     </div>
                 </Transition>
@@ -496,6 +323,7 @@ import InsetLabel from '../Utilities/InsetLabel.vue';
 import { SearchForAccounts } from '../../lib/api/Feed.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import { GenerateCID } from '../../helpers/generators';
+import TagEntry from '../Utilities/TagEntry.vue';
 
 export default defineComponent({
     components:{
@@ -511,6 +339,7 @@ export default defineComponent({
         ImageLoader,
         FeedStackButton,
         InsetLabel,
+        TagEntry,
     },
     props:{
         feedType: Object as PropType<FeedEnums.Types>,
@@ -556,7 +385,7 @@ export default defineComponent({
                 {id:4, name:'Following',value:FeedEnums.Types.Following},
                 {id:5, name:'Notifications',value:FeedEnums.Types.Notifications},
             ],
-            selectedFeedType:"",
+            selectedFeedType:FeedEnums.Types.Tag,//"",
             feedTypeSelected:false,
             feedSpecificationsSet:false,
             /**Indicates if a Trending Type Feed is currently in the Feed Stack waiting to be created. */
@@ -844,21 +673,12 @@ export default defineComponent({
          * input values are valid before moving forward to the Feed creation details
          * summary page.
          */
-        async trySubmitTags(){
-            if(this.isTagSpecsEntryComplete){
-                // let tagString = this.validTags.join(' ');
+        async trySubmitTags(submittedTags:string[]){
                 let tagDisplayName:string|undefined;
-                if(typeof this.validTags != 'undefined' && this.validTags.length>0){
-                    let tagCopy = [...this.validTags];
-                    tagCopy[0] = `#${tagCopy[0]}`;
-                    tagDisplayName = tagCopy.join(' #');
-                }
-                await GenerateCID(this.validTags.toString()).then(res => {
-                    this.feedStackItems.push({id:res.toString(),did:'',handle:'',name:tagDisplayName != 'undefined' ? tagDisplayName : '',icon:FeedEnums.Icons.Tag,tags:this.validTags,type:FeedEnums.Types.Tag});
-                    this.feedFilters.tag = '';
+                tagDisplayName = submittedTags.join(' ');
+                await GenerateCID(submittedTags.toString()).then(res => {
+                    this.feedStackItems.push({id:res.toString(),did:'',handle:'',name:tagDisplayName != 'undefined' ? tagDisplayName : '',icon:FeedEnums.Icons.Tag,tags:submittedTags,type:FeedEnums.Types.Tag});
                 })
-                // this.forwardOnePage();
-            }
         },
         async testGetNotifs(){
             if(AppState.isAuthBrowsing){
@@ -1244,31 +1064,6 @@ export default defineComponent({
         }
     },
     computed:{
-        /**
-         * Method that takes the content put into the "Tag" input control
-         * and parses it for valid tags - words starting with (#) and containing
-         * no illegal hashtag characters. Currently the allowed length is unlimited.
-         */
-        validTags(){
-            const tagRegex = new RegExp(`${/[^/\\!@\-()$%\^&\+~|[\]{}#,;'"`.<>=\s]+/.source}`,'g');
-            //content must be longer than 1 character
-            if(this.feedFilters.tag.length>1){
-                var result = [];
-                let matches = this.feedFilters.tag.matchAll(tagRegex);
-                for(const match of matches){
-                    result.push(match[0]);
-                }
-                return result;
-            }
-            return [];
-        },
-        /**
-         * Validates that the required conditions have been met during the
-         * Tag-type Feed creation process to progress to the summary/creation page.
-         */
-        isTagSpecsEntryComplete(){
-            return (this.validTags.length>0);
-        },
         /**
          * Validates that a Feed Type was selected from available
          * options.
