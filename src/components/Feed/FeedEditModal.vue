@@ -385,7 +385,7 @@ export default defineComponent({
                 {id:4, name:'Following',value:FeedEnums.Types.Following},
                 {id:5, name:'Notifications',value:FeedEnums.Types.Notifications},
             ],
-            selectedFeedType:FeedEnums.Types.Tag,//"",
+            selectedFeedType:"",
             feedTypeSelected:false,
             feedSpecificationsSet:false,
             /**Indicates if a Trending Type Feed is currently in the Feed Stack waiting to be created. */
