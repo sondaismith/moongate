@@ -121,7 +121,6 @@ declare module 'vue' {
     'ISolar:usersGroupRoundedBold': typeof import('~icons/solar/users-group-rounded-bold')['default']
     LoginModal: typeof import('./src/components/Login/LoginModal.vue')['default']
     ModernToggleButton: typeof import('./src/components/Utilities/ModernToggleButton.vue')['default']
-    NoResultsInset: typeof import('./src/components/Utilities/NoResultsInset.vue')['default']
     NotificationRecord: typeof import('./src/components/Feed/NotificationRecord.vue')['default']
     OptionsMenu: typeof import('./src/components/Utilities/OptionsMenu.vue')['default']
     PillButton: typeof import('./src/components/Utilities/PillButton.vue')['default']

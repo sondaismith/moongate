@@ -322,7 +322,7 @@ import UserSearchBar2 from '../Utilities/UserSearchBar2.vue';
 import InsetLabel from '../Utilities/InsetLabel.vue';
 import { SearchForAccounts } from '../../lib/api/Feed.vue';
 import { HandleAPIError } from '../../helpers/errors';
-import { GenerateCID } from '../../helpers/generators';
+import { GenerateUniqueID } from '../../helpers/generators';
 import TagEntry from '../Utilities/TagEntry.vue';
 
 export default defineComponent({
@@ -674,11 +674,10 @@ export default defineComponent({
          * summary page.
          */
         async trySubmitTags(submittedTags:string[]){
-                let tagDisplayName:string|undefined;
-                tagDisplayName = submittedTags.join(' ');
-                await GenerateCID(submittedTags.toString()).then(res => {
-                    this.feedStackItems.push({id:res.toString(),did:'',handle:'',name:tagDisplayName != 'undefined' ? tagDisplayName : '',icon:FeedEnums.Icons.Tag,tags:submittedTags,type:FeedEnums.Types.Tag});
-                })
+            let tagDisplayName:string|undefined;
+            tagDisplayName = submittedTags.join(' ');
+            let identity = GenerateUniqueID(15);//might be best to find a way to generate an id using the tag text and time
+            this.feedStackItems.push({id:identity,did:'',handle:'',name:tagDisplayName != 'undefined' ? tagDisplayName : '',icon:FeedEnums.Icons.Tag,tags:submittedTags,type:FeedEnums.Types.Tag});
         },
         async testGetNotifs(){
             if(AppState.isAuthBrowsing){

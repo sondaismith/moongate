@@ -7,7 +7,7 @@
                     <i-mingcute:close-fill/>
                 </button>
             </div>
-            <input :disabled="disabled" class="peer grow min-h-7 px-1 border-none outline-none bg-transparent shadow-none" placeholder="Add tag..." v-model="textEntry" @keyup.enter="addTagToQueue"/>
+            <input :disabled="disabled" class="peer grow min-h-7 px-1 border-none outline-none bg-transparent shadow-none" placeholder="Add tag..." autocapitalize="off" v-model="textEntry" @keyup.enter="addTagToQueue"/>
             <button v-if="showSubmitButton" :disabled="disabled" @click="submitTagQueue"
             class="flex ml-auto gap-1 items-center shadow-none px-2 rounded hover:border-transparent
             active:border-transparent bg-blue-400 hover:bg-blue-500 active:bg-blue-600

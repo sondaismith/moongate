@@ -2,6 +2,11 @@ import { CID } from 'multiformats/cid'
 import * as json from 'multiformats/codecs/json'
 import { sha256 } from 'multiformats/hashes/sha2'
 
+/**
+ * DO NOT USE OUTSIDE OF TESTS - DOES NOT WORK ON MOBILE DEVICES
+ * @param encodeWord String value used to generate the CID.
+ * @returns Generated CID based off of passed-in endcodeWord.
+ */
 export async function GenerateCID(encodeWord:string){
     //The line below follows the example given on the official repo (https://github.com/multiformats/js-multiformats)
     //but it would always fail with "Error: Unknown type, must be binary type" when this method was called during a
