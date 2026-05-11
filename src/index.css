@@ -112,6 +112,7 @@
         --color-inset-label-bg:theme(colors.slate.700);
         --color-inset-label-text:theme(colors.slate.500);
         --color-inset-label-inner-shadow-color:rgb(15, 23, 43);
+        --color-tag-entry-tag-bg:theme(colors.slate.700);
     }
 }
 
@@ -224,4 +225,5 @@
     --color-inset-label-bg:theme(colors.slate.200);
     --color-inset-label-text:theme(colors.gray.400);
     --color-inset-label-inner-shadow-color:rgba(2, 6, 24,0.25);
+    --color-tag-entry-tag-bg:theme(colors.slate.300);
 }

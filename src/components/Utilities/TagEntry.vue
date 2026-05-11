@@ -1,9 +1,10 @@
 <template>
     <div class="flex flex-col gap-1">
         <div class="relative flex flex-wrap rounded border border-outline has-[input:focus]:outline has-[input:focus]:outline-blue-500 p-1 gap-1">
-            <div class="rounded flex gap-1 items-center bg-slate-300 px-1 py-0.5" v-for="n, index in tagQueue">
+            <div class="rounded flex gap-1 items-center bg-tagEntryTagBG px-1.5 py-0.5" v-for="n, index in tagQueue">
                 {{ n }}
-                <button :disabled="disabled" class="shadow-none border-0 text-sm text-secondary hover:text-secondaryHover" @click="removeTagFromQueue(index)">
+                <button :disabled="disabled" class="rounded h-full shadow-none border-0 text-xs text-secondary hover:text-secondaryHover"
+                @click="removeTagFromQueue(index)" title="Remove Tag">
                     <i-mingcute:close-fill/>
                 </button>
             </div>
@@ -11,11 +12,12 @@
             <button v-if="showSubmitButton" :disabled="disabled" @click="submitTagQueue"
             class="flex ml-auto gap-1 items-center shadow-none px-2 rounded hover:border-transparent
             active:border-transparent bg-blue-400 hover:bg-blue-500 active:bg-blue-600
-            disabled:bg-disabledBG disabled:cursor-not-allowed text-white">
+            disabled:bg-disabledBG disabled:cursor-not-allowed text-white"
+            :title="submitButtonTooltip">
                 <div class="text-nowrap">{{ submitButtonText }}</div>
             </button>
         </div>
-        <div class="ml-auto text-sm text-secondary">Press Enter/Return to add tag to Feed specification</div>
+        <div class="ml-auto text-sm text-secondary">{{ instructionText }}</div>
     </div>
 </template>
 
@@ -29,10 +31,20 @@ export default defineComponent({
             type:Boolean,
             default:false
         },
-        /**Text value displayed in "Submit" button. Default value is "Submit". */
+        /**Text displayed in "Submit" button. Default value is "Submit". */
         submitButtonText:{
             type:String,
             default:'Submit'
+        },
+        /**Text displayed when hovering over "Submit" button. Default value is "Submit entered tags". */
+        submitButtonTooltip:{
+            type:String,
+            default:'Submit entered tags'
+        },
+        /**Text displayed as "instruction" label underneath input control. Default value is "Press Enter/Return to add tag to list". */
+        instructionText:{
+            type:String,
+            default:'Press Enter/Return to add tag to list'
         }
     },
     data(){

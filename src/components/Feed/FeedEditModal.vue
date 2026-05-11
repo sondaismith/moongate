@@ -104,7 +104,7 @@
                                         :feed-type="FeedEnums.Types.User" :profile-data="u.profileData"/> -->
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col gap-1 w-full h-full overflow-hidden">
-                                        <TagEntry class="m-1" @submit-clicked="trySubmitTags"/>
+                                        <TagEntry class="m-1" @submit-clicked="trySubmitTags" instruction-text="Press Enter/Return to add tag to Feed specification"/>
                                         <div class="flex flex-col mt-1 h-full overflow-hidden">
                                             <div class="border-b pb-1 shadow-scroll-underline shadow-postFocusModalDetailsShadow/10">Tag Feeds</div>
                                             <div v-if="numberOfTagFeedsInStack<1" class="flex flex-col pt-2 max-h-32 justify-center select-none">

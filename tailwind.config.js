@@ -113,6 +113,7 @@ export default {
         noResultsInsetBG: "oklch(from var(--color-inset-label-bg) l c h / <alpha-value>)",
         noResultsInsetText: "oklch(from var(--color-inset-label-text) l c h / <alpha-value>)",
         noResultsInsetInnerShadowColor: "var(--color-inset-label-inner-shadow-color)",
+        tagEntryTagBG: "var(--color-tag-entry-tag-bg)",
       },
       fontSize:{
         feedPostName: '0.75rem',
