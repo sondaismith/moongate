@@ -89,7 +89,7 @@
                                     </div>
                                 </TransitionGroup>
                             </div>
-                            <div v-if="selectedFeedType.trim() != ''" class="flex items-start h-full rounded overflow-hidden">
+                            <div v-if="selectedFeedType.trim() != ''" class="flex flex-col items-start h-full overflow-hidden">
                                 <TransitionGroup>
                                     <!-- <UserSearchBar data-testid="feedEditModal-user-search-bar" class="w-full"
                                     v-if="selectedFeedType == FeedEnums.Types.User"
@@ -100,20 +100,19 @@
                                         @user-selected="selectUser"
                                         @filter-bar-update="newValue => feedFilters.userSearch.searchTerm = newValue" @search-submitted="submitUserSearch"
                                         @clear-results-clicked="clearUserAccountResults" :disabled="awaitingUserSearchResults"/>
-                                        <!-- <FeedStackButton v-for="u in feedStackItems.filter(x => x.type == FeedEnums.Types.User)"
-                                        :feed-type="FeedEnums.Types.User" :profile-data="u.profileData"/> -->
                                     </div>
-                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col gap-1 w-full h-full overflow-hidden">
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="w-full h-0 shadow-scroll-element-drop-shadow"></div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col gap-1 w-full h-full pt-2 overflow-y-auto">
                                         <TagEntry class="m-1" @submit-clicked="trySubmitTags" instruction-text="Press Enter/Return to add tag to Feed specification"/>
-                                        <div class="flex flex-col mt-1 h-full overflow-hidden">
-                                            <div class="border-b pb-1 shadow-scroll-underline shadow-postFocusModalDetailsShadow/10">Tag Feeds</div>
+                                        <div class="flex flex-col mt-1 h-full">
+                                            <div class="border-b pb-1">Tag Feeds</div>
                                             <div v-if="numberOfTagFeedsInStack<1" class="flex flex-col pt-2 max-h-32 justify-center select-none">
                                                 <div class="flex flex-col items-center">
                                                     <div>No Tags Feeds Queued</div>
                                                     <div class="text-xs italic">Submited Tag Feeds will show here</div>
                                                 </div>
                                             </div>
-                                            <div v-else class="flex flex-wrap gap-2 pr-2 py-2 pt-3 overflow-y-auto">
+                                            <div v-else class="flex flex-wrap gap-2 pr-2 py-2 pt-3">
                                                 <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
                                                 v-for="stackItem in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
                                                 :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-identifier="stackItem.id"

@@ -123,7 +123,8 @@ export default {
         'md-harder': '0 4px 4px rgba(0, 0, 0, 0.75)'
       },
       boxShadow:{
-        'scroll-underline' : '0 6px 4px -4px rgba(0,0,15,0.25)', //shadow-[rgba(0,0,15,0.25)_0px_6px_4px_-4px]
+        'scroll-underline'    : '0 6px 4px -4px rgba(0,0,15,0.25)', //shadow-[rgba(0,0,15,0.25)_0px_6px_4px_-4px]
+        'scroll-element-drop-shadow' : '0px -2px 8px 4px rgba(0,0,15,0.25)',
         'scroll-inner-bottom' : 'inset 0 -6px 4px -4px rgba(0,0,15,0.25)',
         'scroll-inner-window' : 'inset 1px 2px 2px 0px rgba(0,0,15,0.20)',
       }

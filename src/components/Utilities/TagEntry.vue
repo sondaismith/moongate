@@ -17,7 +17,7 @@
                 <div class="text-nowrap">{{ submitButtonText }}</div>
             </button>
         </div>
-        <div class="ml-auto text-sm text-secondary">{{ instructionText }}</div>
+        <div class="ml-auto text-xs text-secondary">{{ instructionText }}</div>
     </div>
 </template>
 
