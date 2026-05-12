@@ -1,5 +1,5 @@
 <template>
-    <div data-testid="feed-edit-modal" tabindex="-1" @keydown.tab="(e)=>TrapFocus($el,e)"
+    <div data-testid="feed-edit-modal" tabindex="-1" @keydown.tab="(e)=>{if(!isConfirmModalDisplayed) TrapFocus($el,e)}"
     class="absolute z-10 flex w-full h-full text-primary focus-visible:outline-none">
         <div data-testid="feedEditModal-close" @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full bg-slate-800/40 backdrop-blur-sm"></div>
         {{void "Modal Control"}}
@@ -257,19 +257,6 @@
                             <div>Create Feeds</div>
                         </div>
                     </SquareButton>
-                    <!-- <SquareButton data-testid="feedEditModal-create-button" @click="createFeeds()"
-                    v-if="areCreatePostConditionsMet && selectedFeedItems.length>0"
-                    :is-disabled="attemptingToCreateFeed"
-                    class="bg-submitBtnBG hover:bg-submitBtnBGHover focus-visible:bg-submitBtnBGHover active:bg-submitBtnBGActive text-white">
-                        <div class="flex gap-1 items-center">
-                            <i-mingcute:loading-fill v-if="attemptingToCreateFeed" class="text-primary spinner h-4 w-4"/>
-                            <div>Create Feeds</div>
-                        </div>
-                    </SquareButton>
-                    <SquareButton data-testid="feedEditModal-create-button" @click="createFeed()"
-                    v-else-if="areCreatePostConditionsMet"
-                    class="bg-submitBtnBG hover:bg-submitBtnBGHover focus-visible:bg-submitBtnBGHover active:bg-submitBtnBGActive text-white"
-                    :is-disabled="attemptingToCreateFeed">Submit</SquareButton> -->
                 </div>
             </div>
             <Transition>
@@ -289,6 +276,7 @@
                 </div>
             </Transition>
         </div>
+        <ConfirmModal ref="confirm"/>
     </div>
 </template>
 
@@ -323,6 +311,7 @@ import { SearchForAccounts } from '../../lib/api/Feed.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import { GenerateUniqueID } from '../../helpers/generators';
 import TagEntry from '../Utilities/TagEntry.vue';
+import ConfirmModal from '../Utilities/ConfirmModal.vue';
 
 export default defineComponent({
     components:{
@@ -339,6 +328,7 @@ export default defineComponent({
         FeedStackButton,
         InsetLabel,
         TagEntry,
+        ConfirmModal,
     },
     props:{
         feedType: Object as PropType<FeedEnums.Types>,
@@ -462,6 +452,12 @@ export default defineComponent({
             attemptingToCreateFeed: false,
             FeedEnums,
             TrapFocus,
+            /**
+             * Is the "confirm Feed discard" message currently being displayed?
+             * Used to temporarily disable `TrapFocus()` for this component while
+             * the `ConfirmModal` component is being displayed.
+             */
+            isConfirmModalDisplayed:false,
             isUserVerified,
             getCompactNumberValue
         }
@@ -496,6 +492,7 @@ export default defineComponent({
                 // if(this.currentPage >= 1) this.$router.push(this.$route.path.substring(0, this.$route.path.lastIndexOf('/')));
             }
             else{
+                this.feedStackItems = [];//prevents the "confirm cancel" prompt from displaying
                 this.closeModal()
             }
         },
@@ -966,81 +963,6 @@ export default defineComponent({
                     this.attemptingToCreateFeed = false;
                 }, 3000);
             }
-
-            // if(this.selectedFeedType == FeedEnums.Types.FeedGenerator){
-            //     for (let i = 0; i < this.selectedFeedItems.length; i++) {
-            //         lastFeedItem = (i == this.selectedFeedItems.length-1);
-            //         let feedSourceData:IUserSearchResult = {
-            //             did: this.selectedFeedItems[i].uri,
-            //             handle: this.selectedFeedItems[i].creator.handle,
-            //             name: this.selectedFeedItems[i].displayName
-            //         }
-            //         this.feedCreationStatus.push({
-            //             message:`Attempting to create "${feedSourceData.name}" Feed...`,
-            //             attempted:false,
-            //             success:false
-            //         });
-
-            //         await PrepareFeedData(this.selectedFeedType as FeedEnums.Types,
-            //         feedSourceData,
-            //         this.feedFilters.tag)
-            //         .then(res => {
-            //             //Create the Feed
-            //             if(AppState.isCreatingFeed){
-            //                 AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false,lastFeedItem);
-            //                 this.feedCreationStatus[i] = {
-            //                     message:`Created "${feedSourceData.name}" Feed!`,
-            //                     attempted:true,
-            //                     success:true
-            //                 };
-            //                 successes++;
-            //             }
-            //         })
-            //         .catch(err => {
-            //             console.log(err);
-            //             toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
-            //             this.feedCreationStatus[i] = {
-            //                 message:`Failed to create "${feedSourceData.name}" Feed...`,
-            //                 attempted:true,
-            //                 success:false
-            //             };
-            //             // setTimeout(() => {
-            //             //     this.attemptingToCreateFeed = false;
-            //             // }, 800);
-            //         });
-            //     };
-            //     //DEBUG CODE
-            //     // for (let i = 0; i < 5; i++) {
-            //     //     this.feedCreationStatus.push({
-            //     //         message:`Attempting to create "Feed ${i}" Feed...`,
-            //     //         attempted:false,
-            //     //         success:false
-            //     //     });
-            //     //     await new Promise((resolve) => setTimeout(resolve,800));
-            //     //     this.feedCreationStatus[i] = {
-            //     //         message:`Created "Feed ${i}" Feed!`,
-            //     //         attempted:true,
-            //     //         success:true
-            //     //     };
-            //     // }
-            //     if(successes>0){
-            //         let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
-            //         AppState.SendAppSyncMessage(feedSyncMessage);
-            //         setTimeout(() => {
-            //             this.closeModal();
-            //         }, 3000);
-            //     }
-            //     else{
-            //         this.feedCreationStatus.push({
-            //             message:'Failed to create Feeds...',
-            //             attempted:true,
-            //             success:false
-            //         })
-            //         setTimeout(() => {
-            //             this.attemptingToCreateFeed = false;
-            //         }, 3000);
-            //     }
-            // }
         },
         /**Method that returns the total number of a specified Feed type that are currently in the "Feed Stack". */
         getFeedCountForType(feedType:FeedEnums.Types){
@@ -1053,6 +975,15 @@ export default defineComponent({
                     return this.numberOfCustomFeedsInStack;
                 default:
                     break;
+            }
+        },
+        /**
+         * Method used to close the `FeedEditModal` if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape'){
+                this.closeModal();
             }
         },
         closeModal(){
@@ -1131,7 +1062,7 @@ export default defineComponent({
         },
         /**Calculates the number of Feeds that are currently in the "Feed Stack". */
         numberOfFeedsInStack(){
-            return this.feedStackItems.length + (this.isTrendingTypeInStack ? 1 : 0)+ (this.isFollowingTypeInStack ? 1 : 0)+ (this.isNotificationTypeInStack ? 1 : 0);
+            return this.feedStackItems.length;
         },
         /**Calculates the number of "User Feeds" that are currently in the "Feed Stack". */
         numberOfUserFeedsInStack(){
@@ -1185,21 +1116,31 @@ export default defineComponent({
             else next();
         }
     },
+    async beforeRouteLeave(to, from){
+        let canLeaveWithoutPrompt = false;
+        if(to.path.includes('/create/feed')) return true;
+        if(this.attemptingToCreateFeed){
+            toast.add({summary:"Please wait", detail:`Feed creation in progress, please wait`, severity:'info', group:'tr', life:1500});
+            return canLeaveWithoutPrompt;
+        }
+        if(this.numberOfFeedsInStack>0){
+            type ConfirmModalRef = InstanceType<typeof ConfirmModal>;
+            this.isConfirmModalDisplayed = true;
+            await (this.$refs.confirm as ConfirmModalRef).show('Are you sure you want to cancel creating Feeds?')
+            .then(res => {
+                canLeaveWithoutPrompt = res;
+                this.isConfirmModalDisplayed = false;
+            })
+        }
+        else canLeaveWithoutPrompt = true;
+        return canLeaveWithoutPrompt;
+    },
     async created(){
-        // if(typeof this.feedType != 'undefined' && Object.values(FeedEnums.Types).includes(this.feedType)){
-        //     this.selectedFeedType = this.feedType
-        //     this.currentPage = 1;
-        //     if(this.feedType == FeedEnums.Types.FeedGenerator){
-        //         this.getCustomFeeds();
-        //     }
-        // }
-        // else if(typeof this.feedType != 'undefined' && !Object.values(FeedEnums.Types).includes(this.feedType)){//invalid feed type
-        //     this.$router.replace('/create/feed');
-        // }
         AppState.isCreatingFeed = true;
         document.title = this.getFeedTypeTitle;
     },
     mounted(){
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
         if(AppState.isUpdatingFeed){
             //Start on last/summary page
             this.currentPage = this.modalPages.length-1;
@@ -1231,6 +1172,7 @@ export default defineComponent({
         (this.$el as HTMLElement).focus();
     },
     beforeUnmount() {
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
         AppState.isCreatingFeed = false;
     },
     // watch:{

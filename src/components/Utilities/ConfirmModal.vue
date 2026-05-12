@@ -59,6 +59,8 @@ export default defineComponent({
         cancel(){
             this.resolvePromise(false);
             this.isVisible = false;
+            let parent = (this.$el as HTMLElement).parentElement;
+            if(parent != null) parent.focus();//refocus parent when modal is hidden
             AppState.isAskingForConfirmation = false;
         },
         /**
