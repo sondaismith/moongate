@@ -950,6 +950,8 @@ export default defineComponent({
                 let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
                 AppState.SendAppSyncMessage(feedSyncMessage);
                 setTimeout(() => {
+                    this.attemptingToCreateFeed = false;
+                    this.feedStackItems = [];
                     this.closeModal();
                 }, 3000);
             }
