@@ -114,7 +114,6 @@
         <Transition name="peek">
             <AccountPeek v-show="AccountPeekState.isUserPeeking"/>
         </Transition>
-        <!--<FeedEditModal/> <!--REMOVE BEFORE MERGE INTO DEV-->
     </div>
 </template>
 

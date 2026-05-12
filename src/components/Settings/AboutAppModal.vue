@@ -1,5 +1,5 @@
 <template>
-    <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="z-30 flex w-full h-full" :class="[hideBackdrop ? '' : 'absolute']">
+    <div tabindex="-1" @keydown.tab="(e) => TrapFocus($el,e)" class="z-30 flex w-full h-full" :class="[hideBackdrop ? '' : 'absolute']">
         <div v-if="!hideBackdrop" @click="closeModal" class="absolute bg-white/10 backdrop-blur-sm w-full h-full"></div>
         <div class="relative flex flex-col bg-focusBG w-[94%] max-w-[50rem]
         mx-auto my-auto rounded-lg overflow-hidden text-primary drop-shadow-md"

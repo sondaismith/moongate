@@ -1,5 +1,5 @@
 <template>
-    <div data-testid="feed-edit-modal" tabindex="-1" @keydown="(e)=>TrapFocus($el,e)"
+    <div data-testid="feed-edit-modal" tabindex="-1" @keydown.tab="(e)=>TrapFocus($el,e)"
     class="absolute z-10 flex w-full h-full text-primary focus-visible:outline-none">
         <div data-testid="feedEditModal-close" @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full bg-slate-800/40 backdrop-blur-sm"></div>
         {{void "Modal Control"}}
