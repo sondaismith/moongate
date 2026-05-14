@@ -11,7 +11,10 @@ import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/clie
 import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
 import { OutputSchema } from "@atproto/api/dist/client/types/com/atproto/server/createSession";
 import { OutputSchema as searchActorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/actor/searchActors";
+import { OutputSchema as getFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getFeedGenerators";
+import { OutputSchema as getPopularFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/unspecced/getPopularFeedGenerators";
 import { Main } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { GeneratorView } from "@atproto/api/src/client/types/app/bsky/feed/defs";
 
 /**
  * Type indicating the state of a Parent Post - is it a `PostView` (standard), Not Found (i.e. deleted), Blocked,
@@ -799,7 +802,7 @@ export function CreateLoginSessionResponse(handle:string="test-session.bsky.soci
 
 /**
  * Method used to mock the a response for calling the `searchActors` Bluesky API method.
- * @param numActors The number of Actor results to return.
+ * @param numActors The number of mocked Actor Search Results to return.
  * @returns Object representing the Bluesky API response for a `searchActors` call.
  */
 export function CreateActorSearchResults(numActors:number=3):searchActorsOutputSchema{
@@ -818,4 +821,75 @@ export function CreateActorSearchResults(numActors:number=3):searchActorsOutputS
         })
     }
     return {actors:results};
+}
+
+/**
+ * Method used to mock the a response for calling the `getFeedGenerators` Bluesky API method.
+ * @param numReturnedGenerators The number of mocked Feed Generators to return.
+ * @returns Object representing the Bluesky API response for a `getFeedGenerators` call.
+ */
+export async function CreateGetFeedGeneratorsResponse(numReturnedGenerators:number=1):Promise<getFeedGeneratorsOutputSchema>{
+    let results:GeneratorView[] = [];
+    let postTime = new Date().toISOString();
+    for (let i = 0; i < numReturnedGenerators; i++) {
+        let j = Math.floor(Math.random()*7);
+        let handle = `creator${i}.test`
+        let cid = `author_${handle}_${1}`;
+        await GenerateCID(`author_${handle}_${1}`).then(res => {
+            cid = res.toString();
+        })
+        let did = `did:web:abcdefgmockfeedgenerator${i}`;
+        let likesCount = Math.floor(Math.random()*3200);
+        results.push({
+            did:did,
+            cid:cid,
+            creator:{
+                did:`did:plc:abcdefgmockfeedgeneratorcreator${i}`,
+                handle:handle,
+                displayName:`Mocked Feed Generator Creator ${i}`,
+                indexedAt:postTime,
+            },
+            displayName:`Mocked Feed Generator ${i}`,
+            avatar:`http://localhost:1420/src/assets/test-media/posts/image0${j+1}.png`,
+            description:`I am a mocked feed generator for testing purposes. My number is ${i}. ${j}!`,
+            likeCount:likesCount,
+            indexedAt:postTime,
+            uri:`at://${did}/app.bsky.feed.generator/feed-gen${i}`
+        })
+    }
+    return {feeds:results};
+}
+
+export async function CreateGetPopularFeedGeneratorsResponse(numReturnedGenerators:number=5):Promise<getPopularFeedGeneratorsOutputSchema>{
+    let results:GeneratorView[] = [];
+    let postTime = new Date().toISOString();
+    for (let i = 0; i < numReturnedGenerators; i++) {
+        let j = Math.floor(Math.random()*7);
+        let handle = `popular-creator${i}.test`
+        let cid = `author_${handle}_${1}`;
+        await GenerateCID(`author_${handle}_${1}`).then(res => {
+            cid = res.toString();
+        })
+        let did = `did:web:abcdefgmockpopularfeedgenerator${i}.app`;
+        let likesCount = Math.floor(Math.random()*3200);
+        results.push({
+            did:did,
+            cid:cid,
+            creator:{
+                did:`did:plc:abcdefgmockpopularfeedgeneratorcreator${i}`,
+                handle:handle,
+                displayName:`Mocked Popular Feed Generator Creator ${i}`,
+                indexedAt:postTime,
+                createdAt:postTime
+            },
+            displayName:`Mocked Popular Feed Generator ${i}`,
+            avatar:`http://localhost:1420/src/assets/test-media/posts/image0${j+1}.png`,
+            description:`I am a mocked popular feed generator for testing purposes. My number is ${i}. ${j}!`,
+            likeCount:likesCount,
+            indexedAt:postTime,
+            uri:`at://${did}/app.bsky.feed.generator/pop-feed-gen${i}`
+
+        })
+    }
+    return {feeds:results};
 }

@@ -41,7 +41,7 @@
                                     <button v-for="item in feedTypeOptions" :key="item.id"
                                     @click="selectFeedType(item.value)"
                                     tabindex="0"
-                                    :data-testid="`feedEditModal-${item.name.toLowerCase()}-feed-button`"
+                                    :data-testid="`feedEditModal-${item.name.toLowerCase().split(' ')[0]}-feed-button`"
                                     class="group flex gap-1 cursor-pointer items-center border-2 outline-none border-transparent rounded-md transition-colors
                                     bg-feedTypeButton select-none p-[1px] overflow-hidden active:bg-feedTypeButtonActive"
                                     :class="[item.value == selectedFeedType ? '!border-feedtypeBtnSelected' : '',
@@ -95,24 +95,24 @@
                                     v-if="selectedFeedType == FeedEnums.Types.User"
                                     @user-selected="selectUser" :data-list="searchResults"/> -->
                                     <div v-if="selectedFeedType == FeedEnums.Types.User" class="flex flex-col gap-1 h-full w-full overflow-hidden">
-                                        <UserSearchBar2 :search-term-v-model="feedFilters.userSearch.searchTerm" :last-results-term="feedFilters.userSearch.lastResultsTerm"
-                                        :feed-stack-ref="feedStackItems" :user-results-ref="userAccountSearchResults" placeholder-text="Search for Users..."
-                                        @user-selected="selectUser"
-                                        @filter-bar-update="newValue => feedFilters.userSearch.searchTerm = newValue" @search-submitted="submitUserSearch"
-                                        @clear-results-clicked="clearUserAccountResults" :disabled="awaitingUserSearchResults"/>
+                                        <UserSearchBar2 data-testid="feedEditModal-user-search-bar" :search-term-v-model="feedFilters.userSearch.searchTerm"
+                                        :last-results-term="feedFilters.userSearch.lastResultsTerm" :feed-stack-ref="feedStackItems"
+                                        :user-results-ref="userAccountSearchResults" placeholder-text="Search for Users..."
+                                        @user-selected="selectUser" @filter-bar-update="newValue => feedFilters.userSearch.searchTerm = newValue"
+                                        @search-submitted="submitUserSearch" @clear-results-clicked="clearUserAccountResults" :disabled="awaitingUserSearchResults"/>
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="w-full h-0 shadow-scroll-element-drop-shadow"></div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col gap-1 w-full h-full pt-2 overflow-y-auto">
-                                        <TagEntry class="m-1" @submit-clicked="trySubmitTags" instruction-text="Press Enter/Return to add tag to Feed specification"/>
+                                        <TagEntry data-testid="feedEditModal-tag-input" class="m-1" @submit-clicked="trySubmitTags" instruction-text="Press Enter/Return to add tag to Feed specification"/>
                                         <div class="flex flex-col mt-1 h-full">
                                             <div class="border-b pb-1">Tag Feeds</div>
-                                            <div v-if="numberOfTagFeedsInStack<1" class="flex flex-col pt-2 max-h-32 justify-center select-none">
+                                            <div data-testid="feedEditModal-no-tag-feeds-message" v-if="numberOfTagFeedsInStack<1" class="flex flex-col pt-2 max-h-32 justify-center select-none">
                                                 <div class="flex flex-col items-center">
                                                     <div>No Tags Feeds Queued</div>
                                                     <div class="text-xs italic">Submited Tag Feeds will show here</div>
                                                 </div>
                                             </div>
-                                            <div v-else class="flex flex-wrap gap-2 pr-2 py-2 pt-3">
+                                            <div data-testid="feedEditModal-tag-feed-list" v-else class="flex flex-wrap gap-2 pr-2 py-2 pt-3">
                                                 <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
                                                 v-for="stackItem in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
                                                 :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-identifier="stackItem.id"
@@ -154,9 +154,12 @@
                                                     <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
                                                     <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded</div>
                                                 </div>
-                                                <div v-if="!awaitingInitialCustomFeedData && !awaitingSearchCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-2 pb-3 pl-1 pr-2">
-                                                    <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
-                                                    @feed-generator-selected="toggleFeedGeneratorSelection" :selected="n.selected"/>
+                                                <div v-if="!awaitingInitialCustomFeedData && !awaitingSearchCustomFeedData && customFeedData.length>0"
+                                                    class="flex flex-wrap gap-2 py-2 pb-3 pl-1 pr-2">
+                                                    <div data-testid="feedEditModal-custom-feed-list" class="flex flex-wrap gap-2">
+                                                        <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
+                                                        @feed-generator-selected="toggleFeedGeneratorSelection" :selected="n.selected"/>
+                                                    </div>
                                                     <button v-if="!viewingFeedGenSearchResults" @click="loadMoreFeedGenerators" :disabled="awaitingAdditionalCustomFeedData"
                                                     class="flex gap-1 items-center justify-center py-1 w-full rounded bg-btn hover:bg-btnHover
                                                     hover:border-hover disabled:bg-disabledBG disabled:border-transparent disabled:text-disabled">
@@ -192,21 +195,21 @@
                                         </div>
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Trending" class="flex flex-col w-full">
-                                        <FeedStackButton :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" feed-stack-identifier="this_is_trending_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                        <FeedStackButton data-testid="feedEditModal-add-trending-feed-button" :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" feed-stack-identifier="this_is_trending_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                         <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Following && AppState.isAuthBrowsing" class="flex flex-col w-full">
-                                        <FeedStackButton :feed-type="FeedEnums.Types.Following" :selected="isFollowingTypeInStack" feed-stack-identifier="this_is_following_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                        <FeedStackButton data-testid="feedEditModal-add-following-feed-button" :feed-type="FeedEnums.Types.Following" :selected="isFollowingTypeInStack" feed-stack-identifier="this_is_following_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Notifications && AppState.isAuthBrowsing" class="flex flex-col gap-2 w-full">
-                                        <FeedStackButton :feed-type="FeedEnums.Types.Notifications" :selected="isNotificationTypeInStack" feed-stack-identifier="this_is_notification_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                        <FeedStackButton data-testid="feedEditModal-add-notifications-feed-button" :feed-type="FeedEnums.Types.Notifications" :selected="isNotificationTypeInStack" feed-stack-identifier="this_is_notification_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                         <!-- <CheckBox class="px-3 self-start" @value-toggled="toggleJustMentions" :model-value="feedFilters.notifications.justNotifs" :checkbox-size="1.25" :text-gap="0.5">Mentions Only</CheckBox> -->
                                     </div>
                                 </TransitionGroup>
                             </div>
                         </div>
                     </div>
-                    <div data-testid="feedEditModal-options-page" v-else-if="currentPage == 1" class="flex flex-col h-full w-full py-2 overflow-y-auto">
+                    <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 1" class="flex flex-col h-full w-full py-2 overflow-y-auto">
                         <div v-if="feedStackItems.length == 0" class="flex flex-col items-center">
                             <div class="flex gap-1 items-center">
                                 <i-mingcute:warning-fill class="text-2xl"/>
@@ -221,7 +224,7 @@
                             :generator-data="stackItem.generatorData" :display-only="true" @clicked-toggle-stack-item="removeFeedStackItem"/>
                         </div>
                     </div>
-                    <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 2"
+                    <!-- <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 2"
                     class="flex flex-col gap-1 h-full overflow-hidden">
                         <div class="flex flex-col">
                             <div class="text-xl font-extralight">Feed Type</div>
@@ -234,7 +237,7 @@
                                 <div>Please note: Some Feeds may not be able to be created/viewed without using a Bluesky account,
                                 while others may no longer be active/available.</div>
                         </div>
-                    </div>
+                    </div> -->
                 </Transition>
                 <!-- <div v-for="page in modalPages">{{ page.title }}</div> -->
             </div>

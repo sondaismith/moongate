@@ -47,7 +47,6 @@
                         </div>
                     </div>
                 </button>
-                <!-- <div class="px-2 py-2 select-none" v-if="filteredUsers.length == 0 && debouncedSearchTerm.trim().length>0">No Results</div> -->
             </div>
         </div>
     </div>

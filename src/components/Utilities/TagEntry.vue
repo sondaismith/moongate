@@ -1,15 +1,18 @@
 <template>
     <div class="flex flex-col gap-1">
         <div class="relative flex flex-wrap rounded border border-outline has-[input:focus]:outline has-[input:focus]:outline-blue-500 p-1 gap-1">
-            <div class="rounded flex gap-1 items-center bg-tagEntryTagBG px-1.5 py-0.5" v-for="n, index in tagQueue">
-                {{ n }}
-                <button :disabled="disabled" class="rounded h-full shadow-none border-0 text-xs text-secondary hover:text-secondaryHover"
-                @click="removeTagFromQueue(index)" title="Remove Tag">
-                    <i-mingcute:close-fill/>
-                </button>
+            <div data-testid="tag-entry-discovered-tags" class="flex gap-1">
+                <div class="rounded flex gap-1 items-center bg-tagEntryTagBG px-1.5 py-0.5" v-for="n, index in tagQueue">
+                    <div class="select-none">{{ n }}</div>
+                    <button :disabled="disabled" class="rounded h-full shadow-none border-0 text-xs text-secondary hover:text-secondaryHover"
+                    @click="removeTagFromQueue(index)" title="Remove Tag">
+                        <i-mingcute:close-fill/>
+                    </button>
+                </div>
             </div>
-            <input :disabled="disabled" class="peer grow min-h-7 px-1 border-none outline-none bg-transparent shadow-none" placeholder="Add tag..." autocapitalize="off" v-model="textEntry" @keyup.enter="addTagToQueue"/>
-            <button v-if="showSubmitButton" :disabled="disabled" @click="submitTagQueue"
+            <input type="text" :disabled="disabled" class="peer grow min-h-7 px-1 border-none outline-none bg-transparent shadow-none"
+            placeholder="Add tag..." autocapitalize="off" v-model="textEntry" @keyup.enter="addTagToQueue"/>
+            <button data-testid="tag-entry-submit-tags" v-if="showSubmitButton" :disabled="disabled" @click="submitTagQueue"
             class="flex ml-auto gap-1 items-center shadow-none px-2 rounded hover:border-transparent
             active:border-transparent bg-blue-400 hover:bg-blue-500 active:bg-blue-600
             disabled:bg-disabledBG disabled:cursor-not-allowed text-white"
