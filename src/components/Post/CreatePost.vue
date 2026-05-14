@@ -713,7 +713,11 @@ export default defineComponent({
             switch (postDetails.currentPostAction) {
                 case PostActions.Post:
                     await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
-                    .then(()=>{this.isAwaitingPostConfirm = false});
+                    .then(()=>{
+                        this.postText = '';
+                        this.files = this.uploadedMedia = [];//clear to allow modal to be closed
+                        this.isAwaitingPostConfirm = false
+                    });
                     break;
                 case PostActions.Reply:
                     if(isThreadViewPost(postDetails.currentPostThreadData)){
@@ -735,6 +739,8 @@ export default defineComponent({
                             await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
                             .then(() =>{
                                 AppState.updateReplyParentsInLists(postDetails.currentPostData.cid, postDetails.currentPostData.replyCount ? postDetails.currentPostData.replyCount : 0);
+                                this.postText = '';
+                                this.files = this.uploadedMedia = [];//clear to allow modal to be closed
                                 this.isAwaitingPostConfirm = false;
                             })
                         }
@@ -770,7 +776,11 @@ export default defineComponent({
                                 }
                             }
                             await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
-                            .then(()=>{this.isAwaitingPostConfirm = false});
+                            .then(()=>{
+                                this.postText = '';
+                                this.files = this.uploadedMedia = [];//clear to allow modal to be closed
+                                this.isAwaitingPostConfirm = false;
+                            });
                         }
                     }
                     else{
