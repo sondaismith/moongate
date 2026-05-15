@@ -33,7 +33,7 @@
             </div>
         </div>
     </button>
-    <div v-else class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
+    <div v-else data-testid="feedStackButton-display-only-item" class="flex gap-2 p-3 text-left border border-outline hover:border-modernToggleBtnBorderHover rounded select-none">
         <div class="flex flex-col gap-2 w-full overflow-hidden">
             <div class="flex gap-1 items-center">
                 <div class="flex text-white aspect-square shrink-0 w-8 items-center justify-center"

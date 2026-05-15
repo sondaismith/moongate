@@ -5,7 +5,7 @@
     :class="[{'border-blueskyBlue bg-customFeedBtnBGHover' : selected},{'hover:bg-transparent active:bg-transparent focus-visible:bg-transparent' : displayOnly}]">
         <div v-if="!hideRadioButton && !displayOnly" class="flex items-center rounded-full aspect-square h-5 border border-secondary shrink-0 mt-2"
         :class="[{'bg-radioButtonSelected border-transparent' : selected}]">
-            <i-mingcute:check-fill v-if="selected" class="h-full w-full p-0.5 text-white"/>
+            <i-mingcute:check-fill data-testid="customFeedButton-selected" v-if="selected" class="h-full w-full p-0.5 text-white"/>
         </div>
         <div class="flex flex-col gap-2 w-full overflow-hidden">
             <div class="flex gap-1 items-center">

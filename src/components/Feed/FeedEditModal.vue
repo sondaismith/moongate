@@ -195,14 +195,14 @@
                                         </div>
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Trending" class="flex flex-col w-full">
-                                        <FeedStackButton data-testid="feedEditModal-add-trending-feed-button" :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" feed-stack-identifier="this_is_trending_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                        <FeedStackButton data-testid="feedEditModal-toggle-trending-feed-button" :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" feed-stack-identifier="this_is_trending_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                         <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Following && AppState.isAuthBrowsing" class="flex flex-col w-full">
-                                        <FeedStackButton data-testid="feedEditModal-add-following-feed-button" :feed-type="FeedEnums.Types.Following" :selected="isFollowingTypeInStack" feed-stack-identifier="this_is_following_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                        <FeedStackButton data-testid="feedEditModal-toggle-following-feed-button" :feed-type="FeedEnums.Types.Following" :selected="isFollowingTypeInStack" feed-stack-identifier="this_is_following_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                     </div>
                                     <div v-if="selectedFeedType == FeedEnums.Types.Notifications && AppState.isAuthBrowsing" class="flex flex-col gap-2 w-full">
-                                        <FeedStackButton data-testid="feedEditModal-add-notifications-feed-button" :feed-type="FeedEnums.Types.Notifications" :selected="isNotificationTypeInStack" feed-stack-identifier="this_is_notification_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                        <FeedStackButton data-testid="feedEditModal-toggle-notifications-feed-button" :feed-type="FeedEnums.Types.Notifications" :selected="isNotificationTypeInStack" feed-stack-identifier="this_is_notification_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
                                         <!-- <CheckBox class="px-3 self-start" @value-toggled="toggleJustMentions" :model-value="feedFilters.notifications.justNotifs" :checkbox-size="1.25" :text-gap="0.5">Mentions Only</CheckBox> -->
                                     </div>
                                 </TransitionGroup>
@@ -217,7 +217,7 @@
                             </div>
                             <div class="text-sm text-secondary text-center">Click the 'back' button to move back to the Feed selection page</div>
                         </div>
-                        <div v-else class="flex flex-wrap gap-2 pl-1 pr-2">
+                        <div v-else data-testid="feedEditModal-summary-page-feed-list" class="flex flex-wrap gap-2 pl-1 pr-2">
                             <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
                             v-for="stackItem in feedStackItems"
                             :feed-stack-identifier="stackItem.id" :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name"

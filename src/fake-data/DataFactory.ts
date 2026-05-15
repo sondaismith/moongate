@@ -364,12 +364,12 @@ $Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}
  * @param displayName The display name of the User. (Optional)
  * @returns The created `ProfileViewDetailed` object.
  */
-export async function CreateUserProfile(handle:string,displayName:string|undefined=undefined):Promise<ProfileViewDetailed>{
+export function CreateUserProfile(handle:string,displayName:string|undefined=undefined,didToUse='did:plc:6unmjnerkpiy3yh6x4auqpy3'):ProfileViewDetailed{
     let i = Math.floor(Math.random()*7);
     let j = Math.floor(Math.random()*7);
     let indexDate = new Date().toISOString();
     let profile:ProfileViewDetailed = {
-        did:`did:plc:6unmjnerkpiy3yh6x4auqpy3`,
+        did:didToUse,
         handle:handle,
         avatar:`http://localhost:1420/src/assets/test-media/posts/image0${i+1}.png`,
         banner:`http://localhost:1420/src/assets/test-media/posts/image0${j+1}.png`,
