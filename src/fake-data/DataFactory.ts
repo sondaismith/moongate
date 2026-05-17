@@ -711,15 +711,22 @@ export function CreateRandomFeedListCollection(numOfFeeds:number, numPostPerFeed
  * Method used to return a hard-coded object that can be used to attach
  * an "external link" embed object to a Post.
  * @returns A `$Typed<View>` External Embed object.
+ * @note It seems like the BASE_URL.replace is for the Cypress-based tests...
  */
 export function CreateEmbed():$Typed<View>{
+    let baseUrl = '/src/';
+    try {
+        (typeof import.meta.env.BASE_URL != undefined) ? import.meta.env.BASE_URL.replace('src','iframes/src') : '/src/';
+    } catch (error) {
+
+    }
     let emb:$Typed<View> = {
         $type: "app.bsky.embed.external#view",
         external:{
             uri: "https://www.google.com/",
             title: "Component Test shows link to nowhere",
             description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-            thumb: `http://localhost:1420${import.meta.env.BASE_URL.replace('src','iframes/src')}assets/test-media/posts/image08.png`
+            thumb: `http://localhost:1420${baseUrl}assets/test-media/posts/image08.png`
             //above URI will only work when testing with Cypress...not sure how to check for the testing environment
             //"src/assets/test-media/posts/image08.png"
             // "http://localhost:1420/src/assets/test-media/posts/image08.png"

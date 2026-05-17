@@ -1,10 +1,10 @@
 import test, { expect } from "@playwright/test";
-import { CreateActorSearchResults, CreateGetFeedGeneratorsResponse, CreateGetPopularFeedGeneratorsResponse, CreateLoginSessionResponse, CreateUserProfile } from "../src/fake-data/DataFactory";
+import { CreateActorSearchResults, CreateFeed, CreateFeedViewPost, CreateGetFeedGeneratorsResponse, CreateGetPopularFeedGeneratorsResponse, CreateIFeedDescription, CreateLoginSessionResponse, CreateUserProfile } from "../src/fake-data/DataFactory";
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { OutputSchema as getFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getFeedGenerators";
 import { OutputSchema as getPopularFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/unspecced/getPopularFeedGenerators";
-import { Response as getFeedGeneratorsResponse} from "@atproto/api/dist/client/types/app/bsky/feed/getFeedGenerators";
-import { Response as getPopularFeedGeneratorsResponse} from "@atproto/api/dist/client/types/app/bsky/unspecced/getPopularFeedGenerators";
+import { OutputSchema as getAuthorFeedOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
+
 
 let handle1:string = 'tester.da.playwright';
 let handle2:string = 'mock.ofthe.day';
@@ -16,8 +16,29 @@ let displayName3:string = `REPLIER ONE`;
 let actorSearchResults = CreateActorSearchResults();
 let getFeedGeneratorResponse:getFeedGeneratorsOutputSchema;
 let getPopularFeedGeneratorResponse:getPopularFeedGeneratorsOutputSchema;
-let profile1 = CreateUserProfile(handle1,displayName2);
+let profile1 = CreateUserProfile(actorSearchResults.actors[0].handle,actorSearchResults.actors[0].displayName,actorSearchResults.actors[0].did);
+let profile2 = CreateUserProfile(actorSearchResults.actors[1].handle,actorSearchResults.actors[1].displayName,actorSearchResults.actors[1].did);
+let profile3 = CreateUserProfile(actorSearchResults.actors[2].handle,actorSearchResults.actors[2].displayName,actorSearchResults.actors[2].did);
 let sessionResponse = CreateLoginSessionResponse(profile1.handle,profile1.did);
+
+let emptyPostView = {
+    author:{
+        did:'error',
+        handle:'not-real',
+    },
+    cid:'error',
+    indexedAt:'never',
+    record:{
+        text:'[No Text]'
+    },
+    uri:'going.nowhere',
+}
+let post1:FeedViewPost = {post:emptyPostView};
+let post2:FeedViewPost = {post:emptyPostView};
+/**List of Feeds that will be addded to main view after "Create Feeds" is clicked on `FeedEditModal`. Empty by default - values must be added (use `.beforeAll()`). */
+let feedResponse1:getAuthorFeedOutputSchema = {feed:[]};
+/**List of User Profiles - acts as database and is searched to return results in `app.bsky.actor.getProfile` API mock.*/
+let profileStore = [profile1,profile2,profile3];
 
 test.beforeAll(async ({browser}) => {
     await CreateGetFeedGeneratorsResponse().then(res => {
@@ -26,6 +47,9 @@ test.beforeAll(async ({browser}) => {
     await CreateGetPopularFeedGeneratorsResponse().then(res => {
         getPopularFeedGeneratorResponse = res;
     })
+    await CreateFeedViewPost('bob.the.poster','I love my car shop!',true,'Bob the Poster').then(res => post1 = res);
+    await CreateFeedViewPost('cargo.haul', 'Delivery delivery delivery delivery',false,'Cargo Haul').then(res => post2 = res);
+    feedResponse1 = {feed:[post1,post2]};
 })
 
 test('Ensure Feeds of each type can be added and removed "out of order"', async({context},testInfo) => {
@@ -57,11 +81,19 @@ test('Ensure Feeds of each type can be added and removed "out of order"', async(
                 didToUse = didParam;
             }
         }
+        let matchedProfile = profileStore.find(p=>p.did == didToUse);
         route.fulfill({
             status: 200,
             headers: { 'Content-Type': 'application/json' },
-            // body:JSON.stringify(profile1)
-            body:JSON.stringify(CreateUserProfile('mocked.get.profile','Mocked User Profile',didToUse))
+            body:JSON.stringify(matchedProfile)
+        });
+    });
+    //The following is to allow for mocking the creation of User-type feeds
+    await context.route(/app.bsky.feed.getAuthorFeed/, route => {
+        route.fulfill({
+            status: 200 ,
+            headers: { 'Content-Type': 'application/json' },
+            body:JSON.stringify(feedResponse1)
         });
     });
     await context.route(/app.bsky.feed.getFeedGenerators/, route => {
@@ -147,7 +179,7 @@ test('Ensure Feeds of each type can be added and removed "out of order"', async(
     await expect(instance1.getByTestId('feedEditModal-summary-page-feed-list').getByRole('button')).toHaveCount(7);
     await instance1.getByTestId('feedEditModal-summary-page-feed-list').getByRole('button').nth(3).click();
     await expect(instance1.getByText('# of Feeds:6')).toBeVisible();
-    //remove 1st out of the 2 tag feed using button
+    //remove 1st out of the 2 tag feed using button on summary page
     await instance1.getByTestId('feedEditModal-summary-page-feed-list').getByRole('button').nth(1).click();
     await expect(instance1.getByText('# of Feeds:5')).toBeVisible();
     //go back to User feed tab and deselect/remove the currently selected User Feed
@@ -158,8 +190,23 @@ test('Ensure Feeds of each type can be added and removed "out of order"', async(
     await expect(instance1.getByTestId('user-search-bar-result').nth(0)).toBeVisible();
     await instance1.getByTestId('user-search-bar-result').nth(0).click();
     await expect(instance1.getByText('# of Feeds:4')).toBeVisible();
-
-    //Navigate to summary page
-    // await instance1.getByTestId('feedEditModal-next-page-button').click();
-    // await expect(instance1.getByTestId('feedEditModal-summary-page')).toBeVisible();
+    //select 2nd and 3rd User results
+    await expect(instance1.getByTestId('user-search-bar-result').nth(1)).toBeVisible();
+    await expect(instance1.getByTestId('user-search-bar-result').nth(2)).toBeVisible();
+    await instance1.getByTestId('user-search-bar-result').nth(1).click();
+    await instance1.getByTestId('user-search-bar-result').nth(2).click();
+    await expect(instance1.getByText('# of Feeds:6')).toBeVisible();
+    //navigate to summary page and remove all Feeds except the 2 User Feeds
+    await instance1.getByTestId('feedEditModal-next-page-button').click();
+    await expect(instance1.getByTestId('feedEditModal-summary-page-feed-list').getByTestId('feedStackButton-display-only-item')).toHaveCount(6);
+    await instance1.getByTestId('feedEditModal-summary-page-feed-list').getByTestId('feedStackButton-display-only-item').nth(0).getByRole("button").click();
+    await instance1.getByTestId('feedEditModal-summary-page-feed-list').getByTestId('feedStackButton-display-only-item').nth(0).getByRole("button").click();
+    await instance1.getByTestId('feedEditModal-summary-page-feed-list').getByTestId('feedStackButton-display-only-item').nth(0).getByRole("button").click();
+    await instance1.getByTestId('feedEditModal-summary-page-feed-list').getByTestId('feedStackButton-display-only-item').nth(0).getByRole("button").click();
+    await expect(instance1.getByTestId('feedEditModal-summary-page-feed-list').getByTestId('feedStackButton-display-only-item')).toHaveCount(2);
+    //Submit Feeds to be created
+    await instance1.getByTestId('feedEditModal-create-button').click();
+    //Check that `FeedEditModal` has closed and 2 feeds are displayed in the main view
+    await expect(instance1.getByTestId('feed-edit-modal')).toBeHidden();
+    await expect(instance1.getByTestId('feed-column')).toHaveCount(2);
 })
