@@ -30,7 +30,7 @@ type ParentState = 'PostView'|'NotFoundPost'|'BlockedPost'|'None';
  * @param postTime The time that the Post was created.
  * @returns The created `PostView` object.
  */
-export async function CreatePostView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date()):Promise<$Typed<PostView>>{
+export async function CreatePostView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date(),facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined):Promise<$Typed<PostView>>{
     let indexTime = postTime.toISOString();
     let cid = `author_${handle}_${1}`;
     await GenerateCID(`author_${handle}_${1}`).then(res => {
@@ -54,6 +54,32 @@ export async function CreatePostView(handle:string,postText:string='',displayNam
             text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
         },
         uri:'at://did:plc:nowhere'
+    }
+    //Adding facets
+    if(typeof facet != 'undefined'){
+        switch (facet.type) {
+            case "mention":
+                if(facet.value.length>0 && postText.trim().length>0){
+                    let start = postText.indexOf(facet.value)+1;//byte start
+                    let end = 0;
+                    if(start>0) end = start+facet.value.length;
+                    post.record = {...post.record,
+                        facets:{
+                            $type:"app.bsky.richtext.facet",
+                            features:[
+                                {
+                                    $type:`app.bsky.richtext.facet#${facet.type}`,
+                                    did:facet.did
+                                }
+                            ],
+                            index:{byteStart:start,byteEnd:end}
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
+        }
     }
     return post;
 }
@@ -85,7 +111,8 @@ export function CreateNotFoundPost():$Typed<NotFoundPost>{
  * @returns The created `FeedViewPost` object.
  */
 export async function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
-    displayName:string='',postTime:Date=new Date(),isPinned:boolean=false,parentState:ParentState='None'):Promise<FeedViewPost>{
+    displayName:string='',postTime:Date=new Date(),isPinned:boolean=false,parentState:ParentState='None',
+    facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined):Promise<FeedViewPost>{
     // let currentTime = new Date();
     // currentTime.setTime(currentTime.getTime()-(1*60*1000));
     // postTime.setTime(postTime.getTime()-(1*60*1000));
@@ -123,6 +150,32 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
             reason: {
                 $type: "app.bsky.feed.defs#reasonPin"
             }
+        }
+    }
+    //Adding facets
+    if(typeof facet != 'undefined'){
+        switch (facet.type) {
+            case "mention":
+                if(facet.value.length>0 && postText.trim().length>0){
+                    let start = postText.indexOf(facet.value)+1;//byte start
+                    let end = 0;
+                    if(start>0) end = start+facet.value.length;
+                    post.post.record = {...post.post.record,
+                        facets:{
+                            $type:"app.bsky.richtext.facet",
+                            features:[
+                                {
+                                    $type:`app.bsky.richtext.facet#${facet.type}`,
+                                    did:facet.did
+                                }
+                            ],
+                            index:{byteStart:start,byteEnd:end}
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
         }
     }
     switch (parentState) {

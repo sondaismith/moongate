@@ -1,5 +1,5 @@
 <template>
-    <button @click="createUserFeed" :title="`Create Feed for ${userlinkValue}`"
+    <button data-testid="userlink" @click="createUserFeed" :title="`Create Feed for ${userlinkValue}`"
     class="group rounded bg-btn hover:bg-btnHover text-[12px] leading-3 shadow-none cursor-pointer
     border-none">
         <div class="w-full h-full rounded p-[3px] border-2 border-transparent
