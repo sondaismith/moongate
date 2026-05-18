@@ -12,11 +12,11 @@
                 <div class="flex overflow-hidden flex-col">
                     <div class="flex flex-col text-nowrap"
                     :class="{'animate-pulse' : feedData?.isAwaitingFeedData}">
-                        <div class="font-semibold leading-none pr-1 truncate"
+                        <div data-testid="feedColumn-feed-name" class="font-semibold leading-none pr-1 truncate"
                         :title="feedData?.description.feedName">
                             {{ feedData?.description.feedName }}
                         </div>
-                        <div class="text-xs truncate"
+                        <div data-testid="feedColumn-handle" class="text-xs truncate"
                         :title="'@'+feedData?.description.feedHandle">
                             @{{ feedData?.description.feedHandle }}
                         </div>

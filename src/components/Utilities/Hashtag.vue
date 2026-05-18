@@ -1,5 +1,5 @@
 <template>
-    <span @click="createTagFeed" :title="`Create Feed for '#${tagValue}'`"
+    <span data-testid="hashtag" @click="createTagFeed" :title="`Create Feed for '#${tagValue}'`"
     class="rounded cursor-pointer whitespace-normal text-blue-500 hover:text-blue-400">
         <slot></slot>
     </span>
