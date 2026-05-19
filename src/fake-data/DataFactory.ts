@@ -13,6 +13,7 @@ import { OutputSchema } from "@atproto/api/dist/client/types/com/atproto/server/
 import { OutputSchema as searchActorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/actor/searchActors";
 import { OutputSchema as getFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getFeedGenerators";
 import { OutputSchema as getPopularFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/unspecced/getPopularFeedGenerators";
+import { OutputSchema as getAuthorFeedOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
 import { Main } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { GeneratorView } from "@atproto/api/src/client/types/app/bsky/feed/defs";
 
@@ -227,6 +228,45 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
 }
 
 /**
+ * Interface for creating a mock "User Feed" item. Expected to be used
+ * when mocking the response of the `app.bsky.feed.getAuthorFeed` API
+ * call.
+ */
+export interface IAuthorFeedStoreItem{
+    did:string,
+    response:getAuthorFeedOutputSchema
+}
+
+/**
+ * Method used to mock the act of querying the Bluesky database to return a particular User's Feed.
+ * Mainly expected to be used when mocking a `app.bsky.feed.getAuthorFeed` API call with an array
+ * of {@link IAuthorFeedStoreItem} objects set up to reference.
+ * @param authorFeedArray The array of `IAuthorFeedStoreItem` objects to search.
+ * @param requestUrl The request URL to parse to find the DID value to use when searching.
+ * @returns The matching "Author Feed" or `undefined`.
+ */
+export function FindAuthorFeedResponse(authorFeedArray:IAuthorFeedStoreItem[],requestUrl:string):getAuthorFeedOutputSchema|undefined{
+    let valueToUse:string|undefined = undefined;
+    // console.log('requestUrl: ',requestUrl);
+    if(requestUrl){
+        const requestParams = new URLSearchParams(requestUrl);
+        // console.log('requestParams: ',requestParams);
+        const apiEndpoint = `app.bsky.feed.getAuthorFeed?actor`;
+        let authorFeedSearchParamKey = requestUrl.substring(0,requestUrl.indexOf(apiEndpoint)+apiEndpoint.length);
+        // console.log('actorSearchParamKey: ',actorSearchParamKey);
+        let authorFeedSearchParamValue = requestParams.get(authorFeedSearchParamKey);
+        if(authorFeedSearchParamValue) {
+            valueToUse = authorFeedSearchParamValue;
+        }
+    }
+    let matchedProfile:getAuthorFeedOutputSchema|undefined;
+    let isDid = typeof valueToUse != 'undefined' ? valueToUse.includes('did:plc:') : false;
+    if(isDid) matchedProfile = authorFeedArray.find(p=>p.did == valueToUse)?.response;
+    // console.log('matchedProfile: ',matchedProfile);
+    return matchedProfile;
+}
+
+/**
  * Method used to create a dummy `ThreadViewPost` object for testing purposes.
  * MUST AWAIT IN ORDER FOR CID TO BE GENERATED.
  * @example
@@ -435,6 +475,36 @@ export function CreateUserProfile(handle:string,displayName:string|undefined=und
     profile.description = `Hello! I am a User Profile created for testing this app.\nDID:${profile.did}\nHandle:${profile.handle}`
     if(typeof displayName != 'undefined') profile.displayName = displayName;
     return profile;
+}
+
+/**
+ * Method used to mock the act of searching the Bluesky database to find a particular User's account.
+ * Mainly expected to be used when mocking a `app.bsky.actor.getProfile` API call with an array
+ * of `ProfileViewDetailed` objects set up to reference.
+ * @param profileArray The array of `ProfileViewDetailed` objects to search.
+ * @param requestUrl The request URL to parse to find the DID or handle value to use when searching.
+ * @returns The matching User Profile or `undefined`.
+ */
+export function FindUserProfile(profileArray:ProfileViewDetailed[],requestUrl:string):ProfileViewDetailed|undefined{
+    let valueToUse:string|undefined = undefined;
+    // console.log('requestUrl: ',requestUrl);
+    if(requestUrl){
+        const requestParams = new URLSearchParams(requestUrl);
+        // console.log('requestParams: ',requestParams);
+        const apiEndpoint = `app.bsky.actor.getProfile?actor`;
+        let actorSearchParamKey = requestUrl.substring(0,requestUrl.indexOf(apiEndpoint)+apiEndpoint.length);
+        // console.log('actorSearchParamKey: ',actorSearchParamKey);
+        let actorSearchParamValue = requestParams.get(actorSearchParamKey);
+        if(actorSearchParamValue) {
+            valueToUse = actorSearchParamValue;
+        }
+    }
+    let matchedProfile:ProfileViewDetailed|undefined;
+    let isDid = typeof valueToUse != 'undefined' ? valueToUse.includes('did:plc:') : false;
+    if(isDid) matchedProfile = profileArray.find(p=>p.did == valueToUse);
+    else matchedProfile = profileArray.find(p=>p.handle == valueToUse);
+    // console.log('matchedProfile: ',matchedProfile);
+    return matchedProfile;
 }
 
 /**

@@ -1,5 +1,5 @@
 import test, { expect } from "@playwright/test";
-import { CreateActorSearchResults, CreateFeed, CreateFeedViewPost, CreateGetFeedGeneratorsResponse, CreateGetPopularFeedGeneratorsResponse, CreateIFeedDescription, CreateLoginSessionResponse, CreateUserProfile } from "../src/fake-data/DataFactory";
+import { CreateActorSearchResults, CreateFeedViewPost, CreateGetFeedGeneratorsResponse, CreateGetPopularFeedGeneratorsResponse, CreateLoginSessionResponse, CreateUserProfile, FindUserProfile } from "../src/fake-data/DataFactory";
 import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { OutputSchema as getFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getFeedGenerators";
 import { OutputSchema as getPopularFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/unspecced/getPopularFeedGenerators";
@@ -73,15 +73,7 @@ test('Ensure Feeds of each type can be added and removed "out of order"', async(
     });
     await context.route(/app.bsky.actor.getProfile/, route => {
         const requestUrl = route.request().url();
-        let didToUse:string|undefined = undefined;
-        if(requestUrl){
-            const requestParams = new URLSearchParams(requestUrl);
-            const didParam = requestParams.get("https://hollowfoot.us-west.host.bsky.network/xrpc/app.bsky.actor.getProfile?actor");
-            if(didParam) {
-                didToUse = didParam;
-            }
-        }
-        let matchedProfile = profileStore.find(p=>p.did == didToUse);
+        let matchedProfile = FindUserProfile(profileStore,requestUrl);
         route.fulfill({
             status: 200,
             headers: { 'Content-Type': 'application/json' },

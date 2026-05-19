@@ -1,5 +1,5 @@
 import test, { expect } from "@playwright/test";
-import { CreateActorSearchResults, CreateFeedViewPost, CreatePostView, CreateUserProfile } from "../src/fake-data/DataFactory";
+import { CreateActorSearchResults, CreateFeedViewPost, CreatePostView, CreateUserProfile, FindUserProfile } from "../src/fake-data/DataFactory";
 import { FeedViewPost, PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { OutputSchema as getAuthorFeedOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
 import { OutputSchema as searchPostsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/searchPosts";
@@ -54,18 +54,7 @@ test('Ensure "Tag" feed is created successfully when clicking on a hashtag eleme
     });
     await context.route(/app.bsky.actor.getProfile/, route => {
         const requestUrl = route.request().url();
-        console.log('requestUrl: ',requestUrl);
-        let didToUse:string|undefined = undefined;
-        if(requestUrl){
-            const requestParams = new URLSearchParams(requestUrl);
-            console.log('requestParams: ',requestParams);
-            const didParam = requestParams.get("https://api.bsky.app/xrpc/app.bsky.actor.getProfile?actor"); //use when guest browsing
-            // const didParam = requestParams.get("https://hollowfoot.us-west.host.bsky.network/xrpc/app.bsky.actor.getProfile?actor"); //used when logged in
-            if(didParam) {
-                didToUse = didParam;
-            }
-        }
-        let matchedProfile = profileStore.find(p=>p.did == didToUse);
+        let matchedProfile = FindUserProfile(profileStore,requestUrl);
         route.fulfill({
             status: 200,
             headers: { 'Content-Type': 'application/json' },

@@ -1,8 +1,7 @@
 import test, { expect } from "@playwright/test";
-import { CreateActorSearchResults, CreateFeedViewPost, CreateUserProfile } from "../src/fake-data/DataFactory";
-import { FeedViewPost, PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { CreateActorSearchResults, CreateFeedViewPost, CreateUserProfile, FindAuthorFeedResponse, FindUserProfile, IAuthorFeedStoreItem } from "../src/fake-data/DataFactory";
+import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { OutputSchema as getAuthorFeedOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
-import { ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 
 let actorSearchResults = CreateActorSearchResults();
 let profile1 = CreateUserProfile(actorSearchResults.actors[0].handle,actorSearchResults.actors[0].displayName,actorSearchResults.actors[0].did);
@@ -30,7 +29,7 @@ let getAuthorFeedResponse1:getAuthorFeedOutputSchema = {feed:[]};
 let getAuthorFeedResponse2:getAuthorFeedOutputSchema = {feed:[]};
 /**List of User Profiles - acts as database and is searched to return results in `app.bsky.actor.getProfile` API mock.*/
 let profileStore = [profile1,profile2,profile3];
-let authorFeedStore = [{did:profile1.did,response:{} as getAuthorFeedOutputSchema},{did:profile2.did,response:{} as getAuthorFeedOutputSchema}];
+let authorFeedStore:IAuthorFeedStoreItem[] = [{did:profile1.did,response:{} as getAuthorFeedOutputSchema},{did:profile2.did,response:{} as getAuthorFeedOutputSchema}];
 
 test.beforeAll(async ({browser}) => {
     await CreateFeedViewPost('bob.the.poster',`I love my car shop! Thanks ${userlinkText} !`,true,'Bob the Poster',undefined,undefined,undefined,
@@ -55,21 +54,7 @@ test('Ensure "User" feed is created successfully when clicking on a Userlink ele
     });
     await context.route(/app.bsky.actor.getProfile/, route => {
         const requestUrl = route.request().url();
-        console.log('requestUrl: ',requestUrl);
-        let valueToUse:string|undefined = undefined;
-        if(requestUrl){
-            const requestParams = new URLSearchParams(requestUrl);
-            console.log('requestParams: ',requestParams);
-            const actorSearchParam = requestParams.get("https://api.bsky.app/xrpc/app.bsky.actor.getProfile?actor"); //use when guest browsing
-            // const didParam = requestParams.get("https://hollowfoot.us-west.host.bsky.network/xrpc/app.bsky.actor.getProfile?actor"); //used when logged in
-            if(actorSearchParam) {
-                valueToUse = actorSearchParam;
-            }
-        }
-        let matchedProfile:ProfileViewDetailed|undefined;
-        let isDid = typeof valueToUse != 'undefined' ? valueToUse.includes('did:plc:') : false;
-        if(isDid) matchedProfile = profileStore.find(p=>p.did == valueToUse);
-        else matchedProfile = profileStore.find(p=>p.handle == valueToUse);
+        let matchedProfile = FindUserProfile(profileStore,requestUrl);
         route.fulfill({
             status: 200,
             headers: { 'Content-Type': 'application/json' },
@@ -79,24 +64,8 @@ test('Ensure "User" feed is created successfully when clicking on a Userlink ele
     //The following is to allow for mocking the creation of User-type feeds
     await context.route(/app.bsky.feed.getAuthorFeed/, route => {
         const requestUrl = route.request().url();
-        // console.log(`getAuthorFeed mock`)
-        // console.log('requestUrl: ',requestUrl);
-        let valueToUse:string|undefined = undefined;
-        if(requestUrl){
-            const requestParams = new URLSearchParams(requestUrl);
-            // console.log('requestParams: ',requestParams);
-            const actorSearchParam = requestParams.get("https://api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor"); //use when guest browsing
-            // const didParam = requestParams.get("https://hollowfoot.us-west.host.bsky.network/xrpc/app.bsky.actor.getProfile?actor"); //used when logged in
-            if(actorSearchParam) {
-                valueToUse = actorSearchParam;
-            }
-        }
-        // console.log('valueToUse: ',valueToUse);
         let matchedAuthorFeed:getAuthorFeedOutputSchema|undefined;
-        // console.log('authorFeedStore: ',authorFeedStore);
-        let isDid = typeof valueToUse != 'undefined' ? valueToUse.includes('did:plc:') : false;
-        if(isDid) matchedAuthorFeed = authorFeedStore.find(af=>af.did == valueToUse)?.response;
-        // console.log('matchedAuthorFeed: ',matchedAuthorFeed);
+        matchedAuthorFeed = FindAuthorFeedResponse(authorFeedStore,requestUrl);
         route.fulfill({
             status: 200 ,
             headers: { 'Content-Type': 'application/json' },
