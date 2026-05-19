@@ -1,5 +1,5 @@
 <template>
-    <div @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,did?did:'',handle?handle:'')"
+    <div data-testid="avatar-round" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,did?did:'',handle?handle:'')"
     @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
     @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
     border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover

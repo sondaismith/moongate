@@ -113,7 +113,7 @@ export function CreateNotFoundPost():$Typed<NotFoundPost>{
  */
 export async function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
     displayName:string='',postTime:Date=new Date(),isPinned:boolean=false,parentState:ParentState='None',
-    facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined):Promise<FeedViewPost>{
+    facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined,did:string|undefined=undefined,avatar:string|undefined=undefined):Promise<FeedViewPost>{
     // let currentTime = new Date();
     // currentTime.setTime(currentTime.getTime()-(1*60*1000));
     // postTime.setTime(postTime.getTime()-(1*60*1000));
@@ -127,7 +127,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
     let post:FeedViewPost = {
         post:{
             author:{
-                did:`did:plc:fake_${1}`,
+                did:(typeof did != 'undefined') ? did : `did:plc:fake_${1}`,
                 handle:handle,
                 displayName:displayName.trim() != '' ? displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' ')
             },
@@ -151,6 +151,12 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
             reason: {
                 $type: "app.bsky.feed.defs#reasonPin"
             }
+        }
+    }
+    //Add avatar
+    if(typeof avatar != 'undefined' && avatar.trim() != ''){
+        post.post.author = {...post.post.author,
+            avatar: avatar
         }
     }
     //Adding facets
@@ -457,7 +463,7 @@ $Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}
  * @param displayName The display name of the User. (Optional)
  * @returns The created `ProfileViewDetailed` object.
  */
-export function CreateUserProfile(handle:string,displayName:string|undefined=undefined,didToUse='did:plc:6unmjnerkpiy3yh6x4auqpy3'):ProfileViewDetailed{
+export function CreateUserProfile(handle:string,displayName:string|undefined=undefined,didToUse='did:plc:6unmjnerkpiy3yh6x4auqpy3',avatar:string|undefined=undefined):ProfileViewDetailed{
     let i = Math.floor(Math.random()*7);
     let j = Math.floor(Math.random()*7);
     let indexDate = new Date().toISOString();
@@ -472,6 +478,7 @@ export function CreateUserProfile(handle:string,displayName:string|undefined=und
         indexedAt:indexDate,
         createdAt:indexDate,
     }
+    if(typeof avatar != 'undefined' && avatar.trim() != '') profile = {...profile, avatar:avatar,banner:avatar};
     profile.description = `Hello! I am a User Profile created for testing this app.\nDID:${profile.did}\nHandle:${profile.handle}`
     if(typeof displayName != 'undefined') profile.displayName = displayName;
     return profile;
