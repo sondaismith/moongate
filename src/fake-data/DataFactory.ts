@@ -681,7 +681,10 @@ export function CreateTrendView(topic:string,category:string,displayName:string=
     let startedTime = trendCreated.toISOString();
     let cid = `author_${topic.replace(' ','_')}_${1}`;
     let subjectCID = `subject_${topic.replace(' ','_')}_${1}`;
+    let i = Math.floor(Math.random()*7);
+    let j = Math.floor(Math.random()*7);
     let record:TrendView = {
+        $type: 'app.bsky.unspecced.defs#trendView',
         topic: topic,
         displayName: displayName.trim() != "" ? displayName : (topic[0].toUpperCase()+topic.slice(1)).replace(/_/g,' '),
         link: `/profile/trending.bsky.app/feed/${topic.replace(/ /g,'_')}`,
@@ -691,17 +694,17 @@ export function CreateTrendView(topic:string,category:string,displayName:string=
         actors: [
             {
                 did: "did:plc:trend_actor1",
-                handle: "post_treend",
+                handle: "post.trend.app",
                 displayName: "Trend Actor 1",
-                avatar: "src/assets/test-media/posts/image02.png",
+                avatar: `http://localhost:1420/src/assets/test-media/posts/image0${i+1}.png`,
                 labels: [],
                 createdAt: "2025-08-18T16:20:06.768Z"
             },
             {
                 did: "did:plc:trend_actor2",
-                handle: "trendy_questionmark",
+                handle: "trendy.questionmark.app",
                 displayName: "Trend Actor 2",
-                avatar: "src/assets/test-media/posts/image08.png",
+                avatar: `http://localhost:1420/src/assets/test-media/posts/image0${j+1}.png`,
                 labels: [],
                 createdAt: "2025-06-08T13:37:28.361Z"
             },

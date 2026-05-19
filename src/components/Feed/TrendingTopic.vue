@@ -1,5 +1,5 @@
 <template>
-    <div class="flex p-2 text-primary items-center gap-2 overflow-hidden hover:bg-btnHover
+    <div data-testid="trending-topic" class="flex p-2 text-primary items-center gap-2 overflow-hidden hover:bg-btnHover
     cursor-pointer"
     title="Create Feed for Topic"
     @click="createFeedForTopic">

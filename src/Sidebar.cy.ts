@@ -410,7 +410,7 @@ describe('Sidebar Tests', () => {
             cy.wait(['@createRecordTest','@getPostThreadTest']);
             cy.wait(200);//FeedColumn is updated slighly after API call response is receieved
             //Check that Post was added to `FeedColumn`
-            cy.get('[data-test="feedColumn-post"]').then($posts =>{
+            cy.get('[data-testid="feedColumn-post"]').then($posts =>{
                 const postCount = $posts.length;
                 cy.get('[data-test="focusFeedPost-text"').then($postText => {
                     const newPostText = $postText
