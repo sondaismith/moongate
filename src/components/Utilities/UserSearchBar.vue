@@ -49,6 +49,10 @@
                 </button>
             </div>
         </div>
+        <div v-if="lastResultsTerm.trim()!='' && userResultsRef.length == 0"
+        class="border border-outline font-bold p-2 pl-3 grow-0 shrink-0 text-sm text-searchbarShowingResultsText select-none">
+            <div>No Results Found for "{{ lastResultsTerm }}"</div>
+        </div>
     </div>
 </template>
 
