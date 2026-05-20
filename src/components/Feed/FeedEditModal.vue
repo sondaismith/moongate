@@ -91,11 +91,8 @@
                             </div>
                             <div v-if="selectedFeedType.trim() != ''" class="flex flex-col items-start h-full overflow-hidden">
                                 <TransitionGroup>
-                                    <!-- <UserSearchBar data-testid="feedEditModal-user-search-bar" class="w-full"
-                                    v-if="selectedFeedType == FeedEnums.Types.User"
-                                    @user-selected="selectUser" :data-list="searchResults"/> -->
                                     <div v-if="selectedFeedType == FeedEnums.Types.User" class="flex flex-col gap-1 h-full w-full overflow-hidden">
-                                        <UserSearchBar2 data-testid="feedEditModal-user-search-bar" :search-term-v-model="feedFilters.userSearch.searchTerm"
+                                        <UserSearchBar data-testid="feedEditModal-user-search-bar" :search-term-v-model="feedFilters.userSearch.searchTerm"
                                         :last-results-term="feedFilters.userSearch.lastResultsTerm" :feed-stack-ref="feedStackItems"
                                         :user-results-ref="userAccountSearchResults" placeholder-text="Search for Users..."
                                         @user-selected="selectUser" @filter-bar-update="newValue => feedFilters.userSearch.searchTerm = newValue"
@@ -289,7 +286,6 @@ import { FeedEnums } from '../../enums/FeedEnums.ts'
 import PillButton from '../Utilities/PillButton.vue';
 import InLaInput from '../Utilities/InLaInput.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
-import UserSearchBar from '../Utilities/UserSearchBar.vue';
 import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { AddFeedToList, FeedState, GetFeed, PrepareFeedData, UpdateFeedDetails } from '../../state/FeedList.vue';
 import { ProfileView, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
@@ -308,7 +304,7 @@ import { PropType } from 'vue';
 import ImageLoader from '../Utilities/ImageLoader.vue';
 import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes.ts';
 import FeedStackButton from '../Utilities/FeedStackButton.vue';
-import UserSearchBar2 from '../Utilities/UserSearchBar2.vue';
+import UserSearchBar from '../Utilities/UserSearchBar.vue';
 import InsetLabel from '../Utilities/InsetLabel.vue';
 import { SearchForAccounts } from '../../lib/api/Feed.vue';
 import { HandleAPIError } from '../../helpers/errors';
@@ -322,7 +318,6 @@ export default defineComponent({
         SquareButton,
         InLaInput,
         UserSearchBar,
-        UserSearchBar2,
         CheckBox,
         CustomFeedButton,
         CustomFeedButtonPlaceholder,
@@ -576,7 +571,7 @@ export default defineComponent({
         },
         /**
          * Method fired when the 'clear results' button on the
-         * `UserSearchBar2` is clicked.
+         * `UserSearchBar` is clicked.
          */
         clearUserAccountResults(){
             this.userAccountSearchResults = [];
