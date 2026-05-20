@@ -1,6 +1,6 @@
 <template>
-    <div class="absolute flex w-full h-full" @contextmenu.prevent @keyup="handleKeyup" @keydown="(e) => TrapFocus($el,e)">
-        <div id="options-btn-menu" role="menu" :tabindex="-1"
+    <div class="absolute flex w-full h-full" @contextmenu.prevent @keyup="handleKeyup" @keydown.tab="(e) => TrapFocus($el,e)">
+        <div data-testid="options-menu" id="options-btn-menu" role="menu" :tabindex="-1"
         class="absolute flex flex-col gap-1 rounded z-[100] p-1 bg-slate-800 border
         border-slate-600 *:divide-slate-500 text-xs text-slate-100 drop-shadow-md-harder top-[-1000px] focus-visible:outline-none">
             <template v-for="mi in OptionsMenuState.currentMenuItems">

@@ -5,7 +5,7 @@
     :class="[{'border-blueskyBlue bg-customFeedBtnBGHover' : selected},{'hover:bg-transparent active:bg-transparent focus-visible:bg-transparent' : displayOnly}]">
         <div v-if="!hideRadioButton && !displayOnly" class="flex items-center rounded-full aspect-square h-5 border border-secondary shrink-0 mt-2"
         :class="[{'bg-radioButtonSelected border-transparent' : selected}]">
-            <i-mingcute:check-fill v-if="selected" class="h-full w-full p-0.5 text-white"/>
+            <i-mingcute:check-fill data-testid="customFeedButton-selected" v-if="selected" class="h-full w-full p-0.5 text-white"/>
         </div>
         <div class="flex flex-col gap-2 w-full overflow-hidden">
             <div class="flex gap-1 items-center">
@@ -53,7 +53,10 @@ import ImageLoader from '../Utilities/ImageLoader.vue';
 
 export default defineComponent({
     props:{
-        feedGeneratorView: Object as PropType<AppBskyFeedDefs.GeneratorView>,
+        feedGeneratorView:{
+            type: Object as PropType<AppBskyFeedDefs.GeneratorView>,
+            required:true
+        },
         selected:Boolean,
         hideRadioButton:{
             type: Boolean,
@@ -77,7 +80,7 @@ export default defineComponent({
     },
     emits:{
         /**Emit used to indicate a specific settings category has been clicked. */
-        feedGeneratorSelected:(atUri:string|undefined) => {
+        feedGeneratorSelected:(atUri:string) => {
             return atUri;
         }
     },
@@ -87,7 +90,7 @@ export default defineComponent({
          */
         clickedFeedGenerator(){
             // if(!this.displayOnly){
-                this.$emit('feedGeneratorSelected',this.feedGeneratorView?.uri);
+                this.$emit('feedGeneratorSelected',this.feedGeneratorView.uri);
             // }
         },
         /**

@@ -1,5 +1,5 @@
 <template>
-    <button @click="createUserFeed" :title="`Create Feed for ${userlinkValue}`"
+    <button data-testid="userlink" @click="createUserFeed" :title="`Create Feed for ${userlinkValue}`"
     class="group rounded bg-btn hover:bg-btnHover text-[12px] leading-3 shadow-none cursor-pointer
     border-none">
         <div class="w-full h-full rounded p-[3px] border-2 border-transparent
@@ -28,8 +28,12 @@ export default defineComponent({
             {
                 did:'',
                 handle:this.userlinkValue ? this.userlinkValue.slice(1) : '' ,
-                name:''
-            })
+                name:'',
+                type:FeedEnums.Types.User,
+                icon:FeedEnums.Icons.User,
+                tags:[]
+            }
+            )
             .then(res => AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false))
             .catch(err => {
                 toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});

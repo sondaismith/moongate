@@ -4,7 +4,7 @@
     transition-opacity rounded-none h-10 w-10"
     :class="[{'rounded-l rounded-r-sm' : arrowDirection == 'Left'},
         {'rounded-r rounded-l-sm ' : arrowDirection == 'Right'}]"
-    button-padding="0">
+    button-padding-x="0" button-padding-y="0">
         <i-mingcute:left-fill v-if="arrowDirection == 'Left'"/>
         <i-mingcute:right-fill v-if="arrowDirection == 'Right'"/>
     </SquareButton>

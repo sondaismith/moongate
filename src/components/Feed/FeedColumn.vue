@@ -12,11 +12,11 @@
                 <div class="flex overflow-hidden flex-col">
                     <div class="flex flex-col text-nowrap"
                     :class="{'animate-pulse' : feedData?.isAwaitingFeedData}">
-                        <div class="font-semibold leading-none pr-1 truncate"
+                        <div data-testid="feedColumn-feed-name" class="font-semibold leading-none pr-1 truncate"
                         :title="feedData?.description.feedName">
                             {{ feedData?.description.feedName }}
                         </div>
-                        <div class="text-xs truncate"
+                        <div data-testid="feedColumn-handle" class="text-xs truncate"
                         :title="'@'+feedData?.description.feedHandle">
                             @{{ feedData?.description.feedHandle }}
                         </div>
@@ -25,14 +25,14 @@
                 </div>
                 <div class="flex items-center ml-auto">
                         <!-- <div title="Add - DEBUG" @click="addNewPost" class="cursor-pointer hover:text-cyan-400"><i-mingcute:plus-fill/></div> -->
-                        <SquareButton data-testid="feedColumn-refresh-button" title="Refresh" @click="refreshFeed(feedData?.description.feedId)" button-padding="0" focus-padding="0"
+                        <SquareButton data-testid="feedColumn-refresh-button" title="Refresh" @click="refreshFeed(feedData?.description.feedId)" button-padding-x="0" button-padding-y="0" focus-padding="0"
                         class="text-2xl cursor-pointer bg-transparent text-primary hover:text-cyan-400 bg-[auto_0] bg-gradient-to-t from-slate-400 to-slate-800
                         focus-visible:text-cyan-400 hover:border-transparent shadow-none disabled:!bg-transparent"
                         :class="{'!cursor-not-allowed !text-disabledBG hover:text-disabledBG refresh-timeout' : isAwaitingRefreshTimeout}"
                         :is-disabled="isAwaitingRefreshTimeout">
                             <i-mingcute:refresh-3-fill/>
                         </SquareButton>
-                        <SquareButton title="Options" @click="toggleFeedColumnOptionsMenu()" button-padding="0" focus-padding="0"
+                        <SquareButton title="Options" @click="toggleFeedColumnOptionsMenu()" button-padding-x="0" button-padding-y="0" focus-padding="0"
                         class="text-2xl cursor-pointer bg-transparent text-primary hover:text-cyan-400  focus-visible:text-cyan-400
                         hover:border-transparent shadow-none">
                             <i-mingcute:settings-6-fill/>
@@ -155,7 +155,7 @@
             <TransitionGroup name="feedpost">
                 <div v-if="showStandardPostLayout"
                 class="flex flex-col gap-2">
-                    <div v-for="n in feedData?.data" data-test="feedColumn-post" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
+                    <div v-for="n in feedData?.data" data-testid="feedColumn-post" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">
                         <FocusFeedPost tabindex="-1" class="border-0" :post-data="({$type:'app.bsky.feed.defs#postView',...(n as FeedViewPost).post} as PostView)"
                         :post-reason="(n as FeedViewPost).reason" :reply-ref="(n as FeedViewPost).reply"

@@ -19,11 +19,11 @@
                 <SquareButton
                 title="Refresh page" :is-disabled="awaitingProfileData || isAwaitingTabSwitchData || !isHandleValid" @click="refreshPage"
                 class="transition-colors enabled:hover:bg-navbarBtnHover focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText"
-                button-padding="0">
+                button-padding-x="0" button-padding-y="0">
                     <i-mingcute:refresh-3-fill class="text-2xl"/>
                 </SquareButton>
                 <SquareButton @click="closeModal" title="Close User Feed Modal"
-                class="ml-auto bg-btn hover:bg-red-600 focus-visible:bg-red-600 border border-outline" button-padding="0">
+                class="ml-auto bg-btn hover:bg-red-600 focus-visible:bg-red-600 border border-outline" button-padding-x="0" button-padding-y="0">
                     <i-mingcute:close-fill class="text-2xl"/>
                 </SquareButton>
             </div>

@@ -68,9 +68,8 @@ test('Ensure changes to Feed (creating, re-ordering) in one app instance is refl
     //add new feed
     await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-feed-button').click();
-    await instance1.getByTestId('feedEditModal-next-page-button').click();
-    await instance1.getByTestId('inlainput-input').fill('username');
-    await instance1.getByTestId('inlainput-input').press('Enter');
+    await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').fill('username');
+    await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('button').click();
     await expect(instance1.getByTestId('user-search-bar-result').nth(0)).toBeVisible();
     // //screenshot
     // const actorResults = await instance1.screenshot();
@@ -78,10 +77,14 @@ test('Ensure changes to Feed (creating, re-ordering) in one app instance is refl
     //     body: actorResults,
     //     contentType: 'image/png',
     // });
+    await instance1.getByTestId('user-search-bar-result').nth(0).click();
     // //screenshot
     // const secondTabBefore = await instance2.screenshot();
-    await instance1.getByTestId('user-search-bar-result').nth(0).click();
-    await expect(instance1.getByText('submit')).toBeVisible();
+    await expect(instance1.getByTestId('feedEditModal-next-page-button')).toBeVisible();
+    await instance1.getByTestId('feedEditModal-next-page-button').click();
+    await expect(instance1.getByTestId('feedEditModal-summary-page')).toBeVisible();
+    await expect(instance1.getByTestId('feedEditModal-summary-page-feed-list').getByTestId('feedStackButton-display-only-item')).toHaveCount(1);
+    await expect(instance1.getByText('create feed')).toBeVisible();
     await instance1.getByTestId('feedEditModal-create-button').click();
     await expect(instance1.getByTestId('feed-edit-modal')).toBeHidden();
     // //screenshot
@@ -105,12 +108,15 @@ test('Ensure changes to Feed (creating, re-ordering) in one app instance is refl
     //add another new feed
     await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-feed-button').click();
-    await instance1.getByTestId('feedEditModal-next-page-button').click();
-    await instance1.getByTestId('inlainput-input').fill('username');
-    await instance1.getByTestId('inlainput-input').press('Enter');
+    await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').fill('username');
+    await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('button').click();
     await expect(instance1.getByTestId('user-search-bar-result').nth(0)).toBeVisible();
     await instance1.getByTestId('user-search-bar-result').nth(0).click();
-    await expect(instance1.getByText('submit')).toBeVisible();
+    await expect(instance1.getByTestId('feedEditModal-next-page-button')).toBeVisible();
+    await instance1.getByTestId('feedEditModal-next-page-button').click();
+    await expect(instance1.getByTestId('feedEditModal-summary-page')).toBeVisible();
+    await expect(instance1.getByTestId('feedEditModal-summary-page-feed-list').getByTestId('feedStackButton-display-only-item')).toHaveCount(1);
+    await expect(instance1.getByText('create feed')).toBeVisible();
     await instance1.getByTestId('feedEditModal-create-button').click();
     await expect(instance1.getByTestId('feed-edit-modal')).toBeHidden();
     //screenshot

@@ -13,7 +13,6 @@ import { routes } from '../../lib/router';
 // import { afterAll, describe, expect, it, test } from "vitest";
 // import App from '../../App.vue';
 // import FeedEditModal from "./FeedEditModal.vue";
-// import UserSearchBar from "../Utilities/UserSearchBar.vue"
 // import { createRouter, createWebHistory, Router } from "vue-router";
 // import { routes } from "../../lib/router";
 

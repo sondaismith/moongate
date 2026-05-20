@@ -18,7 +18,7 @@
             <div class="flex items-center gap-1">
                 <SquareButton data-testid="postFocusModal-control-bar-back-button" @click="onReplyThreadBackButton()"
                 class="text-primary shadow-none hover:bg-btnHover text-2xl" title="Back"
-                button-padding="0">
+                button-padding-x="0" button-padding-y="0">
                     <i-mingcute:arrow-left-line/>
                 </SquareButton>
                 <div class="text-lg font-bold">Post</div>
@@ -84,7 +84,7 @@
                 <div class="flex items-center gap-1">
                     <SquareButton data-testid="postFocusModal-control-bar-back-button" @click="onReplyThreadBackButton()"
                     class="text-primary shadow-none hover:bg-btnHover text-2xl" title="Back"
-                    button-padding="0">
+                    button-padding-x="0" button-padding-y="0">
                         <i-mingcute:arrow-left-line/>
                     </SquareButton>
                     <div class="text-lg font-bold">Post</div>

@@ -1,5 +1,5 @@
 <template>
-    <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="z-30 flex w-full h-full" :class="[hideBackdrop ? '' : 'absolute']">
+    <div tabindex="-1" @keydown.tab="(e) => TrapFocus($el,e)" class="z-30 flex w-full h-full" :class="[hideBackdrop ? '' : 'absolute']">
         <div v-if="!hideBackdrop" @click="closeModal" class="absolute bg-white/10 backdrop-blur-sm w-full h-full"></div>
         <div class="relative flex flex-col bg-focusBG w-[94%] max-w-[50rem]
         mx-auto my-auto rounded-lg overflow-hidden text-primary drop-shadow-md"
@@ -38,6 +38,18 @@
             <div class="h-0.5 bg-outline"></div>
             <div class="flex flex-col overflow-y-auto pt-2">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">May 20th 2026</div>
+                    <ul class="list-disc pl-4 py-1 text-sm">
+                        <li>Updated the "Add Feeds" modal and Feed creation process:</li>
+                        <ul class="list-disc pl-4 text-sm">
+                            <li>Multiple Feeds can be created at once when using the "Add Feeds" modal.</li>
+                            <li>UI of the "Add Feeds" modal has been updated.</li>
+                            <li>Search input controls have been updated to improve usability (new search submit buttons, visual feedback, etc.)</li>
+                        </ul>
+                        <li>See more details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/303">#303</ExternalLink>)</li>
+                    </ul>
+                </div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">April 5th 2026</div>
                     <ul class="list-disc pl-4 py-1 text-sm">

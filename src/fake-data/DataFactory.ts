@@ -11,7 +11,11 @@ import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/clie
 import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
 import { OutputSchema } from "@atproto/api/dist/client/types/com/atproto/server/createSession";
 import { OutputSchema as searchActorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/actor/searchActors";
+import { OutputSchema as getFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getFeedGenerators";
+import { OutputSchema as getPopularFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/unspecced/getPopularFeedGenerators";
+import { OutputSchema as getAuthorFeedOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
 import { Main } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { GeneratorView } from "@atproto/api/src/client/types/app/bsky/feed/defs";
 
 /**
  * Type indicating the state of a Parent Post - is it a `PostView` (standard), Not Found (i.e. deleted), Blocked,
@@ -27,7 +31,7 @@ type ParentState = 'PostView'|'NotFoundPost'|'BlockedPost'|'None';
  * @param postTime The time that the Post was created.
  * @returns The created `PostView` object.
  */
-export async function CreatePostView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date()):Promise<$Typed<PostView>>{
+export async function CreatePostView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date(),facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined):Promise<$Typed<PostView>>{
     let indexTime = postTime.toISOString();
     let cid = `author_${handle}_${1}`;
     await GenerateCID(`author_${handle}_${1}`).then(res => {
@@ -51,6 +55,32 @@ export async function CreatePostView(handle:string,postText:string='',displayNam
             text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
         },
         uri:'at://did:plc:nowhere'
+    }
+    //Adding facets
+    if(typeof facet != 'undefined'){
+        switch (facet.type) {
+            case "mention":
+                if(facet.value.length>0 && postText.trim().length>0){
+                    let start = postText.indexOf(facet.value)+1;//byte start
+                    let end = 0;
+                    if(start>0) end = start+facet.value.length;
+                    post.record = {...post.record,
+                        facets:{
+                            $type:"app.bsky.richtext.facet",
+                            features:[
+                                {
+                                    $type:`app.bsky.richtext.facet#${facet.type}`,
+                                    did:facet.did
+                                }
+                            ],
+                            index:{byteStart:start,byteEnd:end}
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
+        }
     }
     return post;
 }
@@ -82,7 +112,8 @@ export function CreateNotFoundPost():$Typed<NotFoundPost>{
  * @returns The created `FeedViewPost` object.
  */
 export async function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
-    displayName:string='',postTime:Date=new Date(),isPinned:boolean=false,parentState:ParentState='None'):Promise<FeedViewPost>{
+    displayName:string='',postTime:Date=new Date(),isPinned:boolean=false,parentState:ParentState='None',
+    facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined,did:string|undefined=undefined,avatar:string|undefined=undefined):Promise<FeedViewPost>{
     // let currentTime = new Date();
     // currentTime.setTime(currentTime.getTime()-(1*60*1000));
     // postTime.setTime(postTime.getTime()-(1*60*1000));
@@ -96,7 +127,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
     let post:FeedViewPost = {
         post:{
             author:{
-                did:`did:plc:fake_${1}`,
+                did:(typeof did != 'undefined') ? did : `did:plc:fake_${1}`,
                 handle:handle,
                 displayName:displayName.trim() != '' ? displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' ')
             },
@@ -120,6 +151,38 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
             reason: {
                 $type: "app.bsky.feed.defs#reasonPin"
             }
+        }
+    }
+    //Add avatar
+    if(typeof avatar != 'undefined' && avatar.trim() != ''){
+        post.post.author = {...post.post.author,
+            avatar: avatar
+        }
+    }
+    //Adding facets
+    if(typeof facet != 'undefined'){
+        switch (facet.type) {
+            case "mention":
+                if(facet.value.length>0 && postText.trim().length>0){
+                    let start = postText.indexOf(facet.value)+1;//byte start
+                    let end = 0;
+                    if(start>0) end = start+facet.value.length;
+                    post.post.record = {...post.post.record,
+                        facets:{
+                            $type:"app.bsky.richtext.facet",
+                            features:[
+                                {
+                                    $type:`app.bsky.richtext.facet#${facet.type}`,
+                                    did:facet.did
+                                }
+                            ],
+                            index:{byteStart:start,byteEnd:end}
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
         }
     }
     switch (parentState) {
@@ -168,6 +231,45 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
             break;
     }
     return post;
+}
+
+/**
+ * Interface for creating a mock "User Feed" item. Expected to be used
+ * when mocking the response of the `app.bsky.feed.getAuthorFeed` API
+ * call.
+ */
+export interface IAuthorFeedStoreItem{
+    did:string,
+    response:getAuthorFeedOutputSchema
+}
+
+/**
+ * Method used to mock the act of querying the Bluesky database to return a particular User's Feed.
+ * Mainly expected to be used when mocking a `app.bsky.feed.getAuthorFeed` API call with an array
+ * of {@link IAuthorFeedStoreItem} objects set up to reference.
+ * @param authorFeedArray The array of `IAuthorFeedStoreItem` objects to search.
+ * @param requestUrl The request URL to parse to find the DID value to use when searching.
+ * @returns The matching "Author Feed" or `undefined`.
+ */
+export function FindAuthorFeedResponse(authorFeedArray:IAuthorFeedStoreItem[],requestUrl:string):getAuthorFeedOutputSchema|undefined{
+    let valueToUse:string|undefined = undefined;
+    // console.log('requestUrl: ',requestUrl);
+    if(requestUrl){
+        const requestParams = new URLSearchParams(requestUrl);
+        // console.log('requestParams: ',requestParams);
+        const apiEndpoint = `app.bsky.feed.getAuthorFeed?actor`;
+        let authorFeedSearchParamKey = requestUrl.substring(0,requestUrl.indexOf(apiEndpoint)+apiEndpoint.length);
+        // console.log('actorSearchParamKey: ',actorSearchParamKey);
+        let authorFeedSearchParamValue = requestParams.get(authorFeedSearchParamKey);
+        if(authorFeedSearchParamValue) {
+            valueToUse = authorFeedSearchParamValue;
+        }
+    }
+    let matchedProfile:getAuthorFeedOutputSchema|undefined;
+    let isDid = typeof valueToUse != 'undefined' ? valueToUse.includes('did:plc:') : false;
+    if(isDid) matchedProfile = authorFeedArray.find(p=>p.did == valueToUse)?.response;
+    // console.log('matchedProfile: ',matchedProfile);
+    return matchedProfile;
 }
 
 /**
@@ -361,12 +463,12 @@ $Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}
  * @param displayName The display name of the User. (Optional)
  * @returns The created `ProfileViewDetailed` object.
  */
-export async function CreateUserProfile(handle:string,displayName:string|undefined=undefined):Promise<ProfileViewDetailed>{
+export function CreateUserProfile(handle:string,displayName:string|undefined=undefined,didToUse='did:plc:6unmjnerkpiy3yh6x4auqpy3',avatar:string|undefined=undefined):ProfileViewDetailed{
     let i = Math.floor(Math.random()*7);
     let j = Math.floor(Math.random()*7);
     let indexDate = new Date().toISOString();
     let profile:ProfileViewDetailed = {
-        did:`did:plc:6unmjnerkpiy3yh6x4auqpy3`,
+        did:didToUse,
         handle:handle,
         avatar:`http://localhost:1420/src/assets/test-media/posts/image0${i+1}.png`,
         banner:`http://localhost:1420/src/assets/test-media/posts/image0${j+1}.png`,
@@ -376,9 +478,40 @@ export async function CreateUserProfile(handle:string,displayName:string|undefin
         indexedAt:indexDate,
         createdAt:indexDate,
     }
+    if(typeof avatar != 'undefined' && avatar.trim() != '') profile = {...profile, avatar:avatar,banner:avatar};
     profile.description = `Hello! I am a User Profile created for testing this app.\nDID:${profile.did}\nHandle:${profile.handle}`
     if(typeof displayName != 'undefined') profile.displayName = displayName;
     return profile;
+}
+
+/**
+ * Method used to mock the act of searching the Bluesky database to find a particular User's account.
+ * Mainly expected to be used when mocking a `app.bsky.actor.getProfile` API call with an array
+ * of `ProfileViewDetailed` objects set up to reference.
+ * @param profileArray The array of `ProfileViewDetailed` objects to search.
+ * @param requestUrl The request URL to parse to find the DID or handle value to use when searching.
+ * @returns The matching User Profile or `undefined`.
+ */
+export function FindUserProfile(profileArray:ProfileViewDetailed[],requestUrl:string):ProfileViewDetailed|undefined{
+    let valueToUse:string|undefined = undefined;
+    // console.log('requestUrl: ',requestUrl);
+    if(requestUrl){
+        const requestParams = new URLSearchParams(requestUrl);
+        // console.log('requestParams: ',requestParams);
+        const apiEndpoint = `app.bsky.actor.getProfile?actor`;
+        let actorSearchParamKey = requestUrl.substring(0,requestUrl.indexOf(apiEndpoint)+apiEndpoint.length);
+        // console.log('actorSearchParamKey: ',actorSearchParamKey);
+        let actorSearchParamValue = requestParams.get(actorSearchParamKey);
+        if(actorSearchParamValue) {
+            valueToUse = actorSearchParamValue;
+        }
+    }
+    let matchedProfile:ProfileViewDetailed|undefined;
+    let isDid = typeof valueToUse != 'undefined' ? valueToUse.includes('did:plc:') : false;
+    if(isDid) matchedProfile = profileArray.find(p=>p.did == valueToUse);
+    else matchedProfile = profileArray.find(p=>p.handle == valueToUse);
+    // console.log('matchedProfile: ',matchedProfile);
+    return matchedProfile;
 }
 
 /**
@@ -548,7 +681,10 @@ export function CreateTrendView(topic:string,category:string,displayName:string=
     let startedTime = trendCreated.toISOString();
     let cid = `author_${topic.replace(' ','_')}_${1}`;
     let subjectCID = `subject_${topic.replace(' ','_')}_${1}`;
+    let i = Math.floor(Math.random()*7);
+    let j = Math.floor(Math.random()*7);
     let record:TrendView = {
+        $type: 'app.bsky.unspecced.defs#trendView',
         topic: topic,
         displayName: displayName.trim() != "" ? displayName : (topic[0].toUpperCase()+topic.slice(1)).replace(/_/g,' '),
         link: `/profile/trending.bsky.app/feed/${topic.replace(/ /g,'_')}`,
@@ -558,17 +694,17 @@ export function CreateTrendView(topic:string,category:string,displayName:string=
         actors: [
             {
                 did: "did:plc:trend_actor1",
-                handle: "post_treend",
+                handle: "post.trend.app",
                 displayName: "Trend Actor 1",
-                avatar: "src/assets/test-media/posts/image02.png",
+                avatar: `http://localhost:1420/src/assets/test-media/posts/image0${i+1}.png`,
                 labels: [],
                 createdAt: "2025-08-18T16:20:06.768Z"
             },
             {
                 did: "did:plc:trend_actor2",
-                handle: "trendy_questionmark",
+                handle: "trendy.questionmark.app",
                 displayName: "Trend Actor 2",
-                avatar: "src/assets/test-media/posts/image08.png",
+                avatar: `http://localhost:1420/src/assets/test-media/posts/image0${j+1}.png`,
                 labels: [],
                 createdAt: "2025-06-08T13:37:28.361Z"
             },
@@ -708,15 +844,22 @@ export function CreateRandomFeedListCollection(numOfFeeds:number, numPostPerFeed
  * Method used to return a hard-coded object that can be used to attach
  * an "external link" embed object to a Post.
  * @returns A `$Typed<View>` External Embed object.
+ * @note It seems like the BASE_URL.replace is for the Cypress-based tests...
  */
 export function CreateEmbed():$Typed<View>{
+    let baseUrl = '/src/';
+    try {
+        (typeof import.meta.env.BASE_URL != undefined) ? import.meta.env.BASE_URL.replace('src','iframes/src') : '/src/';
+    } catch (error) {
+
+    }
     let emb:$Typed<View> = {
         $type: "app.bsky.embed.external#view",
         external:{
             uri: "https://www.google.com/",
             title: "Component Test shows link to nowhere",
             description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
-            thumb: `http://localhost:1420${import.meta.env.BASE_URL.replace('src','iframes/src')}assets/test-media/posts/image08.png`
+            thumb: `http://localhost:1420${baseUrl}assets/test-media/posts/image08.png`
             //above URI will only work when testing with Cypress...not sure how to check for the testing environment
             //"src/assets/test-media/posts/image08.png"
             // "http://localhost:1420/src/assets/test-media/posts/image08.png"
@@ -799,7 +942,7 @@ export function CreateLoginSessionResponse(handle:string="test-session.bsky.soci
 
 /**
  * Method used to mock the a response for calling the `searchActors` Bluesky API method.
- * @param numActors The number of Actor results to return.
+ * @param numActors The number of mocked Actor Search Results to return.
  * @returns Object representing the Bluesky API response for a `searchActors` call.
  */
 export function CreateActorSearchResults(numActors:number=3):searchActorsOutputSchema{
@@ -818,4 +961,75 @@ export function CreateActorSearchResults(numActors:number=3):searchActorsOutputS
         })
     }
     return {actors:results};
+}
+
+/**
+ * Method used to mock the a response for calling the `getFeedGenerators` Bluesky API method.
+ * @param numReturnedGenerators The number of mocked Feed Generators to return.
+ * @returns Object representing the Bluesky API response for a `getFeedGenerators` call.
+ */
+export async function CreateGetFeedGeneratorsResponse(numReturnedGenerators:number=1):Promise<getFeedGeneratorsOutputSchema>{
+    let results:GeneratorView[] = [];
+    let postTime = new Date().toISOString();
+    for (let i = 0; i < numReturnedGenerators; i++) {
+        let j = Math.floor(Math.random()*7);
+        let handle = `creator${i}.test`
+        let cid = `author_${handle}_${1}`;
+        await GenerateCID(`author_${handle}_${1}`).then(res => {
+            cid = res.toString();
+        })
+        let did = `did:web:abcdefgmockfeedgenerator${i}`;
+        let likesCount = Math.floor(Math.random()*3200);
+        results.push({
+            did:did,
+            cid:cid,
+            creator:{
+                did:`did:plc:abcdefgmockfeedgeneratorcreator${i}`,
+                handle:handle,
+                displayName:`Mocked Feed Generator Creator ${i}`,
+                indexedAt:postTime,
+            },
+            displayName:`Mocked Feed Generator ${i}`,
+            avatar:`http://localhost:1420/src/assets/test-media/posts/image0${j+1}.png`,
+            description:`I am a mocked feed generator for testing purposes. My number is ${i}. ${j}!`,
+            likeCount:likesCount,
+            indexedAt:postTime,
+            uri:`at://${did}/app.bsky.feed.generator/feed-gen${i}`
+        })
+    }
+    return {feeds:results};
+}
+
+export async function CreateGetPopularFeedGeneratorsResponse(numReturnedGenerators:number=5):Promise<getPopularFeedGeneratorsOutputSchema>{
+    let results:GeneratorView[] = [];
+    let postTime = new Date().toISOString();
+    for (let i = 0; i < numReturnedGenerators; i++) {
+        let j = Math.floor(Math.random()*7);
+        let handle = `popular-creator${i}.test`
+        let cid = `author_${handle}_${1}`;
+        await GenerateCID(`author_${handle}_${1}`).then(res => {
+            cid = res.toString();
+        })
+        let did = `did:web:abcdefgmockpopularfeedgenerator${i}.app`;
+        let likesCount = Math.floor(Math.random()*3200);
+        results.push({
+            did:did,
+            cid:cid,
+            creator:{
+                did:`did:plc:abcdefgmockpopularfeedgeneratorcreator${i}`,
+                handle:handle,
+                displayName:`Mocked Popular Feed Generator Creator ${i}`,
+                indexedAt:postTime,
+                createdAt:postTime
+            },
+            displayName:`Mocked Popular Feed Generator ${i}`,
+            avatar:`http://localhost:1420/src/assets/test-media/posts/image0${j+1}.png`,
+            description:`I am a mocked popular feed generator for testing purposes. My number is ${i}. ${j}!`,
+            likeCount:likesCount,
+            indexedAt:postTime,
+            uri:`at://${did}/app.bsky.feed.generator/pop-feed-gen${i}`
+
+        })
+    }
+    return {feeds:results};
 }

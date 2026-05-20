@@ -23,7 +23,7 @@ export async function getUserHomeFeed():Promise<AppBskyFeedGetTimeline.Response>
  * if successful, an Error if not.
  */
 export async function SearchForAccounts(searchTerm : string):Promise<AppBskyActorSearchActors.Response>{
-    let result = await GetBrowsingAgent().searchActors({q: `${searchTerm}`,limit:10})
+    let result = await GetBrowsingAgent().searchActors({q: `${searchTerm}`,limit:20})
     return result;
 }
 

@@ -1,16 +1,25 @@
 <template>
-    <div data-testid="feed-edit-modal" tabindex="-1" @keydown="(e)=>TrapFocus($el,e)"
+    <div data-testid="feed-edit-modal" tabindex="-1" @keydown.tab="(e)=>{if(!isConfirmModalDisplayed) TrapFocus($el,e)}"
     class="absolute z-10 flex w-full h-full text-primary focus-visible:outline-none">
         <div data-testid="feedEditModal-close" @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full bg-slate-800/40 backdrop-blur-sm"></div>
         {{void "Modal Control"}}
-        <div class="z-20 flex flex-col gap-1 w-[95%] md:max-w-[1024px] h-[92%] mx-auto my-auto rounded bg-feedColumnBG
-            p-4 drop-shadow-lg backdrop-blur-0">
-            <div class="flex flex-col gap-1">
-                <div class="flex gap-2">
-                    <div class="text-2xl">{{modalPages[currentPage].title}}</div>
-                    <div v-if="AppState.isCreatingFeed" class="flex bg-green-600 rounded-full px-2 py-1 items-center self-center">Creating</div>
-                    <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div>
-                    <div v-if="selectedFeedType.trim() != '' && currentPage != 0" class="flex border border-blue-600 rounded-full px-2 py-1 items-center self-center">{{ feedTypeOptions.find(x=> x.value == selectedFeedType)?.name.split(' ')[0] }} Feed</div>
+        <div class="z-20 flex flex-col w-full md:max-w-[1024px] h-full md:h-[92%] mx-auto my-auto rounded bg-feedColumnBG
+            pb-4 [&>*]:px-4 drop-shadow-lg backdrop-blur-0 overflow-hiddens">
+            <div class="flex px-4s py-2 bg-aboutPageBanner items-center justify-between text-primary border-b border-outline">
+                <div class="text-lg font-semibold select-none">Adding Feeds</div>
+                <!-- <button class="flex gap-1 items-center px-2 py-0.5 rounded bg-btn hover:bg-btnHover hover:border-hover disabled:bg-disabledBG
+                disabled:border-transparent disabled:text-disabled">View Queue</button> -->
+                <!-- <SquareButton v-if="numberOfFeedsInStack>0" data-testid="feedEditModal-view-queue-button" class="bg-btn hover:bg-btnHover" button-padding-x="2" button-padding-y="0">
+                    View Queue
+                </SquareButton> -->
+                <div class="text-secondary"># of Feeds:{{ feedStackItems.length }}</div>
+            </div>
+            <div class="flex flex-col py-1">
+                <div class="flex gap-2s flex-wrap items-baseline">
+                    <div class="text-2xl pr-2">{{modalPages[currentPage].title}}</div>
+                    <div class="text-secondary text-sm">{{ modalPages[currentPage].instruction }}</div>
+                    <!-- <div v-if="AppState.isCreatingFeed" class="flex bg-green-600 rounded-full px-2 py-1 items-center self-center">Creating</div>
+                    <div v-if="AppState.isUpdatingFeed" class="flex bg-orange-600 rounded-full px-2 py-1 items-center self-center">Editing</div> -->
                 </div>
                 {{ void "Pages" }}
                 <div class="flex items-center w-full">
@@ -21,41 +30,50 @@
                     </template>
                 </div>
             </div>
-            <div>{{ modalPages[currentPage].instruction }}</div>
-            <div class="flex flex-col relative grow overflow-hidden">
+            <div class="flex flex-col relative grow !px-0s overflow-hidden shadow-scroll-inner-bottom">
                 <Transition>
-                    <div v-if="currentPage == 0" class="h-full w-full">
-                        <div class="flex flex-col gap-2">
-                            <div class="flex items-start flex-wrap gap-1">
-                                <!-- <PillButton data-testid="feedEditModal-user-feed-button" @click="selectFeedType(FeedEnums.Types.User)"
-                                class="px-4 py-2 border-2 border-outlineLighter bg-slate-700">User</PillButton>
-                                <PillButton data-testid="feedEditModal-tag-feed-button" @click="selectFeedType(FeedEnums.Types.Tag)">Tag</PillButton>
-                                <PillButton data-testid="feedEditModal-trending-feed-button" @click="selectFeedType(FeedEnums.Types.Trending)">Trending</PillButton>
-                                <PillButton :disabled="!AppState.isAuthBrowsing"
-                                @click="selectFeedType(FeedEnums.Types.Notifications)"
-                                :title="!AppState.isAuthBrowsing ? 'Login Required' : ''">
-                                    Notifications
-                                </PillButton> -->
+                    <div v-if="currentPage == 0" class="h-full w-full px-2s">
+                        <div class="flex flex-col h-full gap-2 pt-2">
+                            <div class="flex items-start flex-wrap gap-1 px-2s">
                                 <!-- <PillButton :disabled="true">Mentions</PillButton>
                                 <PillButton :disabled="true">DMs</PillButton> -->
                                 <div class="flex flex-wrap gap-2">
                                     <button v-for="item in feedTypeOptions" :key="item.id"
                                     @click="selectFeedType(item.value)"
                                     tabindex="0"
-                                    :data-testid="`feedEditModal-${item.name.toLowerCase()}-feed-button`"
+                                    :data-testid="`feedEditModal-${item.name.toLowerCase().split(' ')[0]}-feed-button`"
                                     class="group flex gap-1 cursor-pointer items-center border-2 outline-none border-transparent rounded-md transition-colors
-                                    bg-btn select-none p-[1px] overflow-hidden"
+                                    bg-feedTypeButton select-none p-[1px] overflow-hidden active:bg-feedTypeButtonActive"
                                     :class="[item.value == selectedFeedType ? '!border-feedtypeBtnSelected' : '',
-                                        !AppState.isAuthBrowsing && (item.value == FeedEnums.Types.Notifications || item.value == FeedEnums.Types.Following) ? 'bg-disabled' : 'hover:bg-feedTypeBtnHover'
+                                        !AppState.isAuthBrowsing && (item.value == FeedEnums.Types.Notifications || item.value == FeedEnums.Types.Following) ? '!bg-feedTypeButtonDisabled' : 'hover:bg-feedTypeButtonHover'
                                     ]">
                                         <div class="flex items-center gap-1 px-2 border-2 border-transparent group-focus-visible:border-feedtypeBtnFocusHighlight rounded-md">
                                             <FeedIcon :icon="item.value"/>
                                             <div>{{ item.name }}</div>
+                                            <div v-if="item.value == FeedEnums.Types.Trending" class="flex rounded-full px-1s min-w-5 aspect-square bg-feedTypeButtonCounter group-hover:bg-feedTypeButtonCounterHover
+                                            group-active:bg-feedTypeButtonCounterHover transition-colors text-white shadow-scroll-inner-window text-sm items-center justify-center"
+                                            :class="[{'!bg-radioButtonSelected' : isTrendingTypeInStack}]">
+                                                <i-mingcute:check-fill v-if="isTrendingTypeInStack" class="p-0.5"/>
+                                            </div>
+                                            <div v-else-if="item.value == FeedEnums.Types.Following" class="flex rounded-full px-1s min-w-5 aspect-square bg-feedTypeButtonCounter group-hover:bg-feedTypeButtonCounterHover
+                                            group-active:bg-feedTypeButtonCounterHover transition-colors text-white shadow-scroll-inner-window text-sm items-center justify-center"
+                                            :class="[{'!bg-radioButtonSelected' : isFollowingTypeInStack}, {'!bg-feedTypeButtonCounterDisabled' : !AppState.isAuthBrowsing}]">
+                                                <i-mingcute:check-fill v-if="isFollowingTypeInStack" class="p-0.5"/>
+                                            </div>
+                                            <div v-else-if="item.value == FeedEnums.Types.Notifications" class="flex rounded-full px-1s min-w-5 aspect-square bg-feedTypeButtonCounter group-hover:bg-feedTypeButtonCounterHover
+                                            group-active:bg-feedTypeButtonCounterHover transition-colors text-white shadow-scroll-inner-window text-sm items-center justify-center"
+                                            :class="[{'!bg-radioButtonSelected' : isNotificationTypeInStack}, {'!bg-feedTypeButtonCounterDisabled' : !AppState.isAuthBrowsing}]">
+                                                <i-mingcute:check-fill v-if="isNotificationTypeInStack" class="p-0.5"/>
+                                            </div>
+                                            <div v-else class="flex rounded-full px-1s min-w-5 aspect-square bg-feedTypeButtonCounter group-hover:bg-feedTypeButtonCounterHover group-active:bg-feedTypeButtonCounterHover transition-colors
+                                            text-white shadow-scroll-inner-window text-sm items-center justify-center"
+                                            :class="[{'!bg-radioButtonSelected' : getFeedCountForType(item.value)}]">
+                                            {{getFeedCountForType(item.value)}}</div>
                                         </div>
                                     </button>
                                 </div>
                             </div>
-                            <div v-if="selectedFeedType.trim() != ''" class="flex self-start border border-outline rounded p-1">
+                            <div v-if="selectedFeedType.trim() != ''" class="flex self-start border border-outline rounded p-1 text-sm">
                                 <TransitionGroup>
                                     <div v-if="selectedFeedType == FeedEnums.Types.User">A User feed allows you to see all the content shared by a specific User account (Posts, Shares, Replies, etc.)</div>
                                     <div v-else-if="selectedFeedType == FeedEnums.Types.Tag">A Tag Feed displays the latest posts matching specified hashtags.</div>
@@ -71,104 +89,139 @@
                                     </div>
                                 </TransitionGroup>
                             </div>
-                        </div>
-                    </div>
-                    <div data-testid="feedEditModal-options-page" v-else-if="currentPage == 1" class="flex flex-col h-full w-full">
-                        <InLaInput data-testid="feedEditModal-tag-input" v-if="selectedFeedType == FeedEnums.Types.Tag" @inlainput-submit="trySubmitTags" :emit-on-enter="true" v-model="feedFilters.tag" text-label="Tag"/>
-                        <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col mt-1 overflow-x-hidden">
-                            <div class="mb-1">Discovered Tags:</div>
-                            <div data-testid="feedEditModal-valid-tag-container" class="flex gap-1 flex-wrap">
-                                <div v-for="n, index in validTags" :key="index"
-                                class="px-2 py-1 rounded-full select-none bg-blue-500 hover:bg-blue-400 break-all">
-                                    {{ n }}
-                                </div>
+                            <div v-if="selectedFeedType.trim() != ''" class="flex flex-col items-start h-full overflow-hidden">
+                                <TransitionGroup>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.User" class="flex flex-col gap-1 h-full w-full overflow-hidden">
+                                        <UserSearchBar data-testid="feedEditModal-user-search-bar" :search-term-v-model="feedFilters.userSearch.searchTerm"
+                                        :last-results-term="feedFilters.userSearch.lastResultsTerm" :feed-stack-ref="feedStackItems"
+                                        :user-results-ref="userAccountSearchResults" placeholder-text="Search for Users..."
+                                        @user-selected="selectUser" @filter-bar-update="newValue => feedFilters.userSearch.searchTerm = newValue"
+                                        @search-submitted="submitUserSearch" @clear-results-clicked="clearUserAccountResults" :disabled="awaitingUserSearchResults"/>
+                                    </div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="w-full h-0 shadow-scroll-element-drop-shadow"></div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Tag" class="flex flex-col gap-1 w-full h-full pt-2 overflow-y-auto">
+                                        <TagEntry data-testid="feedEditModal-tag-input" class="m-1" @submit-clicked="trySubmitTags" instruction-text="Press Enter/Return to add tag to Feed specification"/>
+                                        <div class="flex flex-col mt-1 h-full">
+                                            <div class="border-b pb-1">Tag Feeds</div>
+                                            <div data-testid="feedEditModal-no-tag-feeds-message" v-if="numberOfTagFeedsInStack<1" class="flex flex-col pt-2 max-h-32 justify-center select-none">
+                                                <div class="flex flex-col items-center">
+                                                    <div>No Tags Feeds Queued</div>
+                                                    <div class="text-xs italic">Submited Tag Feeds will show here</div>
+                                                </div>
+                                            </div>
+                                            <div data-testid="feedEditModal-tag-feed-list" v-else class="flex flex-wrap gap-2 pr-2 py-2 pt-3">
+                                                <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
+                                                v-for="stackItem in feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag)"
+                                                :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name" :feed-stack-identifier="stackItem.id"
+                                                :display-only="true" @clicked-toggle-stack-item="removeFeedStackItem"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex w-full h-full">
+                                        <div class="flex flex-col gap-1 w-full">
+                                            <FilterBar :filter-vmodel="feedFilters.feedGenerator.searchTerm" :show-clear-button="viewingFeedGenSearchResults"
+                                            :show-submit-button="feedFilters.feedGenerator.searchTerm.trim().length>1"
+                                            placeholder-text="Search Feeds..." submit-button-text="Search"
+                                            :disabled="awaitingInitialCustomFeedData || awaitingSearchCustomFeedData"
+                                            @update:filter-vmodel="newValue => feedFilters.feedGenerator.searchTerm = newValue"
+                                            @clear-filter-clicked="getCustomFeeds" @enter-key-up="searchForFeedGenerators" @submit-clicked="searchForFeedGenerators"/>
+                                            <div v-if="selectedFeedItems.length>0" class="pt-1 w-full max-h-16 min-h-16 border-b pb-1 border-outline overflow-y-auto">
+                                                <div class="flex gap-1">
+                                                    <div tabindex="-1" class="flex flex-wrap gap-1 w-full items-start">
+                                                        <!-- <button v-for="n in selectedFeedGenerators" @click="toggleFeedGeneratorSelection(n.generator.uri)" -->
+                                                        <button v-for="n in selectedFeedItems" @click="removeFeedStackItem(FeedEnums.Types.FeedGenerator,n.uri)"
+                                                        :title="'Remove &quot;'+n.displayName+'&quot; Feed'"
+                                                        class="flex shrink-0 grow-0 items-center gap-1 bg-itemTagBG transition-colors border-2 border-transparent
+                                                        active:bg-itemTagBGActive hover:border-itemTagBorder active:border-itemTagBGActive focus-visible:border-itemTagBorder
+                                                        outline-none rounded p-0.5 px-1 text-primary text-xs text-nowrap cursor-pointer shadow-none">
+                                                            <div>{{ n.displayName }}</div>
+                                                            <i-mingcute:close-circle-line/>
+                                                        </button>
+                                                    </div>
+                                                    <SquareButton v-if="selectedFeedItems.length>0" @click="clearSelectedFeeds" title="Clear All Selected Feeds"
+                                                    class="self-start h-auto sticky top-0 ml-auto bg-deleteBtnBG hover:bg-deleteBtnBGHover active:bg-deleteBtnBGActive text-white text-sm text-nowrap"
+                                                    focus-padding="0.5" button-padding="0.5">
+                                                        Clear Selected
+                                                    </SquareButton>
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-col gap-1 h-full overflow-y-auto preload-gutter">
+                                                <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline shadow-postFocusModalDetailsShadow/10">
+                                                    <div class="text-lg">Discover New Feeds</div>
+                                                    <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
+                                                    <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded</div>
+                                                </div>
+                                                <div v-if="!awaitingInitialCustomFeedData && !awaitingSearchCustomFeedData && customFeedData.length>0"
+                                                    class="flex flex-wrap gap-2 py-2 pb-3 pl-1 pr-2">
+                                                    <div data-testid="feedEditModal-custom-feed-list" class="flex flex-wrap gap-2">
+                                                        <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
+                                                        @feed-generator-selected="toggleFeedGeneratorSelection" :selected="n.selected"/>
+                                                    </div>
+                                                    <button v-if="!viewingFeedGenSearchResults" @click="loadMoreFeedGenerators" :disabled="awaitingAdditionalCustomFeedData"
+                                                    class="flex gap-1 items-center justify-center py-1 w-full rounded bg-btn hover:bg-btnHover
+                                                    hover:border-hover disabled:bg-disabledBG disabled:border-transparent disabled:text-disabled">
+                                                        <i-mingcute:loading-fill v-if="awaitingAdditionalCustomFeedData" class="spinner"/>
+                                                        <i-mingcute:plus-fill v-else/>
+                                                        <div>Load More</div>
+                                                    </button>
+                                                </div>
+                                                <div v-else-if="awaitingInitialCustomFeedData || awaitingSearchCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
+                                                    <CustomFeedButtonPlaceholder v-for="n in 5" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
+                                                </div>
+                                                <div v-else-if="viewingFeedGenSearchResults && customFeedData.length<1" class="pt-2">
+                                                    <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
+                                                        <div class="flex gap-1 items-center">
+                                                            <div class="text-lg font-semibold">No Results</div>
+                                                            <i-mingcute:search-3-line/>
+                                                        </div>
+                                                        <hr class="border-outline"/>
+                                                        <div class="text-sm">No Results found matching "{{ feedFilters.feedGenerator.lastSearchTerm }}"</div>
+                                                    </div>
+                                                </div>
+                                                <div v-else class="pt-2">
+                                                    <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
+                                                        <div class="flex gap-1 items-center">
+                                                            <div class="text-lg font-semibold">Error Retrieving Feed Generators</div>
+                                                            <i-mingcute:wifi-off-line/>
+                                                        </div>
+                                                        <hr class="border-outline"/>
+                                                        <div class="text-sm">Feed Generators could not be reached at this time</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Trending" class="flex flex-col w-full">
+                                        <FeedStackButton data-testid="feedEditModal-toggle-trending-feed-button" :feed-type="FeedEnums.Types.Trending" :selected="isTrendingTypeInStack" feed-stack-identifier="this_is_trending_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                        <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
+                                    </div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Following && AppState.isAuthBrowsing" class="flex flex-col w-full">
+                                        <FeedStackButton data-testid="feedEditModal-toggle-following-feed-button" :feed-type="FeedEnums.Types.Following" :selected="isFollowingTypeInStack" feed-stack-identifier="this_is_following_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                    </div>
+                                    <div v-if="selectedFeedType == FeedEnums.Types.Notifications && AppState.isAuthBrowsing" class="flex flex-col gap-2 w-full">
+                                        <FeedStackButton data-testid="feedEditModal-toggle-notifications-feed-button" :feed-type="FeedEnums.Types.Notifications" :selected="isNotificationTypeInStack" feed-stack-identifier="this_is_notification_feed" @clicked-toggle-stack-item="toggleSingularFeedItem"/>
+                                        <!-- <CheckBox class="px-3 self-start" @value-toggled="toggleJustMentions" :model-value="feedFilters.notifications.justNotifs" :checkbox-size="1.25" :text-gap="0.5">Mentions Only</CheckBox> -->
+                                    </div>
+                                </TransitionGroup>
                             </div>
                         </div>
-                        <UserSearchBar data-testid="feedEditModal-user-search-bar"
-                        v-if="selectedFeedType == FeedEnums.Types.User"
-                        @user-selected="selectUser" :data-list="searchResults"/>
-                        <div v-if="selectedFeedType == FeedEnums.Types.Trending">
-                            <div>No Options Currently</div>
-                            <!-- <SquareButton @click="getTrending">Get Trending</SquareButton> -->
-                        </div>
-                        <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex h-full">
-                            <div class="flex flex-col gap-1 w-full">
-                                <FilterBar :filter-vmodel="feedFilters.feedGenerator.searchTerm" :show-clear-button="viewingFeedGenSearchResults"
-                                placeholder-text="Search Feeds..."
-                                :disabled="awaitingInitialCustomFeedData || awaitingSearchCustomFeedData"
-                                @update:filter-vmodel="newValue => feedFilters.feedGenerator.searchTerm = newValue"
-                                @clear-filter-clicked="getCustomFeeds" @enter-key-up="searchForFeedGenerators"/>
-                                <div v-if="selectedFeedItems.length>0" class="pt-1 w-full max-h-16 min-h-16 border-b pb-1 border-outline overflow-y-auto">
-                                    <div class="flex gap-1">
-                                        <div tabindex="-1" class="flex flex-wrap gap-1 w-full items-start">
-                                            <button v-for="n in selectedFeedGenerators" @click="toggleFeedGeneratorSelection(n.generator.uri)"
-                                            :title="'Remove &quot;'+n.generator.displayName+'&quot; Feed'"
-                                            class="flex shrink-0 grow-0 items-center gap-1 bg-itemTagBG transition-colors border-2 border-transparent
-                                            active:bg-itemTagBGActive hover:border-itemTagBorder active:border-itemTagBGActive focus-visible:border-itemTagBorder
-                                            outline-none rounded p-0.5 px-1 text-primary text-xs text-nowrap cursor-pointer shadow-none">
-                                                <div>{{ n.generator.displayName }}</div>
-                                                <i-mingcute:close-circle-line/>
-                                            </button>
-                                        </div>
-                                        <SquareButton v-if="selectedFeedItems.length>0" @click="clearSelectedFeeds" title="Clear All Selected Feeds"
-                                        class="self-start h-auto sticky top-0 ml-auto bg-deleteBtnBG hover:bg-deleteBtnBGHover active:bg-deleteBtnBGActive text-white text-sm text-nowrap"
-                                        focus-padding="0.5" button-padding="0.5">
-                                            Clear Selected
-                                        </SquareButton>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-1 h-full overflow-y-auto preload-gutter">
-                                    <div class="flex gap-1 items-center sticky top-0 py-1 bg-feedColumnBG shadow-scroll-underline">
-                                        <div class="text-lg">Discover New Feeds</div>
-                                        <div><i-mingcute:sparkles-fill title="Discover New Feed Generators" class="shrink-0 text-yellow-500" /></div>
-                                        <div class="text-sm text-secondary">{{ customFeedData.length }} feed(s) loaded<span v-if="selectedFeedItems.length>0">, {{ selectedFeedItems.length }} selected</span></div>
-                                    </div>
-                                    <div v-if="!awaitingInitialCustomFeedData && !awaitingSearchCustomFeedData && customFeedData.length>0" class="flex flex-wrap gap-2 py-1 pt-2 pl-1 pr-2">
-                                        <CustomFeedButton v-for="n in customFeedData" class="min-w-64 w-full sm:flex-[1_0_32%]" :feed-generator-view="n.generator"
-                                        @feed-generator-selected="toggleFeedGeneratorSelection" :selected="n.selected"/>
-                                        <button v-if="!viewingFeedGenSearchResults" @click="loadMoreFeedGenerators" :disabled="awaitingAdditionalCustomFeedData"
-                                        class="flex gap-1 items-center justify-center py-1 w-full rounded bg-btn hover:bg-btnHover
-                                        hover:border-hover disabled:bg-disabledBG disabled:border-transparent disabled:text-disabled">
-                                            <i-mingcute:loading-fill v-if="awaitingAdditionalCustomFeedData" class="spinner"/>
-                                            <i-mingcute:plus-fill v-else/>
-                                            <div>Load More</div>
-                                        </button>
-                                    </div>
-                                    <div v-else-if="awaitingInitialCustomFeedData || awaitingSearchCustomFeedData" class="flex flex-wrap gap-2 py-1 pl-1 pr-2">
-                                        <CustomFeedButtonPlaceholder v-for="n in 5" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
-                                    </div>
-                                    <div v-else-if="viewingFeedGenSearchResults && customFeedData.length<1" class="pt-2">
-                                        <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
-                                            <div class="flex gap-1 items-center">
-                                                <div class="text-lg font-semibold">No Results</div>
-                                                <i-mingcute:search-3-line/>
-                                            </div>
-                                            <hr class="border-outline"/>
-                                            <div class="text-sm">No Results found matching "{{ feedFilters.feedGenerator.lastSearchTerm }}"</div>
-                                        </div>
-                                    </div>
-                                    <div v-else class="pt-2">
-                                        <div class="flex flex-col gap-1 w-full p-3 rounded border border-outline">
-                                            <div class="flex gap-1 items-center">
-                                                <div class="text-lg font-semibold">Error Retrieving Feed Generators</div>
-                                                <i-mingcute:wifi-off-line/>
-                                            </div>
-                                            <hr class="border-outline"/>
-                                            <div class="text-sm">Feed Generators could not be reached at this time</div>
-                                        </div>
-                                    </div>
-                                </div>
+                    </div>
+                    <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 1" class="flex flex-col h-full w-full py-2 overflow-y-auto">
+                        <div v-if="feedStackItems.length == 0" class="flex flex-col items-center">
+                            <div class="flex gap-1 items-center">
+                                <i-mingcute:warning-fill class="text-2xl"/>
+                                <div>No Feeds currently in Queue</div>
                             </div>
+                            <div class="text-sm text-secondary text-center">Click the 'back' button to move back to the Feed selection page</div>
                         </div>
-                        <div v-if="selectedFeedType == FeedEnums.Types.Following">
-                            <div>No Options</div>
-                        </div>
-                        <div v-if="selectedFeedType == FeedEnums.Types.Notifications">
-                            <CheckBox @value-toggled="toggleJustMentions" :model-value="feedFilters.notifications.justNotifs">Mentions Only</CheckBox>
-                            <!-- <SquareButton @click="testGetNotifs">Load Notifs</SquareButton> -->
+                        <div v-else data-testid="feedEditModal-summary-page-feed-list" class="flex flex-wrap gap-2 pl-1 pr-2">
+                            <FeedStackButton class="min-w-64 w-full sm:flex-[1_0_32%]"
+                            v-for="stackItem in feedStackItems"
+                            :feed-stack-identifier="stackItem.id" :feed-type="stackItem.type" :profile-data="stackItem.profileData" :tags="stackItem.tags" :feed-name="stackItem.name"
+                            :generator-data="stackItem.generatorData" :display-only="true" @clicked-toggle-stack-item="removeFeedStackItem"/>
                         </div>
                     </div>
-                    <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 2"
+                    <!-- <div data-testid="feedEditModal-summary-page" v-else-if="currentPage == 2"
                     class="flex flex-col gap-1 h-full overflow-hidden">
                         <div class="flex flex-col">
                             <div class="text-xl font-extralight">Feed Type</div>
@@ -181,69 +234,7 @@
                                 <div>Please note: Some Feeds may not be able to be created/viewed without using a Bluesky account,
                                 while others may no longer be active/available.</div>
                         </div>
-                        <div v-if="selectedFeedType == FeedEnums.Types.Tag">Tags: {{ validTags.join(', ') }}</div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.User"
-                        class="flex flex-col overflow-auto divide-y divide-outline">
-                            <div v-if="!isAwaitingProfileData" class="flex flex-col gap-1 w-full">
-                                <div class="flex rounded-full overflow-hidden h-20 mx-auto aspect-square bg-searchbarHandle justify-center items-center bg-cover text-2xl">
-                                    <i-mingcute:user-add-fill v-if="typeof feedFilters.user.avatar == 'undefined'"/>
-                                    <ImageLoader v-else :img-url="feedFilters.user.avatar" :fill-container="true" loader-type="spinner"/>
-                                </div>
-                                <div class="flex w-full overflow-hidden flex-col items-start">
-                                    <div class="flex gap-1 items-center w-full overflow-hidden">
-                                        <div class="whitespace-nowrap overflow-hidden text-ellipsis">{{ feedFilters.user.displayName }}</div>
-                                        <VerifiedBadge v-if="isUserVerified(feedFilters.user)" class="size-4"/>
-                                    </div>
-                                    <div class="text-xs text-searchbarHandle">@{{ feedFilters.user.handle }}</div>
-                                </div>
-                                <div class="flex gap-2 text-sm text-secondary">
-                                    <div v-if="!AppSettingsState.Settings.isHidingFollowers" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followersCount) }}</div> <div>followers</div></div>
-                                    <div v-if="!AppSettingsState.Settings.isHidingFollowing" class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.followsCount) }}</div> <div>following</div></div>
-                                    <div class="flex gap-1"><div class="font-bold">{{ getCompactNumberValue(feedFilters.user.postsCount) }}</div> <div>posts</div></div>
-                                </div>
-                                <div class="w-full text-secondary text-xs whitespace-pre-wrap">
-                                    {{feedFilters.user.description ? feedFilters.user.description : 'No Description'}}
-                                </div>
-                            </div>
-                            <div v-else class="animate-pulse flex flex-col gap-2 w-full p-2">
-                                <div class="flex rounded-full h-20 mx-auto aspect-square bg-slate-500 justify-center items-center bg-cover text-2xl">
-                                    <i-mingcute:user-add-fill/>
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <div class="rounded-sm h-4 w-32 bg-slate-500"></div>
-                                    <div class="rounded-sm h-4 w-40 bg-slate-500"></div>
-                                </div>
-                                <div class="flex flex-col gap-1">
-                                    <div class="rounded-sm h-4 w-full bg-slate-500"></div>
-                                    <div class="rounded-sm h-4 w-full bg-slate-500"></div>
-                                    <div class="rounded-sm h-4 w-1/3 bg-slate-500"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.Trending">
-                            <div>No Options Currently</div>
-                        </div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.FeedGenerator" class="flex flex-col gap-2 overflow-y-auto preload-gutter">
-                            <div class="flex items-center gap-1 bg-feedColumnBG sticky top-0 pb-1 shadow-scroll-underline">
-                                <div class="text-xl font-bold">Selected Feeds</div>
-                                <div class="text-sm text-secondary">{{ selectedFeedItems.length }} item(s)</div>
-                            </div>
-                            <div v-if="selectedFeedItems.length>0" class="flex flex-wrap gap-1 pt-1">
-                                <CustomFeedButton v-for="fg in selectedFeedItems" :feed-generator-view="fg"
-                                :display-only="true" @feed-generator-selected="toggleFeedGeneratorSelection" class="min-w-64 w-full sm:flex-[1_0_32%]"/>
-                            </div>
-                            <div v-else>
-                                <div class="font-bold">No Feeds Selected</div>
-                                <div class="text-sm">Please return to the previous page and select a Feed Generator.</div>
-                            </div>
-                        </div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.Following">
-                            <div>No Options</div>
-                        </div>
-                        <div v-else-if="selectedFeedType == FeedEnums.Types.Notifications">
-                            <div>Mentions Only? {{ feedFilters.notifications.justNotifs }}</div>
-                        </div>
-                    </div>
+                    </div> -->
                 </Transition>
                 <!-- <div v-for="page in modalPages">{{ page.title }}</div> -->
             </div>
@@ -258,7 +249,7 @@
                     @click="forwardOnePage"
                     class="bg-btn hover:bg-btnHover" tabindex="0">Next</SquareButton>
                     <SquareButton data-testid="feedEditModal-create-button" @click="createFeeds()"
-                    v-if="areCreatePostConditionsMet && selectedFeedItems.length>0"
+                    v-if="areCreatePostConditionsMet && feedStackItems.length>0"
                     :is-disabled="attemptingToCreateFeed"
                     class="bg-submitBtnBG hover:bg-submitBtnBGHover focus-visible:bg-submitBtnBGHover active:bg-submitBtnBGActive text-white">
                         <div class="flex gap-1 items-center">
@@ -266,14 +257,10 @@
                             <div>Create Feeds</div>
                         </div>
                     </SquareButton>
-                    <SquareButton data-testid="feedEditModal-create-button" @click="createFeed()"
-                    v-else-if="areCreatePostConditionsMet"
-                    class="bg-submitBtnBG hover:bg-submitBtnBGHover focus-visible:bg-submitBtnBGHover active:bg-submitBtnBGActive text-white"
-                    :is-disabled="attemptingToCreateFeed">Submit</SquareButton>
                 </div>
             </div>
             <Transition>
-                <div v-if="selectedFeedType == FeedEnums.Types.FeedGenerator && attemptingToCreateFeed"
+                <div v-if="attemptingToCreateFeed"
                 class="absolute z-10 flex justify-center h-full w-full right-0 bottom-0 rounded bg-slate-800/70">
                     <div class="flex flex-col gap-1 items-center justify-center">
                         <TransitionGroup name="list">
@@ -289,6 +276,7 @@
                 </div>
             </Transition>
         </div>
+        <ConfirmModal ref="confirm"/>
     </div>
 </template>
 
@@ -298,7 +286,6 @@ import { FeedEnums } from '../../enums/FeedEnums.ts'
 import PillButton from '../Utilities/PillButton.vue';
 import InLaInput from '../Utilities/InLaInput.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
-import UserSearchBar from '../Utilities/UserSearchBar.vue';
 import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { AddFeedToList, FeedState, GetFeed, PrepareFeedData, UpdateFeedDetails } from '../../state/FeedList.vue';
 import { ProfileView, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
@@ -308,7 +295,7 @@ import { isUserVerified } from '../../helpers/states';
 import { getCompactNumberValue } from '../../helpers/converters';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import CustomFeedButton from './CustomFeedButton.vue';
-import { IFeedCreationStatus, IFeedGeneratorSelection } from '../../interfaces/FeedInterfaces';
+import { IFeedCreationStatus, IFeedGeneratorSelection, IFeedStackItem } from '../../interfaces/FeedInterfaces';
 import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
 import { AppBskyFeedDefs } from '@atproto/api/dist/client';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
@@ -316,6 +303,14 @@ import FilterBar from '../Utilities/FilterBar.vue';
 import { PropType } from 'vue';
 import ImageLoader from '../Utilities/ImageLoader.vue';
 import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes.ts';
+import FeedStackButton from '../Utilities/FeedStackButton.vue';
+import UserSearchBar from '../Utilities/UserSearchBar.vue';
+import InsetLabel from '../Utilities/InsetLabel.vue';
+import { SearchForAccounts } from '../../lib/api/Feed.vue';
+import { HandleAPIError } from '../../helpers/errors';
+import { GenerateUniqueID } from '../../helpers/generators';
+import TagEntry from '../Utilities/TagEntry.vue';
+import ConfirmModal from '../Utilities/ConfirmModal.vue';
 
 export default defineComponent({
     components:{
@@ -328,6 +323,10 @@ export default defineComponent({
         CustomFeedButtonPlaceholder,
         FilterBar,
         ImageLoader,
+        FeedStackButton,
+        InsetLabel,
+        TagEntry,
+        ConfirmModal,
     },
     props:{
         feedType: Object as PropType<FeedEnums.Types>,
@@ -338,11 +337,9 @@ export default defineComponent({
         return{
             AppState,
             AppSettingsState,
-            userPromptText: 'What type of Feed do you want to add?',
             modalPages:[
-                { title:'What type of Feed is it?', instruction: 'Select Below:'},
-                { title:'What do you want to see?', instruction: 'Select filter(s) below:'},
-                { title:'Summary', instruction: 'Are these settings correct?'},
+                { title:'What type of Feed is it?', instruction: 'Select below'},
+                { title:'Does this look alright?', instruction: 'Confirm Feed(s)'},
             ],
             feedFilters:{
                 tag:'',
@@ -351,6 +348,10 @@ export default defineComponent({
                     handle:'',
                     displayName:''
                 } as ProfileViewDetailed,
+                userSearch:{
+                    searchTerm:'',
+                    lastResultsTerm:''
+                },
                 notifications:{
                     justNotifs:false,
                 },
@@ -362,18 +363,24 @@ export default defineComponent({
             /**Are we currently waiting for Profile Data request(s) from the API to complete?*/
             isAwaitingProfileData:false,
             currentPage:0,
-            totalPages:3,
+            totalPages:2,
             feedTypeOptions:[
                 {id:0, name:'User',value:FeedEnums.Types.User},
                 {id:1, name:'Tag',value:FeedEnums.Types.Tag},
-                {id:2, name:'Trending',value:FeedEnums.Types.Trending},
-                {id:3, name:'Custom Feed',value:FeedEnums.Types.FeedGenerator},
+                {id:2, name:'Custom Feed',value:FeedEnums.Types.FeedGenerator},
+                {id:3, name:'Trending',value:FeedEnums.Types.Trending},
                 {id:4, name:'Following',value:FeedEnums.Types.Following},
                 {id:5, name:'Notifications',value:FeedEnums.Types.Notifications},
             ],
             selectedFeedType:"",
             feedTypeSelected:false,
             feedSpecificationsSet:false,
+            /**Indicates if a Trending Type Feed is currently in the Feed Stack waiting to be created. */
+            isTrendingTypeInStack:false,
+            /**Indicates if a Following Type Feed is currently in the Feed Stack waiting to be created. */
+            isFollowingTypeInStack:false,
+            /**Indicates if a Notification Type Feed is currently in the Feed Stack waiting to be created. */
+            isNotificationTypeInStack:false,
             searchResults:[
                 {did:'asjdy8383h31', name:'Jimmy', handle:'brainblast', pfp:'src/assets/test-media/posts/image04.png'},
                 {did:'033jo3hcbccs', name:'James', handle:'serectserviced'},
@@ -383,6 +390,17 @@ export default defineComponent({
             ],
             searchTerm:'',
             debouncedSearchTerm:'',
+            /**Are we waiting for results from a User Account search to be returned? */
+            awaitingUserSearchResults:false,
+            /**Are we trying to download detailed User Profile data from a User search result being selected? */
+            awaitingDetailsUserProfileData:false,
+            /**
+             * A cache of `ProfileViewDetailed` records for all the User account results that were selected.
+             * Used to prevent a large number of request from being made against the API.
+            */
+            userAccountCache:[] as ProfileViewDetailed[],
+            /**Array that holds the results from the latest User Account search. */
+            userAccountSearchResults:[] as IUserSearchResult[],
             /**Current text used to filter the displayed Feed Generators. */
             customFeedFilterText:'',
             /**Are we waiting for the 1st collection Custom Feed GeneratorView objects to be returned? */
@@ -395,8 +413,15 @@ export default defineComponent({
             defaultFeedData:[] as IFeedGeneratorSelection[],
             /**Object that holds the most popular custom Feed Generator objects. */
             customFeedData: [] as IFeedGeneratorSelection[],
-            /**Object that holds all the Feed Generators the User has selected. */
+            /**
+             * Object that holds all the Feed Generators the User has selected.
+             * Used by the pill-like controls that can be used to quickly
+             * deselect/remove any of the Custom Feeds that have been selected,
+             * even if they are currently not visible in the search results.
+             */
             selectedFeedItems: [] as AppBskyFeedDefs.GeneratorView[],
+            /**Object that holds all the Feeds that have been queued for creation. */
+            feedStackItems: [] as IFeedStackItem[],
             /**Array used to display the status of each attempt to create a Feed from multiple selection. */
             feedCreationStatus: [] as IFeedCreationStatus[],
             // [{
@@ -425,6 +450,12 @@ export default defineComponent({
             attemptingToCreateFeed: false,
             FeedEnums,
             TrapFocus,
+            /**
+             * Is the "confirm Feed discard" message currently being displayed?
+             * Used to temporarily disable `TrapFocus()` for this component while
+             * the `ConfirmModal` component is being displayed.
+             */
+            isConfirmModalDisplayed:false,
             isUserVerified,
             getCompactNumberValue
         }
@@ -439,18 +470,11 @@ export default defineComponent({
             if(this.currentPage+1 >= this.totalPages){
                 this.currentPage=0;
                 this.selectedFeedType="";
+                this.$router.push(`/create/feed`);
             }
             else{
-                if(this.currentPage == 0 && this.selectedFeedType.trim() != '' && Object.values<string>(FeedEnums.Types).includes(this.selectedFeedType)){
-                    this.$router.push(`/create/feed/${this.selectedFeedType}`);
-                }
-                else if(this.currentPage == 1){
-                    this.$router.push(`/create/feed/${this.selectedFeedType}/summary`);
-                }
+                this.$router.push(`/create/feed/summary`);
             }
-            this.feedTypeSelected = true;
-            if(this.customFeedData.length<1 && this.currentPage == 1 && this.selectedFeedType == FeedEnums.Types.FeedGenerator) this.getCustomFeeds();
-            if(this.validTags.length>0 || this.feedFilters.user) this.feedSpecificationsSet = true;
             (this.$el as HTMLElement).focus();
         },
         /**
@@ -459,12 +483,14 @@ export default defineComponent({
          */
         backOnePage(){
             if(this.currentPage-1 > -1){
-                console.log(this.$route)
-                if(this.currentPage >= 1) this.$router.push(this.$route.path.substring(0, this.$route.path.lastIndexOf('/')));
+                console.log(this.$route);
+                this.$router.push('/create/feed');
                 this.feedTypeSelected = false;
                 this.feedSpecificationsSet = false;
+                // if(this.currentPage >= 1) this.$router.push(this.$route.path.substring(0, this.$route.path.lastIndexOf('/')));
             }
             else{
+                this.feedStackItems = [];//prevents the "confirm cancel" prompt from displaying
                 this.closeModal()
             }
         },
@@ -479,16 +505,133 @@ export default defineComponent({
             //this.forwardOnePage();
         },
         /**
+         * Method used to "submit" the search term entered into the control for User accounts
+         * on Enter Key or button press.
+         */
+        async submitUserSearch(){
+            if(!this.awaitingUserSearchResults && this.feedFilters.userSearch.searchTerm.trim().length>0){
+                this.awaitingUserSearchResults = true;
+                console.log(`Search term: ${this.feedFilters.userSearch.searchTerm}`);//DEBUG
+                var searchResult:ProfileView[] = [];
+                await SearchForAccounts(`${this.feedFilters.userSearch.searchTerm}`)
+                .then(res => {
+                    searchResult = res.data.actors
+                    this.userAccountSearchResults = [];//clear results
+                    this.feedFilters.userSearch.lastResultsTerm = this.feedFilters.userSearch.searchTerm;
+                    searchResult.forEach(element => {
+                        let matchIndex = this.feedStackItems.findIndex(x=>x.did == element.did);
+                        this.userAccountSearchResults.push({profileData:element,selected:(matchIndex > -1 ? true : false),awaitingDetailedData:false});
+                    });
+                    console.log(this.userAccountSearchResults);
+                })
+                .catch(err => toast.add(HandleAPIError(err, 'Error getting User search results')))
+                .finally(()=>{
+                    this.awaitingUserSearchResults = false;
+                });
+            }
+        },
+        /**
          * Method that fires when a user is selected in the
          * `UserSearchBar` control.
          * @param user Object representing the chosen user.
          */
-        selectUser(user:ProfileView){
-            this.getUserProfileViewDetailed(user.did)
-            .then(res => {
-                if(typeof res != 'undefined') this.feedFilters.user = res
-            })
-            this.forwardOnePage();
+        async selectUser(user:ProfileView, index:number){
+            let matchIndex = this.feedStackItems.findIndex(x => x.did == user.did);
+            //If selected item is being deselected...
+            if(matchIndex>-1){
+                this.removeFeedStackItem(FeedEnums.Types.User,user.did,matchIndex);
+            }
+            else{//User account is being selected...
+                //Detailed Profile data needs to be stored in a temp cache so a large number of request cannot be fired off
+                //if the User spams clicking User Account results
+                /**Value is greater than -1 if detailed profile data is already in cache. */
+                let cacheIndex = this.userAccountCache.findIndex(x=>x.did == user.did);
+                if(cacheIndex>-1){
+                    this.feedStackItems.push({id:user.did,did:user.did,handle:user.handle,profileData:this.userAccountCache[cacheIndex],icon:FeedEnums.Icons.User,tags:[],type:FeedEnums.Types.User});
+                    this.userAccountSearchResults[index].selected = true;
+                }
+                else{//we need to request data from API
+                    this.userAccountSearchResults[index].awaitingDetailedData = true;
+                    await this.getUserProfileViewDetailed(user.did)
+                    .then(res => {
+                        if(typeof res != 'undefined'){
+                            //Add new User account data to cache, add to feed stack and indicate account has been selected in search results
+                            if(this.userAccountCache.length+1>20) this.userAccountCache.shift(); //Limits cache to holding 20 records
+                            this.userAccountCache.push(res);
+                            this.feedStackItems.push({id:res.did,did:res.did,handle:res.handle,profileData:res,icon:FeedEnums.Icons.User,tags:[],type:FeedEnums.Types.User});
+                            this.userAccountSearchResults[index].selected = true;
+                        }
+                    })
+                    .catch(err => toast.add(HandleAPIError(err, 'Error getting detailed User Profile data')))
+                    .finally(()=>{
+                        this.userAccountSearchResults[index].awaitingDetailedData = false;
+                    })
+                }
+            }
+        },
+        /**
+         * Method fired when the 'clear results' button on the
+         * `UserSearchBar` is clicked.
+         */
+        clearUserAccountResults(){
+            this.userAccountSearchResults = [];
+            this.feedFilters.userSearch.searchTerm = this.feedFilters.userSearch.lastResultsTerm = '';
+        },
+        /**
+         * Method used to remove a Feed reference from the Feed Stack as well as related
+         * data structures.
+         * @param feedType The `FeedEnum.Type` type of the Feed Stack item to remove.
+         * @param identifier The unique identifier used to find the item in the Feed Stack to remove.
+         * @param index OPTIONAL: The index of the record in the Feed Stack to remove. Used when the index has already been found before calling this method.
+         */
+        removeFeedStackItem(feedType:FeedEnums.Types,identifier:string,index=-1){
+            switch (feedType) {
+                case FeedEnums.Types.User:
+                    //Deselect from User search results
+                    let userResultIndexToDeselect = this.userAccountSearchResults.findIndex(x=>x.profileData.did == identifier);
+                    if(userResultIndexToDeselect>-1) this.userAccountSearchResults[userResultIndexToDeselect].selected = false;
+                    //Remove from Feed Stack
+                    if(index>-1) this.feedStackItems.splice(index,1);
+                    else {
+                        let feedStackUserIndex = this.feedStackItems.findIndex(x => x.did == identifier);
+                        if(feedStackUserIndex>-1) this.feedStackItems.splice(feedStackUserIndex,1);
+                    }
+                    break;
+                case FeedEnums.Types.FeedGenerator:
+                    //Sync deselection state between selectedFeedItems (mini buttons) and Feed Stack
+                    let selectedIndexToRemove = this.selectedFeedItems.findIndex(f=>f.uri == identifier);
+                    if(selectedIndexToRemove>-1) this.selectedFeedItems.splice(selectedIndexToRemove,1);
+                    let stackIndexToRemove = this.feedStackItems.findIndex(i=>i.generatorData?.uri == identifier);
+                    if(stackIndexToRemove>-1) this.feedStackItems.splice(stackIndexToRemove,1);
+                    let customFeedDataIndex = this.customFeedData.findIndex(x => x.generator.uri == identifier);
+                    this.customFeedData[customFeedDataIndex].selected = !this.customFeedData[customFeedDataIndex].selected;
+                    break;
+                case FeedEnums.Types.Trending:
+                    this.isTrendingTypeInStack = false;
+                    break;
+                case FeedEnums.Types.Following:
+                    this.isFollowingTypeInStack = false;
+                    break;
+                case FeedEnums.Types.Notifications:
+                    this.isNotificationTypeInStack = false;
+                    break;
+                default:
+                    break;
+            }
+            //Removal method is the same, the individual variable toggles are handled above
+            switch (feedType) {
+                case FeedEnums.Types.Tag:
+                case FeedEnums.Types.Trending:
+                case FeedEnums.Types.Following:
+                case FeedEnums.Types.Notifications:
+                    let stackIndexToRemove = this.feedStackItems.findIndex(x=>x.id==identifier);
+                    if(stackIndexToRemove>-1) this.feedStackItems.splice(stackIndexToRemove,1);
+                    break;
+
+                default:
+                    break;
+            }
+            //Needs to also remove the record from the User account results (or the results need to be cleared when navigating away from the first page)
         },
         /**
          * Method used to get detailed Bluesky profile information for a specific
@@ -517,14 +660,18 @@ export default defineComponent({
             return s.join(' ');
         },
         /**
+         * Used by the Tag entry input control on Enter key press. If the entered tags are
+         * valid, it adds them to the "feed stack" as a single Feed specification.
+         * OLD
          * Used by the Tag entry input control on Enter key press. Used to check if the
          * input values are valid before moving forward to the Feed creation details
          * summary page.
          */
-        trySubmitTags(){
-            if(this.isTagSpecsEntryComplete){
-                this.forwardOnePage();
-            }
+        async trySubmitTags(submittedTags:string[]){
+            let tagDisplayName:string|undefined;
+            tagDisplayName = submittedTags.join(' ');
+            let identity = GenerateUniqueID(15);//might be best to find a way to generate an id using the tag text and time
+            this.feedStackItems.push({id:identity,did:'',handle:'',name:tagDisplayName != 'undefined' ? tagDisplayName : '',icon:FeedEnums.Icons.Tag,tags:submittedTags,type:FeedEnums.Types.Tag});
         },
         async testGetNotifs(){
             if(AppState.isAuthBrowsing){
@@ -555,9 +702,9 @@ export default defineComponent({
             this.viewingFeedGenSearchResults = false;
             this.defaultFeedData = [];
             this.customFeedData = [];
-            this.selectedFeedItems = [];
             this.feedFilters.feedGenerator.searchTerm = '';
             this.feedFilters.feedGenerator.lastSearchTerm = '';
+            this.customFeedDataCursor = '';
             //Get "Discover" Feed
             GetBrowsingAgent().app.bsky.feed.getFeedGenerators({feeds:['at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot']})
             .then(res => {
@@ -581,7 +728,14 @@ export default defineComponent({
                 console.log(err);
                 toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
             })
-            .finally(()=>{this.awaitingInitialCustomFeedData = false;})
+            .finally(()=>{
+                //Compare returned results against items in Feed Stack and mark them as selected if they have already been added to the stack
+                this.customFeedData.forEach(element => {
+                    let matchIndex = this.feedStackItems.findIndex(x=>x.did == element.generator.uri);
+                    if(matchIndex>-1) element.selected = true;
+                });
+                this.awaitingInitialCustomFeedData = false;
+            })
         },
         /**Method used to load additional Feed Generators through Bluesky's API after the 1st request. */
         async loadMoreFeedGenerators(){
@@ -589,7 +743,9 @@ export default defineComponent({
             GetBrowsingAgent().app.bsky.unspecced.getPopularFeedGenerators({limit:10,cursor:this.customFeedDataCursor})
             .then(res => {
                 res.data.feeds.forEach(element => {
-                    this.customFeedData.push({generator:element,selected:false});
+                    //Compare returned results against items in Feed Stack and mark them as selected if they have already been added to the stack
+                    let matchIndex = this.feedStackItems.findIndex(x=>x.did == element.uri);
+                    this.customFeedData.push({generator:element,selected:matchIndex>-1 ? true : false});
                 });
                 this.customFeedDataCursor = res.data.cursor;
             })
@@ -610,11 +766,13 @@ export default defineComponent({
                 this.awaitingSearchCustomFeedData = true;
                 this.awaitingAdditionalCustomFeedData = true;
                 this.customFeedData = [];
-                this.selectedFeedItems = [];
+                // this.selectedFeedItems = [];
                 GetBrowsingAgent().app.bsky.unspecced.getPopularFeedGenerators({limit:100,query:searchTerm})
                 .then(res => {
                     res.data.feeds.forEach(element => {
-                        this.customFeedData.push({generator:element,selected:false});
+                        //Compare returned results against items in Feed Stack and mark them as selected if they have already been added to the stack
+                        let matchIndex = this.feedStackItems.findIndex(x=>x.did == element.uri);
+                        this.customFeedData.push({generator:element,selected:matchIndex>-1 ? true : false});
                     });
                     this.customFeedDataCursor = res.data.cursor;
                     this.awaitingSearchCustomFeedData = false;
@@ -633,21 +791,68 @@ export default defineComponent({
             this.customFeedData.forEach(fd => {
                 fd.selected = false;
             });
+            this.selectedFeedItems.forEach(fi=>{
+                //Remove all selected custom feeds from Feed Stack before emptying
+                let stackMatchIndex = this.feedStackItems.findIndex(i=>i.generatorData?.uri == fi.uri);
+                if(stackMatchIndex>-1) this.feedStackItems.splice(stackMatchIndex,1);
+            })
             this.selectedFeedItems = [];
         },
         /**Method that selects or deselects a specific Feed Generator in the displayed list. */
-        toggleFeedGeneratorSelection(atUri:string|undefined){
+        toggleFeedGeneratorSelection(atUri:string){
             let index = this.customFeedData.findIndex(x => x.generator.uri == atUri);
             if(index > -1){
-                //Toggle selection in array used as "View" source
-                this.customFeedData[index].selected = !this.customFeedData[index].selected;
-                //Update "selected items" array
-                if(!this.customFeedData[index].selected){
-                    let indexToRemove = this.selectedFeedItems.findIndex(f=>f.uri == atUri);
-                    if(indexToRemove>-1) this.selectedFeedItems.splice(indexToRemove,1);
+                if(this.customFeedData[index].selected){
+                    this.removeFeedStackItem(FeedEnums.Types.FeedGenerator,atUri);
                 }
-                else this.selectedFeedItems.push(this.customFeedData[index].generator);
+                else{
+                    //Sync selection state between selectedFeedItems (mini buttons) and Feed Stack
+                    this.customFeedData[index].selected = !this.customFeedData[index].selected;
+                    let generator = this.customFeedData[index].generator;
+                    this.selectedFeedItems.push(generator);
+                    this.feedStackItems.push({id:generator.uri,did:generator.uri,handle:generator.creator.handle,generatorData:generator,
+                        type:FeedEnums.Types.FeedGenerator,icon:FeedEnums.Icons.FeedGenerator,tags:[],name:generator.displayName});
+                }
             }
+        },
+        /**Method that adds or removes singular Feed Types from the "Feed Stack". */
+        toggleSingularFeedItem(feedType:FeedEnums.Types){
+            // if(index > -1){
+                switch (feedType) {
+                    case FeedEnums.Types.Trending:
+                        if(this.isTrendingTypeInStack){
+                            let stackIndex = this.feedStackItems.findIndex(x=>x.type == FeedEnums.Types.Trending);
+                            if(stackIndex>-1) this.feedStackItems.splice(stackIndex,1);
+                        }
+                        else{
+                            this.feedStackItems.push({id:'this_is_trending_feed',did:'',handle:'',icon:FeedEnums.Icons.Trending,tags:[],type:FeedEnums.Types.Trending,name:'Trending'})
+                        }
+                        this.isTrendingTypeInStack = !this.isTrendingTypeInStack;
+                        break;
+                    case FeedEnums.Types.Following:
+                        if(this.isFollowingTypeInStack){
+                            let stackIndex = this.feedStackItems.findIndex(x=>x.type == FeedEnums.Types.Following);
+                            if(stackIndex>-1) this.feedStackItems.splice(stackIndex,1);
+                        }
+                        else{
+                            this.feedStackItems.push({id:'this_is_following_feed',did:'',handle:'',icon:FeedEnums.Icons.Following,tags:[],type:FeedEnums.Types.Following,name:'Following'})
+                        }
+                        this.isFollowingTypeInStack = !this.isFollowingTypeInStack;
+                        break;
+                    case FeedEnums.Types.Notifications:
+                        if(this.isNotificationTypeInStack){
+                            let stackIndex = this.feedStackItems.findIndex(x=>x.type == FeedEnums.Types.Notifications);
+                            if(stackIndex>-1) this.feedStackItems.splice(stackIndex,1);
+                        }
+                        else{
+                            this.feedStackItems.push({id:'this_is_notification_feed',did:'',handle:'',icon:FeedEnums.Icons.Notifications,tags:[],type:FeedEnums.Types.Notifications,name:'Notifications'})
+                        }
+                        this.isNotificationTypeInStack = !this.isNotificationTypeInStack;
+                        break;
+                    default:
+                        break;
+                }
+            // }
         },
         toggleJustMentions(){
             this.feedFilters.notifications.justNotifs = !this.feedFilters.notifications.justNotifs;
@@ -701,79 +906,84 @@ export default defineComponent({
             this.feedCreationStatus = [];
             let successes = 0;
             let lastFeedItem = false;
-            if(this.selectedFeedType == FeedEnums.Types.FeedGenerator){
-                for (let i = 0; i < this.selectedFeedItems.length; i++) {
-                    lastFeedItem = (i == this.selectedFeedItems.length-1);
-                    let feedSourceData:IUserSearchResult = {
-                        did: this.selectedFeedItems[i].uri,
-                        handle: this.selectedFeedItems[i].creator.handle,
-                        name: this.selectedFeedItems[i].displayName
-                    }
-                    this.feedCreationStatus.push({
-                        message:`Attempting to create "${feedSourceData.name}" Feed...`,
-                        attempted:false,
-                        success:false
-                    });
 
-                    await PrepareFeedData(this.selectedFeedType as FeedEnums.Types,
-                    feedSourceData,
-                    this.feedFilters.tag)
-                    .then(res => {
-                        //Create the Feed
-                        if(AppState.isCreatingFeed){
-                            AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false,lastFeedItem);
-                            this.feedCreationStatus[i] = {
-                                message:`Created "${feedSourceData.name}" Feed!`,
-                                attempted:true,
-                                success:true
-                            };
-                            successes++;
-                        }
-                    })
-                    .catch(err => {
-                        console.log(err);
-                        toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+            for (let i = 0; i < this.feedStackItems.length; i++) {
+                lastFeedItem = (i == this.feedStackItems.length-1);
+                const stackItem = this.feedStackItems[i];
+                let feedName = `${typeof stackItem.name != 'undefined' ? stackItem.name : `@${stackItem.handle}`}`;
+                this.feedCreationStatus.push({
+                    message:`Attempting to create "${feedName}" Feed...`,
+                    attempted:false,
+                    success:false
+                });
+
+                //Get Feed data via API
+                await PrepareFeedData(stackItem.type,stackItem)
+                .then(res => {
+                    //Add Feed to display list
+                    if(AppState.isCreatingFeed){
+                        AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false,lastFeedItem);
                         this.feedCreationStatus[i] = {
-                            message:`Failed to create "${feedSourceData.name}" Feed...`,
+                            message:`Created "${feedName}" Feed!`,
                             attempted:true,
-                            success:false
+                            success:true
                         };
-                        // setTimeout(() => {
-                        //     this.attemptingToCreateFeed = false;
-                        // }, 800);
-                    });
-                };
-                //DEBUG CODE
-                // for (let i = 0; i < 5; i++) {
-                //     this.feedCreationStatus.push({
-                //         message:`Attempting to create "Feed ${i}" Feed...`,
-                //         attempted:false,
-                //         success:false
-                //     });
-                //     await new Promise((resolve) => setTimeout(resolve,800));
-                //     this.feedCreationStatus[i] = {
-                //         message:`Created "Feed ${i}" Feed!`,
-                //         attempted:true,
-                //         success:true
-                //     };
-                // }
-                if(successes>0){
-                    let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
-                    AppState.SendAppSyncMessage(feedSyncMessage);
-                    setTimeout(() => {
-                        this.closeModal();
-                    }, 3000);
-                }
-                else{
-                    this.feedCreationStatus.push({
-                        message:'Failed to create Feeds...',
+                        successes++;
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                    toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
+                    this.feedCreationStatus[i] = {
+                        message:`Failed to create "${feedName}" Feed...`,
                         attempted:true,
                         success:false
-                    })
-                    setTimeout(() => {
-                        this.attemptingToCreateFeed = false;
-                    }, 3000);
-                }
+                    };
+                    // setTimeout(() => {
+                    //     this.attemptingToCreateFeed = false;
+                    // }, 800);
+                });
+            }
+            if(successes>0){
+                let feedSyncMessage:BroadcastObject = {target:BroadcastChannelTarget.FeedColumn, data:structuredClone(toRawDeep(FeedState.FeedList))};
+                AppState.SendAppSyncMessage(feedSyncMessage);
+                setTimeout(() => {
+                    this.attemptingToCreateFeed = false;
+                    this.feedStackItems = [];
+                    this.closeModal();
+                }, 3000);
+            }
+            else{
+                this.feedCreationStatus.push({
+                    message:'Failed to create Feeds...',
+                    attempted:true,
+                    success:false
+                })
+                setTimeout(() => {
+                    this.attemptingToCreateFeed = false;
+                }, 3000);
+            }
+        },
+        /**Method that returns the total number of a specified Feed type that are currently in the "Feed Stack". */
+        getFeedCountForType(feedType:FeedEnums.Types){
+            switch (feedType) {
+                case FeedEnums.Types.User:
+                    return this.numberOfUserFeedsInStack;
+                case FeedEnums.Types.Tag:
+                    return this.numberOfTagFeedsInStack;
+                case FeedEnums.Types.FeedGenerator:
+                    return this.numberOfCustomFeedsInStack;
+                default:
+                    break;
+            }
+        },
+        /**
+         * Method used to close the `FeedEditModal` if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape'){
+                this.closeModal();
             }
         },
         closeModal(){
@@ -783,33 +993,6 @@ export default defineComponent({
         }
     },
     computed:{
-        /**
-         * Method that takes the content put into the "Tag" input control
-         * and parses it for valid tags - words starting with (#) and containing
-         * no illegal hashtag characters. Currently the allowed length is unlimited.
-         */
-        validTags(){
-            const tagRegex = new RegExp(`${/#[^/\\!@\-()$%\^&\+~|[\]{}#,;'"`.<>=\s]+/.source}`,'g');
-            //content must be longer than 1 character
-            if(this.feedFilters.tag.length>1){
-                var result = [];
-                let matches = this.feedFilters.tag.matchAll(tagRegex);
-                for(const match of matches){
-                    result.push(match[0]);
-                }
-                return result;
-            }
-            return [];
-        },
-        /**
-         * Validates that the required conditions have been met during the
-         * Tag-type Feed creation process to progress to the summary/creation page.
-         */
-        isTagSpecsEntryComplete(){
-            return (this.validTags.length>0) &&
-            this.selectedFeedType == FeedEnums.Types.Tag &&
-            this.currentPage != this.totalPages-1 && this.currentPage != 0;
-        },
         /**
          * Validates that a Feed Type was selected from available
          * options.
@@ -836,21 +1019,7 @@ export default defineComponent({
          * Feed creation process.
          */
         canGoToNextPage(){
-            if(this.currentPage == 0){
-                return this.isFeedTypeConfirmed;
-            }
-            else if(this.currentPage != this.totalPages-1){
-                switch (this.selectedFeedType) {
-                    case FeedEnums.Types.User:
-                        return this.feedFilters.user.did.trim() != "";
-                    case FeedEnums.Types.Tag:
-                        return this.validTags.length>0;
-                    case FeedEnums.Types.FeedGenerator:
-                        return !this.awaitingInitialCustomFeedData && this.selectedFeedItems.length>0;
-                    default:
-                        return true;
-                }
-            }
+            return this.currentPage == 0 && this.feedStackItems.length>0;
         },
         isSelectedTypeNotifications(){
             return this.selectedFeedType == FeedEnums.Types.Notifications &&
@@ -867,20 +1036,7 @@ export default defineComponent({
          */
         areCreatePostConditionsMet(){
             if(this.currentPage == this.totalPages-1){
-                switch (this.selectedFeedType) {
-                    case FeedEnums.Types.User:
-                        return this.feedFilters.user.did.trim() != "";
-                    case FeedEnums.Types.Tag:
-                        return this.validTags.length>0;
-                    case FeedEnums.Types.FeedGenerator:
-                        return this.selectedFeedItems.length>0;
-                    case FeedEnums.Types.Trending:
-                    case FeedEnums.Types.Following:
-                    case FeedEnums.Types.Mentions:
-                        return true;
-                    default:
-                        return false;
-                }
+                return this.feedStackItems.length>0;
             }
             else{
                 return false;
@@ -903,6 +1059,22 @@ export default defineComponent({
                     break;
             }
             return title;
+        },
+        /**Calculates the number of Feeds that are currently in the "Feed Stack". */
+        numberOfFeedsInStack(){
+            return this.feedStackItems.length;
+        },
+        /**Calculates the number of "User Feeds" that are currently in the "Feed Stack". */
+        numberOfUserFeedsInStack(){
+            return this.feedStackItems.filter(x=>x.type == FeedEnums.Types.User).length;
+        },
+        /**Calculates the number of "Tag Feeds" that are currently in the "Feed Stack". */
+        numberOfTagFeedsInStack(){
+            return this.feedStackItems.filter(x=>x.type == FeedEnums.Types.Tag).length;
+        },
+        /**Calculates the number of "Custom Feeds" that are currently in the "Feed Stack". */
+        numberOfCustomFeedsInStack(){
+            return this.feedStackItems.filter(x=>x.type == FeedEnums.Types.FeedGenerator).length;
         }
     },
     watch:{
@@ -920,72 +1092,55 @@ export default defineComponent({
                 document.title = this.getFeedTypeTitle;//Update page title when view Feed summary
             }
             else if(typeof oldSummary != 'undefined' && newSummary != oldSummary && oldSummary.toLocaleLowerCase() == 'summary') this.currentPage = 1; //go back to Feed options page
+        },
+        /**Used to load default Custom Feed Generators when selecting the "Custom Feed" feed type button. */
+        selectedFeedType(newType:string,oldType:string){
+            if(oldType != FeedEnums.Types.FeedGenerator && newType == FeedEnums.Types.FeedGenerator){
+                this.getCustomFeeds();
+            }
         }
     },
     beforeRouteEnter(to, from, next){
         if(!AppState.canBrowse) next({path:'/login'});
         else{
-            //Determine if Feed is being created or updated
-            if(to.path.includes('/create')){
-                AppState.isCreatingFeed = true;
-                AppState.isUpdatingFeed = false;
-            }
-            else{
-                AppState.isUpdatingFeed = true;
-                AppState.isCreatingFeed = false;
-            }
-            //Prevent creating Following or Notification feeds if not logged in
-            if((to.path.includes('/following') || to.path.includes('/notification')) && !AppState.isAuthBrowsing){
-                next({path:'/create/feed'});
-            }
-            //Direct navigation to summary prevented
-            else if(!from.path.includes('/create/feed/') && to.name == 'create feed summary'){
+            if(to.path == '/create/feed'){
                 next(vm =>{
-                    document.title = vm.getFeedTypeTitle;
-                    vm.$router.replace('/create/feed');
+                    vm.$data.currentPage = 0;
                 })
             }
-            //Prevent jump to summary if type is not the same
-            else if(to.name == 'create feed summary' && !to.path.includes(from.path)){
-                next({path:from.path,replace:true})
+            else if(to.path.includes('/create/feed/summary')){
+                next(vm =>{
+                    vm.$data.currentPage = 1;
+                })
             }
-            else{//navigate as usual - but make sure the correct modal page is being shown
-                if(to.path == '/create/feed'){
-                    next(vm =>{
-                        document.title = vm.getFeedTypeTitle;
-                        vm.$data.currentPage = 0;
-                    })
-                }
-                else if(to.name == 'feed type selected'){
-                    next(vm =>{
-                        document.title = vm.getFeedTypeTitle;
-                        vm.$data.currentPage = 1;
-                    })
-                }
-                else next();
-            }
+            else next();
         }
     },
-    beforeRouteUpdate(to, from, next){
-        //Prevent creating Following or Notification feeds if not logged in
-        if((to.path.includes('/following') || to.path.includes('/notification')) && !AppState.isAuthBrowsing){
-            next({path:'/create/feed'});
+    async beforeRouteLeave(to, from){
+        let canLeaveWithoutPrompt = false;
+        if(to.path.includes('/create/feed')) return true;
+        if(this.attemptingToCreateFeed){
+            toast.add({summary:"Please wait", detail:`Feed creation in progress, please wait`, severity:'info', group:'tr', life:1500});
+            return canLeaveWithoutPrompt;
         }
+        if(this.numberOfFeedsInStack>0){
+            type ConfirmModalRef = InstanceType<typeof ConfirmModal>;
+            this.isConfirmModalDisplayed = true;
+            await (this.$refs.confirm as ConfirmModalRef).show('Are you sure you want to cancel creating Feeds?')
+            .then(res => {
+                canLeaveWithoutPrompt = res;
+                this.isConfirmModalDisplayed = false;
+            })
+        }
+        else canLeaveWithoutPrompt = true;
+        return canLeaveWithoutPrompt;
     },
     async created(){
-        if(typeof this.feedType != 'undefined' && Object.values(FeedEnums.Types).includes(this.feedType)){
-            this.selectedFeedType = this.feedType
-            this.currentPage = 1;
-            if(this.feedType == FeedEnums.Types.FeedGenerator){
-                this.getCustomFeeds();
-            }
-        }
-        else if(typeof this.feedType != 'undefined' && !Object.values(FeedEnums.Types).includes(this.feedType)){//invalid feed type
-            this.$router.replace('/create/feed');
-        }
+        AppState.isCreatingFeed = true;
         document.title = this.getFeedTypeTitle;
     },
     mounted(){
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
         if(AppState.isUpdatingFeed){
             //Start on last/summary page
             this.currentPage = this.modalPages.length-1;
@@ -1015,7 +1170,11 @@ export default defineComponent({
             }
         }
         (this.$el as HTMLElement).focus();
-    }
+    },
+    beforeUnmount() {
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
+        AppState.isCreatingFeed = false;
+    },
     // watch:{
     //     'feedFilters.tag': debounce(function (newVal){
 

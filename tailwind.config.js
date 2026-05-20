@@ -46,6 +46,10 @@ export default {
         searchbarFocusHightlight: "oklch(from var(--color-searchbar-focus-highlight) l c h / <alpha-value>)",
         searchbarResultHover: "oklch(from var(--color-searchbar-result-hover) l c h / <alpha-value>)",
         searchbarHandle: "oklch(from var(--color-searchbar-handle) l c h / <alpha-value>)",
+        searchbarShowingResultsBG: "oklch(from var(--color-searchbar-showing-results-bg) l c h / <alpha-value>)",
+        searchbarShowingResultsText: "oklch(from var(--color-searchbar-showing-results-text) l c h / <alpha-value>)",
+        searchbarValidationBG: "oklch(from var(--color-searchbar-validation-bg) l c h / <alpha-value>)",
+        searchbarValidationText: "oklch(from var(--color-searchbar-validation-text) l c h / <alpha-value>)",
         loginBtn: "oklch(from var(--color-login-btn) l c h / <alpha-value>)",
         loginBtnHover: "oklch(from var(--color-login-btn-hover) l c h / <alpha-value>)",
         loginHostHover: "oklch(from var(--color-login-host-hover) l c h / <alpha-value>)",
@@ -99,6 +103,17 @@ export default {
         postBookmark: "oklch(from var(--color-post-bookmark) l c h / <alpha-value>)",
         postBookmarkHover: "oklch(from var(--color-post-bookmark-hover) l c h / <alpha-value>)",
         postBookmarkActive: "oklch(from var(--color-post-bookmark-active) l c h / <alpha-value>)",
+        feedTypeButton: "oklch(from var(--color-feed-type-btn) l c h / <alpha-value>)",
+        feedTypeButtonHover: "oklch(from var(--color-feed-type-btn-hover) l c h / <alpha-value>)",
+        feedTypeButtonActive: "oklch(from var(--color-feed-type-btn-active) l c h / <alpha-value>)",
+        feedTypeButtonDisabled: "oklch(from var(--color-feed-type-btn-disabled) l c h / <alpha-value>)",
+        feedTypeButtonCounter: "oklch(from var(--color-feed-type-btn-counter) l c h / <alpha-value>)",
+        feedTypeButtonCounterHover: "oklch(from var(--color-feed-type-btn-counter-hover) l c h / <alpha-value>)",
+        feedTypeButtonCounterDisabled: "oklch(from var(--color-feed-type-btn-counter-disabled) l c h / <alpha-value>)",
+        noResultsInsetBG: "oklch(from var(--color-inset-label-bg) l c h / <alpha-value>)",
+        noResultsInsetText: "oklch(from var(--color-inset-label-text) l c h / <alpha-value>)",
+        noResultsInsetInnerShadowColor: "var(--color-inset-label-inner-shadow-color)",
+        tagEntryTagBG: "var(--color-tag-entry-tag-bg)",
       },
       fontSize:{
         feedPostName: '0.75rem',
@@ -108,7 +123,10 @@ export default {
         'md-harder': '0 4px 4px rgba(0, 0, 0, 0.75)'
       },
       boxShadow:{
-        'scroll-underline' : '0 6px 4px -4px rgba(0,0,15,0.25)', //shadow-[rgba(0,0,15,0.25)_0px_6px_4px_-4px]
+        'scroll-underline'    : '0 6px 4px -4px rgba(0,0,15,0.25)', //shadow-[rgba(0,0,15,0.25)_0px_6px_4px_-4px]
+        'scroll-element-drop-shadow' : '0px -2px 8px 4px rgba(0,0,15,0.25)',
+        'scroll-inner-bottom' : 'inset 0 -6px 4px -4px rgba(0,0,15,0.25)',
+        'scroll-inner-window' : 'inset 1px 2px 2px 0px rgba(0,0,15,0.20)',
       }
     },
   },

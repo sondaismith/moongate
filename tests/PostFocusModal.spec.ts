@@ -106,12 +106,15 @@ test('Ensure scroll position for reply container is remembered when navigating t
     //add new feed
     await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-feed-button').click();
-    await instance1.getByTestId('feedEditModal-next-page-button').click();
-    await instance1.getByTestId('inlainput-input').fill('username');
-    await instance1.getByTestId('inlainput-input').press('Enter');
+    await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').fill('username');
+    await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').press('Enter');
     await expect(instance1.getByTestId('user-search-bar-result').nth(0)).toBeVisible();
     await instance1.getByTestId('user-search-bar-result').nth(0).click();
-    await expect(instance1.getByText('submit')).toBeVisible();
+    await expect(instance1.getByTestId('feedEditModal-next-page-button')).toBeVisible();
+    await instance1.getByTestId('feedEditModal-next-page-button').click();
+    await expect(instance1.getByTestId('feedEditModal-summary-page')).toBeVisible();
+    await expect(instance1.getByTestId('feedEditModal-summary-page-feed-list').getByTestId('feedStackButton-display-only-item')).toHaveCount(1);
+    await expect(instance1.getByText('create feed')).toBeVisible();
     await instance1.getByTestId('feedEditModal-create-button').click();
     await expect(instance1.getByTestId('feed-edit-modal')).toBeHidden();
 
@@ -262,12 +265,15 @@ test('Ensure scroll position for reply container is remembered when navigating t
     //add new feed
     await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-feed-button').click();
-    await instance1.getByTestId('feedEditModal-next-page-button').click();
-    await instance1.getByTestId('inlainput-input').fill('username');
-    await instance1.getByTestId('inlainput-input').press('Enter');
+    await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').fill('username');
+    await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').press('Enter');
     await expect(instance1.getByTestId('user-search-bar-result').nth(0)).toBeVisible();
     await instance1.getByTestId('user-search-bar-result').nth(0).click();
-    await expect(instance1.getByText('submit')).toBeVisible();
+    await expect(instance1.getByTestId('feedEditModal-next-page-button')).toBeVisible();
+    await instance1.getByTestId('feedEditModal-next-page-button').click();
+    await expect(instance1.getByTestId('feedEditModal-summary-page')).toBeVisible();
+    await expect(instance1.getByTestId('feedEditModal-summary-page-feed-list').getByTestId('feedStackButton-display-only-item')).toHaveCount(1);
+    await expect(instance1.getByText('create feed')).toBeVisible();
     await instance1.getByTestId('feedEditModal-create-button').click();
     await expect(instance1.getByTestId('feed-edit-modal')).toBeHidden();
 

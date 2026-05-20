@@ -1,5 +1,5 @@
 <template>
-    <div @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,did?did:'',handle?handle:'')"
+    <div data-testid="avatar-round" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,did?did:'',handle?handle:'')"
     @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
     @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
     border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
@@ -36,9 +36,13 @@ function CreateUserFeed(userDid:string,userHandle:string){
     toast.add({summary:"Creating Feed...", detail:`Creating feed for @${userHandle}`,severity:'info',group:'tr',life:3000});
     PrepareFeedData(FeedEnums.Types.User,
     {
+        id:userDid,
         did:userDid,
         handle:userHandle,
-        name:''
+        name:'',
+        icon:FeedEnums.Icons.User,
+        type:FeedEnums.Types.User,
+        tags:[]
     })
     .then(res => {
         AddFeedToList(res.description,res.data,res.cursor,res.seenAt,false,true,true);

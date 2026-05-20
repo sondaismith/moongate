@@ -1,7 +1,7 @@
 <script lang="ts">
 import { reactive } from 'vue';
 import {FeedEnums} from '../enums/FeedEnums';
-import { IFeedColumnSettings, IFeedDescription, IFeedListing, IFeedDBData, IFeedReturnedPostResults } from '../interfaces/FeedInterfaces';
+import { IFeedColumnSettings, IFeedDescription, IFeedListing, IFeedDBData, IFeedReturnedPostResults, IFeedStackItem } from '../interfaces/FeedInterfaces';
 import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { getAuthorFeed, getTagPosts } from '../lib/api/Feed.vue';
 import { HandleAPIError, IsError } from '../helpers/errors';
@@ -117,19 +117,23 @@ export async function AddFeedToList(description:IFeedDescription, feed:FeedViewP
  * description and post collection needed and returns it as an `IFeedListing`.
  * NOTE: Must toggle AppState.isCreatingFeed before calling method.
  * @param feedType The type of Feed to prepare data for.
- * @param userData If this is to be a User-type Feed this parameter needs to be passed in.
+ * @param feedData `IFeedStackItem` that holds all the data needed to create the Feed.
  * @param tags If this is to be a Tag-type Feed this parameter needs to be passed in - is a space
  * separated collection of hashtags.
  */
-export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSearchResult={did:'',name:'',handle:''},tags:string=''):Promise<IFeedListing>{
+export async function PrepareFeedData(feedType:FeedEnums.Types,feedData:IFeedStackItem={id:'',did:'',name:'',handle:'',tags:[],type:FeedEnums.Types.User,icon:FeedEnums.Icons.User}):Promise<IFeedListing>{
     /**Object that will hold the returned Feed data. */
     var feedResult:IFeedReturnedPostResults = {data:[], cursor:''};
-    if(userData.did.trim() == '' && userData.handle.trim() != ''){
+    //Handles getting DID when called by `Userlink` component
+    if(feedData.did.trim() == '' && feedData.handle.trim() != ''){
         //get DID associated with handle
-        await GetBrowsingAgent().getProfile({actor: userData.handle})
-        .then(res => userData.did = res.data.did);
+        await GetBrowsingAgent().getProfile({actor: feedData.handle})
+        .then(res => feedData.did = res.data.did);
     }
-    await GetFeedDataForFeedType(feedType,userData.did,tags,'',defaultNumOfPostsToLoad)
+    /**List of hashtags (without the #) separated by whitespace. */
+    let tagString = typeof feedData.name != 'undefined' ? feedData.name : '';
+    if(feedData.type == FeedEnums.Types.Tag && tagString.trim() == '') throw new Error("Tag list is empty string");
+    await GetFeedDataForFeedType(feedData.type,feedData.did,tagString,'',defaultNumOfPostsToLoad)
     .then(res => {
         feedResult = res;
     })
@@ -164,8 +168,8 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,userData:IUserSea
         latestPostDate:'',
         latestPostCID:''
     }
-    await GenerateFeedDescription(usedFeedId,1,feedType,userData.did,feedResult.data,
-    undefined,tags)
+    await GenerateFeedDescription(usedFeedId,1,feedType,feedData.did,feedResult.data,
+    undefined,tagString)
     .then(res => {
         desc = res;
     });

@@ -11,18 +11,18 @@
         --color-delete-btn-bg-active:theme(colors.red.700);
         --color-primary-text: theme(colors.white);
         --color-primary-text-inverted:theme(colors.black);
-        --color-secondary-text: oklch(70.4% 0.04 256.788);
-        --color-secondary-text-hover: oklch(86.9% 0.022 252.894);
+        --color-secondary-text:theme(colors.slate.400);
+        --color-secondary-text-hover:theme(colors.slate.300);
         --color-hover: oklch(55.4% 0.046 257.417);
         --color-btn: oklch(55.4% 0.046 257.417);
         --color-btn-text: oklch(86.9% 0.022 252.894);
-        --color-btn-subtle:oklch(37.2% 0.044 257.287);
-        --color-btn-hover: oklch(37.2% 0.044 257.287);
+        --color-btn-subtle:theme(colors.slate.700);
+        --color-btn-hover:theme(colors.slate.700);
         --color-sidebar: oklch(20.8% 0.042 265.755);
         --color-feed-btn: oklch(20.8% 0.042 265.755);
         --color-feedtype-btn-hover: oklch(70.4% 0.04 256.788);
         --color-fc-bg: oklch(27.9% 0.041 260.031);
-        --color-post-bg: oklch(20.8% 0.042 265.755);
+        --color-post-bg: theme(colors.slate.900);
         --color-post-msg: oklch(44.6% 0.043 257.281);
         --color-post-focus-bg: oklch(12.9% 0.042 264.695);
         --color-border: oklch(37.2% 0.044 257.287);
@@ -48,6 +48,10 @@
         --color-searchbar-focus-highlight: oklch(54.6% 0.245 262.881);
         --color-searchbar-result-hover: oklch(37.3% 0.034 259.733);
         --color-searchbar-handle: oklch(68.5% 0.169 237.323);
+        --color-searchbar-validation-bg:theme(colors.red.500);
+        --color-searchbar-validation-text:theme(colors.red.950);
+        --color-searchbar-showing-results-bg:theme(colors.slate.900);
+        --color-searchbar-showing-results-text:theme(colors.slate.500);
         --color-login-btn: oklch(48.8% 0.243 264.376);
         --color-login-btn-hover: oklch(62.3% 0.214 259.815);
         --color-login-host-hover:theme(colors.slate.950);
@@ -98,21 +102,32 @@
         --color-post-bookmark:theme(colors.orange.500);
         --color-post-bookmark-hover:theme(colors.orange.400);
         --color-post-bookmark-active:theme(colors.orange.600);
+        --color-feed-type-btn:theme(colors.slate.500);
+        --color-feed-type-btn-hover:theme(colors.slate.700);
+        --color-feed-type-btn-active:theme(colors.slate.800);
+        --color-feed-type-btn-disabled:theme(colors.gray.700);
+        --color-feed-type-btn-counter:theme(colors.slate.600);
+        --color-feed-type-btn-counter-hover:theme(colors.slate.500);
+        --color-feed-type-btn-counter-disabled:theme(colors.gray.400);
+        --color-inset-label-bg:theme(colors.slate.700);
+        --color-inset-label-text:theme(colors.slate.500);
+        --color-inset-label-inner-shadow-color:rgb(15, 23, 43);
+        --color-tag-entry-tag-bg:theme(colors.slate.700);
     }
 }
 
 .theme-light{
     --color-bluesky-blue:#0070ff;
     --color-delete-btn-bg:theme(colors.red.500);
-    --color-delete-btn-bg-hover:theme(colors.red.500);
+    --color-delete-btn-bg-hover:theme(colors.red.400);
     --color-delete-btn-bg-active:theme(colors.red.700);
     --color-primary-text: theme(colors.black);
     --color-primary-text-inverted:theme(colors.white);
-    --color-secondary-text: oklch(44.6% 0.03 256.802);
-    --color-secondary-text-hover: oklch(70.7% 0.022 261.325);
+    --color-secondary-text:theme(colors.gray.600);
+    --color-secondary-text-hover:theme(colors.gray.400);
     --color-hover: oklch(55.4% 0.046 257.417);
     --color-btn: oklch(86.9% 0.022 252.894);
-    --color-btn-subtle:oklch(92.9% 0.013 255.508);
+    --color-btn-subtle:theme(colors.slate.200);
     --color-btn-text: oklch(44.6% 0.043 257.281);
     --color-btn-hover: oklch(70.4% 0.04 256.788);
     --color-sidebar: oklch(100% 0 0);
@@ -145,6 +160,10 @@
     --color-searchbar-focus-highlight: oklch(54.6% 0.245 262.881);
     --color-searchbar-result-hover: oklch(87.2% 0.01 258.338);
     --color-searchbar-handle: oklch(68.5% 0.169 237.323);
+    --color-searchbar-validation-bg:theme(colors.red.500);
+    --color-searchbar-validation-text:theme(colors.red.100);
+    --color-searchbar-showing-results-bg:theme(colors.slate.300);
+    --color-searchbar-showing-results-text:theme(colors.slate.500);
     --color-login-btn: oklch(62.3% 0.214 259.815);
     --color-login-btn-hover: oklch(70.7% 0.165 254.624);
     --color-login-host-hover:theme(colors.blue.100);
@@ -196,4 +215,15 @@
     --color-post-bookmark:theme(colors.orange.500);
     --color-post-bookmark-hover:theme(colors.orange.400);
     --color-post-bookmark-active:theme(colors.orange.600);
+    --color-feed-type-btn:theme(colors.slate.300);
+    --color-feed-type-btn-active:theme(colors.slate.500);
+    --color-feed-type-btn-hover:theme(colors.slate.400);
+    --color-feed-type-btn-disabled:theme(colors.gray.400);
+    --color-feed-type-btn-counter:theme(colors.slate.400);
+    --color-feed-type-btn-counter-hover:theme(colors.slate.500);
+    --color-feed-type-btn-counter-disabled:theme(colors.gray.500);
+    --color-inset-label-bg:theme(colors.slate.200);
+    --color-inset-label-text:theme(colors.gray.400);
+    --color-inset-label-inner-shadow-color:rgba(2, 6, 24,0.25);
+    --color-tag-entry-tag-bg:theme(colors.slate.300);
 }

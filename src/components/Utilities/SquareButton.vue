@@ -8,7 +8,7 @@
     :disabled="isDisabled || isAwaitingResponse">
         <div v-if="!isAwaitingResponse" class="flex items-center justify-center w-full h-full rounded border-2 border-transparent
         group-focus-visible:border-feedtypeBtnFocusHighlight"
-        :class="[`p-${buttonPadding}`]">
+        :class="[`px-${buttonPaddingX} py-${buttonPaddingY}`]">
             <slot></slot>
         </div>
         <i-mingcute:loading-fill v-else class="spinner"/>
@@ -31,13 +31,24 @@ export default defineComponent({
             default:false
         },
         /**
-         * The padding to use between the `focus-visible:` highlight and the button content.
-         * Default is 1 (applies 'p-1').
+         * The x-axis padding to use between the `focus-visible:` highlight and the button content.
+         * Default is 1 (applies 'px-1').
          * Note that a padding of 0.5(0.125rem, 2px) is already applied for the focus-visible:
          * highlight by default, but that can be changed using `focusPadding`. There is also a
          * default border width of 2px to keep in mind, but that can be changed via CSS.
          */
-        buttonPadding:{
+        buttonPaddingX:{
+            type:String,
+            default:'1'
+        },
+        /**
+         * The y-axis padding to use between the `focus-visible:` highlight and the button content.
+         * Default is 1 (applies 'py-1').
+         * Note that a padding of 0.5(0.125rem, 2px) is already applied for the focus-visible:
+         * highlight by default, but that can be changed using `focusPadding`. There is also a
+         * default border width of 2px to keep in mind, but that can be changed via CSS.
+         */
+        buttonPaddingY:{
             type:String,
             default:'1'
         },

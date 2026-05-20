@@ -4,14 +4,18 @@ import Sidebar from "./Sidebar.vue";
 import { AppSettingsState } from "./state/AppSettingsState.vue";
 import { onBeforeMount } from "vue";
 import { router } from "./main";
+import { AppState } from "./state/AppState.vue";
 
 onBeforeMount(async () => {
   console.log('App.vue onMounted()');
   //Load application settings
-  router.afterEach(async (to, from) => {
+  router.beforeEach(async (to, from) => {
     if(!AppSettingsState.isSettingsLoaded){
       await AppSettingsState.loadSettingsFromStore();
+      AppState.updateAppStateLoginValues();
     }
+  })
+  router.afterEach(async (to, from) => {
     document.title = to.meta.title as string || 'Loading... | moongate - A Desktop App for Bluesky';
   })
 })

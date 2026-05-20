@@ -4,6 +4,7 @@ import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs"
 import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications"
 import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs"
 import { AppBskyFeedDefs } from "@atproto/api/dist/client"
+import { ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs"
 
 // interface IFeedCollection{
 //     feedName: string
@@ -156,6 +157,33 @@ interface IFeedGeneratorSelection{
     selected:boolean
 }
 
+interface IFeedStackItem{
+    /**Unique identifier for stack item. Recommended to use `generators.GenerateCID()` to assign value at object creation if no other unique identifier is available. */
+    id:string,
+    /**DID used to get feed content for User-type feeds. */
+    did:string,
+    /**The handle of the Feed. */
+    handle: string,
+    /**
+     * Value used to identify/declare a Feed.
+     *
+     * NOTE: For User-type Feeds - if value is left undefined handle value should be used.
+     *
+     * NOTE: For Tag-type Feeds - this value is used as the search term to return Posts using the hashtags.
+     * */
+    name?:string,
+    /**Profile Data associated with User-type feed. */
+    profileData?:ProfileViewDetailed,
+    /**GeneratorView data for a "Feed Generator" type Feed. */
+    generatorData?:AppBskyFeedDefs.GeneratorView,
+    /**Hashtag filters used by Tag-type feeds. */
+    tags:string[],
+    /**The type of Feed this is. */
+    type:FeedEnums.Types,
+    /**The icon used by this Feed. */
+    icon:FeedEnums.Icons,
+}
+
 interface IFeedCreationStatus{
     message:string,
     attempted:boolean,
@@ -163,4 +191,4 @@ interface IFeedCreationStatus{
 }
 
 export type {IFeedDescription, IFeedListing, IFeedReturnedPostResults, IFeedColumnSettings,
-IFeedDBData, IFeedIconTypes, IFeedGeneratorSelection, IFeedCreationStatus}
+IFeedDBData, IFeedIconTypes, IFeedGeneratorSelection, IFeedStackItem, IFeedCreationStatus}

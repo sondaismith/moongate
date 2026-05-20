@@ -1,5 +1,5 @@
 <template>
-    <div tabindex="-1" @keydown="(e) => TrapFocus($el,e)" class="absolute z-30 flex w-full h-full">
+    <div tabindex="-1" @keydown="(e) => {if(!isConfirmModalDisplayed) TrapFocus($el,e)}" class="absolute z-30 flex w-full h-full">
         <div @click="close(previousURL)" class="absolute w-full h-full bg-slate-800/60"/>
         <div class="relative rounded-lg flex flex-col w-full sm:w-3/5 text-primary bg-focusBG border
         border-outlineLighter p-3 my-auto m-4 sm:m-auto gap-3 overflow-hidden">
@@ -341,6 +341,12 @@ export default defineComponent({
         return{
             AppState,
             TrapFocus,
+            /**
+             * Is the "confirm Post discard" message currently being displayed?
+             * Used to temporarily disable `TrapFocus()` for this component while
+             * the `ConfirmModal` component is being displayed.
+             */
+            isConfirmModalDisplayed:false,
             URL,
             postText:'',
             allowedFileFormats:['jpe','jpeg','jpg','png','webp','svg','avif'],
@@ -401,6 +407,7 @@ export default defineComponent({
             isView,
             AppBskyEmbedRecord,
             PostActions,
+            /**Is Post creation currently in progress? */
             isAwaitingPostConfirm:false,
             showsPostAfterCreation:false,
             /**The previous page the User was at before choosing to create a new Post. Returned to when the `CreatePost` modal is closed. */
@@ -706,7 +713,11 @@ export default defineComponent({
             switch (postDetails.currentPostAction) {
                 case PostActions.Post:
                     await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
-                    .then(()=>{this.isAwaitingPostConfirm = false});
+                    .then(()=>{
+                        this.postText = '';
+                        this.files = this.uploadedMedia = [];//clear to allow modal to be closed
+                        this.isAwaitingPostConfirm = false
+                    });
                     break;
                 case PostActions.Reply:
                     if(isThreadViewPost(postDetails.currentPostThreadData)){
@@ -728,6 +739,8 @@ export default defineComponent({
                             await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
                             .then(() =>{
                                 AppState.updateReplyParentsInLists(postDetails.currentPostData.cid, postDetails.currentPostData.replyCount ? postDetails.currentPostData.replyCount : 0);
+                                this.postText = '';
+                                this.files = this.uploadedMedia = [];//clear to allow modal to be closed
                                 this.isAwaitingPostConfirm = false;
                             })
                         }
@@ -763,7 +776,11 @@ export default defineComponent({
                                 }
                             }
                             await CreateNewPost(newPostRecord,this.showsPostAfterCreation,this.threadGateOptions,this.allowQuotePosts)
-                            .then(()=>{this.isAwaitingPostConfirm = false});
+                            .then(()=>{
+                                this.postText = '';
+                                this.files = this.uploadedMedia = [];//clear to allow modal to be closed
+                                this.isAwaitingPostConfirm = false;
+                            });
                         }
                     }
                     else{
@@ -1050,24 +1067,28 @@ export default defineComponent({
         }
         else{
             next(vm => {
+                document.title = "Creating Post | moongate";
                 vm.$data.previousURL = from.path
             })
         }
     },
     async beforeRouteLeave(to, from){
-        let leave = false;
+        let canLeaveWithoutPrompt = false;
         if(this.isAwaitingPostConfirm){
             toast.add({summary:"Please wait", detail:`Post creation in progress, please wait`, severity:'info', group:'tr', life:1500});
-            return false;
+            return canLeaveWithoutPrompt;
         }
         if(this.canSubmitPost){
             type ConfirmModalRef = InstanceType<typeof ConfirmModal>;
+            this.isConfirmModalDisplayed = true;
             await (this.$refs.confirm as ConfirmModalRef).show('Are you sure you want to discard this post?')
             .then(res => {
-                leave = res;
+                canLeaveWithoutPrompt = res;
+                this.isConfirmModalDisplayed = false;
             })
         }
-        if(!leave) return false;
+        else canLeaveWithoutPrompt = true;
+        return canLeaveWithoutPrompt;
     },
     mounted() {
         this.$el.focus();
