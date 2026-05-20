@@ -39,6 +39,18 @@
             <div class="flex flex-col overflow-y-auto pt-2">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">May 20th 2026</div>
+                    <ul class="list-disc pl-4 py-1 text-sm">
+                        <li>Updated the "Add Feeds" modal and Feed creation process:</li>
+                        <ul class="list-disc pl-4 text-sm">
+                            <li>Multiple Feeds can be created at once when using the "Add Feeds" modal.</li>
+                            <li>UI of the "Add Feeds" modal has been updated.</li>
+                            <li>Search input controls have been updated to improve usability (new search submit buttons, visual feedback, etc.)</li>
+                        </ul>
+                        <li>See more details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/303">#303</ExternalLink>)</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">April 5th 2026</div>
                     <ul class="list-disc pl-4 py-1 text-sm">
                         <li>Updated how images are displayed when in the "Post Focus" view so that the User can swipe through any attached images.</li>
