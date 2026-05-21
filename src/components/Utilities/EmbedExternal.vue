@@ -1,7 +1,7 @@
 <template>
-    <div data-testid="embed-external" class="max-w-full">
+    <div data-testid="embed-external" class="max-w-full" :class="{'self-start' : isExternalGIF}">
         {{ void "External link in Web App and Desktop App" }}
-        <a v-if="!isTenorGIF && !isTauri()" tabindex="0"
+        <a v-if="!isExternalGIF && !isTauri()" tabindex="0"
         :href="embed.external.uri" target="_blank"
         class="flex flex-col rounded-lg border text-primary transition-colors
         border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
@@ -22,13 +22,13 @@
                 </div>
             </div>
         </a>
-        <div v-else-if="!isTenorGIF && isTauri()" @contextmenu.prevent
+        <div v-else-if="!isExternalGIF && isTauri()" @contextmenu.prevent
         @click="(e) => showOptionsMenu(e, embed.external.uri)"
         @keyup.enter="showOptionsMenu(mouseEventFromKeyboardEvent, embed.external.uri)" tabindex="0"
         class="flex flex-col rounded-lg border text-primary transition-colors
         border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
         overflow-hidden text-xs cursor-pointer">
-            <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
+            <div class="relative border-b-[1px] border-outline">
                 <ImageLoader :img-url="typeof embed != 'undefined' && typeof embed.external != 'undefined' && typeof embed.external.thumb != 'undefined' ? embed.external.thumb : ''"
                 class="absolute w-full h-full object-center object-cover" :fill-container="true"/>
             </div>
@@ -49,7 +49,7 @@
         class="flex flex-col rounded-lg border text-primary transition-colors
         border-outline hover:bg-embedHoverBG bg-postBG
         overflow-hidden text-xs cursor-pointer">
-            <div data-testid="embedExternal-GIF-imageContainer" class="relative border-outline aspect-[1.91/1]">
+            <div data-testid="embedExternal-GIF-imageContainer" class="relative border-outline">
                 <ImageContainer
                 @image-clicked="img => $emit('imageClicked',img)"
                 @media-click="i => $emit('media-click',i)"
@@ -120,8 +120,8 @@ export default defineComponent({
         }
     },
     computed:{
-        isTenorGIF(){
-            return this.embed.external.uri.includes("tenor.com");
+        isExternalGIF(){
+            return this.embed.external.uri.includes("tenor.com") || this.embed.external.uri.includes("static.klipy.com");
         },
         /**
          * Creates a `MouseEvent` from the `KeyboardEvent` used to "click" the `EmbedExternal` element.
