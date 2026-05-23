@@ -63,7 +63,6 @@
 <script lang="ts">
 import MingcuteCopyLine from '~icons/mingcute/copy-line';
 import MingcuteWorld2Line from '~icons/mingcute/world-2-line';
-import MingcuteIncognitoModeLine from '~icons/mingcute/incognito-mode-line';
 
 import { View, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { defineComponent, PropType } from 'vue'
@@ -72,7 +71,7 @@ import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images'
 import { isTauri } from '@tauri-apps/api/core';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
-import { CopyTextToClipboard } from '../../state/AppState.vue';
+import { CopyTextToClipboard, externalGIFSources } from '../../state/AppState.vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import ImageLoader from './ImageLoader.vue';
 
@@ -88,6 +87,7 @@ export default defineComponent({
     components:{
         ImageContainer,
         Image,
+        ImageLoader,
     },
     props:{
         embed: {
@@ -121,7 +121,15 @@ export default defineComponent({
     },
     computed:{
         isExternalGIF(){
-            return this.embed.external.uri.includes("tenor.com") || this.embed.external.uri.includes("static.klipy.com");
+            let isValidGifSource = false;
+            for (let i = 0; i < externalGIFSources.length; i++) {
+                let isValid = this.embed.external.uri.includes(externalGIFSources[i]);
+                if(isValid){
+                    isValidGifSource = isValid;
+                    i = externalGIFSources.length;//exit loop
+                }
+            }
+            return isValidGifSource;
         },
         /**
          * Creates a `MouseEvent` from the `KeyboardEvent` used to "click" the `EmbedExternal` element.

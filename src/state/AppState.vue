@@ -88,6 +88,9 @@ export function TrapFocus(el:HTMLElement, e: KeyboardEvent){
     }
 }
 
+/**List of the accepted external GIF sources. */
+export const externalGIFSources:string[] = ['tenor.com','static.klipy.com'];
+
 export default{
     name:"AppState"
 }

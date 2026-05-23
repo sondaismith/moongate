@@ -7,8 +7,8 @@
             <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
                 <img v-if="!AppState.saveMedia.uri" @contextmenu.prevent :src="AppState.saveMedia.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
                 :style="(typeof AppState.saveMedia.aspectRatio != 'undefined') ? `aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}` : ''" />
-                <div v-else class="self-start rounded size-32 bg-slate-500 overflow-hidden" @contextmenu.prevent>
-                    <div class="h-full bg-contain bg-no-repeat bg-center" :style="`background-image: url(${AppState.saveMedia.uri})`"></div>
+                <div v-else class="self-start rounded size-32s bg-slate-500 overflow-hidden" @contextmenu.prevent>
+                    <ImageLoader :img-url="AppState.saveMedia.uri" class="max-h-32"/>
                 </div>
                 <div class="flex h-10 text-primary">
                     <InLaInput v-if="isTauri()" class="h-full text-[12px] rounded-r-none grow"
@@ -36,30 +36,44 @@
                     <div class="rounded bg-blue-500 h-full w-0"
                     :style="{'width' : downloadProgress+'%', 'transition':'width 0.4s ease'}"></div>
                 </div>
-                <SquareButton v-if="isTauri()" @click="saveImage()" title="Save Image [.webp]"
-                :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading"
-                class="bg-savemodalBtn hover:bg-savemodalBtnHover">
-                    Save Image [WEBP]
-                </SquareButton>
-                <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
-                <SquareButton v-else :is-disabled="isDownloading"
-                @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full)"
-                title="Save Image [.webp]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
-                    <div>Save Image [WEBP]</div>
-                    <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
-                </SquareButton>
-                <SquareButton v-if="isTauri()" @click="saveImage(true)" title="Save Image [.jpg]"
-                :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading"
-                class="bg-savemodalBtn hover:bg-savemodalBtnHover">
-                    Save Image w/ Metadata [JPEG]
-                </SquareButton>
-                <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
-                <SquareButton v-else :is-disabled="isDownloading"
-                @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full, true)"
-                title="Save Image [.jpg]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
-                    <div>Save Image [JPEG]</div>
-                    <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
-                </SquareButton>
+                <template v-if="isGif">
+                    <SquareButton v-if="isTauri()" :is-disabled="isDownloading" @click="saveImage()"
+                    title="Save GIF" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
+                        <div>Save GIF</div>
+                        <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
+                    </SquareButton>
+                    <SquareButton v-else :is-disabled="isDownloading" @click="downloadGIFFromExternalCDN((AppState.saveMedia as ViewExternal).uri,AppState.fileSaveDetails.originalFilename)"
+                    title="Save GIF" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
+                        <div>Save GIF 2</div>
+                        <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
+                    </SquareButton>
+                </template>
+                <template v-else class="flex flex-col gap-2 overflow-hidden">
+                    <SquareButton v-if="isTauri()" @click="saveImage()" title="Save Image [.webp]"
+                    :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading"
+                    class="bg-savemodalBtn hover:bg-savemodalBtnHover">
+                        Save Image [WEBP]
+                    </SquareButton>
+                    <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
+                    <SquareButton v-else :is-disabled="isDownloading"
+                    @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full)"
+                    title="Save Image [.webp]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
+                        <div>Save Image [WEBP]</div>
+                        <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
+                    </SquareButton>
+                    <SquareButton v-if="isTauri()" @click="saveImage(true)" title="Save Image [.jpg]"
+                    :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading"
+                    class="bg-savemodalBtn hover:bg-savemodalBtnHover">
+                        Save Image w/ Metadata [JPEG]
+                    </SquareButton>
+                    <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
+                    <SquareButton v-else :is-disabled="isDownloading"
+                    @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full, true)"
+                    title="Save Image [.jpg]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
+                        <div>Save Image [JPEG]</div>
+                        <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
+                    </SquareButton>
+                </template>
             </div>
             <div v-else class="flex flex-col gap-2 p-3 overflow-hidden">
                 <div class="self-start rounded h-32 w-52 bg-placeholderPulseBG animate-pulse overflow-hidden">
@@ -79,7 +93,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { AppState, toast } from '../../state/AppState.vue';
+import { AppState, externalGIFSources, toast } from '../../state/AppState.vue';
 import { download } from '@tauri-apps/plugin-upload';
 import InLaInput from './InLaInput.vue';
 import SquareButton from './SquareButton.vue';
@@ -92,13 +106,14 @@ import { CreateBskyMediaDownloadURL } from '../../helpers/converters';
 import { getPostImages, getPostThread } from '../../lib/api/Post.vue';
 import { emptyPostThread } from '../../fake-data/dumPostData';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { router } from '../../main';
-import { AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
+import ImageLoader from './ImageLoader.vue';
 
 export default defineComponent({
     components:{
         InLaInput,
         SquareButton,
+        ImageLoader,
     },
     props:{
         /**The handle of the creator of the Post to show. */
@@ -318,6 +333,50 @@ export default defineComponent({
                 })
             }
         },
+        /**
+         * Used to download GIFS from their external sites.
+         * Code is modified from https://muhimasri.com/blogs/how-to-save-files-in-javascript/#download-and-save-a-file-using-the-fetch-api
+         * @param url The URL of the file to download. Must be from a supported source.
+         * @param filename The string to use as the default/starting file name.
+         *
+         */
+        async downloadGIFFromExternalCDN(url:string, filename:string) {
+            let isUrlValid = false;
+            for (let i = 0; i < externalGIFSources.length; i++) {
+                if(url.includes(externalGIFSources[i])){
+                    isUrlValid = true;
+                    i = externalGIFSources.length;
+                }
+            }
+            // if(!url.includes(target)){
+            if(!isUrlValid){
+                toast.add({summary:'Error', detail:`URL provided to download must be link to supported external GIF source.`, severity:'error', group:'tr', life:3000});
+                console.log(`Provided URL was: ${url}`);
+            }
+            else{
+                this.isDownloading = true;
+                await fetch(url,{
+                    headers:{
+                        Accept:
+                        "image/png, image/jpeg, image/*",
+                    },
+                })
+                .then(async res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    const blob = await res.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    this.saveFile(blobUrl, filename);
+                    URL.revokeObjectURL(blobUrl);
+                    this.isDownloading = false;
+                })
+                .catch(err => {
+                    console.error("Error in fetching and downloading file:", err);
+                    this.isDownloading = false;
+                })
+            }
+        },
     },
     computed:{
         downloadProgress(){
@@ -351,7 +410,7 @@ export default defineComponent({
          * based on what type of data configuration the current Post has.
          * @returns `ViewImage[]` containing Post images.
          */
-        getPostImages():ViewImage[]{
+        getPostImages():ViewImage[]|ViewExternal{
             let imageContainer = getPostImages({$type:'app.bsky.feed.defs#postView',...this.postData.post});
             if(AppBskyEmbedImages.isView(imageContainer)){
                 return imageContainer.images;
@@ -359,8 +418,14 @@ export default defineComponent({
             else if(AppBskyEmbedRecordWithMedia.isView(imageContainer)){
                 return (imageContainer.media as AppBskyEmbedImages.View).images;
             }
+            else if (AppBskyEmbedExternal.isView(imageContainer)){
+                return imageContainer.external
+            }
             return [];
         },
+        isGif(){
+            return  (AppState.fileSaveDetails.extension == '.gif');
+        }
     },
     watch:{
         /**
@@ -399,9 +464,10 @@ export default defineComponent({
             });
             let fileName = undefined;
             let safeHandle = undefined;
-            let image = this.getPostImages[this.clickedMediaIndex] //this.postData.post.embed
+            let postImages = this.getPostImages;
+            let image:ViewImage|ViewExternal = postImages instanceof Array ? {...postImages[this.clickedMediaIndex],$type:'app.bsky.embed.images#viewImage'} : {...postImages,$type:'app.bsky.embed.external#viewExternal'}//this.getPostImages[this.clickedMediaIndex] //this.postData.post.embed
             AppState.saveMedia = image;
-            if(!image.uri){//not Tenor GIF
+            if(typeof image != 'undefined' && AppBskyEmbedImages.isViewImage(image)){//not external GIF
                 fileName = (image as ViewImage).fullsize.split('\/').pop()?.split('@')[0];
                 safeHandle = '';
                 if(typeof this.handle != 'undefined') safeHandle =  this.handle.replace (/\./g,'_');

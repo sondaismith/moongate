@@ -902,7 +902,7 @@ export default defineComponent({
                 document.title = vm.getFocusPostTitle;
             })
         }
-        if((from.name == 'postfocusmodal' && to.name == 'postfocusmodal with mediaindex') || (from.name == 'postfocusmodal with mediaindex' && to.name == 'postfocusmodal')){
+        else if((from.name == 'postfocusmodal' && to.name == 'postfocusmodal with mediaindex') || (from.name == 'postfocusmodal with mediaindex' && to.name == 'postfocusmodal')){
             //computed value `replyContainerSelector` is only available after navigation has happened (via `vm`) - have to use these hard-coded values
             let replyContainer = document.querySelector(AppState.usingMobileLayout ? '[data-testid=post-focus-modal-main]' : '[data-testid=post-focus-modal-side]');
             let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
