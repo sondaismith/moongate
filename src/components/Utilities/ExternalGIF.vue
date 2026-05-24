@@ -1,8 +1,11 @@
 <template>
-    <div v-if="isValidGIF">
-        <!-- <div>WEBM Video displayed here</div>
-        <div>{{ webmURL }}</div> -->
-        <video ref="webmPlayer" :src="webmURL" autoplay loop/>
+    <div v-if="isValidGIF" data-testid="externalGIF-container">
+        <div v-if="isPaused" class="absolute flex w-full h-full items-start justify-start">
+            <div class="absolute bg-slate-800/60 w-full h-full group-hover:bg-slate-400/30
+            transition-colors"></div>
+            <i-mingcute:pause-circle-fill class="absolute z-[1] left-1 top-1 size-8 text-white drop-shadow group-hover:scale-125 transition-transform"/>
+        </div>
+        <video ref="webmPlayer" :src="webmURL" autoplay loop preload="auto"/>
     </div>
     <div v-else>
         <div>Invalid URL :(</div>

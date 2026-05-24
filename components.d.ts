@@ -90,6 +90,7 @@ declare module 'vue' {
     'IMingcute:leftFill': typeof import('~icons/mingcute/left-fill')['default']
     'IMingcute:loadingFill': typeof import('~icons/mingcute/loading-fill')['default']
     'IMingcute:menuLine': typeof import('~icons/mingcute/menu-line')['default']
+    'IMingcute:pauseCircleFill': typeof import('~icons/mingcute/pause-circle-fill')['default']
     'IMingcute:pencilLine': typeof import('~icons/mingcute/pencil-line')['default']
     'IMingcute:photoAlbumLine': typeof import('~icons/mingcute/photo-album-line')['default']
     'IMingcute:plusFill': typeof import('~icons/mingcute/plus-fill')['default']

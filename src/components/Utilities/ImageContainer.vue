@@ -69,11 +69,9 @@
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
             <div v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)"
-            class="flex flex-col max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
+            class="flex flex-col max-w-full max-h-full cursor-pointer" @click="isGIFPaused = !isGIFPaused" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
                 <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">WebM</div>
-                <!-- GIF -->
-                <!-- <img @click="handleExternalGIFCLick(mediaEmbed)" class="max-h-full max-w-full object-cover" :title="mediaEmbed.external.title" :src="mediaEmbed.external.uri"/> -->
-                <ExternalGIF :url="mediaEmbed.external.uri"/>
+                <ExternalGIF :url="mediaEmbed.external.uri" :is-paused="isGIFPaused"/>
             </div>
         </div>
     </div>
@@ -206,7 +204,8 @@ export default defineComponent({
             isView,
             AppBskyEmbedImages,
             AppBskyEmbedExternal,
-            imagesToDisplay: [] as ViewImage[] // AppBskyEmbedImages.View|AppBskyEmbedRecordWithMedia.View,
+            imagesToDisplay: [] as ViewImage[], // AppBskyEmbedImages.View|AppBskyEmbedRecordWithMedia.View,
+            isGIFPaused: false
         }
     },
     methods:{
