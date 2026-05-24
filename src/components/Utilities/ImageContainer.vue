@@ -68,15 +68,12 @@
         </div>
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
-            <!-- <div v-if="typeof imagesToDisplay != 'undefined' && !Array.isArray(imagesToDisplay) && AppBskyEmbedExternal.isView(imagesToDisplay)" class="flex max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, imagesToDisplay, 0, author, postId, postText)">
-                <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div> -->
+            <div v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)"
+            class="flex flex-col max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
+                <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">WebM</div>
                 <!-- GIF -->
-                <!-- <img @click="handleExternalGIFCLick(imagesToDisplay)" class="max-h-full max-w-full object-cover" :title="imagesToDisplay.external.title" :src="imagesToDisplay.external.uri"/>
-            </div> -->
-            <div v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)" class="flex max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
-                <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div>
-                <!-- GIF -->
-                <img @click="handleExternalGIFCLick(mediaEmbed)" class="max-h-full max-w-full object-cover" :title="mediaEmbed.external.title" :src="mediaEmbed.external.uri"/>
+                <!-- <img @click="handleExternalGIFCLick(mediaEmbed)" class="max-h-full max-w-full object-cover" :title="mediaEmbed.external.title" :src="mediaEmbed.external.uri"/> -->
+                <ExternalGIF :url="mediaEmbed.external.uri"/>
             </div>
         </div>
     </div>
@@ -103,6 +100,7 @@ import { router } from '../../main';
 import { createPostRoute } from '../../lib/api/Post.vue';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
 import ImageLoader from './ImageLoader.vue';
+import ExternalGIF from './ExternalGIF.vue';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
@@ -172,6 +170,7 @@ export default defineComponent({
     components:{
         SpoilerOverlay,
         Image,
+        ExternalGIF
     },
     name:'ImageContainer',
     props:{
