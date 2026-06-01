@@ -85,14 +85,14 @@ import MdiOpenInNew from '~icons/mdi/open-in-new';
 
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
-import { isViewImage, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { Label } from '@atproto/api/dist/client/types/com/atproto/label/defs';
 import SpoilerOverlay from './SpoilerOverlay.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { AppState } from '../../state/AppState.vue';
 import { MediaType } from '../../enums/PostEnums';
-import { isExternal, isMain, isView, View, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import { isMain, isView, View as EmbedExternalView, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { isTauri } from '@tauri-apps/api/core';
 import { router } from '../../main';
 import { createPostRoute } from '../../lib/api/Post.vue';
@@ -113,12 +113,12 @@ export function calculateImageContainerMinHeight(elWidth:number):number{
  * @param author Value used to reference the author (uploader) of this image.
  */
 // async function saveImageWithAuthor(image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
-async function saveImageWithAuthor(image:ViewImage|View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+async function saveImageWithAuthor(image:ViewImage|EmbedExternalView, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
     let fileName = undefined;
     let safeHandle = undefined;
     // AppState.saveMedia = image;
     // if(!image.uri){//not Tenor GIF
-    if(!AppBskyEmbedExternal.isView(image)){//not Tenor GIF
+    if(AppBskyEmbedImages.isViewImage(image)){//not Tenor GIF
         AppState.saveMedia = image;
         // fileName = (image as ViewImage).fullsize.split('\/').pop()?.split('@')[0];
         fileName = image.fullsize.split('\/').pop()?.split('@')[0];
@@ -132,13 +132,13 @@ async function saveImageWithAuthor(image:ViewImage|View, index:number, author:st
 
     }
     else{
-        AppState.saveMedia = (image as View).external;
+        AppState.saveMedia = image;
         // fileName = (image as ViewExternal).uri.split('\/').pop()?.split('@')[0];
-        fileName = (image as View).external.uri.split('\/').pop()?.split('@')[0];
+        fileName = (image as EmbedExternalView).external.uri.split('\/').pop()?.split('@')[0];
         fileName = fileName ? fileName.split('.gif')[0] : '';
         AppState.fileSaveDetails.full = `${fileName}`;
         AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
-        AppState.fileSaveDetails.extension = '.gif';
+        AppState.fileSaveDetails.extension = '.webm';
         AppState.fileSaveDetails.handle = '';
         AppState.fileSaveDetails.postText = postText ? postText : '';
     }
@@ -154,7 +154,7 @@ async function saveImageWithAuthor(image:ViewImage|View, index:number, author:st
  * Method used to open a specific Image in a new browser tab.
  * @param imageToShow Object representing the Image to open in the new tab.
  */
-function OpenImageInNewTab(imageToShow:ViewImage|View){
+function OpenImageInNewTab(imageToShow:ViewImage|EmbedExternalView){
     // if(!imageToShow.uri){//not Tenor GIF
     if(AppBskyEmbedExternal.isView(imageToShow)){//Tenor GIF
         open(imageToShow.external.uri);
@@ -237,7 +237,7 @@ export default defineComponent({
          * relating to Images.
          */
         // showOptionsMenu(e:MouseEvent, image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
-        showOptionsMenu(e:MouseEvent, image:ViewImage|View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+        showOptionsMenu(e:MouseEvent, image:ViewImage|EmbedExternalView, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
             // if(isTauri()){
                 e.preventDefault();
                 OptionsMenuState.currentMenuItems = [
@@ -257,9 +257,9 @@ export default defineComponent({
          * @param image Object representing the image to display full-size.
          */
         // handleExternalGIFCLick(image:ViewExternal){
-        handleExternalGIFCLick(image:View){
+        handleExternalGIFCLick(image:EmbedExternalView){
             if(this.showFullsize)
-                this.$emit('imageClicked',image);
+                this.$emit('imageClicked',image.external);
             else
                 this.showMediaFocusModal(0);
         },

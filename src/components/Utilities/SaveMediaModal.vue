@@ -5,10 +5,10 @@
         rounded bg-savemodalBG border border-slate-800 overflow-hidden drop-shadow-lg">
             <div class="px-2 py-1 bg-banner border-b border-slate-500">Save as</div>
             <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
-                <img v-if="!AppState.saveMedia.uri" @contextmenu.prevent :src="AppState.saveMedia.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
-                :style="(typeof AppState.saveMedia.aspectRatio != 'undefined') ? `aspect-ratio:${AppState.saveMedia.aspectRatio?.width}/${AppState.saveMedia.aspectRatio?.height}` : ''" />
-                <div v-else class="self-start rounded size-32s bg-slate-500 overflow-hidden" @contextmenu.prevent>
-                    <ImageLoader :img-url="AppState.saveMedia.uri" class="max-h-32"/>
+                <img v-if="'fullsize' in saveMediaData" @contextmenu.prevent :src="saveMediaData.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
+                :style="(typeof saveMediaData.aspectRatio != 'undefined') ? `aspect-ratio:${saveMediaData.aspectRatio?.width}/${saveMediaData.aspectRatio?.height}` : ''" />
+                <div v-else class="relative self-start rounded bg-slate-500 overflow-hidden" @contextmenu.prevent>
+                    <ExternalGIF @click="isWebmPaused = !isWebmPaused" :url="saveMediaData.external.uri" :is-paused="isWebmPaused" class="cursor-pointer" video-styles="max-h-32"/>
                 </div>
                 <div class="flex h-10 text-primary">
                     <InLaInput v-if="isTauri()" class="h-full text-[12px] rounded-r-none grow"
@@ -42,7 +42,7 @@
                         <div>Save GIF</div>
                         <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
                     </SquareButton>
-                    <SquareButton v-else :is-disabled="isDownloading" @click="downloadGIFFromExternalCDN((AppState.saveMedia as ViewExternal).uri,AppState.fileSaveDetails.originalFilename)"
+                    <SquareButton v-else :is-disabled="isDownloading" @click="downloadGIFFromExternalCDN((AppState.saveMedia as EmbedExternalView).external.uri,AppState.fileSaveDetails.originalFilename)"
                     title="Save GIF" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
                         <div>Save GIF 2</div>
                         <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
@@ -56,7 +56,7 @@
                     </SquareButton>
                     <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
                     <SquareButton v-else :is-disabled="isDownloading"
-                    @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full)"
+                    @click="downloadFileFromBskyCDN('fullsize' in AppState.saveMedia ? AppState.saveMedia.fullsize : AppState.saveMedia.external.uri, AppState.fileSaveDetails.full)"
                     title="Save Image [.webp]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
                         <div>Save Image [WEBP]</div>
                         <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
@@ -68,7 +68,7 @@
                     </SquareButton>
                     <!-- <SquareButton v-else :is-disabled="isDownloading" @click="saveImageWebCORSSafe" title="Opens in new tab">Save Image</SquareButton> -->
                     <SquareButton v-else :is-disabled="isDownloading"
-                    @click="downloadFileFromBskyCDN((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string), AppState.fileSaveDetails.full, true)"
+                    @click="downloadFileFromBskyCDN('fullsize' in AppState.saveMedia ? AppState.saveMedia.fullsize : AppState.saveMedia.external.uri, AppState.fileSaveDetails.full, true)"
                     title="Save Image [.jpg]" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
                         <div>Save Image [JPEG]</div>
                         <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
@@ -99,8 +99,8 @@ import InLaInput from './InLaInput.vue';
 import SquareButton from './SquareButton.vue';
 import { open } from '@tauri-apps/plugin-dialog';
 import { exists } from '@tauri-apps/plugin-fs';
-import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
-import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import { ViewImage, isViewImage as isEmbedImagesViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { ViewExternal, View as EmbedExternalView, isView as isEmbedExternalView } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { invoke, isTauri } from '@tauri-apps/api/core';
 import { CreateBskyMediaDownloadURL } from '../../helpers/converters';
 import { getPostImages, getPostThread } from '../../lib/api/Post.vue';
@@ -108,12 +108,16 @@ import { emptyPostThread } from '../../fake-data/dumPostData';
 import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
 import ImageLoader from './ImageLoader.vue';
+import ImageContainer from './ImageContainer.vue';
+import ExternalGIF from './ExternalGIF.vue';
 
 export default defineComponent({
     components:{
         InLaInput,
         SquareButton,
         ImageLoader,
+        ImageContainer,
+        ExternalGIF,
     },
     props:{
         /**The handle of the creator of the Post to show. */
@@ -155,6 +159,8 @@ export default defineComponent({
             postData:emptyPostThread,
             /**The previous page the User was at before moving to download media. If it exists, it is returned to when `SaveMediaModal` is closed. */
             previousURL:'',
+            /**Is the WEBM "GIF" paused. Used when downloading a "GIF".*/
+            isWebmPaused:false,
             isTauri,
         }
     },
@@ -178,8 +184,8 @@ export default defineComponent({
             this.progressGoal = 0;
             this.isDownloading = true;
             let downloadURL = '';
-            if(!AppState.saveMedia.uri) downloadURL = (AppState.saveMedia as ViewImage).fullsize
-            else downloadURL = (AppState.saveMedia as ViewExternal).uri
+            if('fullsize' in AppState.saveMedia) downloadURL = AppState.saveMedia.fullsize
+            else downloadURL = AppState.saveMedia.external.uri
             if(fetchAsJpeg){
                 AppState.fileSaveDetails.extension = '.jpg';
                 downloadURL+='@jpeg';
@@ -423,8 +429,13 @@ export default defineComponent({
             }
             return [];
         },
+        /**Indicates if the data object being displayed/downloaded by `SaveMediaModal` a GIF(WEBM). */
         isGif(){
-            return  (AppState.fileSaveDetails.extension == '.gif');
+            return "external" in AppState.saveMedia;
+        },
+        /**Computed property that shortens the call to `AppState.saveMedia`. */
+        saveMediaData():ViewImage|EmbedExternalView{
+            return AppState.saveMedia;
         }
     },
     watch:{
@@ -451,7 +462,9 @@ export default defineComponent({
         })
     },
     async created(){
-        if(typeof AppState.saveMedia.thumb != 'undefined' && AppState.saveMedia.thumb == 'unset'){
+        //Use saveMediaData
+        if((isEmbedExternalView(AppState.saveMedia) && typeof AppState.saveMedia.external.thumb != 'undefined' && AppState.saveMedia.external.thumb == 'unset') ||
+        (isEmbedImagesViewImage(AppState.saveMedia) && typeof AppState.saveMedia.thumb != 'undefined' && AppState.saveMedia.thumb == 'unset')){
             //retrieve post data
             this.isAwaitingPostData = true
             await getPostThread(this.postUri)
@@ -465,7 +478,7 @@ export default defineComponent({
             let fileName = undefined;
             let safeHandle = undefined;
             let postImages = this.getPostImages;
-            let image:ViewImage|ViewExternal = postImages instanceof Array ? {...postImages[this.clickedMediaIndex],$type:'app.bsky.embed.images#viewImage'} : {...postImages,$type:'app.bsky.embed.external#viewExternal'}//this.getPostImages[this.clickedMediaIndex] //this.postData.post.embed
+            let image:ViewImage|EmbedExternalView = postImages instanceof Array ? {...postImages[this.clickedMediaIndex],$type:'app.bsky.embed.images#viewImage'} : {$type:'app.bsky.embed.external#view',external:postImages}//this.getPostImages[this.clickedMediaIndex] //this.postData.post.embed
             AppState.saveMedia = image;
             if(typeof image != 'undefined' && AppBskyEmbedImages.isViewImage(image)){//not external GIF
                 fileName = (image as ViewImage).fullsize.split('\/').pop()?.split('@')[0];
@@ -479,7 +492,7 @@ export default defineComponent({
 
             }
             else{
-                fileName = (image as ViewExternal).uri.split('\/').pop()?.split('@')[0];
+                fileName = (image as EmbedExternalView).external.uri.split('\/').pop()?.split('@')[0];
                 fileName = fileName ? fileName.split('.gif')[0] : '';
                 AppState.fileSaveDetails.full = `${fileName}`;
                 AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
@@ -494,7 +507,7 @@ export default defineComponent({
         this.checkIfFileNameAlreadyExistsJpg();
     },
     beforeUnmount(){
-        AppState.saveMedia = {alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'};//"clear" saveMedia variable
+        AppState.saveMedia = {alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'} as ViewImage;//"clear" saveMedia variable
     }
 })
 </script>
