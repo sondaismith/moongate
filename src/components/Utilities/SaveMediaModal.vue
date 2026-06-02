@@ -8,7 +8,7 @@
                 <img v-if="'fullsize' in saveMediaData" @contextmenu.prevent :src="saveMediaData.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
                 :style="(typeof saveMediaData.aspectRatio != 'undefined') ? `aspect-ratio:${saveMediaData.aspectRatio?.width}/${saveMediaData.aspectRatio?.height}` : ''" />
                 <div v-else class="relative self-start rounded bg-slate-500 overflow-hidden" @contextmenu.prevent>
-                    <ExternalGIF @click="isWebmPaused = !isWebmPaused" :url="saveMediaData.external.uri" :is-paused="isWebmPaused" class="cursor-pointer" video-styles="max-h-32"/>
+                    <ExternalGIF @click="isWebmPaused = !isWebmPaused" :url="webmURL" :is-paused="isWebmPaused" class="cursor-pointer" video-styles="max-h-32"/>
                 </div>
                 <div class="flex h-10 text-primary">
                     <InLaInput v-if="isTauri()" class="h-full text-[12px] rounded-r-none grow"
@@ -436,6 +436,10 @@ export default defineComponent({
         /**Computed property that shortens the call to `AppState.saveMedia`. */
         saveMediaData():ViewImage|EmbedExternalView{
             return AppState.saveMedia;
+        },
+        /**Returns a WEBM URL converted from the original GIF URL. */
+        webmURL(){
+            return 'external' in this.saveMediaData ? AppState.getExternalWebmUrlFromGifUri(this.saveMediaData.external.uri) : '';
         }
     },
     watch:{

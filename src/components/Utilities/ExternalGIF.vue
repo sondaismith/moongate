@@ -5,7 +5,7 @@
             transition-colors"></div>
             <i-mingcute:pause-circle-fill class="absolute z-[1] left-1 top-1 size-8 text-white drop-shadow group-hover:scale-125 transition-transform"/>
         </div>
-        <video ref="webmPlayer" :class="videoStyles"  :src="webmURL" autoplay loop preload="auto"/>
+        <video ref="webmPlayer" :class="videoStyles"  :src="url" autoplay loop preload="auto"/>
     </div>
     <div v-else>
         <div>Invalid URL :(</div>
@@ -14,7 +14,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { AppState, externalGIFSources } from '../../state/AppState.vue';
+import { externalGIFSources } from '../../state/AppState.vue';
 
 export default defineComponent({
     props:{
@@ -39,19 +39,25 @@ export default defineComponent({
         }
     },
     computed:{
+        /**
+         * Determines if the provided URL points to a valid "GIF" (a supported video file that
+         * is treated as GIF).
+         */
         isValidGIF(){
             let isUrlValid = false;
-            for (let i = 0; i < externalGIFSources.length; i++) {
-                if(this.url.includes(externalGIFSources[i])){
+            const supportedExt = ['.webm','.mp4'];
+            for (let i = 0; i < supportedExt.length; i++) {
+                if(this.url.includes(supportedExt[i])){
                     isUrlValid = true;
                     i = externalGIFSources.length;
                 }
             }
             return isUrlValid;
         },
-        webmURL(){
-            return AppState.getExternalWebmUrlFromGifUri(this.url);
-        }
+        /**NOT USED - Returns passed in "external GIF source" converted into a URL pointing WEBM on the same external source.  */
+        // webmURL(){
+        //     return AppState.getExternalWebmUrlFromGifUri(this.url);
+        // }
     },
     watch:{
         isPaused(newValue,oldValue){
