@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute flex z-50 w-full h-full">
+    <div tabindex="-1" @keydown.tab="(e)=>{TrapFocus($el,e)}" class="absolute flex z-50 w-full h-full">
         <div data-testid="saveMediaModal-close" @click="closeModal" class="absolute w-full h-full bg-slate-800/60 backdrop-blur-sm"></div>
         <div data-testid="saveMediaModal" class="relative flex flex-col max-w-[48rem] w-4/5 m-auto z-50
         rounded bg-savemodalBG border border-slate-800 overflow-hidden drop-shadow-lg">
@@ -32,21 +32,34 @@
                 <div v-show="!isFileNameValid" class="text-xs text-red-500">Invalid file name</div>
                 <div v-show="isFileNameTaken" class="text-xs text-orange-300">WEBP File already exists, will be overwritten</div>
                 <div v-show="isFileNameTakenJpg" class="text-xs text-orange-300">JPG File already exists, will be overwritten</div>
+                <div v-show="isFileNameTakenWebm" class="text-xs text-orange-300">WEBM File already exists, will be overwritten</div>
+                <div v-show="isFileNameTakenGif" class="text-xs text-orange-300">GIF File already exists, will be overwritten</div>
                 <div v-if="isTauri()" class="rounded h-3 overflow-hidden bg-slate-400 border border-slate-800">
                     <div class="rounded bg-blue-500 h-full w-0"
                     :style="{'width' : downloadProgress+'%', 'transition':'width 0.4s ease'}"></div>
                 </div>
                 <template v-if="isGif">
-                    <SquareButton v-if="isTauri()" :is-disabled="isDownloading" @click="saveImage()"
-                    title="Save GIF" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
-                        <div>Save GIF</div>
-                        <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
-                    </SquareButton>
-                    <SquareButton v-else :is-disabled="isDownloading" @click="downloadGIFFromExternalCDN((AppState.saveMedia as EmbedExternalView).external.uri,AppState.fileSaveDetails.originalFilename)"
-                    title="Save GIF" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
-                        <div>Save GIF 2</div>
-                        <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
-                    </SquareButton>
+                    <div class="flex flex-col gap-1">
+                        <SquareButton v-if="isTauri()" :is-disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading" @click="saveImage()"
+                        title="Download .webm file" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
+                            <div>Download</div>
+                            <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
+                        </SquareButton>
+                        <SquareButton v-else :is-disabled="isDownloading" @click="downloadGIFFromExternalCDN(webmURL,AppState.fileSaveDetails.originalFilename)"
+                        title="Download .webm file" class="bg-savemodalBtn hover:bg-savemodalBtnHover">
+                            <div>Download</div>
+                            <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
+                        </SquareButton>
+                        <button v-if="isTauri()" :disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading" @click="saveImage(undefined,true)"
+                        class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
+                        disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
+                        title="Save as .GIF (File size may be large)">Save as GIF</button>
+                        <button v-else :disabled="isDownloading"
+                        @click="downloadGIFFromExternalCDN((AppState.saveMedia as EmbedExternalView).external.uri,AppState.fileSaveDetails.originalFilename)"
+                        class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
+                        disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
+                        title="Save as .GIF (File size may be large)">Save as GIF</button>
+                    </div>
                 </template>
                 <template v-else class="flex flex-col gap-2 overflow-hidden">
                     <SquareButton v-if="isTauri()" @click="saveImage()" title="Save Image [.webp]"
@@ -93,7 +106,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { AppState, externalGIFSources, toast } from '../../state/AppState.vue';
+import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { download } from '@tauri-apps/plugin-upload';
 import InLaInput from './InLaInput.vue';
 import SquareButton from './SquareButton.vue';
@@ -153,6 +166,10 @@ export default defineComponent({
             isFileNameTaken:false,
             /**State value indicating if a JPG file with the same name already exists in current directory. */
             isFileNameTakenJpg:false,
+            /**State value indicating if a WEBM file with the same name already exists in current directory. */
+            isFileNameTakenWebm:false,
+            /**State value indicating if a GIF file with the same name already exists in current directory. */
+            isFileNameTakenGif:false,
             /**Are we waiting for the related Post's data to be returned. */
             isAwaitingPostData:false,
             /**Post data used to download related image. */
@@ -162,6 +179,7 @@ export default defineComponent({
             /**Is the WEBM "GIF" paused. Used when downloading a "GIF".*/
             isWebmPaused:false,
             isTauri,
+            TrapFocus
         }
     },
     methods:{
@@ -171,25 +189,26 @@ export default defineComponent({
                 defaultPath:AppState.lastMediaSaveDirectory.trim() != '' ? AppState.lastMediaSaveDirectory : undefined,
             });
             if(path) AppState.lastMediaSaveDirectory = path;
-            this.checkIfFileNameAlreadyExists();
-            this.checkIfFileNameAlreadyExistsJpg();
+            this.checkIfFileWillBeOverwritten();
         },
         /**
          * Method used to download images with metadata when using the application via
          * desktop app (Tauri web-view).
          * @param fetchAsJpeg Value indicating if we should request the Bluesky CDN to return the image as a JPEG.
+         * @param fetchAsGif Value indicating if we should download the "GIF" from the external source as an actual .GIF file and not .WEBM.
          */
-        async saveImage(fetchAsJpeg:boolean=false){
+        async saveImage(fetchAsJpeg:boolean=false, fetchAsGif:boolean=false){
             this.progressSum = 0;
             this.progressGoal = 0;
             this.isDownloading = true;
             let downloadURL = '';
             if('fullsize' in AppState.saveMedia) downloadURL = AppState.saveMedia.fullsize
-            else downloadURL = AppState.saveMedia.external.uri
+            else downloadURL = fetchAsGif ? AppState.saveMedia.external.uri : AppState.getExternalWebmUrlFromGifUri(AppState.saveMedia.external.uri);
             if(fetchAsJpeg){
                 AppState.fileSaveDetails.extension = '.jpg';
                 downloadURL+='@jpeg';
             }
+            else if(fetchAsGif) AppState.fileSaveDetails.extension = '.gif';
             await download(
                 downloadURL,
                 `${AppState.lastMediaSaveDirectory}\\${AppState.fileSaveDetails.full}${AppState.fileSaveDetails.extension}`,
@@ -251,8 +270,14 @@ export default defineComponent({
                 AppState.fileSaveDetails.full = s;
             }
             else{ AppState.fileSaveDetails.full = '' }
+            this.checkIfFileWillBeOverwritten();
+        },
+        /**Method used to check if an existing file will be overwritten  when saving images in Desktop app.*/
+        checkIfFileWillBeOverwritten(){
             this.checkIfFileNameAlreadyExists();
             this.checkIfFileNameAlreadyExistsJpg();
+            this.checkIfFileNameAlreadyExistsWebm();
+            this.checkIfFileNameAlreadyExistsGif();
         },
         async checkIfFileNameAlreadyExists(){
             if(this.isFileNameValid && this.isFolderSyntaxValid){
@@ -276,6 +301,30 @@ export default defineComponent({
             }
             else{
                 this.isFileNameTakenJpg = false;
+            }
+        },
+        async checkIfFileNameAlreadyExistsWebm(){
+            if(this.isFileNameValid && this.isFolderSyntaxValid){
+                await exists(`${AppState.lastMediaSaveDirectory}/${AppState.fileSaveDetails.full}.webm`)
+                .then(res => {
+                    this.isFileNameTakenWebm = res;
+                })
+                .catch(err => console.log(err));
+            }
+            else{
+                this.isFileNameTakenWebm = false;
+            }
+        },
+        async checkIfFileNameAlreadyExistsGif(){
+            if(this.isFileNameValid && this.isFolderSyntaxValid){
+                await exists(`${AppState.lastMediaSaveDirectory}/${AppState.fileSaveDetails.full}.gif`)
+                .then(res => {
+                    this.isFileNameTakenGif = res;
+                })
+                .catch(err => console.log(err));
+            }
+            else{
+                this.isFileNameTakenGif = false;
             }
         },
         /**
@@ -340,22 +389,14 @@ export default defineComponent({
             }
         },
         /**
-         * Used to download GIFS from their external sites.
+         * Used to download GIFs from their external sites.
          * Code is modified from https://muhimasri.com/blogs/how-to-save-files-in-javascript/#download-and-save-a-file-using-the-fetch-api
          * @param url The URL of the file to download. Must be from a supported source.
          * @param filename The string to use as the default/starting file name.
          *
          */
         async downloadGIFFromExternalCDN(url:string, filename:string) {
-            let isUrlValid = false;
-            for (let i = 0; i < externalGIFSources.length; i++) {
-                if(url.includes(externalGIFSources[i])){
-                    isUrlValid = true;
-                    i = externalGIFSources.length;
-                }
-            }
-            // if(!url.includes(target)){
-            if(!isUrlValid){
+            if(url.trim() == ''){
                 toast.add({summary:'Error', detail:`URL provided to download must be link to supported external GIF source.`, severity:'error', group:'tr', life:3000});
                 console.log(`Provided URL was: ${url}`);
             }
@@ -364,7 +405,7 @@ export default defineComponent({
                 await fetch(url,{
                     headers:{
                         Accept:
-                        "image/png, image/jpeg, image/*",
+                        "video/webm, video/mp4, image/gif",
                     },
                 })
                 .then(async res => {
@@ -507,8 +548,8 @@ export default defineComponent({
         }
     },
     mounted(){
-        this.checkIfFileNameAlreadyExists();
-        this.checkIfFileNameAlreadyExistsJpg();
+        this.checkIfFileWillBeOverwritten();
+        (this.$el as HTMLElement).focus();
     },
     beforeUnmount(){
         AppState.saveMedia = {alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'} as ViewImage;//"clear" saveMedia variable

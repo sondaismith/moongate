@@ -5,7 +5,7 @@
             transition-colors"></div>
             <i-mingcute:pause-circle-fill class="absolute z-[1] left-1 top-1 size-8 text-white drop-shadow group-hover:scale-125 transition-transform"/>
         </div>
-        <video ref="webmPlayer" :class="videoStyles"  :src="url" autoplay loop preload="auto"/>
+        <video ref="webmPlayer" tabindex="-1" :class="videoStyles"  :src="url" autoplay loop preload="auto"/>
     </div>
     <div v-else>
         <div>Invalid URL :(</div>
