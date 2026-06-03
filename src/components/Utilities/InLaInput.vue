@@ -1,17 +1,19 @@
 <template>
-    <div class="relative flex flex-col group" :class="fillContainer ? 'w-full' : ''">
-        <input data-testid="inlainput-input" @keyup.enter="emitValue" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"
-            class="peer bg-searchbarBG leading-8 px-2 pt-3 h-11
+    <div class="relative flex flex-col group overflow-hidden" :class="fillContainer ? 'w-full' : ''">
+        <input v-if="!isTextCopyControl" data-testid="inlainput-input" @keyup.enter="emitValue" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)"
+            class="peer bg-searchbarBG leading-8 px-2 pt-3 h-10
             border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight rounded-md focus-visible:!outline focus-visible:!outline-transparent
             disabled:border-searchbarBorderDisabled disabled:text-searchbarBorderDisabled disabled:group-hover:border-searchbarBorderDisabled shadow-none
-            w-full" :class="$attrs.class" :type="isPasswordInput ? 'password' : 'text'" autocapitalize="off" :placeholder="placeholderText"
+            w-full" :class="[$attrs.class]" :type="isPasswordInput ? 'password' : 'text'" autocapitalize="off" :placeholder="placeholderText"
             :disabled="isDisabled ? true : false"/>
+        <button v-else class="peer bg-searchbarBG leading-8 px-2 pt-3 h-10 border-gray-500 group-hover:border-blue-400 focus:border-searchbarFocusHightlight
+        rounded-md focus-visible:!outline focus-visible:!outline-transparent text-left shadow-none text-nowrap overflow-hidden text-ellipsis" :class="[$attrs.class]">{{ modelValue }}</button>
         <div class="absolute top-[-2px] left-2 select-none text-feedTimestamp text-secondary">
-            {{ textLabel ? textLabel : "Unset Label" }}
+            {{ typeof textLabel != undefined ? textLabel : "Unset Label" }}
         </div>
         <div v-if="isTextCopyControl" @click="copyText"
         class="absolute w-full h-full rounded-md cursor-pointer" :class="$attrs.class"
-        title="Click to Copy Filename"></div>
+        :title="typeof textLabel != undefined ? textLabel : 'Unset Label'"></div>
     </div>
 </template>
 

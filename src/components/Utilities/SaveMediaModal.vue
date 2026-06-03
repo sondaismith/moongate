@@ -10,7 +10,7 @@
                 <div v-else class="relative self-start rounded bg-slate-500 overflow-hidden" @contextmenu.prevent>
                     <ExternalGIF @click="isWebmPaused = !isWebmPaused" :url="webmURL" :is-paused="isWebmPaused" class="cursor-pointer" video-styles="max-h-32"/>
                 </div>
-                <div class="flex h-10 text-primary">
+                <div class="flex text-primary">
                     <InLaInput v-if="isTauri()" class="h-full text-[12px] rounded-r-none grow"
                     text-label="Filename" :model-value="AppState.fileSaveDetails.full"
                     @update:model-value="updateFileName" title="Edit filename"/>
@@ -508,8 +508,8 @@ export default defineComponent({
     },
     async created(){
         //Use saveMediaData
-        if((isEmbedExternalView(AppState.saveMedia) && typeof AppState.saveMedia.external.thumb != 'undefined' && AppState.saveMedia.external.thumb == 'unset') ||
-        (isEmbedImagesViewImage(AppState.saveMedia) && typeof AppState.saveMedia.thumb != 'undefined' && AppState.saveMedia.thumb == 'unset')){
+        if(('external' in AppState.saveMedia && typeof AppState.saveMedia.external.thumb != 'undefined' && AppState.saveMedia.external.thumb == 'unset') ||
+        ('fullsize' in AppState.saveMedia && typeof AppState.saveMedia.thumb != 'undefined' && AppState.saveMedia.thumb == 'unset')){
             //retrieve post data
             this.isAwaitingPostData = true
             await getPostThread(this.postUri)
@@ -541,7 +541,7 @@ export default defineComponent({
                 fileName = fileName ? fileName.split('.gif')[0] : '';
                 AppState.fileSaveDetails.full = `${fileName}`;
                 AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
-                AppState.fileSaveDetails.extension = '.gif';
+                AppState.fileSaveDetails.extension = '.webm';
                 AppState.fileSaveDetails.handle = '';
                 // AppState.fileSaveDetails.postText = postText ? postText : '';
             }
