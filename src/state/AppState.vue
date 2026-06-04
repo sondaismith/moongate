@@ -89,7 +89,8 @@ export function TrapFocus(el:HTMLElement, e: KeyboardEvent){
 }
 
 /**List of the accepted external GIF sources. */
-export const externalGIFSources:string[] = ['https://media.tenor.com','https://static.klipy.com'];
+export const externalGIFSources:string[] = ['https://media.tenor.com','https://static.klipy.com','localhost:1420/'];
+//Might be better to make an enum of the supported sources, and then make an array from that enum
 
 export default{
     name:"AppState"
@@ -528,6 +529,7 @@ export const AppState = reactive({
             let webmId = urlToTranslate.match(webmRegex);
             return `https://k.gifs.bsky.app/${webmLink}${webmId}.webm`;
         }
+        else if(urlToTranslate.includes('localhost:1420/')) return urlToTranslate;
         else return 'invalid link';
     },
     /**Value used to indicate the progress of downloading a media file. */

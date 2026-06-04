@@ -5,16 +5,16 @@
         rounded bg-savemodalBG border border-slate-800 overflow-hidden drop-shadow-lg">
             <div class="px-2 py-1 bg-banner border-b border-slate-500">Save as</div>
             <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
-                <img v-if="'fullsize' in saveMediaData" @contextmenu.prevent :src="saveMediaData.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
+                <img v-if="'fullsize' in saveMediaData" data-testid="saveMediaModal-media-preview" @contextmenu.prevent :src="saveMediaData.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
                 :style="(typeof saveMediaData.aspectRatio != 'undefined') ? `aspect-ratio:${saveMediaData.aspectRatio?.width}/${saveMediaData.aspectRatio?.height}` : ''" />
-                <div v-else class="relative self-start rounded bg-slate-500 overflow-hidden" @contextmenu.prevent>
+                <div v-else data-testid="saveMediaModal-media-preview" class="relative self-start rounded bg-slate-500 overflow-hidden" @contextmenu.prevent>
                     <ExternalGIF @click="isWebmPaused = !isWebmPaused" :url="webmURL" :is-paused="isWebmPaused" class="cursor-pointer" video-styles="max-h-32"/>
                 </div>
                 <div class="flex text-primary">
-                    <InLaInput v-if="isTauri()" class="h-full text-[12px] rounded-r-none grow"
+                    <InLaInput v-if="isTauri()" data-testid="saveMediaModal-filename-input" class="h-full text-[12px] rounded-r-none grow"
                     text-label="Filename" :model-value="AppState.fileSaveDetails.full"
                     @update:model-value="updateFileName" title="Edit filename"/>
-                    <InLaInput v-else class="h-full text-[12px] rounded-r-none grow" text-label="Click to Copy Filename"
+                    <InLaInput v-else data-testid="saveMediaModal-filename-input" class="h-full text-[12px] rounded-r-none grow" text-label="Click to Copy Filename"
                     :model-value="AppState.fileSaveDetails.full" @update:model-value="updateFileName"
                     :is-text-copy-control="true"/>
                     <div class="flex items-end rounded-r px-2 py-1

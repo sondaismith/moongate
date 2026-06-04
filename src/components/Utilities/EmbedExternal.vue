@@ -49,12 +49,39 @@
         class="flex flex-col rounded-lg border text-primary transition-colors
         border-outline hover:bg-embedHoverBG bg-postBG
         overflow-hidden text-xs cursor-pointer">
-            <div data-testid="embedExternal-GIF-imageContainer" class="relative border-outline">
+            <div v-if="isSupportedExternalGIFSource" data-testid="embedExternal-GIF-imageContainer" class="relative border-outline">
                 <ImageContainer
                 @image-clicked="img => $emit('imageClicked',img)"
                 @media-click="i => $emit('media-click',i)"
                 :author="author" :post-id="postId"
                 :show-fullsize="showFullsize" :images-to-display="embed" :media-embed="embed"/>
+            </div>
+            <div v-else>
+                <a href="https://github.com/sondaismith/moongate/issues?q=is%3Aissue%20state%3Aopen%20gif" target="_blank"
+                class="flex flex-col rounded-lg border text-primary transition-colors
+                border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
+                overflow-hidden text-xs cursor-pointer">
+                    <div class="p-2 font-normal">
+                        <div class="flex gap-1 items-center text-sm font-semibold">
+                            <i-mingcute:warning-fill class="text-xl"/>
+                            <div>External GIF Error</div>
+                        </div>
+                        <div class="flex flex-col" title="Message explaining why you are currently not seeing a GIF where there should be one...sorry">
+                            <div>Oops, Bluesky seems to have added a new GIF source that moongate currently does not support...</div>
+                            <div>You can let me know by clicking here and creating an issue, if one doesn't already exist.</div>
+                            <div class="flex flex-col">
+                                <div>URL causing error:</div>
+                                <a :href="embed.external.uri" target="_blank" title="Link to the URL that would be used to show you the GIF"
+                                class="text-[10px] leading-3 break-all text-feedtypeBtnFocusHighlight hover:underline">{{ embed.external.uri }}</a>
+                            </div>
+                        </div>
+                        <div class="h-[1px] bg-slate-600 my-1"></div>
+                        <div class="flex text-nowrap gap-1 items-center">
+                            <i-solar:earth-outline class="size-4 shrink-0"/>
+                            <div class="overflow-hidden text-ellipsis" title="Link to `moongate` issues page">https://github.com/sondaismith/moongate/issues?q=is%3Aissue%20state%3Aopen%20gif</div>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
     </div>
@@ -120,7 +147,26 @@ export default defineComponent({
         }
     },
     computed:{
+        /**
+         * Value indicating if the the object passed to the `embed` prop points to a resource that
+         * is a `.webm` or `.mp4` file.
+         */
         isExternalGIF(){
+            let isExternalGif = false;
+            const supportedExt = ['.gif','.webm','.mp4'];
+            for (let i = 0; i < supportedExt.length; i++) {
+                if(this.embed.external.uri.includes(supportedExt[i])){
+                    isExternalGif = true;
+                    i = externalGIFSources.length;
+                }
+            }
+            return isExternalGif;
+        },
+        /**
+         * Value indicating if the object passed to the `embed` prop points to a resource
+         * held on one of the supported "external GIF" sources.
+         */
+        isSupportedExternalGIFSource(){
             let isValidGifSource = false;
             for (let i = 0; i < externalGIFSources.length; i++) {
                 let isValid = this.embed.external.uri.includes(externalGIFSources[i]);

@@ -8,7 +8,7 @@
         <video ref="webmPlayer" tabindex="-1" :class="videoStyles"  :src="url" autoplay loop preload="auto"/>
     </div>
     <div v-else>
-        <div>Invalid URL :(</div>
+        Error: An empty string or a URI that does not point to a .webm or .mp4 file has been provided to this component somehow...
     </div>
 </template>
 
