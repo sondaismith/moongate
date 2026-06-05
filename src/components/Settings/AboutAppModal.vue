@@ -39,6 +39,14 @@
             <div class="flex flex-col overflow-y-auto pt-2">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">June 5th 2026</div>
+                    <ul class="list-disc pl-4 py-1 text-sm">
+                        <li>Added support for displaying external "GIF" images from Klipy.com.</li>
+                        <li>Added support pausing "GIF" images.</li>
+                        <li>See more details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/305">#305</ExternalLink>)</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">May 20th 2026</div>
                     <ul class="list-disc pl-4 py-1 text-sm">
                         <li>Updated the "Add Feeds" modal and Feed creation process:</li>
