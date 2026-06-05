@@ -41,19 +41,9 @@ test('ensure SaveMediaModal displays image in `<img>` element when passed a stat
     await expect(page.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
     await expect(page.getByText(handle1)).toBeVisible();
     await expect(page.getByTestId('postFocusModal-media-container').getByRole('img')).toBeVisible();
-    // const testScreen = await page.getByTestId('postFocusModal-focus-post-loaded').screenshot();
-    // await testInfo.attach('image showing PostFocusModal post content', {
-    //     body: testScreen,
-    //     contentType: 'image/png',
-    // });
     //interact with image to attempt to save it
     page.getByTestId('postFocusModal-media-container').getByRole('img').click({button:'right'});
     await expect(page.getByRole('menu')).toBeVisible();
-    // const imgContextMenu = await page.getByRole('menu').screenshot();
-    // await testInfo.attach('image showing Post image context menu', {
-    //     body: imgContextMenu,
-    //     contentType: 'image/png',
-    // });
     page.getByRole('menu').getByText(/Save/).click();
     await expect(page.getByTestId('saveMediaModal')).toBeVisible();
     await expect(page.getByTestId('saveMediaModal').getByRole('img')).toBeVisible();
@@ -66,26 +56,16 @@ test('ensure SaveMediaModal displays image in `<video>` element when passed a "G
     await expect(page.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
     await expect(page.getByText(handle1)).toBeVisible();
     await expect(page.getByTestId('postThreadView').locator('video')).toBeVisible();
-    // const testScreen = await page.getByTestId('postFocusModal-focus-post-loaded').screenshot();
-    // await testInfo.attach('image showing PostFocusModal post content', {
-    //     body: testScreen,
-    //     contentType: 'image/png',
-    // });
     //interact with image to attempt to save it
     page.getByTestId('postThreadView').locator('video').click({button:'right'});
     await expect(page.getByRole('menu')).toBeVisible();
-    // const imgContextMenu = await page.getByRole('menu').screenshot();
-    // await testInfo.attach('image showing Post image context menu', {
-    //     body: imgContextMenu,
-    //     contentType: 'image/png',
-    // });
     page.getByRole('menu').getByText(/Save/).click();
     await expect(page.getByTestId('saveMediaModal')).toBeVisible();
     await expect(page.getByTestId('saveMediaModal').locator('video')).toBeVisible();
     await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).toBeVisible();
     //just checking that filename text is displaying, even though normally the extension would not be included
     //the reason it isn't is because the test url IS a .webm, when on Bluesky we get a link pointing to a .gif
-    //that we need to modify
+    //that we modify and remove the .gif file extension
     await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).toHaveText(/.webm/);
     await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).not.toHaveText(/.gif/);
     //pause and unpause "GIF"

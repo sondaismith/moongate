@@ -17,7 +17,7 @@
                     <InLaInput v-else data-testid="saveMediaModal-filename-input" class="h-full text-[12px] rounded-r-none grow" text-label="Click to Copy Filename"
                     :model-value="AppState.fileSaveDetails.full" @update:model-value="updateFileName"
                     :is-text-copy-control="true"/>
-                    <div class="flex items-end rounded-r px-2 py-1
+                    <div data-testid="saveMediaModal-file-extension" class="flex items-end rounded-r px-2 py-1
                     text-sm text-searchbarBorder bg-savemodalFileExtBG border border-l-0 border-slate-500
                     select-none">
                     {{ AppState.fileSaveDetails.extension }}

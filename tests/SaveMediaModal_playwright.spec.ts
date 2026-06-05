@@ -57,9 +57,11 @@ test('ensure SaveMediaModal displays correctly when interacting with Image displ
     page.getByRole('menu').getByText(/Save/).click();
     await expect(page.getByTestId('saveMediaModal')).toBeVisible();
     await expect(page.getByTestId('saveMediaModal').getByRole('img')).toBeVisible();
-    await expect(page.getByTestId('saveMediaModal').getByRole('textbox')).toBeVisible();
-    await expect(page.getByTestId('saveMediaModal').getByRole('textbox')).toHaveValue(/tester.*da.*playwright/);
-    const saveMediaModalSnap = await page.getByTestId('saveMediaModal').screenshot();
+    await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).toBeVisible();
+    await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).toHaveText(RegExp(`${handle1.replaceAll('.','_')}`));
+    //check that JPEG and WEBP download buttons are visible
+    await expect(page.getByTestId('saveMediaModal').getByRole('button').getByText(/save image/i)).toHaveCount(2);
+    // const saveMediaModalSnap = await page.getByTestId('saveMediaModal').screenshot();
     // await testInfo.attach('image showing SaveMediaModal component', {
     //     body: saveMediaModalSnap,
     //     contentType: 'image/png',
@@ -71,16 +73,20 @@ test('ensure SaveMediaModal displays correctly when interacting with Image displ
     //interact with reply image
     await expect(page.getByTestId('postThreadView')).toBeVisible();
     await expect(page.getByTestId('postThreadView').getByTestId('focusFeedPost')).toBeVisible();
-    // await expect(page.getByTestId('imageContainer-focusFeedPost')).toBeVisible();
-    // page.getByTestId('imageContainer-focusFeedPost').click({button:'right'});
-    await expect(page.locator('div').filter({ hasText: /^GIF$/ }).nth(1)).toBeVisible();
-    page.locator('div').filter({ hasText: /^GIF$/ }).nth(1).click({button:'right'});
+    await expect(page.getByTestId('postThreadView').getByTestId('imageContainer-file-extension')).toContainText(/webm/i);
+    page.getByTestId('postThreadView').getByTestId('imageContainer-file-extension').click({button:'right'});
     await expect(page.getByRole('menu')).toBeVisible();
     page.getByRole('menu').getByText(/Save/).click();
     await expect(page.getByTestId('saveMediaModal')).toBeVisible();
-    await expect(page.getByTestId('saveMediaModal').locator('div').filter({ hasText: /.gif/ }).nth(1)).toBeVisible();
-    await expect(page.getByTestId('saveMediaModal').getByRole('textbox')).toBeVisible();
-    await expect(page.getByTestId('saveMediaModal').getByRole('textbox')).toHaveValue(/tenor.*test.*ok/);
+    await expect(page.getByTestId('saveMediaModal-file-extension')).toContainText('webm');
+    //just checking that filename text is displaying, even though normally the extension would not be included
+    //the reason it isn't is because the test url IS a .webm, when on Bluesky we get a link pointing to a .gif
+    //that we modify and remove the .gif file extension
+    await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).toHaveText(/.webm/);
+    await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).not.toHaveText(/.gif/);
+    //check that "GIF" download buttons are visible
+    await expect(page.getByTestId('saveMediaModal').getByRole('button').getByText(/download/i)).toHaveCount(1);
+    await expect(page.getByTestId('saveMediaModal').getByRole('button').getByText(/save as gif/i)).toHaveCount(1);
     //close SaveMediaModal
     await expect(page.getByTestId('saveMediaModal-close')).toBeVisible();
     page.getByTestId('saveMediaModal-close').click({position:{x:1,y:1}});
