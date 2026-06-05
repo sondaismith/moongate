@@ -61,7 +61,7 @@ test('ensure SaveMediaModal displays image in `<img>` element when passed a stat
     await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).toHaveText(RegExp(`${handle1.replaceAll('.','_')}`));
 })
 
-test('ensure SaveMediaModal displays image in `<video>` element when passed a "GIF" (webm)', async ({page}, testInfo) => {
+test('ensure SaveMediaModal displays image in `<video>` element when passed a "GIF" (webm), and clicking on it will pause and then unpause the "GIF"', async ({page}, testInfo) => {
     await page.goto(`/profile/${handle1}/post/3lzrqulh7ic2l`,{waitUntil:'networkidle'});
     await expect(page.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
     await expect(page.getByText(handle1)).toBeVisible();
@@ -88,4 +88,16 @@ test('ensure SaveMediaModal displays image in `<video>` element when passed a "G
     //that we need to modify
     await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).toHaveText(/.webm/);
     await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).not.toHaveText(/.gif/);
+    //pause and unpause "GIF"
+    await page.getByTestId('saveMediaModal').locator('video').click();
+    await expect(page.getByTestId('saveMediaModal').locator('video')).toHaveJSProperty('paused',true);
+    await page.getByTestId('saveMediaModal').locator('video').click();
+    await expect(page.getByTestId('saveMediaModal').locator('video')).toHaveJSProperty('paused',false);
+    //close SaveMediaModal
+    await expect(page.getByTestId('saveMediaModal-close')).toBeVisible();
+    await page.getByTestId('saveMediaModal-close').click({position:{x:1,y:1}});
+    await expect(page.getByTestId('saveMediaModal-close')).toBeHidden();
+    //pause "GIF" held in replies
+    await page.getByTestId('postThreadView').locator('video').click();
+    await expect(page.getByTestId('postThreadView').locator('video')).toHaveJSProperty('paused', true);
 })
