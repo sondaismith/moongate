@@ -6,7 +6,7 @@ import { authAgent, guestAgent } from '../lib/api.vue';
 import { Agent } from '@atproto/api';
 import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { UserFocusModalState } from './UserFocusModalState.vue';
-import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import { View as EmbedExternalView } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { postDetails } from './PostDetails.vue';
 import { FeedState, RefreshAllFeeds } from './FeedList.vue';
 import { FeedViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
@@ -87,6 +87,10 @@ export function TrapFocus(el:HTMLElement, e: KeyboardEvent){
         }
     }
 }
+
+/**List of the accepted external GIF sources. */
+export const externalGIFSources:string[] = ['https://media.tenor.com','https://static.klipy.com','localhost:1420/'];
+//Might be better to make an enum of the supported sources, and then make an array from that enum
 
 export default{
     name:"AppState"
@@ -482,8 +486,11 @@ export const AppState = reactive({
      * is currently visible.
      */
     isSavingMediaModalVisible:false,
-    /**Value holding details relating to the media to download/save. */
-    saveMedia:{alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'} as ViewImage|ViewExternal,
+    /**
+     * Value holding details relating to the media to download/save. This object should always be a `ViewImage` object with all it's
+     * variables set to 'unset' when `SaveMediaModal` is not open.
+     */
+    saveMedia:{alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'} as ViewImage|EmbedExternalView,
     /**Value used to hold the default file name to use for media being saved. */
     fileSaveDetails:{
         /**The full filename that will be used when saving the file. Can be updated by control on `SaveMediaModal`. */
@@ -496,6 +503,34 @@ export const AppState = reactive({
         handle:'',
         /**The text (if any) that was posted along with the image. */
         postText:''
+    },
+    /**
+     * Method used to transform a URL that points to a GIF on a supported external source to
+     * one that returns a WEBM from that same supported external source.
+     * @param urlToTranslate The URL string to transform.
+     */
+    getExternalWebmUrlFromGifUri(urlToTranslate:string):string{
+        if(urlToTranslate.includes('https://media.tenor.com')){
+            let webmLink = urlToTranslate;
+            webmLink = webmLink.slice('https://media.tenor.com'.length+1);
+            let splitLink = webmLink.split('/');
+            webmLink = webmLink.slice(0,webmLink.indexOf(splitLink[splitLink.length-1]));
+            webmLink = webmLink.replace('AAAAC/','AAAP3/');//a route ending with AAAP3 seems to indicate WEBM
+            let filename = splitLink[splitLink.length-1];
+            filename = filename.slice(0,filename.indexOf('.gif?'))+'.webm';
+            return `https://t.gifs.bsky.app/${webmLink}${filename}`;
+        }
+        else if(urlToTranslate.includes('https://static.klipy.com')){
+            let webmLink = urlToTranslate;
+            webmLink = webmLink.slice('https://static.klipy.com'.length+1);
+            let splitLink = webmLink.split('/');
+            webmLink = webmLink.slice(0,webmLink.indexOf(splitLink[splitLink.length-1]));
+            const webmRegex = new RegExp(`${/(?<=webm=).*/.source}`,'g');
+            let webmId = urlToTranslate.match(webmRegex);
+            return `https://k.gifs.bsky.app/${webmLink}${webmId}.webm`;
+        }
+        else if(urlToTranslate.includes('localhost:1420/')) return urlToTranslate;
+        else return 'invalid link';
     },
     /**Value used to indicate the progress of downloading a media file. */
     fileSaveDownloadPercent:0,

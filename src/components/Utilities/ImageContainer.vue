@@ -51,7 +51,7 @@
                             showFullsize ? 'w-full' : 'cursor-pointer'
                         ]">
                 <!-- Hide image extension when in "fullsize/fullscreen" mode -->
-                <div v-if="!showFullsize" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
+                <div v-if="!showFullsize" data-testid="imageContainer-file-extension" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
                 <!-- <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
                 :title="image.alt"
                 :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
@@ -68,15 +68,10 @@
         </div>
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
-            <!-- <div v-if="typeof imagesToDisplay != 'undefined' && !Array.isArray(imagesToDisplay) && AppBskyEmbedExternal.isView(imagesToDisplay)" class="flex max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, imagesToDisplay, 0, author, postId, postText)">
-                <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div> -->
-                <!-- GIF -->
-                <!-- <img @click="handleExternalGIFCLick(imagesToDisplay)" class="max-h-full max-w-full object-cover" :title="imagesToDisplay.external.title" :src="imagesToDisplay.external.uri"/>
-            </div> -->
-            <div v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)" class="flex max-w-full max-h-full cursor-pointer" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
-                <div class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">GIF</div>
-                <!-- GIF -->
-                <img @click="handleExternalGIFCLick(mediaEmbed)" class="max-h-full max-w-full object-cover" :title="mediaEmbed.external.title" :src="mediaEmbed.external.uri"/>
+            <div data-testid="imageContainer-externalGIF" v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)"
+            class="flex flex-col max-w-full max-h-full cursor-pointer" @click="isGIFPaused = !isGIFPaused" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
+                <div data-testid="imageContainer-file-extension" class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">WebM</div>
+                <ExternalGIF :url="webmURL" :is-paused="isGIFPaused"/>
             </div>
         </div>
     </div>
@@ -90,19 +85,20 @@ import MdiOpenInNew from '~icons/mdi/open-in-new';
 
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
-import { isViewImage, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { Label } from '@atproto/api/dist/client/types/com/atproto/label/defs';
 import SpoilerOverlay from './SpoilerOverlay.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { AppState } from '../../state/AppState.vue';
 import { MediaType } from '../../enums/PostEnums';
-import { isExternal, isMain, isView, View, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import { isMain, isView, View as EmbedExternalView, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { isTauri } from '@tauri-apps/api/core';
 import { router } from '../../main';
 import { createPostRoute } from '../../lib/api/Post.vue';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
 import ImageLoader from './ImageLoader.vue';
+import ExternalGIF from './ExternalGIF.vue';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
@@ -117,12 +113,12 @@ export function calculateImageContainerMinHeight(elWidth:number):number{
  * @param author Value used to reference the author (uploader) of this image.
  */
 // async function saveImageWithAuthor(image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
-async function saveImageWithAuthor(image:ViewImage|View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+async function saveImageWithAuthor(image:ViewImage|EmbedExternalView, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
     let fileName = undefined;
     let safeHandle = undefined;
     // AppState.saveMedia = image;
     // if(!image.uri){//not Tenor GIF
-    if(!AppBskyEmbedExternal.isView(image)){//not Tenor GIF
+    if(AppBskyEmbedImages.isViewImage(image)){//not Tenor GIF
         AppState.saveMedia = image;
         // fileName = (image as ViewImage).fullsize.split('\/').pop()?.split('@')[0];
         fileName = image.fullsize.split('\/').pop()?.split('@')[0];
@@ -136,13 +132,13 @@ async function saveImageWithAuthor(image:ViewImage|View, index:number, author:st
 
     }
     else{
-        AppState.saveMedia = (image as View).external;
+        AppState.saveMedia = image;
         // fileName = (image as ViewExternal).uri.split('\/').pop()?.split('@')[0];
-        fileName = (image as View).external.uri.split('\/').pop()?.split('@')[0];
+        fileName = (image as EmbedExternalView).external.uri.split('\/').pop()?.split('@')[0];
         fileName = fileName ? fileName.split('.gif')[0] : '';
         AppState.fileSaveDetails.full = `${fileName}`;
         AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
-        AppState.fileSaveDetails.extension = '.gif';
+        AppState.fileSaveDetails.extension = '.webm';
         AppState.fileSaveDetails.handle = '';
         AppState.fileSaveDetails.postText = postText ? postText : '';
     }
@@ -158,7 +154,7 @@ async function saveImageWithAuthor(image:ViewImage|View, index:number, author:st
  * Method used to open a specific Image in a new browser tab.
  * @param imageToShow Object representing the Image to open in the new tab.
  */
-function OpenImageInNewTab(imageToShow:ViewImage|View){
+function OpenImageInNewTab(imageToShow:ViewImage|EmbedExternalView){
     // if(!imageToShow.uri){//not Tenor GIF
     if(AppBskyEmbedExternal.isView(imageToShow)){//Tenor GIF
         open(imageToShow.external.uri);
@@ -172,6 +168,7 @@ export default defineComponent({
     components:{
         SpoilerOverlay,
         Image,
+        ExternalGIF
     },
     name:'ImageContainer',
     props:{
@@ -207,7 +204,8 @@ export default defineComponent({
             isView,
             AppBskyEmbedImages,
             AppBskyEmbedExternal,
-            imagesToDisplay: [] as ViewImage[] // AppBskyEmbedImages.View|AppBskyEmbedRecordWithMedia.View,
+            imagesToDisplay: [] as ViewImage[], // AppBskyEmbedImages.View|AppBskyEmbedRecordWithMedia.View,
+            isGIFPaused: false
         }
     },
     methods:{
@@ -239,7 +237,7 @@ export default defineComponent({
          * relating to Images.
          */
         // showOptionsMenu(e:MouseEvent, image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
-        showOptionsMenu(e:MouseEvent, image:ViewImage|View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+        showOptionsMenu(e:MouseEvent, image:ViewImage|EmbedExternalView, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
             // if(isTauri()){
                 e.preventDefault();
                 OptionsMenuState.currentMenuItems = [
@@ -259,9 +257,9 @@ export default defineComponent({
          * @param image Object representing the image to display full-size.
          */
         // handleExternalGIFCLick(image:ViewExternal){
-        handleExternalGIFCLick(image:View){
+        handleExternalGIFCLick(image:EmbedExternalView){
             if(this.showFullsize)
-                this.$emit('imageClicked',image);
+                this.$emit('imageClicked',image.external);
             else
                 this.showMediaFocusModal(0);
         },
@@ -308,6 +306,10 @@ export default defineComponent({
             else{
                 return 'self-center';
             }
+        },
+        /**Returns a WEBM URL converted from the original GIF URL. */
+        webmURL(){
+            return (typeof this.mediaEmbed != 'undefined' && 'external' in this.mediaEmbed) ? AppState.getExternalWebmUrlFromGifUri(this.mediaEmbed.external.uri) : '';
         }
     },
     watch:{

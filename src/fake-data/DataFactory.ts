@@ -879,7 +879,7 @@ export function CreateEmbedGIF():$Typed<AppBskyEmbedExternal.View>{
     let emb:$Typed<AppBskyEmbedExternal.View> = {
         $type: "app.bsky.embed.external#view",
         external:{
-            uri: "http://localhost:1420/src/assets/test-media/posts/tenor.com_test_ok.gif",
+            uri: `http://localhost:1420/src/assets/test-media/posts/gif0${Math.floor((Math.random()*2)+1)}.webm`,
             title: "Placeholder for External GIF Testing",
             description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
             // thumb: `http://localhost:1420${import.meta.env.BASE_URL.replace('src','iframes/src')}assets/test-media/posts/image08.png`

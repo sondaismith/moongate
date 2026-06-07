@@ -1,5 +1,5 @@
 <script lang="ts">
-import { $Typed, AppBskyEmbedRecordWithMedia, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedPostgate, AppBskyFeedThreadgate, AtUri, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
+import { $Typed, AppBskyEmbedExternal, AppBskyEmbedRecordWithMedia, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedPostgate, AppBskyFeedThreadgate, AtUri, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
 import { AppBskyUnspeccedGetPostThreadV2 } from "@atproto/api/src/client/";
 import { GetBrowsingAgent } from "../api.vue";
 import { FeedViewPost, isPostView, isReasonPin, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
@@ -15,6 +15,7 @@ import { isImage, isView, Main, View as ViewForImages, ViewImage } from "@atprot
 import { AspectRatio } from "@atproto/api/dist/client/types/app/bsky/embed/defs";
 import { isView as isViewForQRT, isViewRecord, ViewRecord } from "@atproto/api/dist/client/types/app/bsky/embed/record";
 import { isView as isViewForRecordWithMedia, View as ViewForRecordWithMedia} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
+import { View as ViewForExternal} from "@atproto/api/dist/client/types/app/bsky/embed/external";
 
 export default{
     name:"Post API Methods"
@@ -94,7 +95,7 @@ export async function getPostThreadV2(postURI:string):Promise<AppBskyUnspeccedGe
  */
 // export function getPostImages(postData:ThreadViewPost):ViewImage[]{
 // export function getPostImages(postData:PostView|ViewRecord):ViewImage[]{//View{
-export function getPostImages(postData:PostView|ViewRecord):ViewForImages|ViewForRecordWithMedia{
+export function getPostImages(postData:PostView|ViewRecord):ViewForImages|ViewForRecordWithMedia|ViewForExternal{
     //This is a standalone/parent Post, not a QRT (Quote Retweet)
     // if(!isViewRecord(postData.post)){
     if(isPostView(postData)){
@@ -102,6 +103,10 @@ export function getPostImages(postData:PostView|ViewRecord):ViewForImages|ViewFo
         if(typeof postData.embed != 'undefined' && isView(postData.embed)){
             //Is a parent Post with image(s)
             // return postData.post.embed.images as ViewImage[];
+            return postData.embed;
+        }
+        else if(typeof postData.embed != 'undefined' && AppBskyEmbedExternal.isView(postData.embed)){
+            //Is an external GIF, I think
             return postData.embed;
         }
         // else if(typeof postData.post?.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postData.post.embed) && typeof postData.post.embed.media.images != 'undefined'){

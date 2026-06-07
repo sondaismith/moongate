@@ -57,7 +57,7 @@
                 :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
                 :video-view="postDetails.currentThreadView.post.embed">
                 </video-container>
-                <EmbedExternal v-else-if="hasEmbedGIFMedia" @image-clicked="showImageFullscreen" :embed="getEmbedGIFMedia" :show-fullsize="true"
+                <EmbedExternal v-else-if="hasEmbedGIFMedia" class="m-auto" @image-clicked="showImageFullscreen" :embed="getEmbedGIFMedia" :show-fullsize="true"
                 :author="postDetails.currentThreadView.post.author.handle" :post-id="getEndOfPostUri"/>
             </div>
             <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mb-8 p-2 h-16 animate-pulse text-sm bg-slate-500/30"></div>
@@ -902,7 +902,7 @@ export default defineComponent({
                 document.title = vm.getFocusPostTitle;
             })
         }
-        if((from.name == 'postfocusmodal' && to.name == 'postfocusmodal with mediaindex') || (from.name == 'postfocusmodal with mediaindex' && to.name == 'postfocusmodal')){
+        else if((from.name == 'postfocusmodal' && to.name == 'postfocusmodal with mediaindex') || (from.name == 'postfocusmodal with mediaindex' && to.name == 'postfocusmodal')){
             //computed value `replyContainerSelector` is only available after navigation has happened (via `vm`) - have to use these hard-coded values
             let replyContainer = document.querySelector(AppState.usingMobileLayout ? '[data-testid=post-focus-modal-main]' : '[data-testid=post-focus-modal-side]');
             let fromScrollPos = replyContainer != null ? replyContainer.scrollTop : 0;
