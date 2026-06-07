@@ -68,7 +68,7 @@
         </div>
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
-            <div v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)"
+            <div data-testid="imageContainer-externalGIF" v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)"
             class="flex flex-col max-w-full max-h-full cursor-pointer" @click="isGIFPaused = !isGIFPaused" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
                 <div data-testid="imageContainer-file-extension" class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">WebM</div>
                 <ExternalGIF :url="webmURL" :is-paused="isGIFPaused"/>

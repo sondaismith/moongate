@@ -69,15 +69,15 @@ test('ensure SaveMediaModal displays image in `<video>` element when passed a "G
     await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).toHaveText(/.webm/);
     await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).not.toHaveText(/.gif/);
     //pause and unpause "GIF"
-    await page.getByTestId('saveMediaModal').locator('video').click();
+    await page.getByTestId('saveMediaModal').getByTestId('externalGIF-container').click();
     await expect(page.getByTestId('saveMediaModal').locator('video')).toHaveJSProperty('paused',true);
-    await page.getByTestId('saveMediaModal').locator('video').click();
+    await page.getByTestId('saveMediaModal').getByTestId('externalGIF-container').click();
     await expect(page.getByTestId('saveMediaModal').locator('video')).toHaveJSProperty('paused',false);
     //close SaveMediaModal
     await expect(page.getByTestId('saveMediaModal-close')).toBeVisible();
     await page.getByTestId('saveMediaModal-close').click({position:{x:1,y:1}});
     await expect(page.getByTestId('saveMediaModal-close')).toBeHidden();
     //pause "GIF" held in replies
-    await page.getByTestId('postThreadView').locator('video').click();
+    await page.getByTestId('postThreadView').getByTestId('imageContainer-externalGIF').click();
     await expect(page.getByTestId('postThreadView').locator('video')).toHaveJSProperty('paused', true);
 })
