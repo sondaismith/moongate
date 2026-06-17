@@ -40,7 +40,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
+import { AppBskyUnspeccedDefs } from '@atproto/api';
 import { convertToShortTimestamp, getCompactNumberValue } from '../../helpers/converters';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
@@ -50,7 +50,7 @@ import { IFeedStackItem } from '../../interfaces/FeedInterfaces';
 
 export default defineComponent({
     props:{
-        trend: Object as PropType<TrendView>,
+        trend: Object as PropType<AppBskyUnspeccedDefs.TrendView>,
         position:Number
     },
     components:{

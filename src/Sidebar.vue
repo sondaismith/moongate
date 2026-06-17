@@ -149,7 +149,7 @@ import { SavedFeeds } from "./lib/db/local_db";
 import { AccountPeekState } from "./state/AccountPeekState.vue";
 import FeedButton from "./components/Navbar/FeedButton.vue";
 import CreatePost from "./components/Post/CreatePost.vue"
-import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { AppBskyFeedDefs } from "@atproto/api";
 import { HandleAPIError } from "./helpers/errors";
 import PostFocusModal from "./components/Post/PostFocusModal.vue";
 import SettingsPanel from "./components/Settings/SettingsPanel.vue";
@@ -318,7 +318,7 @@ import { router } from "./main";
                 postDetails.showFocusModalIndex(0);
             },
             async getHomeFeed(){
-                var homeFeed:FeedViewPost[];
+                var homeFeed:AppBskyFeedDefs.FeedViewPost[];
                 await getUserHomeFeed()
                 .then(res => {
                     homeFeed = res.data.feed

@@ -78,10 +78,9 @@ import { defineComponent, PropType } from 'vue'
 import { getCompactNumberValue } from '../../helpers/converters';
 import ImageLoader from './ImageLoader.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
-import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AppBskyActorDefs, AppBskyFeedDefs } from '@atproto/api';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import FeedIcon from '../Feed/FeedIcon.vue';
-import { AppBskyFeedDefs } from '@atproto/api/dist/client';
 
 export default defineComponent({
     props:{
@@ -103,7 +102,7 @@ export default defineComponent({
          * `ProfileViewDetailed` data for a User-type Feed.
          */
         profileData:{
-            type: Object as PropType<ProfileViewDetailed>
+            type: Object as PropType<AppBskyActorDefs.ProfileViewDetailed>
         },
         /**
          * `AppBskyFeedDefs.GeneratorView` data for a "Feed Generator" type Feed.

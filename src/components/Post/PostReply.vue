@@ -42,8 +42,8 @@ import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/c
 import { postDetails } from '../../state/PostDetails.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
-import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
-import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyActorDefs } from '@atproto/api';
+import { AppBskyFeedDefs } from '@atproto/api';
 
 var postReplyData : IDetailIcon[];
 
@@ -55,13 +55,13 @@ export default defineComponent({
     },
     props:{
         postData:{
-            type: Object as PropType<PostView>,
+            type: Object as PropType<AppBskyFeedDefs.PostView>,
             required: true
         },
         replyThreadIndex: Number,
         totalThreadReplies: Number,
         profileData:{
-            type: {} as PropType<ProfileView>,
+            type: {} as PropType<AppBskyActorDefs.ProfileView>,
             required: true
         },
         // postMedia?: String,

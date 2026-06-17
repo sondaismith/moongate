@@ -263,9 +263,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-else-if="!awaitingProfileData && !isNavigatingHistory" v-for="n in UserFocusModalState.currentUserPageDetails.FeedData.data as FeedViewPost[]"
+                            <div v-else-if="!awaitingProfileData && !isNavigatingHistory" v-for="n in UserFocusModalState.currentUserPageDetails.FeedData.data as AppBskyFeedDefs.FeedViewPost[]"
                             class="w-full">
-                                <FocusFeedPost :post-data="({$type:'app.bsky.feed.defs#postView',...n.post} as PostView)" :post-reason="n.reason" :reply-ref="n.reply" @focus-post-avatar-clicked="updateDisplayedData"/>
+                                <FocusFeedPost :post-data="({$type:'app.bsky.feed.defs#postView',...n.post} as AppBskyFeedDefs.PostView)" :post-reason="n.reason" :reply-ref="n.reply" @focus-post-avatar-clicked="updateDisplayedData"/>
                             </div>
                             <div v-if="!awaitingProfileData && !UserFocusModalState.currentUserPageDetails.FeedData.cursor"
                             class="flex justify-center rounded p-1 gap-1 w-full items-center
@@ -331,7 +331,7 @@
                             </div>
                             <div v-else-if="!awaitingProfileData && !isNavigatingHistory" class="flex flex-col w-full gap-2">
                                 <div v-for="b in UserFocusModalState.currentUserPageDetails.Bookmarks">
-                                    <FocusFeedPost @focus-post-avatar-clicked="updateDisplayedData" v-if="isPostView(b.item)" :post-data="b.item"></FocusFeedPost>
+                                    <FocusFeedPost @focus-post-avatar-clicked="updateDisplayedData" v-if="AppBskyFeedDefs.isPostView(b.item)" :post-data="b.item"></FocusFeedPost>
                                 </div>
                                 <div v-if="!awaitingProfileData && hasEndOfBookmarksBeenReached"
                                 class="flex justify-center rounded p-1 gap-1 w-full items-center
@@ -435,9 +435,7 @@ import MdiUserCheck from '~icons/mdi/user-check';
 import { defineComponent } from 'vue'
 import PillButton from '../Utilities/PillButton.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { FeedViewPost, isPostView, isReasonRepost, PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, isDid } from '@atproto/api';
-import { isImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { AppBskyFeedDefs, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyUnspeccedDefs } from '@atproto/api';
 import { GenerateTagLinkText } from '../../helpers/parsers';
 import Hashtag from '../Utilities/Hashtag.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
@@ -467,7 +465,6 @@ import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
 import { INavigationHistory } from '../../interfaces/UserInterfaces';
 import ImageLoader from '../Utilities/ImageLoader.vue';
-import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
 
 /**
  * Used to create a HTTP URL link To the currently view User's profile.
@@ -490,12 +487,10 @@ export default defineComponent({
             AppSettingsState,
             UserFocusModalState,
             MediaType,
-            isImage,
-            isReasonRepost,
-            isPostView,
             GenerateTagLinkText,
             convertToShortTimestamp,
             convertToLongTimestamp,
+            AppBskyFeedDefs,
             AppBskyEmbedImages,
             AppBskyEmbedVideo,
             AppBskyEmbedRecord,
@@ -736,7 +731,7 @@ export default defineComponent({
         closeModal(){
             this.$router.push('/');
         },
-        showMediaContent(post:FeedViewPost){
+        showMediaContent(post:AppBskyFeedDefs.FeedViewPost){
             // postDetails.isFocusVisible = true;
             // showFocusModal(post.post.uri,0);
             let postDid:string|undefined = post.post.uri.split('/').pop();
@@ -772,7 +767,7 @@ export default defineComponent({
          * Method that determines if a particular Post's media contains
          * Sensitive Content.
          * */
-        hasSensitiveContent(n:FeedViewPost){
+        hasSensitiveContent(n:AppBskyFeedDefs.FeedViewPost){
             if(n.post.labels && n.post.labels.length>0) return true;
             return false;
         },
@@ -962,8 +957,8 @@ export default defineComponent({
          * Created because these objects never have the `$type` variable included...
          * @param feedPost The "feed post" object to check.
          */
-        isFeedViewPostCust(feedPost:FeedViewPost | Notification | TrendView):feedPost is FeedViewPost{
-            return typeof (feedPost as FeedViewPost).post !== 'undefined';
+        isFeedViewPostCust(feedPost:AppBskyFeedDefs.FeedViewPost | Notification | AppBskyUnspeccedDefs.TrendView):feedPost is AppBskyFeedDefs.FeedViewPost{
+            return typeof (feedPost as AppBskyFeedDefs.FeedViewPost).post !== 'undefined';
         },
         /**
          * Shows Options Menu allowing user to perform different actions

@@ -6,10 +6,10 @@
             <div v-if="isImageFullscreen" @click="hideImageFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto bg-black/95
             bg-contain bg-center bg-no-repeat z-30"
             :style="{'background-image': 'url('+(fullscreenImage)+'s)'}">
-                <div v-if="!(fullscreenImage as ViewExternal).uri" @click="(e)=>{e.stopPropagation()}" class="absolute text-black bottom-0 left-0 px-2 bg-white/50 z-10">
-                    {{`${(fullscreenImage as ViewImage).aspectRatio?.width}x${(fullscreenImage as ViewImage).aspectRatio?.height}px`}}
+                <div v-if="!(fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri" @click="(e)=>{e.stopPropagation()}" class="absolute text-black bottom-0 left-0 px-2 bg-white/50 z-10">
+                    {{`${(fullscreenImage as AppBskyEmbedImages.ViewImage).aspectRatio?.width}x${(fullscreenImage as AppBskyEmbedImages.ViewImage).aspectRatio?.height}px`}}
                 </div>
-                <img @contextmenu="(e) => {e.preventDefault()}" :src="(fullscreenImage as ViewExternal).uri ? (fullscreenImage as ViewExternal).uri : (fullscreenImage as ViewImage).fullsize" class="max-h-full max-w-full"/>
+                <img @contextmenu="(e) => {e.preventDefault()}" :src="(fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri ? (fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri : (fullscreenImage as AppBskyEmbedImages.ViewImage).fullsize" class="max-h-full max-w-full"/>
             </div>
         </Transition>
         {{ void "Sticky Control bar - mobile version" }}
@@ -24,7 +24,7 @@
                 <div class="text-lg font-bold">Post</div>
             </div>
             <div v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="animate-pulse h-4 w-full rounded-sm bg-slate-500/30"></div>
-            <div v-else class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as Record).text">{{ (postDetails.currentThreadView.post.record as Record).text }}</div>
+            <div v-else class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as AppBskyFeedPost.Record).text">{{ (postDetails.currentThreadView.post.record as AppBskyFeedPost.Record).text }}</div>
             <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary transition-opacity h-full ml-auto"
             :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top"><i-mingcute:arrow-to-up-fill/></div>
             <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
@@ -33,7 +33,7 @@
             title="Close Thread" @click="hideModal"><i-mingcute:exit-fill/></div>
         </div>
         {{ void "Media Section" }}
-        <div v-if="hasImageMedia || hasEmbedGIFMedia || isVideoView(postDetails.currentThreadView.post.embed)"
+        <div v-if="hasImageMedia || hasEmbedGIFMedia || AppBskyEmbedVideo.isView(postDetails.currentThreadView.post.embed)"
         class="relative flex flex-col w-full sm:w-3/5 grow min-h-[30rem]">
             {{ void "Media Container" }}
             <div v-if="postDetails.isAwaitingFocusData" class="rounded-lg z-10 select-none mx-auto mt-5 animate-pulse bg-slate-500/20 h-10 w-10"></div>
@@ -52,7 +52,7 @@
                         :post-id="getEndOfPostUri" :media-index="currentMediaIndex"/>
                     </SwiperSlide>
                 </Swiper>
-                <video-container v-else-if="isVideoView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
+                <video-container v-else-if="AppBskyEmbedVideo.isView(postDetails.currentThreadView.post.embed) && !postDetails.isAwaitingFocusData"
                 class="relative flex flex-col max-w-full h-full justify-center p-5"
                 :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
                 :video-view="postDetails.currentThreadView.post.embed">
@@ -90,7 +90,7 @@
                     <div class="text-lg font-bold">Post</div>
                 </div>
                 <div v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="animate-pulse h-4 w-full rounded-sm bg-slate-500/30"></div>
-                <div v-else class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as Record).text">{{ (postDetails.currentThreadView.post.record as Record).text }}</div>
+                <div v-else class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as AppBskyFeedPost.Record).text">{{ (postDetails.currentThreadView.post.record as AppBskyFeedPost.Record).text }}</div>
                 <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary transition-opacity h-full ml-auto"
                 :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top"><i-mingcute:arrow-to-up-fill/></div>
                 <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
@@ -149,8 +149,8 @@
                 </div>
                 {{ void "Post Content - Text" }}
                 <RichPostTextBsky data-testid="postFocusModal-text" class="text-sm pt-2 text-primary"
-                :post-text="(postDetails.currentThreadView.post.record as Record).text"
-                :post-facets="(postDetails.currentThreadView.post.record as Record).facets"
+                :post-text="(postDetails.currentThreadView.post.record as AppBskyFeedPost.Record).text"
+                :post-facets="(postDetails.currentThreadView.post.record as AppBskyFeedPost.Record).facets"
                 :is-changing-thread-context="isChangingThreadContext"/>
                 {{ void "Quoted Post (if applicable)" }}
                 <div v-if="typeof postDetails.currentThreadView.post.embed != 'undefined'" class="py-2 text-sm">
@@ -215,8 +215,7 @@ import { convertToLongTimestamp } from '../../helpers/converters';
 import PostThreadView from './PostThreadView.vue';
 import ReplyBreadcrumb from './ReplyBreadcrumb.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
-import { isView as isImageView, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
-import { isView as isVideoView, View as ViewVideo } from '@atproto/api/dist/client/types/app/bsky/embed/video';
+import { AppBskyEmbedVideo } from '@atproto/api';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import { AppState, toast } from '../../state/AppState.vue';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyFeedPost } from '@atproto/api';
@@ -224,15 +223,13 @@ import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import PostInteractionIcons from './PostInteractionIcons.vue';
 import { emptyPostThread } from '../../fake-data/dumPostData';
-import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyFeedDefs } from '@atproto/api';
 import { getPostThread } from '../../lib/api/Post.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import SlideshowArrow from '../Utilities/SlideshowArrow.vue';
-import { ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import SquareButton from '../Utilities/SquareButton.vue';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
-import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { debounce } from '../../helpers/debouncer';
 import { PostThreadBranchData } from '../../types/PostTypes';
 import { router } from '../../main';
@@ -295,13 +292,13 @@ export default defineComponent({
         return{
             AppState,
             AppBskyEmbedRecord,
+            AppBskyEmbedImages,
+            AppBskyEmbedVideo,
             swiper: {} as SwiperClass,
             modules:[Navigation, Keyboard, Pagination],
             imageCollection: [],
             postDetails,
             convertToLongTimestamp,
-            isImageView,
-            isVideoView,
             /**Used to determine which media item to display. */
             AppBskyEmbedRecordWithMedia,
             /**Index of media in Post's collection that is currently being displayed. */
@@ -316,7 +313,7 @@ export default defineComponent({
              * the Post reply tree. The 1st element will always be a
              * reference to the root Post.
              */
-            threadNavHistory: [emptyPostThread] as ThreadViewPost[],
+            threadNavHistory: [emptyPostThread] as AppBskyFeedDefs.ThreadViewPost[],
             /**
              * Holds record of how/where the User has navigated down
              * the Post reply tree. Reords the branch "state" as well
@@ -336,7 +333,7 @@ export default defineComponent({
             /**Is a Post image currently being shown at fullscreen size? */
             isImageFullscreen: false,
             /**Object representing image to display at fullscreen size. */
-            fullscreenImage : {} as ViewImage|ViewExternal,
+            fullscreenImage : {} as AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.ViewExternal,
             /**Is the "scroll to top" button currently visible? */
             isScrollToTopVisible:false,
             /**Record of the last valid Post DID used. Used to prevent reload when `CreatePost`
@@ -365,14 +362,14 @@ export default defineComponent({
                 this.$router.push(`/profile/${postDetails.currentThreadView.post.author.handle}/post/${postDetails.currentThreadView.post.uri.split('/').pop()}/${this.currentMediaIndex-1}`);
 
         },
-        showImageFullscreen(image:ViewImage|ViewExternal){
+        showImageFullscreen(image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.ViewExternal){
             this.fullscreenImage = image;
             this.isImageFullscreen = true;
             this.swiper.keyboard.disable();
         },
         hideImageFullscreen(){
             this.isImageFullscreen = false;
-            this.fullscreenImage = {} as ViewImage|ViewExternal;
+            this.fullscreenImage = {} as AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.ViewExternal;
             this.swiper.keyboard.enable();
         },
         hideModal(){
@@ -414,7 +411,7 @@ export default defineComponent({
             postDetails.isAwaitingFocusData = true;
             await getPostThread(this.postUri)
             .then(res => {
-                this.postThread = res.data.thread as ThreadViewPost;
+                this.postThread = res.data.thread as AppBskyFeedDefs.ThreadViewPost;
                 // postDetails.currentThreadView = postDetails.threadNavHistory[0] = postDetails.postThread;
                 //Take Post Thread prop and update relevant variables
                 postDetails.currentThreadView = this.threadNavHistory[0] = this.postThread;
@@ -492,7 +489,7 @@ export default defineComponent({
          * Updates the navigation history list (`threadNavHistory`).
          * @param threadPost Post/reply to display in `PostFocusModal`.
          */
-        setThreadContext(threadPost:ThreadViewPost|undefined, mediaIndex:number=0){
+        setThreadContext(threadPost:AppBskyFeedDefs.ThreadViewPost|undefined, mediaIndex:number=0){
             if(threadPost){
                 //If at latest/end of threadNavHistory
                 if(this.threadNavIndex+1 == this.threadNavHistory.length){
@@ -512,7 +509,7 @@ export default defineComponent({
          * @param newThreadContext The new Post Thread context to display.
          * @param mediaIndex The Index of the media in the Post's collection to display.
          */
-        async updateThreadContextFromPost(newThreadContext:ThreadViewPost|undefined,mediaIndex:number){
+        async updateThreadContextFromPost(newThreadContext:AppBskyFeedDefs.ThreadViewPost|undefined,mediaIndex:number){
             if(typeof newThreadContext != 'undefined'){
                 // postDetails.isAwaitingFocusData = true;
                 // // await getPostThread(newThreadContext.post.uri)
@@ -533,7 +530,7 @@ export default defineComponent({
          * Returns URI in the format of `at://[handle]/app.bsky.feed.post/[post DID]`.
          * @param thread The `ThreadViewPost` thread context to create the URI for.
          */
-        createThreadPostUri(thread:ThreadViewPost){
+        createThreadPostUri(thread:AppBskyFeedDefs.ThreadViewPost){
             let postDid = thread.post.uri.split('/').pop();
             return `at://${thread.post.author.handle}/app.bsky.feed.post/${postDid}`;
         },
@@ -569,7 +566,7 @@ export default defineComponent({
          * @param cid The unique cid value of the ThreadViewPost object we're trying to find.
          * @param repliesArray The ThreadViewPost object representing the Post "thread" we will search.
          */
-        findThreadView(cid:string, repliesArray:ThreadViewPost):ThreadViewPost|undefined {
+        findThreadView(cid:string, repliesArray:AppBskyFeedDefs.ThreadViewPost):AppBskyFeedDefs.ThreadViewPost|undefined {
             var result;
             //Check if current ThreadViewPost is the one we're looking for
             if(repliesArray.post.cid === cid) result = repliesArray;
@@ -597,7 +594,7 @@ export default defineComponent({
          * @param parentCID The unique cid value of the "Parent" ThreadViewPost object we're trying to find.
          * @param currentPostThread The ThreadViewPost object representing the Post "thread" who's parent we are looking for.
          */
-        discoverBreadcrumbs(parentCID:string, currentPostThread:ThreadViewPost){
+        discoverBreadcrumbs(parentCID:string, currentPostThread:AppBskyFeedDefs.ThreadViewPost){
             var result;
             //get the parent element
             var parentThread = this.findThreadView(parentCID, this.postThread);
@@ -688,11 +685,11 @@ export default defineComponent({
         hasImageMedia(){
             //Image Post
             if((postDetails.currentThreadView.post.embed &&
-            isImageView(postDetails.currentThreadView.post.embed)))
+            AppBskyEmbedImages.isView(postDetails.currentThreadView.post.embed)))
                 return true;
             //Image Post w/ QRT
             if(AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
-            isImageView(postDetails.currentThreadView.post.embed.media))
+            AppBskyEmbedImages.isView(postDetails.currentThreadView.post.embed.media))
                 return true;
             return false;
         },
@@ -712,7 +709,7 @@ export default defineComponent({
         },
         /**Checks to see if the current post contains any media (Image, GIF or Video). */
         hasAnyMedia(){
-            if(this.hasImageMedia || this.hasEmbedGIFMedia || isVideoView(postDetails.currentThreadView.post.embed))
+            if(this.hasImageMedia || this.hasEmbedGIFMedia || AppBskyEmbedVideo.isView(postDetails.currentThreadView.post.embed))
                 return true;
             return false;
         },
@@ -724,15 +721,15 @@ export default defineComponent({
             //Image Post
             if(typeof postDetails.currentThreadView.post.embed != 'undefined' &&
             typeof postDetails.currentThreadView.post.embed.images != 'undefined' &&
-            (postDetails.currentThreadView.post.embed.images as ViewImage[]).length > 0 &&
-            (postDetails.currentThreadView.post.embed.images as ViewImage[])[this.currentMediaIndex].alt.trim() != '')
+            (postDetails.currentThreadView.post.embed.images as AppBskyEmbedImages.ViewImage[]).length > 0 &&
+            (postDetails.currentThreadView.post.embed.images as AppBskyEmbedImages.ViewImage[])[this.currentMediaIndex].alt.trim() != '')
                 return true;
             //Image Post w/ QRT
             else if(typeof postDetails.currentThreadView.post.embed != 'undefined' &&
             AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
             typeof postDetails.currentThreadView.post.embed.media.images != 'undefined' &&
-            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0 &&
-            (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[0].alt.trim() != '')
+            (postDetails.currentThreadView.post.embed.media.images as AppBskyEmbedImages.ViewImage[]).length > 0 &&
+            (postDetails.currentThreadView.post.embed.media.images as AppBskyEmbedImages.ViewImage[])[0].alt.trim() != '')
                 return true;
             return false;
         },
@@ -742,9 +739,9 @@ export default defineComponent({
          */
         hasEmbededVideoWithAltText(){
             if(postDetails.currentThreadView.post.embed &&
-            isVideoView(postDetails.currentThreadView.post.embed) &&
-            (postDetails.currentThreadView.post.embed as ViewVideo).alt &&
-            (postDetails.currentThreadView.post.embed as ViewVideo).alt.trim() != '') return true;
+            AppBskyEmbedVideo.isView(postDetails.currentThreadView.post.embed) &&
+            (postDetails.currentThreadView.post.embed as AppBskyEmbedVideo.View).alt &&
+            (postDetails.currentThreadView.post.embed as AppBskyEmbedVideo.View).alt?.trim() != '') return true;
             return false;
         },
         /**
@@ -755,11 +752,11 @@ export default defineComponent({
         getEmbededImageAltText():string{
             if(postDetails.currentThreadView.post.embed &&
             postDetails.currentThreadView.post.embed.images)
-                return (postDetails.currentThreadView.post.embed.images as ViewImage[])[this.currentMediaIndex].alt;
+                return (postDetails.currentThreadView.post.embed.images as AppBskyEmbedImages.ViewImage[])[this.currentMediaIndex].alt;
             else if(postDetails.currentThreadView.post.embed &&
             AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
-            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
-                return (postDetails.currentThreadView.post.embed.media.images as ViewImage[])[this.currentMediaIndex].alt;
+            (postDetails.currentThreadView.post.embed.media.images as AppBskyEmbedImages.ViewImage[]).length > 0)
+                return (postDetails.currentThreadView.post.embed.media.images as AppBskyEmbedImages.ViewImage[])[this.currentMediaIndex].alt;
             return '';
         },
         /**
@@ -786,15 +783,15 @@ export default defineComponent({
          * selected Post. Resolves the location of the data based on the type of
          * the Post object.
          */
-        getEmbededImageViewImageObjects():ViewImage[]{
+        getEmbededImageViewImageObjects():AppBskyEmbedImages.ViewImage[]{
             if(postDetails.currentThreadView.post.embed &&
             postDetails.currentThreadView.post.embed.images)
-                return (postDetails.currentThreadView.post.embed.images as ViewImage[]);
+                return (postDetails.currentThreadView.post.embed.images as AppBskyEmbedImages.ViewImage[]);
             else if(postDetails.currentThreadView.post.embed &&
             AppBskyEmbedRecordWithMedia.isView(postDetails.currentThreadView.post.embed) &&
             postDetails.currentThreadView.post.embed.media.images &&
-            (postDetails.currentThreadView.post.embed.media.images as ViewImage[]).length > 0)
-                return (postDetails.currentThreadView.post.embed.media.images as ViewImage[]);
+            (postDetails.currentThreadView.post.embed.media.images as AppBskyEmbedImages.ViewImage[]).length > 0)
+                return (postDetails.currentThreadView.post.embed.media.images as AppBskyEmbedImages.ViewImage[]);
             return [];
         },
         /**

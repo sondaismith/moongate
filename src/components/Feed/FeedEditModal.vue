@@ -288,7 +288,7 @@ import InLaInput from '../Utilities/InLaInput.vue';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { AddFeedToList, FeedState, GetFeed, PrepareFeedData, UpdateFeedDetails } from '../../state/FeedList.vue';
-import { ProfileView, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AppBskyActorDefs } from '@atproto/api';
 import CheckBox from '../Utilities/CheckBox.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import { isUserVerified } from '../../helpers/states';
@@ -297,7 +297,7 @@ import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import CustomFeedButton from './CustomFeedButton.vue';
 import { IFeedCreationStatus, IFeedGeneratorSelection, IFeedStackItem } from '../../interfaces/FeedInterfaces';
 import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlaceholder.vue';
-import { AppBskyFeedDefs } from '@atproto/api/dist/client';
+import { AppBskyFeedDefs } from '@atproto/api';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
 import FilterBar from '../Utilities/FilterBar.vue';
 import { PropType } from 'vue';
@@ -347,7 +347,7 @@ export default defineComponent({
                     did:'',
                     handle:'',
                     displayName:''
-                } as ProfileViewDetailed,
+                } as AppBskyActorDefs.ProfileViewDetailed,
                 userSearch:{
                     searchTerm:'',
                     lastResultsTerm:''
@@ -398,7 +398,7 @@ export default defineComponent({
              * A cache of `ProfileViewDetailed` records for all the User account results that were selected.
              * Used to prevent a large number of request from being made against the API.
             */
-            userAccountCache:[] as ProfileViewDetailed[],
+            userAccountCache:[] as AppBskyActorDefs.ProfileViewDetailed[],
             /**Array that holds the results from the latest User Account search. */
             userAccountSearchResults:[] as IUserSearchResult[],
             /**Current text used to filter the displayed Feed Generators. */
@@ -512,7 +512,7 @@ export default defineComponent({
             if(!this.awaitingUserSearchResults && this.feedFilters.userSearch.searchTerm.trim().length>0){
                 this.awaitingUserSearchResults = true;
                 console.log(`Search term: ${this.feedFilters.userSearch.searchTerm}`);//DEBUG
-                var searchResult:ProfileView[] = [];
+                var searchResult:AppBskyActorDefs.ProfileView[] = [];
                 await SearchForAccounts(`${this.feedFilters.userSearch.searchTerm}`)
                 .then(res => {
                     searchResult = res.data.actors
@@ -535,7 +535,7 @@ export default defineComponent({
          * `UserSearchBar` control.
          * @param user Object representing the chosen user.
          */
-        async selectUser(user:ProfileView, index:number){
+        async selectUser(user:AppBskyActorDefs.ProfileView, index:number){
             let matchIndex = this.feedStackItems.findIndex(x => x.did == user.did);
             //If selected item is being deselected...
             if(matchIndex>-1){
@@ -638,8 +638,8 @@ export default defineComponent({
          * User.
          * @param userDID The DID of the User to get the detailed Profile Details for.
          */
-        async getUserProfileViewDetailed(userDID:string):Promise<ProfileViewDetailed|undefined>{
-            let ud:ProfileViewDetailed|undefined = undefined;
+        async getUserProfileViewDetailed(userDID:string):Promise<AppBskyActorDefs.ProfileViewDetailed|undefined>{
+            let ud:AppBskyActorDefs.ProfileViewDetailed|undefined = undefined;
             this.isAwaitingProfileData = true;
             await GetBrowsingAgent().getProfile({actor:userDID}).
             then(res => {

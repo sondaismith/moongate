@@ -6,7 +6,7 @@ import { mount } from '@vue/test-utils'
 import { GenerateCID } from '../../helpers/generators';
 import { CreateFeed, CreateFeedViewPost, CreateIFeedDescription } from '../../fake-data/DataFactory';
 import { DeleteIndexedDBSavedFeeds } from '../../lib/db/local_db';
-import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyFeedDefs } from '@atproto/api';
 import { emptyPostView } from '../../fake-data/dumPostData';
 
 //Creating collection of Feeds and Posts
@@ -18,8 +18,8 @@ let feedCID2 = 'testFeed2';
 // await GenerateCID('Mr Repost').then(res => {
 //     feedCID2 = res.toString()
 // })
-let post1:FeedViewPost = {post:emptyPostView};
-let post2:FeedViewPost = {post:emptyPostView};
+let post1:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
+let post2:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
 await CreateFeedViewPost('bob_the_poster','I love my car shop!',true).then(res => post1 = res);
 await CreateFeedViewPost('cargo_haul', 'Delivery delivery delivery delivery').then(res => post2 = res);
 let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2,post1.post.cid,post1.post.indexedAt);

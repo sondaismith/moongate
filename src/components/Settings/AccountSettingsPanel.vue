@@ -84,7 +84,7 @@ import CustomFeedButtonPlaceholder from '../Placeholder/CustomFeedButtonPlacehol
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import RadioBarButton from '../Utilities/RadioBarButton.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
-import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AppBskyActorDefs } from '@atproto/api';
 import FilterBar from '../Utilities/FilterBar.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
@@ -282,7 +282,7 @@ export default defineComponent({
          * @param profile The ProfileView of the account to unmute.
          * @param index The index that points to where the provided ProfileView is stored inside {@link mutedAccountData}. DO NOT USE to remove from list, as the list filtering makes the index unusable.
          */
-        async unmuteAccount(profile:ProfileView, index:number){
+        async unmuteAccount(profile:AppBskyActorDefs.ProfileView, index:number){
             this.mutedAccountData[index].isAwaitingAction = true;
             await toggleMute(profile,true)
             .then(()=>{
@@ -342,7 +342,7 @@ export default defineComponent({
          * @param profile The ProfileView of the account to unblock.
          * @param index The index that points to where the provided ProfileView is stored inside {@link blockedAccountData}. DO NOT USE to remove from list, as the list filtering makes the index unusable.
          */
-        async unBlockAccount(profile:ProfileView, index:number){
+        async unBlockAccount(profile:AppBskyActorDefs.ProfileView, index:number){
             this.blockedAccountData[index].isAwaitingAction = true;
             await toggleBlock(profile,true)
             .then(()=>{
@@ -362,11 +362,11 @@ export default defineComponent({
             this.blockedAccountFilter = '';
         },
         /**Check if a profile is muted by the currently logged in User. */
-        isAccountMuted(profile:ProfileView){
+        isAccountMuted(profile:AppBskyActorDefs.ProfileView){
             return typeof profile.viewer != 'undefined' && profile.viewer.muted;
         },
         /**Check if a profile is blocked by the currently logged in User. */
-        isAccountBlocked(profile:ProfileView){
+        isAccountBlocked(profile:AppBskyActorDefs.ProfileView){
             return typeof profile.viewer != 'undefined' && typeof profile.viewer.blocking != 'undefined';
         },
         /**

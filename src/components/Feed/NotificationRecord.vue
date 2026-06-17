@@ -27,7 +27,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import { convertToShortTimestamp } from '../../helpers/converters';
-import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
+import { AppBskyNotificationListNotifications } from '@atproto/api';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 
 //Icons
@@ -38,7 +38,7 @@ import MingcuteRepeatLine from '~icons/mingcute/repeat-line';
 import SolarMentionCircleBold from '~icons/solar/mention-circle-bold';
 import MingcuteQuoteRightFill from '~icons/mingcute/quote-right-fill';
 import MingcuteQuestionFill from '~icons/mingcute/question-fill';
-import { isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyFeedDefs } from '@atproto/api';
 import { showFocusModal } from '../../state/PostDetails.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import { toast } from '../../state/AppState.vue';
@@ -59,7 +59,7 @@ export default defineComponent({
         AvatarRound,
     },
     props:{
-        notifData:Object as PropType<Notification>,
+        notifData:Object as PropType<AppBskyNotificationListNotifications.Notification>,
     },
     data(){
         return{
@@ -73,7 +73,7 @@ export default defineComponent({
         openRelatedContent(){
             // alert('You clicked the notification component.');
             if(this.notifData){
-                let post:PostView = {
+                let post:AppBskyFeedDefs.PostView = {
                     author:{did:'',handle:''},
                     cid:this.notifData.record.subject.cid,
                     indexedAt:'',
@@ -83,7 +83,7 @@ export default defineComponent({
                 showFocusModal({post: post}, 0);
             }
         },
-        openFocusDetailsPost(post:PostView, mediaIndex:number=0){
+        openFocusDetailsPost(post:AppBskyFeedDefs.PostView, mediaIndex:number=0){
             if(this.notifData){
                 showFocusModal({post: post}, mediaIndex);
             }
@@ -94,8 +94,8 @@ export default defineComponent({
                     uri:this.notifData.record.subject.uri
                 })
                 .then(res => {
-                    if(isThreadViewPost(res.data.thread)){
-                        this.contentText = (res.data.thread as ThreadViewPost).post.record.text as string;
+                    if(AppBskyFeedDefs.isThreadViewPost(res.data.thread)){
+                        this.contentText = (res.data.thread as AppBskyFeedDefs.ThreadViewPost).post.record.text as string;
                     }
                 })
                 .catch(err => {

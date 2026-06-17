@@ -47,7 +47,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { AppBskyFeedDefs } from '@atproto/api/dist/client';
+import { AppBskyFeedDefs } from '@atproto/api';
 import { getCompactNumberValue } from '../../helpers/converters';
 import ImageLoader from '../Utilities/ImageLoader.vue';
 

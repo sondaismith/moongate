@@ -1,14 +1,10 @@
-import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { AppBskyFeedDefs, AppBskyNotificationListNotifications, AppBskyUnspeccedDefs, AppBskyActorSearchActors, AppBskyActorDefs } from "@atproto/api";
 import { CreateFeed, CreateFeedViewPost, CreateIFeedDescription, CreateNotification, CreateTrendView } from "../../fake-data/DataFactory";
-import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
-import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 import { IFeedDescription } from "../../interfaces/FeedInterfaces";
-import { AppBskyActorSearchActors } from "@atproto/api/dist/client";
 import Sidebar from '../../Sidebar.vue';
 import { DeleteIndexedDBSavedFeeds, stringifyFeedListData } from "../../lib/db/local_db";
 import { emptyPostView } from "../../fake-data/dumPostData";
 import { web_db } from "../../lib/db/web_db";
-import { ProfileView } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
 
 
 //Creating collection of Feeds and Posts
@@ -24,9 +20,9 @@ let post1Timestamp = new Date(2025,8,16,13,30);
 let notif1Timestamp = new Date(2025,8,16,13,30);
 let trend1Timestamp = new Date(2025,2,27,15,41);
 
-let post1:FeedViewPost = {post:emptyPostView};
-let post2:FeedViewPost = {post:emptyPostView};
-let post3:FeedViewPost = {post:emptyPostView};
+let post1:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
+let post2:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
+let post3:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
 await CreateFeedViewPost('bobtheposter.social','I love my car shop!',true,undefined,post1Timestamp).then(res => post1 = res);
 await CreateFeedViewPost('cargo.haul', 'Delivery delivery delivery delivery',false,undefined,new Date(2025,8,12,13,21)).then(res => post2 = res);
 await CreateFeedViewPost('cargo.haul', 'Who put the box there? Me!',true,undefined,new Date(2025,7,25,17,11)).then(res => post3 = res);
@@ -56,10 +52,10 @@ let feed2 = CreateFeed([post1,post2,post3],feedDesc2);
 // }
 
 interface IFakeBackend{
-    feed:FeedViewPost[]|Notification[]|TrendView[],
+    feed:AppBskyFeedDefs.FeedViewPost[]|AppBskyNotificationListNotifications.Notification[]|AppBskyUnspeccedDefs.TrendView[],
     feedDesciption:IFeedDescription,
     /**The User details of the owner of the "User Feed". */
-    user:ProfileView,
+    user:AppBskyActorDefs.ProfileView,
 }
 
 var fakeBackend:IFakeBackend[] = [
@@ -85,8 +81,8 @@ var fakeBackend:IFakeBackend[] = [
     },
 ]
 
-function getFakeAuthorFeed(feedID:string):FeedViewPost[]|Notification[]|TrendView[]{
-    let result:FeedViewPost[]|Notification[]|TrendView[] = [];
+function getFakeAuthorFeed(feedID:string):AppBskyFeedDefs.FeedViewPost[]|AppBskyNotificationListNotifications.Notification[]|AppBskyUnspeccedDefs.TrendView[]{
+    let result:AppBskyFeedDefs.FeedViewPost[]|AppBskyNotificationListNotifications.Notification[]|AppBskyUnspeccedDefs.TrendView[] = [];
     let fakeAPIResult = fakeBackend.find(f => f.feedDesciption.feedId == feedID);
     if(fakeAPIResult) result = fakeAPIResult.feed;
     return result;

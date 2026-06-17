@@ -10,7 +10,6 @@ import { defineComponent, markRaw, PropType } from 'vue'
 import Hashtag from './Hashtag.vue';
 import Userlink from './Userlink.vue';
 import Hyperlink from './Hyperlink.vue';
-import { isLink, Link } from '@atproto/api/dist/client/types/app/bsky/richtext/facet';
 
 export default defineComponent({
     props:{
@@ -86,7 +85,7 @@ export default defineComponent({
             if(partialUrl.trim() == '') return; //String cannot be empty
             let cleanedPartial = partialUrl.split('..')[0]; //Remove 'ellipses' added to end of shortened Url before search
             if(this.postFacets && this.postFacets.length>0){ //Search for full URL
-                let link = (this.postFacets[0].features.find(x => isLink(x) && x.uri.includes(cleanedPartial)) as Link);
+                let link = (this.postFacets[0].features.find(x => AppBskyRichtextFacet.isLink(x) && x.uri.includes(cleanedPartial)) as AppBskyRichtextFacet.Link);
                 if(link && link.uri) return link.uri
                 else return cleanedPartial;//No links in the `postFacets` object match, fall back to the shortened link
 

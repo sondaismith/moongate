@@ -24,13 +24,13 @@
 </template>
 
 <script lang="ts">
-import { Label } from '@atproto/api/dist/client/types/com/atproto/label/defs'
+import { ComAtprotoLabelDefs } from '@atproto/api'
 import { defineComponent, PropType } from 'vue'
 import { MediaType } from '../../enums/PostEnums';
 
 export default defineComponent({
     props:{
-        labels: Object as PropType<Label[]>,
+        labels: Object as PropType<ComAtprotoLabelDefs.Label[]>,
         hasSensitiveContent: Boolean,
         mediaType: String as PropType<MediaType>,
     },

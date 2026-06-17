@@ -27,7 +27,7 @@ import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MdiHideOutline from '~icons/mdi/hide-outline';
 import MdiBlock from '~icons/mdi/block';
 import { PostTypes } from "../enums/PostEnums";
-import { PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { AppBskyFeedDefs } from "@atproto/api";
 
 /**
  * Collection of all the options to display on the
@@ -77,7 +77,7 @@ var firstPostObject:IPostDetails[] = [
 //         uri:'going.nowhere',
 //     }
 // }
-var emptyPostView:PostView = {
+var emptyPostView:AppBskyFeedDefs.PostView = {
     author:{
         did:'error',
         handle:'not-real',
@@ -89,7 +89,7 @@ var emptyPostView:PostView = {
     },
     uri:'going.nowhere',
 }
-var emptyPostThread:ThreadViewPost = {
+var emptyPostThread:AppBskyFeedDefs.ThreadViewPost = {
     post:{
         author:{
             did:"",

@@ -85,18 +85,15 @@ import MdiOpenInNew from '~icons/mdi/open-in-new';
 
 import { defineComponent, PropType } from 'vue'
 import { postDetails } from '../../state/PostDetails.vue';
-import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
-import { Label } from '@atproto/api/dist/client/types/com/atproto/label/defs';
 import SpoilerOverlay from './SpoilerOverlay.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { AppState } from '../../state/AppState.vue';
 import { MediaType } from '../../enums/PostEnums';
-import { isMain, isView, View as EmbedExternalView, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { isTauri } from '@tauri-apps/api/core';
 import { router } from '../../main';
 import { createPostRoute } from '../../lib/api/Post.vue';
-import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia, ComAtprotoLabelDefs } from '@atproto/api';
 import ImageLoader from './ImageLoader.vue';
 import ExternalGIF from './ExternalGIF.vue';
 
@@ -113,7 +110,7 @@ export function calculateImageContainerMinHeight(elWidth:number):number{
  * @param author Value used to reference the author (uploader) of this image.
  */
 // async function saveImageWithAuthor(image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
-async function saveImageWithAuthor(image:ViewImage|EmbedExternalView, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+async function saveImageWithAuthor(image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
     let fileName = undefined;
     let safeHandle = undefined;
     // AppState.saveMedia = image;
@@ -134,7 +131,7 @@ async function saveImageWithAuthor(image:ViewImage|EmbedExternalView, index:numb
     else{
         AppState.saveMedia = image;
         // fileName = (image as ViewExternal).uri.split('\/').pop()?.split('@')[0];
-        fileName = (image as EmbedExternalView).external.uri.split('\/').pop()?.split('@')[0];
+        fileName = (image as AppBskyEmbedExternal.View).external.uri.split('\/').pop()?.split('@')[0];
         fileName = fileName ? fileName.split('.gif')[0] : '';
         AppState.fileSaveDetails.full = `${fileName}`;
         AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
@@ -154,7 +151,7 @@ async function saveImageWithAuthor(image:ViewImage|EmbedExternalView, index:numb
  * Method used to open a specific Image in a new browser tab.
  * @param imageToShow Object representing the Image to open in the new tab.
  */
-function OpenImageInNewTab(imageToShow:ViewImage|EmbedExternalView){
+function OpenImageInNewTab(imageToShow:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View){
     // if(!imageToShow.uri){//not Tenor GIF
     if(AppBskyEmbedExternal.isView(imageToShow)){//Tenor GIF
         open(imageToShow.external.uri);
@@ -175,7 +172,7 @@ export default defineComponent({
         // imagesToDisplay: Object as PropType<ViewImage[]>|PropType<View>,//PropType<ViewExternal>,
         // imagesToDisplay: Object as PropType<ViewForImages>|PropType<AppBskyEmbedExternal.View>|PropType<View>,//PropType<ViewExternal>,
         mediaEmbed: Object as PropType<AppBskyEmbedImages.View>|PropType<AppBskyEmbedRecordWithMedia.View>|PropType<AppBskyEmbedExternal.View>,//PropType<ViewExternal>,
-        labels: Object as PropType<Label[]>,
+        labels: Object as PropType<ComAtprotoLabelDefs.Label[]>,
         author: String,
         postId:String,
         postText: String,
@@ -200,11 +197,9 @@ export default defineComponent({
             MediaType,
             postDetails,
             doesImageHeightSurpassContainer: false,
-            isMain,
-            isView,
             AppBskyEmbedImages,
             AppBskyEmbedExternal,
-            imagesToDisplay: [] as ViewImage[], // AppBskyEmbedImages.View|AppBskyEmbedRecordWithMedia.View,
+            imagesToDisplay: [] as AppBskyEmbedImages.ViewImage[], // AppBskyEmbedImages.View|AppBskyEmbedRecordWithMedia.View,
             isGIFPaused: false
         }
     },
@@ -236,8 +231,8 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to Images.
          */
-        // showOptionsMenu(e:MouseEvent, image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
-        showOptionsMenu(e:MouseEvent, image:ViewImage|EmbedExternalView, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+        // showOptionsMenu(e:MouseEvent, image:AppBskyEmbedImages.ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+        showOptionsMenu(e:MouseEvent, image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
             // if(isTauri()){
                 e.preventDefault();
                 OptionsMenuState.currentMenuItems = [
@@ -257,7 +252,7 @@ export default defineComponent({
          * @param image Object representing the image to display full-size.
          */
         // handleExternalGIFCLick(image:ViewExternal){
-        handleExternalGIFCLick(image:EmbedExternalView){
+        handleExternalGIFCLick(image:AppBskyEmbedExternal.View){
             if(this.showFullsize)
                 this.$emit('imageClicked',image.external);
             else
@@ -323,7 +318,7 @@ export default defineComponent({
          * Used to show image at "fullscreen" size when in the `PostFocusModal`.
          * @param image Object representing the image to display in fullscreen view.
          */
-        imageClicked(image:ViewImage|ViewExternal){
+        imageClicked(image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.ViewExternal){
             if(image) return true;
         },
         /**

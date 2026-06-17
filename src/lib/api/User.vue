@@ -1,9 +1,7 @@
 <script lang="ts">
-import { AppBskyActorGetProfile, ComAtprotoIdentityResolveHandle } from '@atproto/api/dist/client';
+import { AtUri, AppBskyActorDefs, AppBskyActorGetProfile, ComAtprotoIdentityResolveHandle } from '@atproto/api';
 import { GetBrowsingAgent } from '../api.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
-import { AtUri } from '@atproto/api';
 
 export default{
     name:"User API Methods"
@@ -90,7 +88,7 @@ async function UnmuteUser(userDid:string){
  * @param throwOnError Optional. Determines if a promise will be rejected (error "thrown") if an error is caught
  * during the mute/unmute process. Default value is false.
  */
-export async function toggleMute(authorData:ProfileView|ProfileViewBasic|ProfileViewDetailed, throwOnError:boolean=false){
+export async function toggleMute(authorData:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewBasic|AppBskyActorDefs.ProfileViewDetailed, throwOnError:boolean=false){
     if(!AppState.checkIfLoggedIn('mute an Account')) return;
     if(typeof authorData.viewer != 'undefined' && typeof authorData.viewer.muted != 'undefined' && !authorData.viewer.muted){
         await MuteUser(authorData.did)
@@ -167,7 +165,7 @@ async function UnblockUser(blockRkey:string){
  * @param throwOnError Optional. Determines if a promise will be rejected (error "thrown") if an error is caught
  * during the block/unblock process. Default value is false.
  */
-export async function toggleBlock(authorData:ProfileView|ProfileViewBasic|ProfileViewDetailed, throwOnError:boolean=false){
+export async function toggleBlock(authorData:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewBasic|AppBskyActorDefs.ProfileViewDetailed, throwOnError:boolean=false){
     if(!AppState.checkIfLoggedIn('block an Account')) return;
     if(typeof authorData.viewer != 'undefined' && typeof authorData.viewer.blocking == 'undefined'){
         let currentAccDid = GetBrowsingAgent().did;

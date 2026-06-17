@@ -10,25 +10,25 @@
             <div class="text-blueskyBlue">Undo?</div>
         </button>
     </div>
-    <div v-else-if="typeof postToShow != 'undefined' && isViewBlocked(postToShow)">
+    <div v-else-if="typeof postToShow != 'undefined' && AppBskyEmbedRecord.isViewBlocked(postToShow)">
         <div class="flex rounded-lg p-2 gap-1 border border-outline items-center">
             <i-mingcute:information-line class="size-4"/>
             <div>Blocked</div>
         </div>
     </div>
-    <div v-else-if="typeof postToShow != 'undefined' && isViewNotFound(postToShow)">
+    <div v-else-if="typeof postToShow != 'undefined' && AppBskyEmbedRecord.isViewNotFound(postToShow)">
         <div class="flex rounded-lg p-2 gap-1 border border-outline items-center">
             <i-mingcute:information-line class="size-4"/>
             <div>Deleted</div>
         </div>
     </div>
-    <div v-else-if="typeof postToShow != 'undefined' && isViewDetached(postToShow)">
+    <div v-else-if="typeof postToShow != 'undefined' && AppBskyEmbedRecord.isViewDetached(postToShow)">
         <div class="flex rounded-lg p-2 gap-1 border border-outline items-center">
             <i-mingcute:information-line class="size-4"/>
             <div>Removed by author</div>
         </div>
     </div>
-    <div v-else-if="typeof postToShow != 'undefined' && isListView(postToShow)">
+    <div v-else-if="typeof postToShow != 'undefined' && AppBskyGraphDefs.isListView(postToShow)">
         <div class="flex flex-col rounded-lg p-2 gap-1 border border-outline overflow-hidden select-none"
         title="Lists are not yet supported">
             <div class="flex gap-2">
@@ -42,7 +42,7 @@
             <div class="flex text-sm leading-4">{{ postToShow.description }}</div>
         </div>
     </div>
-    <div v-else-if="typeof postToShow != 'undefined' && isStarterPackViewBasic(postToShow)">
+    <div v-else-if="typeof postToShow != 'undefined' && AppBskyGraphDefs.isStarterPackViewBasic(postToShow)">
         <div class="flex flex-col rounded-lg p-2 gap-1 border border-outline overflow-hidden select-none"
         title="Starter Packs are not yet supported">
             <div class="flex gap-2">
@@ -58,7 +58,7 @@
             <div class="flex text-sm leading-4">{{ postToShow.record.description }}</div>
         </div>
     </div>
-    <div v-else-if="typeof postToShow != 'undefined' && isGeneratorView(postToShow)">
+    <div v-else-if="typeof postToShow != 'undefined' && AppBskyFeedDefs.isGeneratorView(postToShow)">
         <div class="flex flex-col rounded-lg p-2 gap-1 border border-outline overflow-hidden
         select-none hover:bg-btnSubtle cursor-not-allowed"
         title="Generator views are not yet supported">
@@ -75,16 +75,16 @@
         </div>
     </div>
     <div v-else-if="typeof postToShow != 'undefined'" class="flex flex-col rounded-lg border border-slate-600 text-primary w-full"
-    :class="[$attrs.class, isReasonPin(postReason) ? 'pt-2' : '', isReplyStyle ? 'border-0' : 'gap-2 p-3 pb-1.5',
+    :class="[$attrs.class, AppBskyFeedDefs.isReasonPin(postReason) ? 'pt-2' : '', isReplyStyle ? 'border-0' : 'gap-2 p-3 pb-1.5',
         isFeedPostStyle ? 'p-1.5' : ''
     ]">
-        <div v-if="isReasonPin(postReason)" class="flex items-center text-secondary border-b
+        <div v-if="AppBskyFeedDefs.isReasonPin(postReason)" class="flex items-center text-secondary border-b
         border-outline pb-1 select-none">
             <i-mdi:pin class="text-sm"/>
             <div class="font-bold text-xs">Pinned</div>
         </div>
         {{ void "Retweet Label" }}
-        <div v-if="postReason && isReasonRepost(postReason) && !isViewRecord(postToShow)"
+        <div v-if="postReason && AppBskyFeedDefs.isReasonRepost(postReason) && !AppBskyEmbedRecord.isViewRecord(postToShow)"
         class="flex rounded px-2 p-1 bg-postMsg items-center text-sm gap-1">
             <div class="flex grow-0 shrink-0 justify-end">
                 <i-mdi:twitter-retweet/>
@@ -137,15 +137,15 @@
                     </div>
                     <!-- <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
                     <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div> -->
-                    <RouterLink v-if="!isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</RouterLink>
-                    <RouterLink v-else-if="isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</RouterLink>
+                    <RouterLink v-if="!AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</RouterLink>
+                    <RouterLink v-else-if="AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</RouterLink>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
                     {{ void "Post Text Content" }}
-                    <RichPostTextBsky data-test="focusFeedPost-text" v-if="!isViewRecord(postToShow)" :post-text="(postToShow.record as Record).text" :post-facets="(postToShow.record as Record).facets"/>
+                    <RichPostTextBsky data-test="focusFeedPost-text" v-if="!AppBskyEmbedRecord.isViewRecord(postToShow)" :post-text="(postToShow.record as AppBskyFeedPost.Record).text" :post-facets="(postToShow.record as AppBskyFeedPost.Record).facets"/>
                     <!-- Is Quoted Post -->
-                    <RichPostTextBsky data-test="focusFeedPost-text" v-else :post-text="((postToShow as ViewRecord).value as Record).text" :post-facets="((postToShow as ViewRecord).value as Record).facets"/>
+                    <RichPostTextBsky data-test="focusFeedPost-text" v-else :post-text="((postToShow as AppBskyEmbedRecord.ViewRecord).value as AppBskyFeedPost.Record).text" :post-facets="((postToShow as AppBskyEmbedRecord.ViewRecord).value as Record).facets"/>
                     {{ void "Post Media" }}
                     <!-- <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
@@ -176,28 +176,22 @@
 </template>
 
 <script lang="ts">
-import { GeneratorView, isGeneratorView, isPostView, isReasonPin, isReasonRepost, PostView, ReasonPin, ReasonRepost, ReplyRef, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyFeedDefs, AppBskyGraphDefs, AppBskyLabelerDefs, isDid } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
-import { isViewBlocked, isViewDetached, isViewNotFound, isViewRecord, ViewBlocked, ViewDetached, ViewNotFound, ViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import PostInteractionIcons from '../Post/PostInteractionIcons.vue';
-import { isImage, View, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
-import { isView as isViewForRecordWithMedia, View as ViewForRecordWithMedia} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
 import { postDetails } from '../../state/PostDetails.vue';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
-import { isListView, isStarterPackViewBasic, ListView, StarterPackViewBasic } from '@atproto/api/dist/client/types/app/bsky/graph/defs';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
-import { isMain, Main, Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { AppBskyFeedPost } from '@atproto/api';
 import { getUserProfile, toggleBlock } from '../../lib/api/User.vue';
 import { BookmarkPost, getPostImages, RemoveBookmark } from '../../lib/api/Post.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { LabelerView } from '@atproto/api/dist/client/types/app/bsky/labeler/defs';
 
 export default defineComponent({
     components:{
@@ -212,11 +206,11 @@ export default defineComponent({
     },
     props:{
         /**Prop used to pass in Post details - used by "Feed-type" display components (`FeedColumn`). */
-        postData: Object as PropType<PostView>|PropType<ViewRecord>|PropType<ViewNotFound>|PropType<ViewBlocked>|PropType<ViewDetached>|
-            PropType<GeneratorView>|PropType<ListView>|PropType<LabelerView>|PropType<StarterPackViewBasic>|PropType<{$type: string}>,
+        postData: Object as PropType<AppBskyFeedDefs.PostView>|PropType<AppBskyEmbedRecord.ViewRecord>|PropType<AppBskyEmbedRecord.ViewNotFound>|PropType<AppBskyEmbedRecord.ViewBlocked>|PropType<AppBskyEmbedRecord.ViewDetached>|
+            PropType<AppBskyFeedDefs.GeneratorView>|PropType<AppBskyGraphDefs.ListView>|PropType<AppBskyLabelerDefs.LabelerView>|PropType<AppBskyGraphDefs.StarterPackViewBasic>|PropType<{$type: string}>,
         /**Prop used to pass in Post details - used by "Reply-type" display components (`PostThreadView`). */
-        threadData: Object as PropType<ThreadViewPost>,
-        postReason: Object as PropType<ReasonRepost|ReasonPin>,
+        threadData: Object as PropType<AppBskyFeedDefs.ThreadViewPost>,
+        postReason: Object as PropType<AppBskyFeedDefs.ReasonRepost|AppBskyFeedDefs.ReasonPin>,
         isFeedPostStyle:{
             type:Boolean,
             default:false
@@ -233,20 +227,12 @@ export default defineComponent({
         replyIndex:Number,
         totalReplies:Number,
         /**The `ReplyRef` object associated with the Post to display, if there is one. */
-        replyRef: Object as PropType<ReplyRef>
+        replyRef: Object as PropType<AppBskyFeedDefs.ReplyRef>
     },
     data(){
         return{
-            isReasonRepost,
-            isReasonPin,
-            isImage,
-            isViewRecord,
-            isViewBlocked,
-            isViewNotFound,
-            isViewDetached,
-            isListView,
-            isStarterPackViewBasic,
-            isGeneratorView,
+            AppBskyFeedDefs,
+            AppBskyGraphDefs,
             convertToLongTimestamp,
             convertToShortTimestamp,
             AppBskyEmbedImages,
@@ -259,7 +245,7 @@ export default defineComponent({
              * The current Post details to show. "Post" is derived from `threadData`
              * first if it exists and `postData` second.
              */
-            postToShow: {author:{did:'',handle:''},cid:'',indexedAt:'',record:{},uri:''} as PostView|ViewRecord,//|ViewNotFound|ViewBlocked|ViewDetached|AppBskyFeedDefs.GeneratorView|AppBskyGraphDefs.ListView|AppBskyLabelerDefs.LabelerView|AppBskyGraphDefs.StarterPackViewBasic,
+            postToShow: {author:{did:'',handle:''},cid:'',indexedAt:'',record:{},uri:''} as AppBskyFeedDefs.PostView|AppBskyEmbedRecord.ViewRecord,//|ViewNotFound|ViewBlocked|ViewDetached|AppBskyFeedDefs.GeneratorView|AppBskyGraphDefs.ListView|AppBskyLabelerDefs.LabelerView|AppBskyGraphDefs.StarterPackViewBasic,
             /**Are we currently waiting for an action relating to blocking or unblocking a User account to finish? */
             isAwaitingAccountBlockAction:false,
             /**Are we currently waiting for an action relating to saving/removing a Post bookmark to finish? */
@@ -283,7 +269,7 @@ export default defineComponent({
          * @param postThread The the new Post Thread context to display.
          * @param mediaIndex The Index of the media in the Post's collection to display.
          */
-        threadReplyClicked:(postThread:ThreadViewPost|undefined,mediaIndex:number) => {
+        threadReplyClicked:(postThread:AppBskyFeedDefs.ThreadViewPost|undefined,mediaIndex:number) => {
             // if(postThreadURI.trim() != '')
                 return {postThread: postThread,mediaIndex};
             // else return false;
@@ -344,7 +330,7 @@ export default defineComponent({
                 let handle = '';
                 if(this.isPostReply.hasFullParentInfo){
                     //If reply reference exists and parent is a PostView object
-                    if(typeof this.replyRef != 'undefined' && isPostView(this.replyRef.parent)) handle = this.replyRef.parent.author.handle;
+                    if(typeof this.replyRef != 'undefined' && AppBskyFeedDefs.isPostView(this.replyRef.parent)) handle = this.replyRef.parent.author.handle;
                     //need to handle `NotFoundPost` and `BlockedPost` situations as well
                 }
                 else{
@@ -373,7 +359,7 @@ export default defineComponent({
          * Emits `threadReplyClicked` with URI of Post Thread to display.
          * @param newThread The  new Post Thread context to display.
          */
-        emitThreadReplyClicked(newThread:ThreadViewPost|undefined, mediaIndex:number=0){
+        emitThreadReplyClicked(newThread:AppBskyFeedDefs.ThreadViewPost|undefined, mediaIndex:number=0){
             // if(newThread.trim() != '')
                 this.$emit('threadReplyClicked',newThread,mediaIndex);
         },
@@ -431,7 +417,7 @@ export default defineComponent({
          */
         postContainsImage(){
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postToShow)){
+            if(!AppBskyEmbedRecord.isViewRecord(this.postToShow)){
                 if(this.postToShow?.embed && this.postToShow.embed.images){
                     //Is a parent Post with image(s)
                     return true;
@@ -459,7 +445,7 @@ export default defineComponent({
          */
         postContainsVideo(){
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postToShow)){
+            if(!AppBskyEmbedRecord.isViewRecord(this.postToShow)){
                 if(this.postToShow?.embed && AppBskyEmbedVideo.isView(this.postToShow.embed)){
                     //Is a parent Post with video
                     return true;
@@ -488,7 +474,7 @@ export default defineComponent({
          */
         postContainsExternalEmbed(){
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postToShow)){
+            if(!AppBskyEmbedRecord.isViewRecord(this.postToShow)){
                 if(this.postToShow?.embed && AppBskyEmbedExternal.isView(this.postToShow.embed)){
                     //Is a parent Post with external embed
                     return true;
@@ -517,7 +503,7 @@ export default defineComponent({
          * @returns `ViewImage[]` containing Post images.
          */
         // getPostImages():ViewImage[]{
-        getPostImages():View|ViewForRecordWithMedia{
+        getPostImages():AppBskyEmbedImages.View|AppBskyEmbedRecordWithMedia.View{
             if(typeof this.postToShow != 'undefined')
                 // return getPostImages({post:this.postToShow});
                 return getPostImages(this.postToShow);
@@ -529,7 +515,7 @@ export default defineComponent({
          * @returns `AppBskyEmbedVideo.View` containing Video details.
          */
         getPostVideo():AppBskyEmbedVideo.View|undefined{
-            if(!isViewRecord(this.postToShow)){
+            if(!AppBskyEmbedRecord.isViewRecord(this.postToShow)){
                 if(this.postToShow?.embed && AppBskyEmbedVideo.isView(this.postToShow.embed)){
                     //Is a parent Post with video
                     return this.postToShow.embed;
@@ -561,7 +547,7 @@ export default defineComponent({
          */
         getPostEmbed():AppBskyEmbedExternal.View|undefined{
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postToShow)){
+            if(!AppBskyEmbedRecord.isViewRecord(this.postToShow)){
                 if(this.postToShow?.embed && AppBskyEmbedExternal.isView(this.postToShow.embed)){
                     //Is a parent Post with external embed
                     return this.postToShow.embed;
@@ -590,7 +576,7 @@ export default defineComponent({
             return typeof postId != 'undefined' ? postId : '';
         },
         getPostText():string{
-            if(!isViewRecord(this.postToShow)) return this.postToShow?.record.text;
+            if(!AppBskyEmbedRecord.isViewRecord(this.postToShow)) return this.postToShow?.record.text;
             else return this.postToShow.value.text;
         },
         /**
@@ -607,17 +593,17 @@ export default defineComponent({
          */
         isPostReply():{isReply:boolean,hasFullParentInfo:boolean}{
             //ThreadViewPost that is reply (seen in Feed)
-            if(this.replyRef && isPostView(this.replyRef.parent)) return {isReply:true,hasFullParentInfo:true};
+            if(this.replyRef && AppBskyFeedDefs.isPostView(this.replyRef.parent)) return {isReply:true,hasFullParentInfo:true};
             //Standalone PostView that is reply (likely seen as bookmark)
-            else if(isPostView(this.postToShow) && isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined')
+            else if(AppBskyFeedDefs.isPostView(this.postToShow) && AppBskyFeedPost.isMain(this.postToShow.record) && typeof (this.postToShow.record as AppBskyFeedPost.Main).reply != 'undefined')
                 return {isReply:true,hasFullParentInfo:false}; //there's no way to know the state of the reply Post until accessing it when using this object...
             return {isReply:false,hasFullParentInfo:false};
         },
         /**Return the URI pointing to the Parent of this Post, if it exists. */
         getParentPostURI():string|undefined{
             if(this.isPostReply.isReply){
-                if(typeof this.replyRef != 'undefined' && isPostView(this.replyRef.parent)) return this.replyRef.parent.uri;
-                else if(isPostView(this.postToShow) && isMain(this.postToShow.record) && typeof (this.postToShow.record as Main).reply != 'undefined') return (this.postToShow.record as Main).reply!.parent.uri;
+                if(typeof this.replyRef != 'undefined' && AppBskyFeedDefs.isPostView(this.replyRef.parent)) return this.replyRef.parent.uri;
+                else if(AppBskyFeedDefs.isPostView(this.postToShow) && AppBskyFeedPost.isMain(this.postToShow.record) && typeof (this.postToShow.record as AppBskyFeedPost.Main).reply != 'undefined') return (this.postToShow.record as AppBskyFeedPost.Main).reply!.parent.uri;
             }
         },
         /**Is the account associated with the currently displayed Post blocked by the logged in User? */

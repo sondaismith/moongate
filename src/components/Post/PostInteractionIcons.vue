@@ -66,7 +66,7 @@ import { postDetails } from '../../state/PostDetails.vue';
 import { CreateBskyWeblink, getCompactNumberValue } from '../../helpers/converters';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
-import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyFeedDefs } from '@atproto/api';
 import { AppState, CopyTextToClipboard, toast } from '../../state/AppState.vue';
 import { PostActions } from '../../enums/PostEnums';
 import { GetBrowsingAgent } from '../../lib/api.vue';
@@ -113,7 +113,7 @@ async function ConfirmPostDelete(deleteFunc:Function){
  * Opens the `CreatePost` component to allow the use to make a "quote post".
  * @param post Post to quote post.
  */
-function QuotePost(post:PostView){
+function QuotePost(post:AppBskyFeedDefs.PostView){
     postDetails.prepareForPostAction(post,PostActions.Quote)
     AppState.showCreatePost();
 }
@@ -124,7 +124,7 @@ export default defineComponent({
         noShareButton: Boolean,
         /**Data representing the Post that the interactions will be acted upon. */
         postData:{
-            type: Object as PropType<PostView>,
+            type: Object as PropType<AppBskyFeedDefs.PostView>,
             required: true
         }
     },
@@ -135,7 +135,7 @@ export default defineComponent({
             isPostMenuVisible: false,
             postDetails,
             getCompactNumberValue,
-            postThread: {} as ThreadViewPost,
+            postThread: {} as AppBskyFeedDefs.ThreadViewPost,
             isAwaitingLikeUpdate:false,
             isAwaitingRepostUpdate:false,
             // isAwaitingBookmarkUpdate:false,
@@ -192,7 +192,7 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to the selected User.
          */
-        showRepostOptionsMenu(e:MouseEvent, post:PostView){
+        showRepostOptionsMenu(e:MouseEvent, post:AppBskyFeedDefs.PostView){
             e.preventDefault();
             let isReposted = this.isPostRepostedByUser
             if(!AppState.checkIfLoggedIn('repost/quote post')) return;
