@@ -1,11 +1,9 @@
-import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { AppBskyFeedDefs, AppBskyNotificationListNotifications, AppBskyUnspeccedDefs } from "@atproto/api";
 import { beforeAll, describe } from "vitest";
 import { CreateFeedViewPost, CreateIFeedDescription, CreateNotification, CreateTrendView } from "../fake-data/DataFactory";
 import { GetLatestNonPinnedPost, GetRecordsFeedTimestamp, GetRecordsUniqueID,
     GenerateFeedDescription
  } from "./FeedList.vue"
-import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
-import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 import { FeedEnums } from "../enums/FeedEnums";
 import { IFeedDescription } from "../interfaces/FeedInterfaces";
 import { emptyPostView } from "../fake-data/dumPostData";
@@ -23,10 +21,10 @@ let post1Timestamp = new Date(2025,8,16,13,30);
 let notif1Timestamp = new Date(2025,8,16,13,30);
 let trend1Timestamp = new Date(2025,2,27,15,41);
 
-let post1:FeedViewPost = {post:emptyPostView};
-let post2:FeedViewPost = {post:emptyPostView};
-let post3:FeedViewPost = {post:emptyPostView};
-let pinPost1:FeedViewPost = {post:emptyPostView};
+let post1:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
+let post2:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
+let post3:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
+let pinPost1:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
 
 // let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2);
 // let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3);
@@ -49,37 +47,37 @@ beforeAll(async () => {
 describe("Test suite for GetLatestNonPinnedPost()", () => {
     it("should return 1st item in each FeedViewPost collection - no pinned", () => {
         //Records should be returned via API in newest to oldest order, 1st is latest
-        let postFeed1:FeedViewPost[] = [post1,post2,post3];
+        let postFeed1:AppBskyFeedDefs.FeedViewPost[] = [post1,post2,post3];
         let latestPost1 = GetLatestNonPinnedPost(postFeed1);
         expect(latestPost1).to.equal(post1);
-        let postFeed2:FeedViewPost[] = [post3,post1,post3];
+        let postFeed2:AppBskyFeedDefs.FeedViewPost[] = [post3,post1,post3];
         let latestPost2 = GetLatestNonPinnedPost(postFeed2);
         expect(latestPost2).to.equal(post3);
     })
     it("should skip pinned post and return 1st item after that in each FeedViewPost collection - has pinned post", () => {
         //Records should be returned via API in newest to oldest order, pinned post is skipped
-        let postFeed1:FeedViewPost[] = [pinPost1,post1,post2,post3];
+        let postFeed1:AppBskyFeedDefs.FeedViewPost[] = [pinPost1,post1,post2,post3];
         let latestPost1 = GetLatestNonPinnedPost(postFeed1);
         expect(latestPost1).to.equal(post1);
-        let postFeed2:FeedViewPost[] = [pinPost1,post3,post1,post3];
+        let postFeed2:AppBskyFeedDefs.FeedViewPost[] = [pinPost1,post3,post1,post3];
         let latestPost2 = GetLatestNonPinnedPost(postFeed2);
         expect(latestPost2).to.equal(post3);
     })
     it("should return 1st item in each Notification collection", () => {
         //Records should be returned via API in newest to oldest order, 1st is latest
-        let postFeed1:Notification[] = [notif1,notif2];
+        let postFeed1:AppBskyNotificationListNotifications.Notification[] = [notif1,notif2];
         let latestPost1 = GetLatestNonPinnedPost(postFeed1);
         expect(latestPost1).to.equal(notif1);
-        let postFeed2:Notification[] = [notif2,notif1];
+        let postFeed2:AppBskyNotificationListNotifications.Notification[] = [notif2,notif1];
         let latestPost2 = GetLatestNonPinnedPost(postFeed2);
         expect(latestPost2).to.equal(notif2);
     })
     it("should return 1st item in each TrendView collection", () => {
         //Records are returned via API out of chronological order, must search list for most reccent
-        let feedRecord1:TrendView[] = [trend1,trend2,trend3];
+        let feedRecord1:AppBskyUnspeccedDefs.TrendView[] = [trend1,trend2,trend3];
         let latestPost1 = GetLatestNonPinnedPost(feedRecord1);
         expect(latestPost1).to.equal(trend2);
-        let feedRecord2:TrendView[] = [trend1,trend3,trend4];
+        let feedRecord2:AppBskyUnspeccedDefs.TrendView[] = [trend1,trend3,trend4];
         let latestPost2 = GetLatestNonPinnedPost(feedRecord2);
         expect(latestPost2).to.equal(trend4);
     })
@@ -88,7 +86,7 @@ describe("Test suite for GetLatestNonPinnedPost()", () => {
 describe("Test suite for GetRecordsFeedTimestamp()", () => {
     it("should return correct time from FeedViewPost.post.indexedAt", () => {
         let time = '2025-07-26T16:30:00.000Z';
-        let post:FeedViewPost = {
+        let post:AppBskyFeedDefs.FeedViewPost = {
             post:{
                 author:{
                     did:`did_fake_${1}`,
@@ -114,7 +112,7 @@ describe("Test suite for GetRecordsFeedTimestamp()", () => {
     it("should return correct time from FeedViewPost.reason.indexedAt", () => {
         let indexTime = '2025-07-26T16:30:00.000Z';
         let reasonTime = '2025-10-02T06:32:00.000Z';
-        let post:FeedViewPost = {
+        let post:AppBskyFeedDefs.FeedViewPost = {
             post:{
                 author:{
                     did:`did_fake_${1}`,
@@ -144,7 +142,7 @@ describe("Test suite for GetRecordsFeedTimestamp()", () => {
     })
     it("should return correct time from Notification.indexedAt", () => {
         let time = '2025-03-16T17:23:00.000Z';
-        let post:Notification = {
+        let post:AppBskyNotificationListNotifications.Notification = {
             uri: "nowhere",
             cid: '',
             author: {
@@ -174,7 +172,7 @@ describe("Test suite for GetRecordsFeedTimestamp()", () => {
     })
     it("should return correct time from TrendView.startedAt", () => {
         let startedTime = '2025-03-16T17:23:00.000Z';
-        let record:TrendView = {
+        let record:AppBskyUnspeccedDefs.TrendView = {
             topic: 'fake trend',
             displayName: 'Not a Real Trend',
             link: "/profile/trending.bsky.app/feed/not_real",
@@ -207,7 +205,7 @@ describe("Test suite for GetRecordsFeedTimestamp()", () => {
 
 describe("Test suite for GetRecordsUniqueID()", () => {
     it("should return correct identifier from FeedViewPost.post.cid", () => {
-        let fvp:FeedViewPost = {
+        let fvp:AppBskyFeedDefs.FeedViewPost = {
             post:{
                 author:{
                     did:`did_fake_${1}`,
@@ -234,7 +232,7 @@ describe("Test suite for GetRecordsUniqueID()", () => {
         expect(GetRecordsUniqueID(fvp)).to.equal('aTestCIDForFVP');
     })
     it("should return correct identifier from Notification.cid", () => {
-        let notif:Notification = {
+        let notif:AppBskyNotificationListNotifications.Notification = {
             uri: "nowhere",
             cid: 'notifCid123456',
             author: {
@@ -262,7 +260,7 @@ describe("Test suite for GetRecordsUniqueID()", () => {
         expect(GetRecordsUniqueID(notif)).to.equal('notifCid123456');
     })
     it("should return correct identifier from TrendView.link", () => {
-        let trend:TrendView = {
+        let trend:AppBskyUnspeccedDefs.TrendView = {
             topic: 'fake trend',
             displayName: 'Not a Real Trend',
             link: "/profile/trending.bsky.app/feed/the_new_hotness",
@@ -294,7 +292,7 @@ describe("Test suite for GetRecordsUniqueID()", () => {
 
 describe.skip("Test suite for GenerateFeedDescription()", () => {
     it("should", async () => {
-        let feed:FeedViewPost[] = [post1,post2,post3]
+        let feed:AppBskyFeedDefs.FeedViewPost[] = [post1,post2,post3]
         let feedDesc = undefined;
         //below method makes an actual call to API - cannot test in current state
         //would need to add Mock Servce Worker (MSW) library to test

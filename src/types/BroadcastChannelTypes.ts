@@ -1,7 +1,7 @@
 import { toRaw } from "vue";
 import { IFeedListing } from "../interfaces/FeedInterfaces";
 import { IAppSettings } from "../interfaces/SettingsInterfaces";
-import { AtpSessionData } from '../../node_modules/@atproto/api/dist/types';
+import { AtpSessionData } from '@atproto/api';
 
 /**Enum used to specify the target of a `BroadcastChannel` message. */
 export enum BroadcastChannelTarget{

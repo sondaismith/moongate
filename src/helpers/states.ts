@@ -1,4 +1,4 @@
-import { ProfileView, ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
+import { AppBskyActorDefs } from "@atproto/api";
 
 /**
  * Checks to see if app is currently being run on a mobile device with
@@ -14,7 +14,7 @@ export function isOnMobileTouchscreen(){
 /**
  * Method used to see if the viewed User is verified.
  */
-export function isUserVerified(profile:ProfileView|ProfileViewDetailed){
+export function isUserVerified(profile:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed){
     if(profile != undefined && profile.verification && profile.verification.verifiedStatus == 'valid')
         return true;
     return false;

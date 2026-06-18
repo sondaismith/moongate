@@ -1,7 +1,6 @@
 import test, { expect } from "@playwright/test";
 import { CreateActorSearchResults, CreateFeedViewPost, CreateThreadViewPost, CreateThreadViewPostWithUnspeccedCID, CreateUserProfile, FindThreadViewPostReply } from "../src/fake-data/DataFactory";
-import { BlockedPost, FeedViewPost, NotFoundPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
-import { $Typed, AppBskyFeedGetPostThread } from "@atproto/api";
+import { $Typed, AppBskyFeedDefs, AppBskyFeedGetPostThread } from "@atproto/api";
 
 let handle1:string = 'tester.da.playwright';
 let handle2:string = 'mock.ofthe.day';
@@ -12,15 +11,15 @@ let displayName2:string = `tester don't play that`;
 let displayName3:string = `REPLIER ONE`;
 let actorSearchResults = CreateActorSearchResults();
 let profile1 = await CreateUserProfile(handle1,displayName2);
-let post1:FeedViewPost;
-let post2:FeedViewPost;
+let post1:AppBskyFeedDefs.FeedViewPost;
+let post2:AppBskyFeedDefs.FeedViewPost;
 let threadViewPost1:AppBskyFeedGetPostThread.OutputSchema;
-let threadViewPost2:$Typed<ThreadViewPost>;
-let threadViewPost3:$Typed<ThreadViewPost>;
-let threadViewPost4:$Typed<ThreadViewPost>;
-let threadViewPost5:$Typed<ThreadViewPost>;
-let threadViewPost6:$Typed<ThreadViewPost>;
-let threadViewPost7:$Typed<ThreadViewPost>;
+let threadViewPost2:$Typed<AppBskyFeedDefs.ThreadViewPost>;
+let threadViewPost3:$Typed<AppBskyFeedDefs.ThreadViewPost>;
+let threadViewPost4:$Typed<AppBskyFeedDefs.ThreadViewPost>;
+let threadViewPost5:$Typed<AppBskyFeedDefs.ThreadViewPost>;
+let threadViewPost6:$Typed<AppBskyFeedDefs.ThreadViewPost>;
+let threadViewPost7:$Typed<AppBskyFeedDefs.ThreadViewPost>;
 let postText1 = "Lorem ipsum dipsum, dimsum, mmm I'm hungry";
 let postText2 = "This is the 2nd time I have posted. Yipee!";
 let currentDateTime = new Date();
@@ -43,7 +42,7 @@ test.beforeAll(async ({browser}) => {
         threadViewPost3.replies = [threadViewPost5,threadViewPost6,threadViewPost7]
         threadParent.replies = [threadViewPost2,threadViewPost3,threadViewPost4];
         threadParent.post.uri = post2.post.uri;
-        threadViewPost1 = {thread:threadParent as $Typed<ThreadViewPost>}
+        threadViewPost1 = {thread:threadParent as $Typed<AppBskyFeedDefs.ThreadViewPost>}
     })
 })
 
@@ -70,7 +69,7 @@ test('Ensure scroll position for reply container is remembered when navigating t
             });
         });
     await context.route(/app.bsky.feed.getAuthorFeed/, route => {
-        let f:FeedViewPost[] = [];
+        let f:AppBskyFeedDefs.FeedViewPost[] = [];
         if(feedIndex<returnedFeeds.length) f = returnedFeeds[feedIndex];
         route.fulfill({
             status: 200,
@@ -87,7 +86,7 @@ test('Ensure scroll position for reply container is remembered when navigating t
             let urlSections = postUri.split('/');
             if(urlSections.length>1) postId = urlSections[urlSections.length-1];
         }
-        let result:$Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}|boolean = {$type:"app.bsky.feed.defs#notFoundPost",uri:'at://not.found.post/sorry',notFound:true} as $Typed<NotFoundPost>;
+        let result:$Typed<AppBskyFeedDefs.ThreadViewPost>|$Typed<AppBskyFeedDefs.NotFoundPost>|$Typed<AppBskyFeedDefs.BlockedPost>|{$type: string;}|boolean = {$type:"app.bsky.feed.defs#notFoundPost",uri:'at://not.found.post/sorry',notFound:true} as $Typed<AppBskyFeedDefs.NotFoundPost>;
         let searchResult = FindThreadViewPostReply(threadViewPost1.thread,postId);
         if(searchResult !== false) result = searchResult;
         route.fulfill({
@@ -229,7 +228,7 @@ test('Ensure scroll position for reply container is remembered when navigating t
             });
         });
     await context.route(/app.bsky.feed.getAuthorFeed/, route => {
-        let f:FeedViewPost[] = [];
+        let f:AppBskyFeedDefs.FeedViewPost[] = [];
         if(feedIndex<returnedFeeds.length) f = returnedFeeds[feedIndex];
         route.fulfill({
             status: 200,
@@ -246,7 +245,7 @@ test('Ensure scroll position for reply container is remembered when navigating t
             let urlSections = postUri.split('/');
             if(urlSections.length>1) postId = urlSections[urlSections.length-1];
         }
-        let result:$Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}|boolean = {$type:"app.bsky.feed.defs#notFoundPost",uri:'at://not.found.post/sorry',notFound:true} as $Typed<NotFoundPost>;
+        let result:$Typed<AppBskyFeedDefs.ThreadViewPost>|$Typed<AppBskyFeedDefs.NotFoundPost>|$Typed<AppBskyFeedDefs.BlockedPost>|{$type: string;}|boolean = {$type:"app.bsky.feed.defs#notFoundPost",uri:'at://not.found.post/sorry',notFound:true} as $Typed<AppBskyFeedDefs.NotFoundPost>;
         let searchResult = FindThreadViewPostReply(threadViewPost1.thread,postId);
         if(searchResult !== false) result = searchResult;
         route.fulfill({

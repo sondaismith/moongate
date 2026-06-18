@@ -1,7 +1,6 @@
 import test, { expect } from "@playwright/test";
 import { CreateActorSearchResults, CreateFeedViewPost, CreateUserProfile, FindAuthorFeedResponse, FindUserProfile, IAuthorFeedStoreItem } from "../src/fake-data/DataFactory";
-import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
-import { OutputSchema as getAuthorFeedOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
+import { AppBskyFeedDefs, AppBskyFeedGetAuthorFeed } from "@atproto/api";
 
 let actorSearchResults = CreateActorSearchResults();
 let profile1 = CreateUserProfile(actorSearchResults.actors[0].handle,actorSearchResults.actors[0].displayName,actorSearchResults.actors[0].did);
@@ -21,15 +20,15 @@ let emptyPostView = {
     uri:'going.nowhere',
 }
 const userlinkText = `@${actorSearchResults.actors[1].handle}`;
-let feedViewPost1:FeedViewPost = {post:emptyPostView};
-let feedViewPost2:FeedViewPost = {post:emptyPostView};
-let feedViewPost3:FeedViewPost = {post:emptyPostView};
+let feedViewPost1:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
+let feedViewPost2:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
+let feedViewPost3:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
 /**List of Feeds that will be addded to main view after "Create Feeds" is clicked on `FeedEditModal`. Empty by default - values must be added (use `.beforeAll()`). */
-let getAuthorFeedResponse1:getAuthorFeedOutputSchema = {feed:[]};
-let getAuthorFeedResponse2:getAuthorFeedOutputSchema = {feed:[]};
+let getAuthorFeedResponse1:AppBskyFeedGetAuthorFeed.OutputSchema = {feed:[]};
+let getAuthorFeedResponse2:AppBskyFeedGetAuthorFeed.OutputSchema = {feed:[]};
 /**List of User Profiles - acts as database and is searched to return results in `app.bsky.actor.getProfile` API mock.*/
 let profileStore = [profile1,profile2,profile3];
-let authorFeedStore:IAuthorFeedStoreItem[] = [{did:profile1.did,response:{} as getAuthorFeedOutputSchema},{did:profile2.did,response:{} as getAuthorFeedOutputSchema}];
+let authorFeedStore:IAuthorFeedStoreItem[] = [{did:profile1.did,response:{} as AppBskyFeedGetAuthorFeed.OutputSchema},{did:profile2.did,response:{} as AppBskyFeedGetAuthorFeed.OutputSchema}];
 
 test.beforeAll(async ({browser}) => {
     await CreateFeedViewPost('bob.the.poster',`I love my car shop! Thanks ${userlinkText} !`,true,'Bob the Poster',undefined,undefined,undefined,
@@ -64,7 +63,7 @@ test('Ensure "User" feed is created successfully when clicking on a Userlink ele
     //The following is to allow for mocking the creation of User-type feeds
     await context.route(/app.bsky.feed.getAuthorFeed/, route => {
         const requestUrl = route.request().url();
-        let matchedAuthorFeed:getAuthorFeedOutputSchema|undefined;
+        let matchedAuthorFeed:AppBskyFeedGetAuthorFeed.OutputSchema|undefined;
         matchedAuthorFeed = FindAuthorFeedResponse(authorFeedStore,requestUrl);
         route.fulfill({
             status: 200 ,

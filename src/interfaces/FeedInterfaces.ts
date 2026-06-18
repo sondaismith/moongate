@@ -1,10 +1,6 @@
 import { FunctionalComponent } from "vue"
 import { FeedEnums } from "../enums/FeedEnums"
-import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs"
-import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications"
-import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs"
-import { AppBskyFeedDefs } from "@atproto/api/dist/client"
-import { ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs"
+import { AppBskyActorDefs, AppBskyFeedDefs, AppBskyNotificationListNotifications, AppBskyUnspeccedDefs } from "@atproto/api"
 
 // interface IFeedCollection{
 //     feedName: string
@@ -74,13 +70,13 @@ interface IFeedDescription{
  * Collection of Feed Description and Feed data.
  * @property {IFeedDescription} description - Object that hold values that help summarize a Feed's contents, as
  * well as the `FeedColumn` settings.
- * @property {FeedViewPost[]} data - Collection of Posts that are part of the Feed.
+ * @property {AppBskyFeedDefs.FeedViewPost[]} data - Collection of Posts that are part of the Feed.
  */
 interface IFeedListing{
     /**Object that hold values that help summarize a Feed's contents, as well as the `FeedColumn` settings. */
     description : IFeedDescription,
     /**Collection of "records" that will be displayed in the Feed. */
-    data : FeedViewPost[] | Notification[] | TrendView[],
+    data : AppBskyFeedDefs.FeedViewPost[] | AppBskyNotificationListNotifications.Notification[] | AppBskyUnspeccedDefs.TrendView[],
     /**
      * Value used to indicate the point at which the current data collection ends, in
      * relation to data held on Bluesky.
@@ -89,7 +85,7 @@ interface IFeedListing{
     cursor?: string,
     /**
      * Value used to indicate when the displayed Notifications were seen.
-     * Only used when the {@link data} element holds {@link Notification} objects.
+     * Only used when the {@link data} element holds {@link AppBskyNotificationListNotifications.Notification} objects.
      */
     seenAt?: string,
     /**Value indicating if application is waiting for an API response related to Feed data.*/
@@ -101,7 +97,7 @@ interface IFeedListing{
  */
 interface IFeedReturnedPostResults{
     /**Collection of Posts that are part of the Feed. */
-    data : FeedViewPost[] | Notification[] | TrendView[],
+    data : AppBskyFeedDefs.FeedViewPost[] | AppBskyNotificationListNotifications.Notification[] | AppBskyUnspeccedDefs.TrendView[],
     /**
      * Value used to indicate the point at which the current data collection ends, in
      * relation to data held on Bluesky.
@@ -110,7 +106,7 @@ interface IFeedReturnedPostResults{
     cursor?: string,
     /**
      * Value used to indicate when the displayed Notifications were seen.
-     * Only used when the {@link data} element holds {@link Notification} objects.
+     * Only used when the {@link data} element holds {@link AppBskyNotificationListNotifications.Notification} objects.
      */
     seenAt?: string,
 }
@@ -173,7 +169,7 @@ interface IFeedStackItem{
      * */
     name?:string,
     /**Profile Data associated with User-type feed. */
-    profileData?:ProfileViewDetailed,
+    profileData?:AppBskyActorDefs.ProfileViewDetailed,
     /**GeneratorView data for a "Feed Generator" type Feed. */
     generatorData?:AppBskyFeedDefs.GeneratorView,
     /**Hashtag filters used by Tag-type feeds. */

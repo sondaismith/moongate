@@ -1,9 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { waitFor } from '@testing-library/vue';
 import { CreateThreadViewPost, CreateUserProfile } from '../src/fake-data/DataFactory'
-import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AppBskyFeedDefs, AppBskyFeedGetPostThread } from '@atproto/api/dist/client';
-import { $Typed } from '@atproto/api/dist/client/util';
+import { $Typed, AppBskyFeedDefs, AppBskyFeedGetPostThread } from '@atproto/api';
 
 let handle1:string = 'tester.da.playwright';
 let handle2:string = 'i.am.very.secretive';
@@ -14,7 +12,7 @@ let profile2 = await CreateUserProfile(handle2);
 let post1:AppBskyFeedGetPostThread.OutputSchema;
 let postText1 = "Lorem ipsum dipsum, dimsum, mmm I'm hungry";
 await CreateThreadViewPost(handle1,postText1,{activate:true,type:'img'},false,{activate:true,images:true,type:'ext_gif'},'I AM A TESTER').then(res =>{
-    post1 = {thread:res as $Typed<ThreadViewPost>}
+    post1 = {thread:res as $Typed<AppBskyFeedDefs.ThreadViewPost>}
 })
 
 test.beforeEach(async ({ context }) => {

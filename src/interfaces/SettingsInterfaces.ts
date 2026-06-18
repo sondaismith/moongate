@@ -1,6 +1,6 @@
 import { FunctionalComponent } from "vue";
 import { IAppAccountState, LoginState } from "./AccountInterfaces";
-import { AppBskyActorDefs } from "@atproto/api/dist/client";
+import { AppBskyActorDefs } from "@atproto/api";
 
 export interface LangCode{
     name:string,
