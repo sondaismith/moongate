@@ -3,16 +3,12 @@ import { reactive } from 'vue'
 import { IConfirmationTask } from '../components/Utilities/ConfirmModal.vue';
 import { ToastEventBus } from 'primevue';
 import { authAgent, guestAgent } from '../lib/api.vue';
-import { Agent } from '@atproto/api';
-import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { Agent, AppBskyEmbedImages, AppBskyEmbedExternal, AppBskyActorDefs, AppBskyFeedDefs } from '@atproto/api';
 import { UserFocusModalState } from './UserFocusModalState.vue';
-import { View as EmbedExternalView } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { postDetails } from './PostDetails.vue';
 import { FeedState, RefreshAllFeeds } from './FeedList.vue';
-import { FeedViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { AppSettingsState } from './AppSettingsState.vue';
 import { LoginState } from '../interfaces/AccountInterfaces';
-import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
 import { FeedEnums } from '../enums/FeedEnums';
 import { router } from '../main';
 import { BroadcastChannelTarget, BroadcastObject } from '../types/BroadcastChannelTypes';
@@ -362,7 +358,7 @@ export const AppState = reactive({
      * or liked) in all visible Feeds. Used to keep the state of the Post consistent throughout the app.
      * @param updatedPostData The PostView object holding the data of the Post that was just interacted with.
      */
-    UpdatePostsInFeedList(updatedPostData:PostView){
+    UpdatePostsInFeedList(updatedPostData:AppBskyFeedDefs.PostView){
         let feedUpdates = 0;
             //Update Feeds that may hold the post that was replied to/reposted/liked
             FeedState.FeedList.forEach(feed => {
@@ -385,12 +381,12 @@ export const AppState = reactive({
      * block, etc.) in all visible Feeds. Used to keep the state of the Account consistent throughout the app.
      * @param accountProfileView ProfileView of account that was just updated (muted/unmute, block, etc.)
      */
-    UpdateAccountsInFeedList(accountProfileView:ProfileViewBasic|ProfileView|ProfileViewDetailed){
+    UpdateAccountsInFeedList(accountProfileView:AppBskyActorDefs.ProfileViewBasic|AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed){
         let feedUpdates = 0;
         FeedState.FeedList.forEach(feed => {
             if(feed.description.feedType != FeedEnums.Types.Trending && feed.description.feedType != FeedEnums.Types.Mentions &&
             feed.description.feedType != FeedEnums.Types.Notifications){
-                let matchingPosts = feed.data.filter(x=> (x as FeedViewPost).post.author.did == accountProfileView.did) as FeedViewPost[];
+                let matchingPosts = feed.data.filter(x=> (x as AppBskyFeedDefs.FeedViewPost).post.author.did == accountProfileView.did) as AppBskyFeedDefs.FeedViewPost[];
                 if(matchingPosts.length>0){
                     feedUpdates++;
                     matchingPosts.forEach(feedPost => {
@@ -407,7 +403,7 @@ export const AppState = reactive({
      * throughout the app.
      * @param accountProfileView ProfileView of account that was just updated (muted/unmute, block, etc.)
      */
-    UpdateAccountsInUserFocusModalState(accountProfileView:ProfileView|ProfileViewBasic|ProfileViewDetailed){
+    UpdateAccountsInUserFocusModalState(accountProfileView:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewBasic|AppBskyActorDefs.ProfileViewDetailed){
         let navHistoryUpdates = 0;
         UserFocusModalState.navigationHistory.forEach(navHistory => {
             if(navHistory.ProfileData.did == accountProfileView.did){
@@ -447,14 +443,14 @@ export const AppState = reactive({
             let isDeletedPostFound = false;
             for (let i = 0; i < postDetails.currentThreadView.replies.length; i++) {
                 //Will remove deleted post if it is a direct reply
-                if((postDetails.currentThreadView.replies[i] as ThreadViewPost).post.cid != deleteCid){
+                if((postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).post.cid != deleteCid){
                     //add "parent" reply
-                    updatedThreadView.push((postDetails.currentThreadView.replies[i] as ThreadViewPost));
+                    updatedThreadView.push((postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost));
                     if(!isDeletedPostFound){
                         //add replies to the reply if there are any (and haven't been deleted)
-                        let numReplies = (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies ? (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies.length : 0;
+                        let numReplies = (postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).replies ? (postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).replies.length : 0;
                         for (let j = 0; j < numReplies; j++) {
-                            if(((postDetails.currentThreadView.replies[i] as ThreadViewPost).replies[j] as ThreadViewPost).post.cid == deleteCid){
+                            if(((postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).replies[j] as AppBskyFeedDefs.ThreadViewPost).post.cid == deleteCid){
                                 updatedThreadView[i].replies?.splice(j,1) //= (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies?.splice(j,1);
                                 //remove 1 reply count from parent
                                 if(updatedThreadView[i].post.replyCount) updatedThreadView[i].post.replyCount--;
@@ -490,7 +486,7 @@ export const AppState = reactive({
      * Value holding details relating to the media to download/save. This object should always be a `ViewImage` object with all it's
      * variables set to 'unset' when `SaveMediaModal` is not open.
      */
-    saveMedia:{alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'} as ViewImage|EmbedExternalView,
+    saveMedia:{alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'} as AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View,
     /**Value used to hold the default file name to use for media being saved. */
     fileSaveDetails:{
         /**The full filename that will be used when saving the file. Can be updated by control on `SaveMediaModal`. */

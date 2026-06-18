@@ -1,5 +1,5 @@
 <script lang="ts">
-import { ComAtprotoServerCreateSession } from "@atproto/api/dist/client";
+import { ComAtprotoServerCreateSession } from "@atproto/api";
 import { GetBrowsingAgent, LoginAgent } from "../api.vue";
 
 export default{

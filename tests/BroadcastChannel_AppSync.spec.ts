@@ -1,7 +1,6 @@
 import test, { expect } from "@playwright/test";
-import { CreateActorSearchResults, CreateBookmarkView, CreateFeedViewPost, CreateLoginSessionResponse, CreateThreadViewPost, CreateUserProfile } from "../src/fake-data/DataFactory";
-import { $Typed, AppBskyFeedGetPostThread } from "@atproto/api";
-import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { CreateActorSearchResults, CreateFeedViewPost, CreateLoginSessionResponse, CreateUserProfile } from "../src/fake-data/DataFactory";
+import { AppBskyFeedDefs } from "@atproto/api";
 
 let handle1:string = 'tester.da.playwright';
 let handle2:string = 'mock.ofthe.day';
@@ -9,8 +8,8 @@ let displayName1:string = 'I AM A TESTER';
 let displayName2:string = `tester don't play that`;
 let actorSearchResults = CreateActorSearchResults();
 let profile1 = await CreateUserProfile(handle1,displayName2);
-let post1:FeedViewPost;
-let post2:FeedViewPost;
+let post1:AppBskyFeedDefs.FeedViewPost;
+let post2:AppBskyFeedDefs.FeedViewPost;
 let postText1 = "Lorem ipsum dipsum, dimsum, mmm I'm hungry";
 let postText2 = "This is the 2nd time I have posted. Yipee!";
 let currentDateTime = new Date();
@@ -48,7 +47,7 @@ test('Ensure changes to Feed (creating, re-ordering) in one app instance is refl
         });
     });
     await context.route(/app.bsky.feed.getAuthorFeed/, route => {
-        let f:FeedViewPost[] = [];
+        let f:AppBskyFeedDefs.FeedViewPost[] = [];
         if(feedIndex<returnedFeeds.length) f = returnedFeeds[feedIndex];
         route.fulfill({
             status: 200,

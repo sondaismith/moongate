@@ -1,8 +1,7 @@
 <script lang="ts">
-import { AppBskyActorSearchActors, AppBskyBookmarkGetBookmarks, AppBskyFeedGetActorLikes, AppBskyFeedGetAuthorFeed, AppBskyFeedGetTimeline, AppBskyFeedSearchPosts } from "@atproto/api/dist/client";
+import { AppBskyFeedDefs, AppBskyActorSearchActors, AppBskyBookmarkGetBookmarks, AppBskyFeedGetActorLikes, AppBskyFeedGetAuthorFeed, AppBskyFeedGetTimeline, AppBskyFeedSearchPosts } from "@atproto/api";
 import { GetBrowsingAgent } from "../api.vue";
 import { AppSettingsState } from "../../state/AppSettingsState.vue";
-import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 
 export default{
     name:"Feed API Methods"
@@ -62,7 +61,7 @@ export async function getAuthorPostsOnly(did:string,cursor:string=''):Promise<Ap
     /**Total number of API calls for Posts made. */
     let calls = 0;
     /**Holds the filtered Posts from the API call. */
-    let filteredResults:FeedViewPost[] = []
+    let filteredResults:AppBskyFeedDefs.FeedViewPost[] = []
     let result = await GetBrowsingAgent().getAuthorFeed(
         {
             actor:did,
@@ -121,7 +120,7 @@ export async function getAuthorPostsOnly(did:string,cursor:string=''):Promise<Ap
     /**Total number of API calls for Posts made. */
     let calls = 0;
     /**Holds the filtered Posts from the API call. */
-    let filteredResults:FeedViewPost[] = []
+    let filteredResults:AppBskyFeedDefs.FeedViewPost[] = []
     let result = await GetBrowsingAgent().getAuthorFeed(
         {
             actor:did,

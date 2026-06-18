@@ -59,7 +59,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { isUserVerified } from '../../helpers/states';
-import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AppBskyActorDefs } from '@atproto/api';
 import FilterBar from './FilterBar.vue';
 import { IFeedStackItem } from '../../interfaces/FeedInterfaces';
 import { PropType } from 'vue';
@@ -107,8 +107,8 @@ export default defineComponent({
             isWaitingForResult:false,
             /**DEBUG FOR NOW - returned data from API */
             // apiData2: [] as IUserSearchResult[],
-            apiData: [] as ProfileView[],
-            userResults: [] as {profileData:ProfileView, selected:boolean}[]
+            apiData: [] as AppBskyActorDefs.ProfileView[],
+            userResults: [] as {profileData:AppBskyActorDefs.ProfileView, selected:boolean}[]
         }
     },
     emits:['filterBarUpdate','userSelected','searchSubmitted','clearResultsClicked'],
@@ -118,7 +118,7 @@ export default defineComponent({
             this.$emit('filterBarUpdate',this.searchTerm);
         },
         /**Emits the DID of the user selected from the search results. */
-        emitUserSelected(user:ProfileView,index:number){
+        emitUserSelected(user:AppBskyActorDefs.ProfileView,index:number){
             // let clickedIndex = this.userResults.findIndex(x=>x.profileData.did == user.did);
             // if(clickedIndex>-1) this.userResults[clickedIndex].selected = !this.userResults[clickedIndex].selected;
             this.$emit('userSelected',user,index);

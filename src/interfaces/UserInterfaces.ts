@@ -1,7 +1,6 @@
 
 import { IFeedReturnedPostResults } from '../interfaces/FeedInterfaces';
-import { ProfileView, ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
-import { BookmarkView } from '@atproto/api/dist/client/types/app/bsky/bookmark/defs';
+import { AppBskyActorDefs, AppBskyBookmarkDefs } from '@atproto/api';
 import { FeedEnums } from '../enums/FeedEnums'
 
 /**
@@ -28,7 +27,7 @@ interface IUser{
  */
 export interface IUserSearchResult{
     /**Profile data of returned User Account search result. */
-    profileData:ProfileView,
+    profileData:AppBskyActorDefs.ProfileView,
     /**Has the displayed User Account been selected (is it currently held in the "feed stack"?). */
     selected:boolean,
     /**Are we waiting for `ProfileViewDetailed` data related to the associated User to be retrieved for the "feed stack"? */
@@ -37,8 +36,8 @@ export interface IUserSearchResult{
 
 export interface INavigationHistory{
     FeedData: IFeedReturnedPostResults,
-    ProfileData:ProfileViewDetailed,
+    ProfileData:AppBskyActorDefs.ProfileViewDetailed,
     scrollPos:number,
     currentTab:FeedEnums.UserFeedTabs,
-    Bookmarks?:BookmarkView[]
+    Bookmarks?:AppBskyBookmarkDefs.BookmarkView[]
 }

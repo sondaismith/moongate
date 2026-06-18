@@ -90,11 +90,9 @@
 <script lang="ts">
 import MingcuteCopyLine from '~icons/mingcute/copy-line';
 import MingcuteWorld2Line from '~icons/mingcute/world-2-line';
-
-import { View, ViewExternal } from '@atproto/api/dist/client/types/app/bsky/embed/external';
+import { AppBskyEmbedExternal, AppBskyEmbedImages } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import ImageContainer from './ImageContainer.vue';
-import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import { isTauri } from '@tauri-apps/api/core';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
@@ -118,7 +116,7 @@ export default defineComponent({
     },
     props:{
         embed: {
-            type: Object as PropType<View>,
+            type: Object as PropType<AppBskyEmbedExternal.View>,
             required: true,
             default(){
                 return {};
@@ -194,7 +192,7 @@ export default defineComponent({
          * Passes emit sent by `ImageContainer` component.
          * @param image Object representing the image to display in fullscreen view.
          */
-        imageClicked(image:ViewImage|ViewExternal){
+        imageClicked(image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.ViewExternal){
             if(image) return true;
         },
         /**

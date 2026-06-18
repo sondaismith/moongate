@@ -1,7 +1,7 @@
 <script lang="ts">
 import { reactive } from 'vue'
 import { getUserProfile } from '../lib/api/User.vue';
-import { ProfileViewDetailed } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AppBskyActorDefs } from '@atproto/api';
 import { postDetails } from './PostDetails.vue';
 import { toast } from './AppState.vue';
 import { HandleAPIError } from '../helpers/errors';
@@ -40,7 +40,7 @@ export const AccountPeekState = reactive({
      * from the Bluesky API.
      */
     awaitingAPIResponse:false,
-    profileData: {} as ProfileViewDetailed,
+    profileData: {} as AppBskyActorDefs.ProfileViewDetailed,
     /**
      * Method that fires when user cursor enters specific element.
      * Used to initially display `AccountPeek` component. Also used

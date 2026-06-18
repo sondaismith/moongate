@@ -2,12 +2,12 @@
     <div class="w-full">
         {{ void "feed post" }}
         <div class="flex flex-col rounded bg-slate-400 p-1 pr-3 w-full drop-shadow-md justify-between">
-            <div v-if="isReasonPin(postData?.reason)" class="flex items-center text-slate-600 border-b
+            <div v-if="AppBskyFeedDefs.isReasonPin(postData?.reason)" class="flex items-center text-slate-600 border-b
             border-slate-500 pb-0.5 mb-1 select-none">
                 <i-mdi:pin class="text-xs"/>
                 <div class="font-bold text-xs">Pinned</div>
             </div>
-            <div v-if="postData?.reason && isReasonRepost(postData.reason)"
+            <div v-if="postData?.reason && AppBskyFeedDefs.isReasonRepost(postData.reason)"
             class="flex text-xs font-medium mb-1 items-center p-0.5 rounded bg-slate-600">
                 <div class="flex grow-0 shrink-0 w-12 justify-end pr-1"><i-mdi:twitter-retweet/></div>
                 <div class="whitespace-nowrap overflow-hidden text-ellipsis">Reposted by {{ postData.reason.by.displayName }}</div>
@@ -39,7 +39,7 @@
                     </div>
                     {{ void "image-type media" }}
                     <ImageContainer v-if="postData?.post.embed?.images"
-                    :imagesToDisplay="postData?.post.embed.images as ViewImage[]"
+                    :imagesToDisplay="postData?.post.embed.images as AppBskyEmbedImages.ViewImage[]"
                     :labels="postData.post.labels" :author="postData.post.author.handle"
                     @media-click="(i:number) => openFocusDetails(i)"/>
                     <div class="flex flex-row h-8">
@@ -56,13 +56,13 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
 import { postDetails, showDetailModal, showFocusModal } from '../../state/PostDetails.vue';
-import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyFeedDefs } from '@atproto/api';
 import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
 import { AppState } from '../../state/AppState.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import ImageContainer from '../Utilities/ImageContainer.vue';
-import { ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
+import { AppBskyEmbedImages } from '@atproto/api';
 
 export default defineComponent({
     components:{
@@ -70,15 +70,14 @@ export default defineComponent({
         ImageContainer,
     },
     props:{
-        postData: Object as PropType<FeedViewPost>
+        postData: Object as PropType<AppBskyFeedDefs.FeedViewPost>
     },
     data(){
         return{
             postDetails,
             convertToShortTimestamp,
             convertToLongTimestamp,
-            isReasonRepost,
-            isReasonPin,
+            AppBskyFeedDefs,
             AccountPeekState,
         }
     },

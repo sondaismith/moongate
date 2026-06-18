@@ -1,8 +1,7 @@
 import test, { expect } from "@playwright/test";
 import { CreateBookmarkView, CreateFeedViewPost, CreateLoginSessionResponse, CreateThreadViewPost, CreateUserProfile } from "../src/fake-data/DataFactory";
 import { $Typed, AppBskyFeedGetPostThread } from "@atproto/api";
-import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
-import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
+import { AppBskyFeedDefs, AppBskyBookmarkDefs } from "@atproto/api";
 
 
 let handle1:string = 'tester.da.playwright';
@@ -14,11 +13,11 @@ let displayName3:string = `Book Mark`;
 let profile1 = await CreateUserProfile(handle1,displayName2);
 let profile2 = await CreateUserProfile(handle2);
 let post1:AppBskyFeedGetPostThread.OutputSchema;
-let postWithoutParent:FeedViewPost;
-let postWithPostViewParent:FeedViewPost;
-let postWithNotFoundPostParent:FeedViewPost;
-let bookmarkWithPostViewParent:BookmarkView;
-let bookmarkWithNotFoundPostParent:BookmarkView;
+let postWithoutParent:AppBskyFeedDefs.FeedViewPost;
+let postWithPostViewParent:AppBskyFeedDefs.FeedViewPost;
+let postWithNotFoundPostParent:AppBskyFeedDefs.FeedViewPost;
+let bookmarkWithPostViewParent:AppBskyBookmarkDefs.BookmarkView;
+let bookmarkWithNotFoundPostParent:AppBskyBookmarkDefs.BookmarkView;
 let postText1 = "Lorem ipsum dipsum, dimsum, mmm I'm hungry";
 let postText2 = 'I am replying to a post. My parent has not been deleted.';
 let postText3 = 'I am replying to a post. My parent has been deleted.😢';
@@ -27,7 +26,7 @@ let bookmarkText1 = 'You bookmarked me!🔖';
 let bookmarkText2 = 'Request the User Profile of my Parent!🔖';
 let currentDateTime = new Date();
 await CreateThreadViewPost(handle1,postText1,{activate:true,type:'img'},false,{activate:true,images:true,type:'ext_gif'},'I AM A TESTER').then(res =>{
-    post1 = {thread:res as $Typed<ThreadViewPost>}
+    post1 = {thread:res as $Typed<AppBskyFeedDefs.ThreadViewPost>}
 })
 await CreateFeedViewPost(handle1,postText4,undefined,displayName1,currentDateTime,undefined,"None").then(res => {
     postWithoutParent = res;

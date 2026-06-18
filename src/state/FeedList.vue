@@ -2,17 +2,17 @@
 import { reactive } from 'vue';
 import {FeedEnums} from '../enums/FeedEnums';
 import { IFeedColumnSettings, IFeedDescription, IFeedListing, IFeedDBData, IFeedReturnedPostResults, IFeedStackItem } from '../interfaces/FeedInterfaces';
-import { FeedViewPost, isReasonPin, isReasonRepost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyFeedDefs } from '@atproto/api';
 import { getAuthorFeed, getTagPosts } from '../lib/api/Feed.vue';
 import { HandleAPIError, IsError } from '../helpers/errors';
-import { ProfileView } from '@atproto/api/dist/client/types/app/bsky/actor/defs';
+import { AppBskyActorDefs } from '@atproto/api';
 import { getUserProfile } from '../lib/api/User.vue';
 import { ToastEventBus } from 'primevue';
 import { AppState } from './AppState.vue';
 import { IUserSearchResult } from '../interfaces/UserInterfaces';
 import { GetBrowsingAgent } from '../lib/api.vue';
-import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
-import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
+import { AppBskyNotificationListNotifications } from '@atproto/api';
+import { AppBskyUnspeccedDefs } from '@atproto/api';
 import { isTauri } from '@tauri-apps/api/core';
 import { stringifyFeedListData, updateSavedFeedsTable } from '../lib/db/local_db';
 import { clearIndexedDBSavedFeeds, Feed, web_db } from '../lib/db/web_db';
@@ -88,7 +88,7 @@ export const FeedState = reactive({
  * @param syncFeed Should a message be sent through `BroadcastChannel` to sync the FeedList
  * in all open instances of the app in any tabs/windows.
  */
-export async function AddFeedToList(description:IFeedDescription, feed:FeedViewPost[]|Notification[]|TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true, saveChanges:boolean=true, syncFeed:boolean=false){
+export async function AddFeedToList(description:IFeedDescription, feed:AppBskyFeedDefs.FeedViewPost[]|AppBskyNotificationListNotifications.Notification[]|AppBskyUnspeccedDefs.TrendView[], cursor:string='', seenAt:string='', awaitingData:boolean=true, saveChanges:boolean=true, syncFeed:boolean=false){
     /**Used to prevent duplicate Feeds from being created during a hot reload (or any other situation) */
     let isFeedDuplicate = FeedState.FeedList.find(feed => feed.description.feedId == description.feedId) != undefined;
     if(isFeedDuplicate){
@@ -182,20 +182,20 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,feedData:IFeedSta
  * pinned Posts in Feed.
  * @param data The array of Feed posts. Assumes they are in order of Most Recent -> Oldest.
  */
-export function GetLatestNonPinnedPost(data : FeedViewPost[] | Notification[] | TrendView[]):FeedViewPost|Notification|TrendView|undefined{
-    let latestPost:FeedViewPost|Notification|TrendView|undefined = undefined;
+export function GetLatestNonPinnedPost(data : AppBskyFeedDefs.FeedViewPost[] | AppBskyNotificationListNotifications.Notification[] | AppBskyUnspeccedDefs.TrendView[]):AppBskyFeedDefs.FeedViewPost|AppBskyNotificationListNotifications.Notification|AppBskyUnspeccedDefs.TrendView|undefined{
+    let latestPost:AppBskyFeedDefs.FeedViewPost|AppBskyNotificationListNotifications.Notification|AppBskyUnspeccedDefs.TrendView|undefined = undefined;
     //Notification, 1st element is the latest.
-    if(data.length>0 && (data[0] as Notification).isRead){
+    if(data.length>0 && (data[0] as AppBskyNotificationListNotifications.Notification).isRead){
         latestPost = data[0];
     }
     //Trending Topic, search for latest Trend
-    else if(data.length>0 &&(data[0] as TrendView).topic){
-        let sortedTrends = (data as TrendView[]).sort((a,b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+    else if(data.length>0 &&(data[0] as AppBskyUnspeccedDefs.TrendView).topic){
+        let sortedTrends = (data as AppBskyUnspeccedDefs.TrendView[]).sort((a,b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
         latestPost = sortedTrends[0];
     }
     else{
         for (let i = 0; i < data.length; i++) {
-            if(!isReasonPin((data[i] as FeedViewPost).reason)){
+            if(!AppBskyFeedDefs.isReasonPin((data[i] as AppBskyFeedDefs.FeedViewPost).reason)){
                 latestPost = data[i]
                 i = data.length;
             }
@@ -210,18 +210,18 @@ export function GetLatestNonPinnedPost(data : FeedViewPost[] | Notification[] | 
  * created (i.e. Reposts).
  * @param record The Record to get the "Feed" timestamp for.
  */
-export function GetRecordsFeedTimestamp(record:FeedViewPost | Notification | TrendView):string{
+export function GetRecordsFeedTimestamp(record:AppBskyFeedDefs.FeedViewPost | AppBskyNotificationListNotifications.Notification | AppBskyUnspeccedDefs.TrendView):string{
     let ts = '';
-    if((record as FeedViewPost).post){
-        let fvPost = (record as FeedViewPost);
+    if((record as AppBskyFeedDefs.FeedViewPost).post){
+        let fvPost = (record as AppBskyFeedDefs.FeedViewPost);
         ts = fvPost.post.indexedAt;
-        if(isReasonRepost(fvPost.reason)) ts = fvPost.reason.indexedAt;
+        if(AppBskyFeedDefs.isReasonRepost(fvPost.reason)) ts = fvPost.reason.indexedAt;
     }
-    else if((record as Notification).isRead){
-        ts = (record as Notification).indexedAt;
+    else if((record as AppBskyNotificationListNotifications.Notification).isRead){
+        ts = (record as AppBskyNotificationListNotifications.Notification).indexedAt;
     }
-    else if((record as TrendView).topic){
-        ts = (record as TrendView).startedAt;
+    else if((record as AppBskyUnspeccedDefs.TrendView).topic){
+        ts = (record as AppBskyUnspeccedDefs.TrendView).startedAt;
     }
     return ts;
 }
@@ -231,16 +231,16 @@ export function GetRecordsFeedTimestamp(record:FeedViewPost | Notification | Tre
  * identify newer Records when loading a Feed.
  * @param record The Record to search for its unique identifier.
  */
-export function GetRecordsUniqueID(record:FeedViewPost | Notification | TrendView):string{
+export function GetRecordsUniqueID(record:AppBskyFeedDefs.FeedViewPost | AppBskyNotificationListNotifications.Notification | AppBskyUnspeccedDefs.TrendView):string{
     let uniqueID = '';
-    if((record as FeedViewPost).post){
-        uniqueID = (record as FeedViewPost).post.cid;
+    if((record as AppBskyFeedDefs.FeedViewPost).post){
+        uniqueID = (record as AppBskyFeedDefs.FeedViewPost).post.cid;
     }
-    else if((record as Notification).isRead){
-        uniqueID = (record as Notification).cid;
+    else if((record as AppBskyNotificationListNotifications.Notification).isRead){
+        uniqueID = (record as AppBskyNotificationListNotifications.Notification).cid;
     }
-    else if((record as TrendView).topic){
-        uniqueID = (record as TrendView).link;
+    else if((record as AppBskyUnspeccedDefs.TrendView).topic){
+        uniqueID = (record as AppBskyUnspeccedDefs.TrendView).link;
     }
     return uniqueID;
 }
@@ -291,7 +291,7 @@ interface IFeedDescriptionInput{
     userId:number;
     feedType:FeedEnums.Types;
     sourceDID:string;
-    feedData:FeedViewPost[] | Notification[] | TrendView[];
+    feedData:AppBskyFeedDefs.FeedViewPost[] | AppBskyNotificationListNotifications.Notification[] | AppBskyUnspeccedDefs.TrendView[];
     columnSettings?:IFeedColumnSettings;
     tags?:string;
     latestPostDate?:string;
@@ -311,7 +311,7 @@ interface IFeedDescriptionInput{
  * @param tags Tags used to populate this Feed - ignored if not Tag-type Feed.
  */
 export async function GenerateFeedDescription(feedId:string,userId:number,feedType:FeedEnums.Types,
-sourceDID:string,feedData:FeedViewPost[] | Notification[] | TrendView[],
+sourceDID:string,feedData:AppBskyFeedDefs.FeedViewPost[] | AppBskyNotificationListNotifications.Notification[] | AppBskyUnspeccedDefs.TrendView[],
 columnSettings:IFeedColumnSettings={width:FeedEnums.Widths.Small},tags:string='',
 latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
     /**Latest post from returned Feed data. */
@@ -545,7 +545,7 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
     if(feed){
         //If User Feed we need to get User Profile data
         if(feedDesc.feedType == FeedEnums.Types.User){
-            let profile:ProfileView = {did:'',handle:''};
+            let profile:AppBskyActorDefs.ProfileView = {did:'',handle:''};
             await getUserProfile(feedDesc.feedSourceDID)
             .then(res => profile = res.data)
             .catch((err) => {
@@ -573,7 +573,7 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
                     && GetRecordsUniqueID(post) != feedDesc.latestPostCID) : [];
                 feed.description.newPosts = newPosts.length;
                 /**Latest post from returned Feed data. */
-                let latestPost = GetLatestNonPinnedPost(feed.data as FeedViewPost[]);
+                let latestPost = GetLatestNonPinnedPost(feed.data as AppBskyFeedDefs.FeedViewPost[]);
                 //Update variables used to identify newer Records
                 feed.description.latestPostDate = latestPost ? GetRecordsFeedTimestamp(latestPost) : '';
                 feed.description.latestPostCID = latestPost ? GetRecordsUniqueID(latestPost) : '';
@@ -621,7 +621,7 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
                 if(res.data.cursor && res.data.cursor.trim()!='') feedResult.cursor = res.data.cursor;
                 //Place Posts in a "Feed" shaped Object
                 res.data.posts.forEach(p => {
-                    (feedResult.data as FeedViewPost[]).push({post:p});
+                    (feedResult.data as AppBskyFeedDefs.FeedViewPost[]).push({post:p});
                 })
             });
             break;
@@ -644,7 +644,7 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
                     console.log('From GetFeedDataForFeedType:');
                     console.log(res.data);
                     res.data.notifications.forEach(n => {
-                        (feedResult.data as Notification[]).push(n);
+                        (feedResult.data as AppBskyNotificationListNotifications.Notification[]).push(n);
                     })
                     feedResult.seenAt = res.data.seenAt;
                 })
@@ -660,7 +660,7 @@ export async function GetFeedDataForFeedType(feedType:FeedEnums.Types,did:string
                 console.log('Result from getTrends():');
                 console.log(res.data);
                 res.data.trends.forEach(tt => {
-                    (feedResult.data as TrendView[]).push(tt);
+                    (feedResult.data as AppBskyUnspeccedDefs.TrendView[]).push(tt);
                 })
             });
             break;
@@ -693,7 +693,7 @@ export function GetFeed(feedId:string){
  * @param description The updated IFeedDescription for the Feed.
  * @param feedData The new Feed content retrieved using the updated specifications.
  */
-export async function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:FeedViewPost[]|Notification[]|TrendView[], cursor:string=''){
+export async function UpdateFeedDetails(feedId:string, description:IFeedDescription, feedData:AppBskyFeedDefs.FeedViewPost[]|AppBskyNotificationListNotifications.Notification[]|AppBskyUnspeccedDefs.TrendView[], cursor:string=''){
     var feed = FeedState.FeedList.find(x => x.description.feedId == feedId);
     //If feed found
     if(feed){
@@ -777,8 +777,8 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
                 feed.description.feedType == FeedEnums.Types.Tag ||
                 feed.description.feedType == FeedEnums.Types.FeedGenerator ||
                 feed.description.feedType == FeedEnums.Types.Following)){
-                //User and Tag Feed data should be in the shape of a FeedViewPost
-                // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
+                //User and Tag Feed data should be in the shape of a AppBskyFeedDefs.FeedViewPost
+                // let pinned = res.filter(post => post.reason && AppBskyFeedDefs.isReasonPin(post.reason));
                 let latestDate = feed ? new Date(feed.description.latestPostDate) : lastUpdate;
                 let newPosts = res.data.filter(post => new Date(GetRecordsFeedTimestamp(post)) >= latestDate && GetRecordsUniqueID(post) != feed?.description.latestPostCID);
                 /**Latest post from returned Feed data. */
@@ -794,8 +794,8 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
             }
             else if(feed && feed.description.feedType == FeedEnums.Types.Notifications){
                 //Notification Feed data should be in the shape of a Notification
-                // let pinned = res.filter(post => post.reason && isReasonPin(post.reason));
-                let newPosts = res.data.filter(post => new Date((post as Notification).indexedAt) >= lastUpdate)
+                // let pinned = res.filter(post => post.reason && AppBskyFeedDefs.isReasonPin(post.reason));
+                let newPosts = res.data.filter(post => new Date((post as AppBskyNotificationListNotifications.Notification).indexedAt) >= lastUpdate)
                 //Update only if there are new posts
                 // if(newPosts.length > 0) feed.data = [...pinned, ...newPosts, ...feed.data.slice(pinned.length)];
                 feed.data = res.data.slice();

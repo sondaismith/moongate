@@ -55,7 +55,7 @@
                         disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
                         title="Save as .GIF (File size may be large)">Save as GIF</button>
                         <button v-else :disabled="isDownloading"
-                        @click="downloadGIFFromExternalCDN((AppState.saveMedia as EmbedExternalView).external.uri,AppState.fileSaveDetails.originalFilename)"
+                        @click="downloadGIFFromExternalCDN((AppState.saveMedia as AppBskyEmbedExternal.View).external.uri,AppState.fileSaveDetails.originalFilename)"
                         class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
                         disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
                         title="Save as .GIF (File size may be large)">Save as GIF</button>
@@ -112,14 +112,11 @@ import InLaInput from './InLaInput.vue';
 import SquareButton from './SquareButton.vue';
 import { open } from '@tauri-apps/plugin-dialog';
 import { exists } from '@tauri-apps/plugin-fs';
-import { ViewImage, isViewImage as isEmbedImagesViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
-import { ViewExternal, View as EmbedExternalView, isView as isEmbedExternalView } from '@atproto/api/dist/client/types/app/bsky/embed/external';
 import { invoke, isTauri } from '@tauri-apps/api/core';
 import { CreateBskyMediaDownloadURL } from '../../helpers/converters';
 import { getPostImages, getPostThread } from '../../lib/api/Post.vue';
 import { emptyPostThread } from '../../fake-data/dumPostData';
-import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
-import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia } from '@atproto/api';
+import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia, AppBskyFeedDefs } from '@atproto/api';
 import ImageLoader from './ImageLoader.vue';
 import ImageContainer from './ImageContainer.vue';
 import ExternalGIF from './ExternalGIF.vue';
@@ -238,7 +235,7 @@ export default defineComponent({
          * Thanks to Vladimir Salguero - https://stackoverflow.com/a/68722398
          */
         async saveImageWeb(){
-            fetch((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string))
+            fetch((AppState.saveMedia as AppBskyEmbedImages.ViewImage).fullsize ? (AppState.saveMedia as AppBskyEmbedImages.ViewImage).fullsize : (AppState.saveMedia.uri as string))
                 .then(resp => resp.blob())
                 .then(blob => {
                     const url = window.URL.createObjectURL(blob);
@@ -259,7 +256,7 @@ export default defineComponent({
          * CORS policy safe.
          */
         saveImageWebCORSSafe(){
-            window.open((AppState.saveMedia as ViewImage).fullsize ? (AppState.saveMedia as ViewImage).fullsize : (AppState.saveMedia.uri as string),'_blank');
+            window.open((AppState.saveMedia as AppBskyEmbedImages.ViewImage).fullsize ? (AppState.saveMedia as AppBskyEmbedImages.ViewImage).fullsize : (AppState.saveMedia.uri as string),'_blank');
         },
         /**
          * Method that updates the file name stored in `AppState` when
@@ -455,9 +452,9 @@ export default defineComponent({
         /**
          * Method that figures out what images exist in the passed in Post
          * based on what type of data configuration the current Post has.
-         * @returns `ViewImage[]` containing Post images.
+         * @returns `AppBskyEmbedImages.ViewImage[]` containing Post images.
          */
-        getPostImages():ViewImage[]|ViewExternal{
+        getPostImages():AppBskyEmbedImages.ViewImage[]|AppBskyEmbedExternal.ViewExternal{
             let imageContainer = getPostImages({$type:'app.bsky.feed.defs#postView',...this.postData.post});
             if(AppBskyEmbedImages.isView(imageContainer)){
                 return imageContainer.images;
@@ -475,7 +472,7 @@ export default defineComponent({
             return "external" in AppState.saveMedia;
         },
         /**Computed property that shortens the call to `AppState.saveMedia`. */
-        saveMediaData():ViewImage|EmbedExternalView{
+        saveMediaData():AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View{
             return AppState.saveMedia;
         },
         /**Returns a WEBM URL converted from the original GIF URL. */
@@ -514,7 +511,7 @@ export default defineComponent({
             this.isAwaitingPostData = true
             await getPostThread(this.postUri)
             .then(res => {
-                this.postData = res.data.thread as ThreadViewPost;
+                this.postData = res.data.thread as AppBskyFeedDefs.ThreadViewPost;
             })
             .catch(err => toast.add({summary:'Error getting Post thread for focus modal', detail:`${err}`, severity:'error', group:'tr', life:3000}))
             .finally(()=>{
@@ -523,10 +520,10 @@ export default defineComponent({
             let fileName = undefined;
             let safeHandle = undefined;
             let postImages = this.getPostImages;
-            let image:ViewImage|EmbedExternalView = postImages instanceof Array ? {...postImages[this.clickedMediaIndex],$type:'app.bsky.embed.images#viewImage'} : {$type:'app.bsky.embed.external#view',external:postImages}//this.getPostImages[this.clickedMediaIndex] //this.postData.post.embed
+            let image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View = postImages instanceof Array ? {...postImages[this.clickedMediaIndex],$type:'app.bsky.embed.images#viewImage'} : {$type:'app.bsky.embed.external#view',external:postImages}//this.getPostImages[this.clickedMediaIndex] //this.postData.post.embed
             AppState.saveMedia = image;
             if(typeof image != 'undefined' && AppBskyEmbedImages.isViewImage(image)){//not external GIF
-                fileName = (image as ViewImage).fullsize.split('\/').pop()?.split('@')[0];
+                fileName = (image as AppBskyEmbedImages.ViewImage).fullsize.split('\/').pop()?.split('@')[0];
                 safeHandle = '';
                 if(typeof this.handle != 'undefined') safeHandle =  this.handle.replace (/\./g,'_');
                 AppState.fileSaveDetails.full = `${fileName} by ${safeHandle}`;
@@ -537,7 +534,7 @@ export default defineComponent({
 
             }
             else{
-                fileName = (image as EmbedExternalView).external.uri.split('\/').pop()?.split('@')[0];
+                fileName = (image as AppBskyEmbedExternal.View).external.uri.split('\/').pop()?.split('@')[0];
                 fileName = fileName ? fileName.split('.gif')[0] : '';
                 AppState.fileSaveDetails.full = `${fileName}`;
                 AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
@@ -552,7 +549,7 @@ export default defineComponent({
         (this.$el as HTMLElement).focus();
     },
     beforeUnmount(){
-        AppState.saveMedia = {alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'} as ViewImage;//"clear" saveMedia variable
+        AppState.saveMedia = {alt:'unset',description:'unset',fullsize:'',title:'unset',uri:'unset',thumb:'unset'} as AppBskyEmbedImages.ViewImage;//"clear" saveMedia variable
     }
 })
 </script>

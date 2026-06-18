@@ -1,6 +1,6 @@
 import Sidebar from './Sidebar.vue'
 import App from './App.vue';
-import { ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyFeedDefs } from '@atproto/api'
 import { GenerateUniqueId } from './state/FeedList.vue';
 import { GenerateCID } from './helpers/generators';
 import { CreateFeed, CreateFeedViewPost, CreateIFeedDescription } from './fake-data/DataFactory';
@@ -142,11 +142,11 @@ async function createGetPostThreadResponse(postUri:string){
  * @returns A `ThreadViewPost` object containing fake data for testing purposes. If there is
  * a Parent Post or any replies they will be included in the object.
  */
-function CreateNewPostObject(savedFakePost:IFakeThreadPost|undefined):ThreadViewPost|undefined{
+function CreateNewPostObject(savedFakePost:IFakeThreadPost|undefined):AppBskyFeedDefs.ThreadViewPost|undefined{
     if(!savedFakePost) return undefined; //Exit if passed-in object is empty
 
     var savedPostReplies = textContentToReturn.filter(x => x.parentUri == savedFakePost.uri);
-    var replyObjects:ThreadViewPost[] = [];
+    var replyObjects:AppBskyFeedDefs.ThreadViewPost[] = [];
     savedPostReplies.forEach(reply => {
         let newPostObject = CreateNewPostObject(reply)
         if(newPostObject) replyObjects.push(newPostObject); //Only add reply if found
@@ -154,7 +154,7 @@ function CreateNewPostObject(savedFakePost:IFakeThreadPost|undefined):ThreadView
 
     var parentObject = savedFakePost.parentUri ? createNewPostObjectShallow(textContentToReturn.find(x => x.uri == savedFakePost.parentUri)) : undefined;
 
-    var newPost:ThreadViewPost = {
+    var newPost:AppBskyFeedDefs.ThreadViewPost = {
         $type:"app.bsky.feed.defs#threadViewPost",
         post: {
             author:{
@@ -197,7 +197,7 @@ function CreateNewPostObject(savedFakePost:IFakeThreadPost|undefined):ThreadView
 function createNewPostObjectShallow(savedFakePost:IFakeThreadPost|undefined):ThreadViewPost|undefined{
     if(!savedFakePost) return undefined; //Exit if passed-in object is empty
 
-    var newPost:ThreadViewPost = {
+    var newPost:AppBskyFeedDefs.ThreadViewPost = {
         $type:"app.bsky.feed.defs#threadViewPost",
         post: {
             author:{

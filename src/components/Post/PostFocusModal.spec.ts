@@ -3,7 +3,7 @@ import { afterAll, afterEach, describe, expect, it, test } from "vitest";
 import PostFocusModal from "./PostFocusModal.vue";
 import PostThreadView from "./PostThreadView.vue";
 import FocusFeedPost from "../Feed/FocusFeedPost.vue"
-import { ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
+import { AppBskyFeedDefs } from "@atproto/api";
 
 /**Date variable used for testing. Value will be starting time of tests. */
 const today = new Date();
@@ -11,7 +11,7 @@ const today = new Date();
 /**
  * ThreadViewPost Post thread object used for testing.
  */
-const testPostThreadView:ThreadViewPost[] = [{
+const testPostThreadView:AppBskyFeedDefs.ThreadViewPost[] = [{
     $type:"app.bsky.feed.defs#threadViewPost",
     post: {
         author:{

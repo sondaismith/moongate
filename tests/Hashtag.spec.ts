@@ -1,8 +1,6 @@
 import test, { expect } from "@playwright/test";
 import { CreateActorSearchResults, CreateFeedViewPost, CreatePostView, CreateUserProfile, FindUserProfile } from "../src/fake-data/DataFactory";
-import { FeedViewPost, PostView } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
-import { OutputSchema as getAuthorFeedOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
-import { OutputSchema as searchPostsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/searchPosts";
+import { AppBskyFeedDefs, AppBskyFeedGetAuthorFeed, AppBskyFeedSearchPosts } from "@atproto/api";
 
 let actorSearchResults = CreateActorSearchResults();
 let profile1 = CreateUserProfile(actorSearchResults.actors[0].handle,actorSearchResults.actors[0].displayName,actorSearchResults.actors[0].did);
@@ -22,13 +20,13 @@ let emptyPostView = {
     uri:'going.nowhere',
 }
 const hashtagText = '#money';
-let feedViewPost1:FeedViewPost = {post:emptyPostView};
-let feedViewPost2:FeedViewPost = {post:emptyPostView};
-let postView1:PostView = emptyPostView;
-let postView2:PostView = emptyPostView;
+let feedViewPost1:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
+let feedViewPost2:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
+let postView1:AppBskyFeedDefs.PostView = emptyPostView;
+let postView2:AppBskyFeedDefs.PostView = emptyPostView;
 /**List of Feeds that will be addded to main view after "Create Feeds" is clicked on `FeedEditModal`. Empty by default - values must be added (use `.beforeAll()`). */
-let getAuthorFeedResponse:getAuthorFeedOutputSchema = {feed:[]};
-let searchPostResponse:searchPostsOutputSchema = {posts:[]};
+let getAuthorFeedResponse:AppBskyFeedGetAuthorFeed.OutputSchema = {feed:[]};
+let searchPostResponse:AppBskyFeedSearchPosts.OutputSchema = {posts:[]};
 /**List of User Profiles - acts as database and is searched to return results in `app.bsky.actor.getProfile` API mock.*/
 let profileStore = [profile1,profile2,profile3];
 

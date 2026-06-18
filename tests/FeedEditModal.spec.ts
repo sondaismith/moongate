@@ -1,12 +1,8 @@
 import test, { expect } from "@playwright/test";
-import { CreateActorSearchResults, CreateFeedViewPost, CreateGetFeedGeneratorsResponse, CreateGetPopularFeedGeneratorsResponse, CreateLoginSessionResponse, CreateTrendView, CreateUserProfile, FindUserProfile } from "../src/fake-data/DataFactory";
-import { FeedViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
-import { OutputSchema as getFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getFeedGenerators";
-import { OutputSchema as getPopularFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/unspecced/getPopularFeedGenerators";
-import { OutputSchema as getAuthorFeedOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
-import { OutputSchema as getTrendsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/unspecced/getTrends";
-import { OutputSchema as getFeedGeneratorOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getFeedGenerator";
-import { OutputSchema as getResolveHandleOutputSchema } from "@atproto/api/src/client/types/com/atproto/identity/resolveHandle";
+import { CreateActorSearchResults, CreateFeedViewPost, CreateGetFeedGeneratorsResponse, CreateGetPopularFeedGeneratorsResponse, CreateLoginSessionResponse,
+    CreateTrendView, CreateUserProfile, FindUserProfile } from "../src/fake-data/DataFactory";
+import { AppBskyFeedDefs, AppBskyFeedGetAuthorFeed, AppBskyFeedGetFeedGenerator, AppBskyFeedGetFeedGenerators, AppBskyUnspeccedGetPopularFeedGenerators,
+    AppBskyUnspeccedGetTrends, ComAtprotoIdentityResolveHandle } from "@atproto/api";
 
 
 let handle1:string = 'tester.da.playwright';
@@ -18,8 +14,8 @@ let displayName2:string = `tester don't play that`;
 let displayName3:string = `REPLIER ONE`;
 
 let actorSearchResults = CreateActorSearchResults();
-let getFeedGeneratorsResponse:getFeedGeneratorsOutputSchema;
-let getPopularFeedGeneratorsResponse:getPopularFeedGeneratorsOutputSchema;
+let getFeedGeneratorsResponse:AppBskyFeedGetFeedGenerators.OutputSchema;
+let getPopularFeedGeneratorsResponse:AppBskyUnspeccedGetPopularFeedGenerators.OutputSchema;
 let profile1 = CreateUserProfile(actorSearchResults.actors[0].handle,actorSearchResults.actors[0].displayName,actorSearchResults.actors[0].did);
 let profile2 = CreateUserProfile(actorSearchResults.actors[1].handle,actorSearchResults.actors[1].displayName,actorSearchResults.actors[1].did);
 let profile3 = CreateUserProfile(actorSearchResults.actors[2].handle,actorSearchResults.actors[2].displayName,actorSearchResults.actors[2].did);
@@ -30,7 +26,7 @@ let trend2 = CreateTrendView('softwaredev','software','Software Devlopment',512)
 let trend3 = CreateTrendView('house ownership','Lifestyle',"Buying a House",79,new Date(2026,8,16,20,32));
 let trend4 = CreateTrendView('naps','Lifestyle',"Power Naps",133200,new Date(2026,4,9,8,11));
 let trend5 = CreateTrendView('f1','Sport',"2026 Canadian GP",11766,new Date(2026,4,19,14,20));
-let getTrendsResponse:getTrendsOutputSchema = {trends:[trend1,trend2,trend3,trend4,trend5]};
+let getTrendsResponse:AppBskyUnspeccedGetTrends.OutputSchema = {trends:[trend1,trend2,trend3,trend4,trend5]};
 
 let emptyPostView = {
     author:{
@@ -44,20 +40,20 @@ let emptyPostView = {
     },
     uri:'going.nowhere',
 }
-let post1:FeedViewPost = {post:emptyPostView};
-let post2:FeedViewPost = {post:emptyPostView};
+let post1:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
+let post2:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
 /**
  * List of Feeds that will be addded to main view after "Create Feeds" is clicked on `FeedEditModal`. Empty by default - values must be added (use `.beforeAll()`).
  * Used by `app.bsky.feed.getAuthorFeed` and `app.bsky.feed.getFeedGenerator` API calls.
  */
-let feedResponse1:getAuthorFeedOutputSchema = {feed:[]};
+let feedResponse1:AppBskyFeedGetAuthorFeed.OutputSchema = {feed:[]};
 /**List of User Profiles - acts as database and is searched to return results in `app.bsky.actor.getProfile` API mock.*/
 let profileStore = [profile1,profile2,profile3];
 
 /**Response used when mocking `com.atproto.identity.resolveHandle` API call. */
-let getResolveHandleResponse:getResolveHandleOutputSchema = {did:'did:plc:amockedcreatordid'};
+let getResolveHandleResponse:ComAtprotoIdentityResolveHandle.OutputSchema = {did:'did:plc:amockedcreatordid'};
 /**Response used when mocking `app.bsky.feed.getFeedGenerator` API call. */
-let getFeedGeneratorResponse:getFeedGeneratorOutputSchema = {
+let getFeedGeneratorResponse:AppBskyFeedGetFeedGenerator.OutputSchema = {
     isOnline:true,
     isValid:true,
     view:{

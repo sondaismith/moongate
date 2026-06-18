@@ -18,7 +18,7 @@
     "cy:open": "cypress open"
   },
   "dependencies": {
-    "@atproto/api": "^0.18.0",
+    "@atproto/api": "^0.20.15",
     "@primevue/themes": "^4.2.5",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2.2.1",

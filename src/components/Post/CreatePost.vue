@@ -300,13 +300,10 @@ import MdiFilmstripBoxMultiple from '~icons/mdi/filmstrip-box-multiple';
 import MdiFileGifBox from '~icons/mdi/file-gif-box';
 import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { CreateContentLabelObjects, CreateImageMediaObject, CreateNewPost, CreateThreadGateObject } from '../../lib/api/Post.vue';
-import { isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
 import { postDetails } from '../../state/PostDetails.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
-import { isView, Main, ViewImage } from '@atproto/api/dist/client/types/app/bsky/embed/images';
 import RichPostTextBsky from '../Utilities/RichPostTextBsky.vue';
-import { AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyEmbedExternal, AppBskyEmbedRecord, ComAtprotoRepoUploadBlob, AtUri, $Typed } from '@atproto/api';
-import { isViewRecord } from '@atproto/api/dist/client/types/app/bsky/embed/record';
+import { AppBskyEmbedDefs, AppBskyFeedDefs, AppBskyEmbedRecordWithMedia, AppBskyEmbedImages, AppBskyEmbedVideo, AppBskyEmbedExternal, AppBskyEmbedRecord, AppBskyFeedPost, ComAtprotoRepoUploadBlob, AtUri, $Typed } from '@atproto/api';
 import { PostActions } from '../../enums/PostEnums';
 import CheckBox from '../Utilities/CheckBox.vue';
 import PillButton from '../Utilities/PillButton.vue';
@@ -316,9 +313,7 @@ import {ArrToString} from '../../helpers/formaters.ts';
 import ModernToggleButton from '../Utilities/ModernToggleButton.vue';
 import CheckedButton from '../Utilities/CheckedButton.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
-import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import {imageDimensionsFromData} from 'image-dimensions';
-import { AspectRatio } from '@atproto/api/dist/client/types/app/bsky/embed/defs';
 import { router } from '../../main';
 import ConfirmModal from '../Utilities/ConfirmModal.vue';
 
@@ -335,7 +330,7 @@ export default defineComponent({
     },
     props:{
         avatar: String,
-        postRef: Object as PropType<PostView>,
+        postRef: Object as PropType<AppBskyFeedDefs.PostView>,
     },
     data(){
         return{
@@ -404,7 +399,7 @@ export default defineComponent({
             confirmClose,
             close,
             postDetails,
-            isView,
+            AppBskyEmbedImages,
             AppBskyEmbedRecord,
             PostActions,
             /**Is Post creation currently in progress? */
@@ -520,7 +515,7 @@ export default defineComponent({
             }
             for (let i = 0; i < this.calculateAllowedMediaCount(filesAsArray.length); i++) {
                 let parsedDimensions = imageDimensionsFromData(await filesAsArray[i].bytes())
-                let imgDimensions:AspectRatio = typeof parsedDimensions != 'undefined' ? {height:parsedDimensions.height, width:parsedDimensions.width} : {height:0,width:0};
+                let imgDimensions:AppBskyEmbedDefs.AspectRatio = typeof parsedDimensions != 'undefined' ? {height:parsedDimensions.height, width:parsedDimensions.width} : {height:0,width:0};
                 newMedia.push({blobURI:this.URL.createObjectURL(filesAsArray[i]),fileName:filesAsArray[i].name,alt:'',aspectRatio:imgDimensions,type:filesAsArray[i].type,uploaded:false,uploadInProgress:false});
                 this.files.push(filesAsArray[i]);//Add allowed files to array of references pointing to files on disk
             }
@@ -621,7 +616,7 @@ export default defineComponent({
          * Returns an array containing the aspect ratio for each media file selected
          * to be attached to the created Post.
          */
-        getCurrentMediaAspectRatios():AspectRatio[]{
+        getCurrentMediaAspectRatios():AppBskyEmbedDefs.AspectRatio[]{
             return this.uploadedMedia.map(ar => ar.aspectRatio);
         },
         /**
@@ -652,13 +647,13 @@ export default defineComponent({
                 });
             }
             //Create embed object containing Post's uploaded images if needed
-            let imageEmbedObject:$Typed<Main>|undefined;
+            let imageEmbedObject:$Typed<AppBskyEmbedImages.Main>|undefined;
             let selectedLabels:string[]|undefined;
             if(uploadedImages.length>0){
                 imageEmbedObject = CreateImageMediaObject(uploadedImages,this.getCurrentMediaAltText(),this.getCurrentMediaAspectRatios());
                 selectedLabels = this.discoverSelectedContentLabels();
             }
-            let newPostRecord:Record = {
+            let newPostRecord:AppBskyFeedPost.Record = {
                 $type:'app.bsky.feed.post',
                 text: this.postText,
                 langs:['en-US'],
@@ -692,13 +687,13 @@ export default defineComponent({
                 });
             }
             //Create embed object containing Post's uploaded images if needed
-            let imageEmbedObject:$Typed<Main>|undefined;
+            let imageEmbedObject:$Typed<AppBskyEmbedImages.Main>|undefined;
             let selectedLabels:string[]|undefined;
             if(uploadedImages.length>0){
                 imageEmbedObject = CreateImageMediaObject(uploadedImages,this.getCurrentMediaAltText(),this.getCurrentMediaAspectRatios());
                 selectedLabels = this.discoverSelectedContentLabels();
             }
-            let newPostRecord:Record = {
+            let newPostRecord:AppBskyFeedPost.Record = {
                 $type:'app.bsky.feed.post',
                 text: this.postText,
                 langs:['en-US'],
@@ -720,10 +715,10 @@ export default defineComponent({
                     });
                     break;
                 case PostActions.Reply:
-                    if(isThreadViewPost(postDetails.currentPostThreadData)){
-                        let root:ThreadViewPost = postDetails.getPostThreadRoot(postDetails.currentPostThreadData);
+                    if(AppBskyFeedDefs.isThreadViewPost(postDetails.currentPostThreadData)){
+                        let root:AppBskyFeedDefs.ThreadViewPost = postDetails.getPostThreadRoot(postDetails.currentPostThreadData);
                         console.log(root);
-                        if(isThreadViewPost(root)){
+                        if(AppBskyFeedDefs.isThreadViewPost(root)){
                             newPostRecord = {...newPostRecord,
                                 reply:{
                                     root:{
@@ -750,10 +745,10 @@ export default defineComponent({
                     }
                     break;
                 case PostActions.Quote:
-                    if(isThreadViewPost(postDetails.currentPostThreadData)){
-                        let root:ThreadViewPost = postDetails.getPostThreadRoot(postDetails.currentPostThreadData);
+                    if(AppBskyFeedDefs.isThreadViewPost(postDetails.currentPostThreadData)){
+                        let root:AppBskyFeedDefs.ThreadViewPost = postDetails.getPostThreadRoot(postDetails.currentPostThreadData);
                         console.log(root);
-                        if(isThreadViewPost(root)){
+                        if(AppBskyFeedDefs.isThreadViewPost(root)){
                             newPostRecord = {...newPostRecord,
                                 embed:{
                                     $type:'app.bsky.embed.record',
@@ -808,7 +803,7 @@ export default defineComponent({
          */
         postContainsImage(){
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postRef)){
+            if(!AppBskyEmbedRecord.isViewRecord(this.postRef)){
                 if(this.postRef?.embed && this.postRef.embed.images){
                     //Is a parent Post with image(s)
                     return true;
@@ -849,7 +844,7 @@ export default defineComponent({
          */
         postContainsVideo(){
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postRef)){
+            if(!AppBskyEmbedRecord.isViewRecord(this.postRef)){
                 if(this.postRef?.embed && AppBskyEmbedVideo.isView(this.postRef.embed)){
                     //Is a parent Post with video
                     return true;
@@ -873,7 +868,7 @@ export default defineComponent({
          */
         postContainsExternalEmbed(){
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postRef)){
+            if(!AppBskyEmbedRecord.isViewRecord(this.postRef)){
                 if(this.postRef?.embed && AppBskyEmbedExternal.isView(this.postRef.embed)){
                     //Is a parent Post with external embed
                     return true;
@@ -901,28 +896,28 @@ export default defineComponent({
          * based on what type of data configuration the current Post has.
          * @returns `ViewImage[]` containing Post images.
          */
-        getPostImages():ViewImage[]{
+        getPostImages():AppBskyEmbedImages.ViewImage[]{
             //This is a standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postRef)){
+            if(!AppBskyEmbedRecord.isViewRecord(this.postRef)){
                 if(this.postRef?.embed && this.postRef.embed.images){
                     //Is a parent Post with image(s)
-                    return this.postRef.embed.images as ViewImage[];
+                    return this.postRef.embed.images as AppBskyEmbedImages.ViewImage[];
                 }
                 else if(this.postRef?.embed && AppBskyEmbedRecordWithMedia.isView(this.postRef.embed) && this.postRef.embed.media.images){
                     //Is a parent Post with image(s) and a QRT
-                    return this.postRef.embed.media.images as ViewImage[];
+                    return this.postRef.embed.media.images as AppBskyEmbedImages.ViewImage[];
                 }
             }
             else{
                 //This is a QRT
                 if(this.postRef?.embeds && this.postRef.embeds.length>0 && this.postRef.embeds[0].images){
                     //Is a QRT with image(s)
-                    return this.postRef.embeds[0].images as ViewImage[];
+                    return this.postRef.embeds[0].images as AppBskyEmbedImages.ViewImage[];
                 }
                 else if(this.postRef?.embeds && this.postRef.embeds.length>0 && this.postRef.embeds[0].media &&
                     this.postRef.embeds[0].media.images){
                     //Is a QRT with image(s)
-                    return this.postRef.embeds[0].media.images as ViewImage[];
+                    return this.postRef.embeds[0].media.images as AppBskyEmbedImages.ViewImage[];
                 }
             }
             return [];
@@ -933,7 +928,7 @@ export default defineComponent({
          * @returns `AppBskyEmbedVideo.View` containing Video details.
          */
         getPostVideo():AppBskyEmbedVideo.View|undefined{
-            if(!isViewRecord(this.postRef)){
+            if(!AppBskyEmbedRecord.isViewRecord(this.postRef)){
                 if(this.postRef?.embed && AppBskyEmbedVideo.isView(this.postRef.embed)){
                     //Is a parent Post with video
                     return this.postRef.embed;
@@ -960,7 +955,7 @@ export default defineComponent({
          */
         getPostEmbed():AppBskyEmbedExternal.View|undefined{
             //This is the standalone/parent Post, not a QRT (Quote Retweet)
-            if(!isViewRecord(this.postRef)){
+            if(!AppBskyEmbedRecord.isViewRecord(this.postRef)){
                 if(this.postRef?.embed && AppBskyEmbedExternal.isView(this.postRef.embed)){
                     //Is a parent Post with external embed
                     return this.postRef.embed;
@@ -987,7 +982,7 @@ export default defineComponent({
          * on what type of data configuration the current Post has.
          */
         getPostText():string{
-            if(!isViewRecord(this.postRef)) return this.postRef?.record.text;
+            if(!AppBskyEmbedRecord.isViewRecord(this.postRef)) return this.postRef?.record.text;
             else return this.postRef.value.text;
         },
         /**Indicates if file uploading should be disabled (4 files have already been selected). */
@@ -1094,7 +1089,7 @@ export default defineComponent({
         this.$el.focus();
     },
     beforeUnmount() {
-        postDetails.currentPostThreadData = {} as ThreadViewPost;
+        postDetails.currentPostThreadData = {} as AppBskyFeedDefs.ThreadViewPost;
         postDetails.currentPostAction = PostActions.Post;
     },
 })

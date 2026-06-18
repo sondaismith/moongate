@@ -1,21 +1,9 @@
-import { BlockedPost, FeedViewPost, isThreadViewPost, NotFoundPost, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs.js";
+import {$Typed, AppBskyUnspeccedDefs, AppBskyActorDefs, AppBskyFeedDefs, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyNotificationListNotifications, AppBskyBookmarkDefs,
+    AppBskyActorSearchActors, AppBskyFeedGetFeedGenerators, AppBskyUnspeccedGetPopularFeedGenerators, AppBskyFeedGetAuthorFeed, ComAtprotoServerCreateSession, AppBskyFeedPost,
+ } from "@atproto/api";
 import { IFeedDescription, IFeedListing } from "../interfaces/FeedInterfaces";
 import { FeedEnums } from "../enums/FeedEnums";
-import { View } from "@atproto/api/dist/client/types/app/bsky/embed/external";
-import { $Typed } from "@atproto/api/dist/client/util";
-import { Notification } from "@atproto/api/dist/client/types/app/bsky/notification/listNotifications";
-import { TrendView } from "@atproto/api/dist/client/types/app/bsky/unspecced/defs";
 import { GenerateCID, GenerateFakeTID } from "../helpers/generators";
-import { ProfileView, ProfileViewBasic, ProfileViewDetailed } from "@atproto/api/dist/client/types/app/bsky/actor/defs";
-import { AppBskyEmbedExternal, AppBskyEmbedImages } from "@atproto/api/dist/client";
-import { BookmarkView } from "@atproto/api/dist/client/types/app/bsky/bookmark/defs";
-import { OutputSchema } from "@atproto/api/dist/client/types/com/atproto/server/createSession";
-import { OutputSchema as searchActorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/actor/searchActors";
-import { OutputSchema as getFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getFeedGenerators";
-import { OutputSchema as getPopularFeedGeneratorsOutputSchema } from "@atproto/api/dist/client/types/app/bsky/unspecced/getPopularFeedGenerators";
-import { OutputSchema as getAuthorFeedOutputSchema } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
-import { Main } from '@atproto/api/dist/client/types/app/bsky/feed/post';
-import { GeneratorView } from "@atproto/api/src/client/types/app/bsky/feed/defs";
 
 /**
  * Type indicating the state of a Parent Post - is it a `PostView` (standard), Not Found (i.e. deleted), Blocked,
@@ -31,13 +19,13 @@ type ParentState = 'PostView'|'NotFoundPost'|'BlockedPost'|'None';
  * @param postTime The time that the Post was created.
  * @returns The created `PostView` object.
  */
-export async function CreatePostView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date(),facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined):Promise<$Typed<PostView>>{
+export async function CreatePostView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date(),facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined):Promise<$Typed<AppBskyFeedDefs.PostView>>{
     let indexTime = postTime.toISOString();
     let cid = `author_${handle}_${1}`;
     await GenerateCID(`author_${handle}_${1}`).then(res => {
         cid = res.toString();
     })
-    let post:$Typed<PostView> = {
+    let post:$Typed<AppBskyFeedDefs.PostView> = {
         $type:"app.bsky.feed.defs#postView",
         author:{
             did:`did:plc:fake_${1}`,
@@ -89,8 +77,8 @@ export async function CreatePostView(handle:string,postText:string='',displayNam
  * Method used to create a dummy `NotFoundPost` object for testing purposes.
  * @returns A `$Typed<NotFoundPost>` object.
  */
-export function CreateNotFoundPost():$Typed<NotFoundPost>{
-    let nfpost:$Typed<NotFoundPost> = {
+export function CreateNotFoundPost():$Typed<AppBskyFeedDefs.NotFoundPost>{
+    let nfpost:$Typed<AppBskyFeedDefs.NotFoundPost> = {
         $type:"app.bsky.feed.defs#notFoundPost",
         notFound:true,
         uri:'at://did:plc:notFoundPost'
@@ -113,7 +101,7 @@ export function CreateNotFoundPost():$Typed<NotFoundPost>{
  */
 export async function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
     displayName:string='',postTime:Date=new Date(),isPinned:boolean=false,parentState:ParentState='None',
-    facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined,did:string|undefined=undefined,avatar:string|undefined=undefined):Promise<FeedViewPost>{
+    facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined,did:string|undefined=undefined,avatar:string|undefined=undefined):Promise<AppBskyFeedDefs.FeedViewPost>{
     // let currentTime = new Date();
     // currentTime.setTime(currentTime.getTime()-(1*60*1000));
     // postTime.setTime(postTime.getTime()-(1*60*1000));
@@ -124,7 +112,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
         cid = res.toString();
     })
     let tid = GenerateFakeTID();
-    let post:FeedViewPost = {
+    let post:AppBskyFeedDefs.FeedViewPost = {
         post:{
             author:{
                 did:(typeof did != 'undefined') ? did : `did:plc:fake_${1}`,
@@ -187,7 +175,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
     }
     switch (parentState) {
         case "PostView":
-            let parentPost:$Typed<PostView>;
+            let parentPost:$Typed<AppBskyFeedDefs.PostView>;
             await CreatePostView('parent.to.reply',"I'm the parent!",'Parent Post').then(res =>{
                 parentPost = res;
                 post.reply = {
@@ -240,7 +228,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
  */
 export interface IAuthorFeedStoreItem{
     did:string,
-    response:getAuthorFeedOutputSchema
+    response:AppBskyFeedGetAuthorFeed.OutputSchema
 }
 
 /**
@@ -251,7 +239,7 @@ export interface IAuthorFeedStoreItem{
  * @param requestUrl The request URL to parse to find the DID value to use when searching.
  * @returns The matching "Author Feed" or `undefined`.
  */
-export function FindAuthorFeedResponse(authorFeedArray:IAuthorFeedStoreItem[],requestUrl:string):getAuthorFeedOutputSchema|undefined{
+export function FindAuthorFeedResponse(authorFeedArray:IAuthorFeedStoreItem[],requestUrl:string):AppBskyFeedGetAuthorFeed.OutputSchema|undefined{
     let valueToUse:string|undefined = undefined;
     // console.log('requestUrl: ',requestUrl);
     if(requestUrl){
@@ -265,7 +253,7 @@ export function FindAuthorFeedResponse(authorFeedArray:IAuthorFeedStoreItem[],re
             valueToUse = authorFeedSearchParamValue;
         }
     }
-    let matchedProfile:getAuthorFeedOutputSchema|undefined;
+    let matchedProfile:AppBskyFeedGetAuthorFeed.OutputSchema|undefined;
     let isDid = typeof valueToUse != 'undefined' ? valueToUse.includes('did:plc:') : false;
     if(isDid) matchedProfile = authorFeedArray.find(p=>p.did == valueToUse)?.response;
     // console.log('matchedProfile: ',matchedProfile);
@@ -291,18 +279,18 @@ export function FindAuthorFeedResponse(authorFeedArray:IAuthorFeedStoreItem[],re
  */
 export async function CreateThreadViewPost(handle:string, postText:string='', includeImage:{activate:boolean,type:'img'|'ext_gif'}={activate:false,type:"img"},
     includeEmbedLink:boolean=false, includeReply:{activate:boolean,images:boolean,type:'img'|'ext_gif'}={activate:false,images:false,type:"img"},
-    displayName:string='', postTime:Date=new Date()):Promise<ThreadViewPost>{
+    displayName:string='', postTime:Date=new Date()):Promise<AppBskyFeedDefs.ThreadViewPost>{
     let cid = `author_${handle}_${1}`;
     await GenerateCID(`author_${handle}_${1}`).then(res => {
         cid = res.toString();
     })
     let tid = GenerateFakeTID();
-    let profile:ProfileViewBasic={
+    let profile:AppBskyActorDefs.ProfileViewBasic={
         did:`did:plc:fake_${1}`,
         handle:handle,
         displayName: displayName.trim() != '' ? displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' ')
     }
-    let post:ThreadViewPost = {
+    let post:AppBskyFeedDefs.ThreadViewPost = {
         $type:"app.bsky.feed.defs#threadViewPost",
         post:{
             author:profile,
@@ -347,7 +335,7 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
     }
     if(includeReply.activate){
         let reply = await CreateThreadViewPost('mr.reply.guy', "Just replin'",{activate:true,type:includeReply.type});
-        let replies:$Typed<ThreadViewPost>[] = [reply as $Typed<ThreadViewPost>]
+        let replies:$Typed<AppBskyFeedDefs.ThreadViewPost>[] = [reply as $Typed<AppBskyFeedDefs.ThreadViewPost>]
         post.replies = replies;
     }
     return post;
@@ -366,15 +354,15 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
  * @returns The created `ThreadViewPost` object.
  */
 export function CreateThreadViewPostWithUnspeccedCID(handle:string, postText:string='', includeImage:{activate:boolean,type:'img'|'ext_gif'}={activate:false,type:"img"},
-    includeEmbedLink:boolean=false, displayName:string='', postTime:Date=new Date()):$Typed<ThreadViewPost>{
+    includeEmbedLink:boolean=false, displayName:string='', postTime:Date=new Date()):$Typed<AppBskyFeedDefs.ThreadViewPost>{
     let cid = `bafyreibmiiqbxwrna3p5uwy3j2ymgwozaymgdgnzumz6g5akqp4tamcwie`;
     let tid = GenerateFakeTID();
-    let profile:ProfileViewBasic={
+    let profile:AppBskyActorDefs.ProfileViewBasic={
         did:`did:plc:fake_${1}`,
         handle:handle,
         displayName: displayName.trim() != '' ? displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' ')
     }
-    let post:ThreadViewPost = {
+    let post:AppBskyFeedDefs.ThreadViewPost = {
         $type:"app.bsky.feed.defs#threadViewPost",
         post:{
             author:profile,
@@ -421,7 +409,7 @@ export function CreateThreadViewPostWithUnspeccedCID(handle:string, postText:str
     //     let replies:$Typed<ThreadViewPost>[] = [reply as $Typed<ThreadViewPost>]
     //     post.replies = replies;
     // }
-    return (post as $Typed<ThreadViewPost>);
+    return (post as $Typed<AppBskyFeedDefs.ThreadViewPost>);
 }
 
 /**
@@ -432,13 +420,13 @@ export function CreateThreadViewPostWithUnspeccedCID(handle:string, postText:str
  * @param replyPostTid The TID (Timecode Identifier) associated with the Post/Reply to retrieve.
  * @returns A `ThreadViewPost` object if a match is found - otherwise `false`.
  */
-export function FindThreadViewPostReply(post:$Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}, replyPostTid:string):
-$Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}|boolean{
+export function FindThreadViewPostReply(post:$Typed<AppBskyFeedDefs.ThreadViewPost>|$Typed<AppBskyFeedDefs.NotFoundPost>|$Typed<AppBskyFeedDefs.BlockedPost>|{$type: string;}, replyPostTid:string):
+$Typed<AppBskyFeedDefs.ThreadViewPost>|$Typed<AppBskyFeedDefs.NotFoundPost>|$Typed<AppBskyFeedDefs.BlockedPost>|{$type: string;}|boolean{
     // let notFound:NotFoundPost = {$type:"app.bsky.feed.defs#notFoundPost",uri:'at://reply-not-found',notFound:true};
     // let result:ThreadViewPost|NotFoundPost = notFound;
     let result;
 
-    if(isThreadViewPost(post)){
+    if(AppBskyFeedDefs.isThreadViewPost(post)){
         let postId = '';
         let urlSections = post.post.uri.split('/');
         if(urlSections.length>1) postId = urlSections[urlSections.length-1];
@@ -463,11 +451,11 @@ $Typed<ThreadViewPost>|$Typed<NotFoundPost>|$Typed<BlockedPost>|{$type: string;}
  * @param displayName The display name of the User. (Optional)
  * @returns The created `ProfileViewDetailed` object.
  */
-export function CreateUserProfile(handle:string,displayName:string|undefined=undefined,didToUse='did:plc:6unmjnerkpiy3yh6x4auqpy3',avatar:string|undefined=undefined):ProfileViewDetailed{
+export function CreateUserProfile(handle:string,displayName:string|undefined=undefined,didToUse='did:plc:6unmjnerkpiy3yh6x4auqpy3',avatar:string|undefined=undefined):AppBskyActorDefs.ProfileViewDetailed{
     let i = Math.floor(Math.random()*7);
     let j = Math.floor(Math.random()*7);
     let indexDate = new Date().toISOString();
-    let profile:ProfileViewDetailed = {
+    let profile:AppBskyActorDefs.ProfileViewDetailed = {
         did:didToUse,
         handle:handle,
         avatar:`http://localhost:1420/src/assets/test-media/posts/image0${i+1}.png`,
@@ -492,7 +480,7 @@ export function CreateUserProfile(handle:string,displayName:string|undefined=und
  * @param requestUrl The request URL to parse to find the DID or handle value to use when searching.
  * @returns The matching User Profile or `undefined`.
  */
-export function FindUserProfile(profileArray:ProfileViewDetailed[],requestUrl:string):ProfileViewDetailed|undefined{
+export function FindUserProfile(profileArray:AppBskyActorDefs.ProfileViewDetailed[],requestUrl:string):AppBskyActorDefs.ProfileViewDetailed|undefined{
     let valueToUse:string|undefined = undefined;
     // console.log('requestUrl: ',requestUrl);
     if(requestUrl){
@@ -506,7 +494,7 @@ export function FindUserProfile(profileArray:ProfileViewDetailed[],requestUrl:st
             valueToUse = actorSearchParamValue;
         }
     }
-    let matchedProfile:ProfileViewDetailed|undefined;
+    let matchedProfile:AppBskyActorDefs.ProfileViewDetailed|undefined;
     let isDid = typeof valueToUse != 'undefined' ? valueToUse.includes('did:plc:') : false;
     if(isDid) matchedProfile = profileArray.find(p=>p.did == valueToUse);
     else matchedProfile = profileArray.find(p=>p.handle == valueToUse);
@@ -525,15 +513,15 @@ export function FindUserProfile(profileArray:ProfileViewDetailed[],requestUrl:st
  * @returns The created `BookmarkView` object.
  */
 export async function CreateBookmarkView(handle:string,postText:string='',displayName:string='',postTime:Date=new Date(),
-parentState:ParentState='None'):Promise<BookmarkView>{
+parentState:ParentState='None'):Promise<AppBskyBookmarkDefs.BookmarkView>{
     let indexTime = postTime.toISOString();
     let cid = `bookmark${handle}_${1}`;
     await GenerateCID(cid).then(res => {
         cid = res.toString();
     })
-    let bItem:$Typed<PostView>;
+    let bItem:$Typed<AppBskyFeedDefs.PostView>;
     await CreatePostView(handle,postText,displayName,postTime).then(res => bItem = res);
-    let bookmark:BookmarkView = {
+    let bookmark:AppBskyBookmarkDefs.BookmarkView = {
         item:bItem!,
         subject:{//These values are expected to be unused in testing for now
             cid:cid,
@@ -543,10 +531,10 @@ parentState:ParentState='None'):Promise<BookmarkView>{
     }
     switch (parentState) {
         case "PostView":
-            let parentPost:$Typed<PostView>;
+            let parentPost:$Typed<AppBskyFeedDefs.PostView>;
             await CreatePostView('parent.to.reply',"I'm the parent!",'Parent Post').then(res =>{
                 parentPost = res;
-                (bItem.record as Main).reply = {
+                (bItem.record as AppBskyFeedPost.Main).reply = {
                     parent:{
                         cid:parentPost.cid,
                         uri:parentPost.uri
@@ -563,7 +551,7 @@ parentState:ParentState='None'):Promise<BookmarkView>{
             let nfCID:string;
             await GenerateCID(`author_${handle}_nf`).then(res => {
                 nfCID = res.toString();
-                (bItem.record as Main).reply = {
+                (bItem.record as AppBskyFeedPost.Main).reply = {
                     // parent:nfPost,
                     // root:nfPost
                     parent:{
@@ -599,14 +587,14 @@ export function CreateNotification(handle:string, reason:'like'
     | 'quote'
     | 'starterpack-joined'
     | 'verified'
-    | 'unverified', displayName:string='',postTime:Date=new Date()):Notification{
+    | 'unverified', displayName:string='',postTime:Date=new Date()):AppBskyNotificationListNotifications.Notification{
     let indexTime = postTime.toISOString();
     let cid = `author_${handle}_${1}`;
     let subjectCID = `subject_${handle}_${1}`;
     // await GenerateCID(`author${i+1}`).then(res => {
     //     cid = res.toString();
     // })
-    let post:Notification = {
+    let post:AppBskyNotificationListNotifications.Notification = {
         uri: "nowhere",
         cid: cid,
         author: {
@@ -677,13 +665,13 @@ export function CreateNotification(handle:string, reason:'like'
  * @param trendCreated When the Trending Topic started/was created.
  * @returns The created `TrendView` object.
  */
-export function CreateTrendView(topic:string,category:string,displayName:string="",postCount:number=1337,trendCreated:Date=new Date()):TrendView{
+export function CreateTrendView(topic:string,category:string,displayName:string="",postCount:number=1337,trendCreated:Date=new Date()):AppBskyUnspeccedDefs.TrendView{
     let startedTime = trendCreated.toISOString();
     let cid = `author_${topic.replace(' ','_')}_${1}`;
     let subjectCID = `subject_${topic.replace(' ','_')}_${1}`;
     let i = Math.floor(Math.random()*7);
     let j = Math.floor(Math.random()*7);
-    let record:TrendView = {
+    let record:AppBskyUnspeccedDefs.TrendView = {
         $type: 'app.bsky.unspecced.defs#trendView',
         topic: topic,
         displayName: displayName.trim() != "" ? displayName : (topic[0].toUpperCase()+topic.slice(1)).replace(/_/g,' '),
@@ -723,8 +711,8 @@ export function CreateTrendView(topic:string,category:string,displayName:string=
  * @param displayName The display name of the User who made each Post. If none is provided, the handle will be used.
  * @returns The created `FeedViewPost` object array.
  */
-export function CreateFeedViewPostArray(numOfPosts:number, handle:string, includeEmbedLink:boolean=false, displayName:string=''):FeedViewPost[]{
-    let posts:FeedViewPost[] = [];
+export function CreateFeedViewPostArray(numOfPosts:number, handle:string, includeEmbedLink:boolean=false, displayName:string=''):AppBskyFeedDefs.FeedViewPost[]{
+    let posts:AppBskyFeedDefs.FeedViewPost[] = [];
     let currentTime = new Date();
     for (let i = 0; i < numOfPosts; i++) {
         currentTime.setTime(currentTime.getTime()-(1*60*1000));
@@ -792,7 +780,7 @@ export function CreateIFeedDescription(feedName:string,feedId:string,newPosts:nu
  * @param desc The description of the Feed.
  * @returns The completed `IFeedListing` object.
  */
-export function CreateFeed(posts:FeedViewPost[], desc:IFeedDescription):IFeedListing{
+export function CreateFeed(posts:AppBskyFeedDefs.FeedViewPost[], desc:IFeedDescription):IFeedListing{
     let feed:IFeedListing;
     feed = {
         data:posts,
@@ -846,14 +834,14 @@ export function CreateRandomFeedListCollection(numOfFeeds:number, numPostPerFeed
  * @returns A `$Typed<View>` External Embed object.
  * @note It seems like the BASE_URL.replace is for the Cypress-based tests...
  */
-export function CreateEmbed():$Typed<View>{
+export function CreateEmbed():$Typed<AppBskyEmbedExternal.View>{
     let baseUrl = '/src/';
     try {
         (typeof import.meta.env.BASE_URL != undefined) ? import.meta.env.BASE_URL.replace('src','iframes/src') : '/src/';
     } catch (error) {
 
     }
-    let emb:$Typed<View> = {
+    let emb:$Typed<AppBskyEmbedExternal.View> = {
         $type: "app.bsky.embed.external#view",
         external:{
             uri: "https://www.google.com/",
@@ -900,8 +888,8 @@ export function CreateEmbedGIF():$Typed<AppBskyEmbedExternal.View>{
  * account match (i.e. Bookmarks) the DID of the User Profile and Session Response must match.
  * @returns The created session response object.
  */
-export function CreateLoginSessionResponse(handle:string="test-session.bsky.social",did:string="did:plc:test-session"):OutputSchema{
-    let response:OutputSchema = {
+export function CreateLoginSessionResponse(handle:string="test-session.bsky.social",did:string="did:plc:test-session"):ComAtprotoServerCreateSession.OutputSchema{
+    let response:ComAtprotoServerCreateSession.OutputSchema = {
         did: did,
         didDoc: {
             "@context": [
@@ -945,8 +933,8 @@ export function CreateLoginSessionResponse(handle:string="test-session.bsky.soci
  * @param numActors The number of mocked Actor Search Results to return.
  * @returns Object representing the Bluesky API response for a `searchActors` call.
  */
-export function CreateActorSearchResults(numActors:number=3):searchActorsOutputSchema{
-    let results:ProfileView[] = [];
+export function CreateActorSearchResults(numActors:number=3):AppBskyActorSearchActors.OutputSchema{
+    let results:AppBskyActorDefs.ProfileView[] = [];
     let postTime = new Date().toISOString();
     for (let i = 0; i < numActors; i++) {
         let j = Math.floor(Math.random()*7);
@@ -968,8 +956,8 @@ export function CreateActorSearchResults(numActors:number=3):searchActorsOutputS
  * @param numReturnedGenerators The number of mocked Feed Generators to return.
  * @returns Object representing the Bluesky API response for a `getFeedGenerators` call.
  */
-export async function CreateGetFeedGeneratorsResponse(numReturnedGenerators:number=1):Promise<getFeedGeneratorsOutputSchema>{
-    let results:GeneratorView[] = [];
+export async function CreateGetFeedGeneratorsResponse(numReturnedGenerators:number=1):Promise<AppBskyFeedGetFeedGenerators.OutputSchema>{
+    let results:AppBskyFeedDefs.GeneratorView[] = [];
     let postTime = new Date().toISOString();
     for (let i = 0; i < numReturnedGenerators; i++) {
         let j = Math.floor(Math.random()*7);
@@ -1000,8 +988,8 @@ export async function CreateGetFeedGeneratorsResponse(numReturnedGenerators:numb
     return {feeds:results};
 }
 
-export async function CreateGetPopularFeedGeneratorsResponse(numReturnedGenerators:number=5):Promise<getPopularFeedGeneratorsOutputSchema>{
-    let results:GeneratorView[] = [];
+export async function CreateGetPopularFeedGeneratorsResponse(numReturnedGenerators:number=5):Promise<AppBskyUnspeccedGetPopularFeedGenerators.OutputSchema>{
+    let results:AppBskyFeedDefs.GeneratorView[] = [];
     let postTime = new Date().toISOString();
     for (let i = 0; i < numReturnedGenerators; i++) {
         let j = Math.floor(Math.random()*7);

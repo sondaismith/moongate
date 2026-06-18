@@ -1,21 +1,12 @@
 <script lang="ts">
-import { $Typed, AppBskyEmbedExternal, AppBskyEmbedRecordWithMedia, AppBskyFeedDefs, AppBskyFeedGetPostThread, AppBskyFeedPostgate, AppBskyFeedThreadgate, AtUri, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
-import { AppBskyUnspeccedGetPostThreadV2 } from "@atproto/api/src/client/";
+import { $Typed, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedDefs, AppBskyFeedDefs, AppBskyFeedPost, AppBskyFeedGetPostThread, AppBskyUnspeccedGetPostThreadV2,
+    AppBskyFeedPostgate, AppBskyFeedThreadgate, AtUri, ComAtprotoLabelDefs, ComAtprotoRepoUploadBlob, isDid } from "@atproto/api";
 import { GetBrowsingAgent } from "../api.vue";
-import { FeedViewPost, isPostView, isReasonPin, PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
 import { AppState, toast } from "../../state/AppState.vue";
-import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/post";
 import { postDetails, showFocusModal } from "../../state/PostDetails.vue";
 import { FeedState } from "../../state/FeedList.vue";
 import { PostActions } from "../../enums/PostEnums";
 import { INestedPostOptions } from "../../interfaces/PostInterfaces";
-import { FollowerRule, FollowingRule, MentionRule } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate";
-import { SelfLabel, SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs";
-import { isImage, isView, Main, View as ViewForImages, ViewImage } from "@atproto/api/dist/client/types/app/bsky/embed/images";
-import { AspectRatio } from "@atproto/api/dist/client/types/app/bsky/embed/defs";
-import { isView as isViewForQRT, isViewRecord, ViewRecord } from "@atproto/api/dist/client/types/app/bsky/embed/record";
-import { isView as isViewForRecordWithMedia, View as ViewForRecordWithMedia} from "@atproto/api/dist/client/types/app/bsky/embed/recordWithMedia";
-import { View as ViewForExternal} from "@atproto/api/dist/client/types/app/bsky/embed/external";
 
 export default{
     name:"Post API Methods"
@@ -95,12 +86,12 @@ export async function getPostThreadV2(postURI:string):Promise<AppBskyUnspeccedGe
  */
 // export function getPostImages(postData:ThreadViewPost):ViewImage[]{
 // export function getPostImages(postData:PostView|ViewRecord):ViewImage[]{//View{
-export function getPostImages(postData:PostView|ViewRecord):ViewForImages|ViewForRecordWithMedia|ViewForExternal{
+export function getPostImages(postData:AppBskyFeedDefs.PostView|AppBskyEmbedRecord.ViewRecord):AppBskyEmbedImages.View|AppBskyEmbedRecordWithMedia.View|AppBskyEmbedExternal.View{
     //This is a standalone/parent Post, not a QRT (Quote Retweet)
     // if(!isViewRecord(postData.post)){
-    if(isPostView(postData)){
+    if(AppBskyFeedDefs.isPostView(postData)){
         // if(typeof postData.post?.embed != 'undefined' && typeof postData.post.embed.images != 'undefined'){
-        if(typeof postData.embed != 'undefined' && isView(postData.embed)){
+        if(typeof postData.embed != 'undefined' && AppBskyEmbedImages.isView(postData.embed)){
             //Is a parent Post with image(s)
             // return postData.post.embed.images as ViewImage[];
             return postData.embed;
@@ -110,24 +101,24 @@ export function getPostImages(postData:PostView|ViewRecord):ViewForImages|ViewFo
             return postData.embed;
         }
         // else if(typeof postData.post?.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postData.post.embed) && typeof postData.post.embed.media.images != 'undefined'){
-        else if(typeof postData.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postData.embed) && isView(postData.embed.media)){
+        else if(typeof postData.embed != 'undefined' && AppBskyEmbedRecordWithMedia.isView(postData.embed) && AppBskyEmbedImages.isView(postData.embed.media)){
             //Is a parent Post with image(s) and a QRT
             // return postData.post.embed.media.images as ViewImage[];
             return postData.embed.media;
         }
     }
-    if(isViewRecord(postData)){
+    if(AppBskyEmbedRecord.isViewRecord(postData)){
         //This is a QRT
         // if(typeof postData.post?.embeds != 'undefined' && postData.post.embeds.length>0 && typeof postData.post.embeds[0].images != 'undefined'){
-        if(typeof postData.embeds != 'undefined' && postData.embeds.length>0 && isView(postData.embeds[0]) && typeof postData.embeds[0].images != 'undefined'){
+        if(typeof postData.embeds != 'undefined' && postData.embeds.length>0 && AppBskyEmbedImages.isView(postData.embeds[0]) && typeof postData.embeds[0].images != 'undefined'){
             //Is a QRT with image(s)
             // return postData.post.embeds[0].images as ViewImage[];
             return postData.embeds[0];
         }
         // else if(postData.post?.embeds && postData.post.embeds.length>0 && typeof postData.post.embeds[0].media != 'undefined' &&
             // typeof postData.post.embeds[0].media.images != 'undefined'){
-        else if(typeof postData.embeds != 'undefined' && postData.embeds.length>0 && isViewForRecordWithMedia(postData.embeds[0]) && typeof postData.embeds[0].media != 'undefined'
-            && isView(postData.embeds[0].media) && typeof postData.embeds[0].media.images != 'undefined'){
+        else if(typeof postData.embeds != 'undefined' && postData.embeds.length>0 && AppBskyEmbedRecordWithMedia.isView(postData.embeds[0]) && typeof postData.embeds[0].media != 'undefined'
+            && AppBskyEmbedImages.isView(postData.embeds[0].media) && typeof postData.embeds[0].media.images != 'undefined'){
             //Is a QRT with image(s)
             // return postData.post.embeds[0].media.images as ViewImage[];
             return postData.embeds[0].media;
@@ -199,12 +190,12 @@ export function createPostRoute(handle:string, postId:string):string|undefined{
  * @param imageAltText Array containing alt text for each image.
  * @param imageAspectRatio Array containing aspect ratio for each image.
  */
-export function CreateImageMediaObject(images:ComAtprotoRepoUploadBlob.Response[],imageAltText:string[],imageAspectRatio:AspectRatio[]):$Typed<Main>|undefined{
+export function CreateImageMediaObject(images:ComAtprotoRepoUploadBlob.Response[],imageAltText:string[],imageAspectRatio:AppBskyEmbedDefs.AspectRatio[]):$Typed<AppBskyEmbedImages.Main>|undefined{
     if(images.length != imageAltText.length){
         console.log('Length of provided arrays do not match - aborting');
         return undefined;
     }
-    let result:$Typed<Main> = {$type:"app.bsky.embed.images",images:[]};
+    let result:$Typed<AppBskyEmbedImages.Main> = {$type:"app.bsky.embed.images",images:[]};
     for (let i = 0; i < images.length; i++) {
         result.images.push({
             image:images[i].data.blob,
@@ -231,7 +222,7 @@ export function CreateThreadGateObject(postUri:string, selectedThreadGateOptions
         post: postUri,
         createdAt: new Date().toISOString()
     }
-    let subGates:($Typed<MentionRule> | $Typed<FollowerRule> | $Typed<FollowingRule>)[] = [];
+    let subGates:($Typed<AppBskyFeedThreadgate.MentionRule> | $Typed<AppBskyFeedThreadgate.FollowerRule> | $Typed<AppBskyFeedThreadgate.FollowingRule>)[] = [];
     if(selectedThreadGateOptions[1].selected) threadGate = {...threadGate,allow:[]};//No replies allowed
     else if(!selectedThreadGateOptions[0].selected){
         let subOptions = selectedThreadGateOptions[0].options
@@ -250,10 +241,10 @@ export function CreateThreadGateObject(postUri:string, selectedThreadGateOptions
  * @param postUri AT URI of the record, repository (account), or other resource that this label applies to. Not actually used at the moment.
  * @param labels String array containing the label values - should use `CreatePost.discoverSelectedContentLabels()`.
  */
-export function CreateContentLabelObjects(labels:string[]):$Typed<SelfLabels>|undefined{
+export function CreateContentLabelObjects(labels:string[]):$Typed<ComAtprotoLabelDefs.SelfLabels>|undefined{
     if(labels.length<1) return;
     else{
-        let labelObjects:SelfLabel[] = [];
+        let labelObjects:ComAtprotoLabelDefs.SelfLabel[] = [];
         labels.forEach(l => {
             labelObjects.push({$type:"com.atproto.label.defs#selfLabel",val:l});
         });
@@ -270,7 +261,7 @@ export function CreateContentLabelObjects(labels:string[]):$Typed<SelfLabels>|un
  * @param allowQuotePosts Are quote posts allowed? If false, results in the creation of a "Post Gate".
  * @returns The URI pointing to the created Post.
  */
-export async function CreateNewPost(postData:Record, openPostAfterCreation:boolean=true,
+export async function CreateNewPost(postData:AppBskyFeedPost.Record, openPostAfterCreation:boolean=true,
 selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined,allowQuotePosts:boolean=true):Promise<string>{
     console.log(postData);
     let postUri = '';
@@ -316,17 +307,17 @@ selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined,allowQuotePos
             .then(newPostRes => {
                 AppState.hideCreatePost();
                 if(openPostAfterCreation){
-                    let postToShow:PostView = (newPostRes.data.thread as ThreadViewPost).post;
+                    let postToShow:AppBskyFeedDefs.PostView = (newPostRes.data.thread as AppBskyFeedDefs.ThreadViewPost).post;
                     //If the created Post has a parent (it's a reply) show the parent Post
-                    if((newPostRes.data.thread as ThreadViewPost).parent) postToShow = ((newPostRes.data.thread as ThreadViewPost).parent as ThreadViewPost).post
+                    if((newPostRes.data.thread as AppBskyFeedDefs.ThreadViewPost).parent) postToShow = ((newPostRes.data.thread as AppBskyFeedDefs.ThreadViewPost).parent as AppBskyFeedDefs.ThreadViewPost).post
                     showFocusModal(postToShow.uri,0);
                     // postDetails.currentPostData.replyCount++;//This is probably no longer needed, since the latest version of the Post is retrieved when the modal is displayed
                     AppState.UpdatePostsInFeedList(postDetails.currentPostData);
                 }
                 else if(postDetails.isFocusVisible && postDetails.currentPostAction != PostActions.Quote){//if we can see the PostFocusModal
                     //we need to update the `PostThreadView` to include the new Post
-                    let newPost = (newPostRes.data.thread as ThreadViewPost);
-                    let parentToFindCID = ((newPostRes.data.thread as ThreadViewPost).parent as ThreadViewPost).post.cid;
+                    let newPost = (newPostRes.data.thread as AppBskyFeedDefs.ThreadViewPost);
+                    let parentToFindCID = ((newPostRes.data.thread as AppBskyFeedDefs.ThreadViewPost).parent as AppBskyFeedDefs.ThreadViewPost).post.cid;
                     let isParentFound = false;
                     if(postDetails.currentThreadView.post.cid == parentToFindCID){//if the focused Post is the parent, add to replies
                         if(postDetails.currentThreadView.replies) postDetails.currentThreadView.replies.unshift(newPost)
@@ -335,21 +326,21 @@ selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined,allowQuotePos
                     else{//otherwise we need to check each reply
                         for (let i = 0; i < postDetails.currentThreadView.replies.length; i++){
                             //If post is a direct reply to a reply, we add it to the list and increase the parent post's replyCount
-                            if((postDetails.currentThreadView.replies[i] as ThreadViewPost).post.cid == parentToFindCID){
+                            if((postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).post.cid == parentToFindCID){
                                 //add new post to reply
-                                (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies?.push(newPost);
-                                (postDetails.currentThreadView.replies[i] as ThreadViewPost).post.replyCount++;
+                                (postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).replies?.push(newPost);
+                                (postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).post.replyCount++;
                                 i = postDetails.currentThreadView.replies.length;//end search
                                 isParentFound = true;
                             }
                             //check each reply's list of replies - if the parent is in there increase the replyCount and add
                             //the reply to the `replies` variable, don't worry about the DOM
                             if(!isParentFound){
-                                for (let j = 0; j < (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies.length; j++){
-                                    if(((postDetails.currentThreadView.replies[i] as ThreadViewPost).replies[j] as ThreadViewPost).post.cid == parentToFindCID){
-                                        ((postDetails.currentThreadView.replies[i] as ThreadViewPost).replies[j] as ThreadViewPost).replies?.push(newPost);
-                                        ((postDetails.currentThreadView.replies[i] as ThreadViewPost).replies[j] as ThreadViewPost).post.replyCount++;
-                                        j = (postDetails.currentThreadView.replies[i] as ThreadViewPost).replies.length; //end search
+                                for (let j = 0; j < (postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).replies.length; j++){
+                                    if(((postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).replies[j] as AppBskyFeedDefs.ThreadViewPost).post.cid == parentToFindCID){
+                                        ((postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).replies[j] as AppBskyFeedDefs.ThreadViewPost).replies?.push(newPost);
+                                        ((postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).replies[j] as AppBskyFeedDefs.ThreadViewPost).post.replyCount++;
+                                        j = (postDetails.currentThreadView.replies[i] as AppBskyFeedDefs.ThreadViewPost).replies.length; //end search
                                         isParentFound = true;
                                     }
                                 }
@@ -367,15 +358,15 @@ selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined,allowQuotePos
                 //     if(searchResults.postFound) searchResults.foundPostThreadView.post.quoteCount++;
                 // }
                 //If any the currently visible Feeds are for the currently logged in User, update Feed to show new standalone Post
-                if(!(newPostRes.data.thread as ThreadViewPost).parent){//no parent, is root post/not reply
+                if(!(newPostRes.data.thread as AppBskyFeedDefs.ThreadViewPost).parent){//no parent, is root post/not reply
                     let userFeeds = FeedState.FeedList.filter(feed => feed.description.feedSourceDID == GetBrowsingAgent().assertDid);
                     userFeeds.forEach(feed => {
                         let firstPost = feed.data[0];
-                        if(typeof firstPost != 'undefined' && isReasonPin((firstPost as FeedViewPost).reason)){
-                            feed.data.splice(1,0,{post:(newPostRes.data.thread as ThreadViewPost).post})
+                        if(typeof firstPost != 'undefined' && AppBskyFeedDefs.isReasonPin((firstPost as AppBskyFeedDefs.FeedViewPost).reason)){
+                            feed.data.splice(1,0,{post:(newPostRes.data.thread as AppBskyFeedDefs.ThreadViewPost).post})
                         }
                         else{
-                            feed.data.unshift({post:(newPostRes.data.thread as ThreadViewPost).post})
+                            feed.data.unshift({post:(newPostRes.data.thread as AppBskyFeedDefs.ThreadViewPost).post})
                         }
                     });
                     console.log(`There are/is ${userFeeds.length} Feed(s) displaying Posts by the logged in User`);
@@ -401,7 +392,7 @@ selectedThreadGateOptions:INestedPostOptions[]|undefined=undefined,allowQuotePos
  * @param postData PostView of the Post to delete.
  * @returns The result of trying to delete the Post.
  */
-export async function DeletePost(postData:PostView):Promise<void>{
+export async function DeletePost(postData:AppBskyFeedDefs.PostView):Promise<void>{
     GetBrowsingAgent().deletePost(postData.uri);
 }
 
@@ -409,7 +400,7 @@ export async function DeletePost(postData:PostView):Promise<void>{
  *
  * @param postData PostView of the Post to Bookmark/Save.
  */
-export async function BookmarkPost(postData:PostView):Promise<void>{
+export async function BookmarkPost(postData:AppBskyFeedDefs.PostView):Promise<void>{
     await GetBrowsingAgent().app.bsky.bookmark.createBookmark({cid:postData.cid,uri:postData.uri});
 }
 
@@ -417,7 +408,7 @@ export async function BookmarkPost(postData:PostView):Promise<void>{
  *
  * @param postData PostView of the Post to remove from Bookmarks.
  */
-export async function RemoveBookmark(postData:PostView):Promise<void>{
+export async function RemoveBookmark(postData:AppBskyFeedDefs.PostView):Promise<void>{
     await GetBrowsingAgent().app.bsky.bookmark.deleteBookmark({uri:postData.uri});
 }
 </script>

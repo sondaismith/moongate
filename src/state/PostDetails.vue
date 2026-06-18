@@ -3,7 +3,7 @@ import { reactive } from 'vue'
 import { IPostDetails } from '../interfaces/PostInterfaces';
 import { IconTypes, PostActions } from '../enums/PostEnums';
 import { emptyPostThread, emptyPostView } from '../fake-data/dumPostData';
-import { FeedViewPost, isThreadViewPost, PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyFeedDefs } from '@atproto/api';
 import { getPostThread } from '../lib/api/Post.vue';
 import { toast } from './AppState.vue';
 import { HandleAPIError } from '../helpers/errors';
@@ -53,7 +53,7 @@ export const postDetails = reactive({
      * interacted with. Currently just used to find the "root" Post of last
      * interacted Post.
      */
-    currentPostThreadData: {} as ThreadViewPost|undefined,
+    currentPostThreadData: {} as AppBskyFeedDefs.ThreadViewPost|undefined,
     uriOfPostToShow:'',
     /**
      * Indicates that we are waiting for a reference to the thread associated
@@ -68,14 +68,14 @@ export const postDetails = reactive({
      * @param post The Post that you wish to perform actions on.
      * @param action The type of Post that is being created.
      */
-    async prepareForPostAction(post:PostView, action:PostActions=PostActions.Post){
+    async prepareForPostAction(post:AppBskyFeedDefs.PostView, action:PostActions=PostActions.Post){
         this.isAwaitingPostThreadData = true;
         this.currentPostAction = action;
         if(post && post.uri && post.uri.trim() != ''){
             this.currentPostData = post;
             await getPostThread(post.uri)
             //only will work with ThreadViewPost - no NotFoundPost or BlockedPost
-            .then(res => this.currentPostThreadData = isThreadViewPost(res.data.thread) ? res.data.thread : undefined)
+            .then(res => this.currentPostThreadData = AppBskyFeedDefs.isThreadViewPost(res.data.thread) ? res.data.thread : undefined)
             .catch(err => toast.add(HandleAPIError(err, 'Error getting Post thread details')));
         }
         else{
@@ -95,8 +95,8 @@ export const postDetails = reactive({
      * if it cannot be found.
      * @param post The Post you wish to find the "root" Post of.
      */
-    getPostThreadRoot(post:ThreadViewPost):ThreadViewPost{
-        if(post.parent && isThreadViewPost(post.parent)){
+    getPostThreadRoot(post:AppBskyFeedDefs.ThreadViewPost):AppBskyFeedDefs.ThreadViewPost{
+        if(post.parent && AppBskyFeedDefs.isThreadViewPost(post.parent)){
             return this.getPostThreadRoot(post.parent)
         }
         else{ return post; }
@@ -112,10 +112,10 @@ export const postDetails = reactive({
      * to update the state of Posts held in `PostFocusModal`.
      * @param postCid The CID of the Post to find.
      */
-    searchThreadViewForMatchingPost(postCid:string, threadToSearch:ThreadViewPost){
+    searchThreadViewForMatchingPost(postCid:string, threadToSearch:AppBskyFeedDefs.ThreadViewPost){
         /**Holds list of immediate replies to the focused Post. */
-        let rootReplies = [] as ThreadViewPost[];
-        if(threadToSearch.replies) rootReplies = threadToSearch.replies as ThreadViewPost[];
+        let rootReplies = [] as AppBskyFeedDefs.ThreadViewPost[];
+        if(threadToSearch.replies) rootReplies = threadToSearch.replies as AppBskyFeedDefs.ThreadViewPost[];
         // if(postDetails.currentThreadView.replies) rootReplies = postDetails.currentThreadView.replies as ThreadViewPost[];//old version tied to `currentThreadView`
         /**Has the Post been found. */
         let isPostFound = false;
@@ -134,7 +134,7 @@ export const postDetails = reactive({
         //if not parent post, check immediate replies and their replies
         for (let i = 0; i < rootReplies.length; i++){
             //If post is a direct reply to a reply, we add it to the list and increase the parent post's replyCount
-            if((rootReplies[i] as ThreadViewPost).post.cid == postCid){
+            if((rootReplies[i] as AppBskyFeedDefs.ThreadViewPost).post.cid == postCid){
                 i = rootReplies.length;//end search
                 foundPostThread = rootReplies[i];
                 postPosition = [i,0];
@@ -142,8 +142,8 @@ export const postDetails = reactive({
             }
             //check each reply's list of replies
             /**Holds list of replies to the focused Post's immediate replies. */
-            let replyReplies = [] as ThreadViewPost[];
-            if(rootReplies[i].replies) replyReplies = rootReplies[i].replies as ThreadViewPost[];
+            let replyReplies = [] as AppBskyFeedDefs.ThreadViewPost[];
+            if(rootReplies[i].replies) replyReplies = rootReplies[i].replies as AppBskyFeedDefs.ThreadViewPost[];
             if(!isPostFound){
                 for (let j = 0; j < replyReplies.length; j++){
                     if(replyReplies[j].post.cid == postCid){
@@ -176,7 +176,7 @@ export const postDetails = reactive({
     showModal(){
         this.isVisible = true;
     },
-    showModalPost(postToShow:FeedViewPost){
+    showModalPost(postToShow:AppBskyFeedDefs.FeedViewPost){
         this.isVisible = true;
         // this.postData = updatePostDetails(postToShow);
         this.currentPostData = postToShow;
@@ -269,7 +269,7 @@ export const postDetails = reactive({
      * Method that returns a string describing what type of Users can reply to the current post.
      * To be used wherever that info needs to be communicated to the User (`PostFocusModal`, `PostInteractionIcons`).
      */
-    whoCanReply(postToCheck:PostView):String{
+    whoCanReply(postToCheck:AppBskyFeedDefs.PostView):String{
         let replyString = 'Everybody can Reply';
         if(typeof postToCheck.threadgate != 'undefined' && typeof postToCheck.threadgate.record != 'undefined'){
             let tgRecord = postToCheck.threadgate.record as AppBskyFeedThreadgate.Record;
@@ -319,7 +319,7 @@ function updatePostDetails(postToOpen:IPostDetails):IPostDetails{
  * @param cid The unique cid value of the ThreadViewPost object we're trying to find.
  * @param repliesArray The ThreadViewPost object representing the Post "thread" we will search.
  */
-function findThreadView(cid:string, repliesArray:ThreadViewPost):ThreadViewPost|undefined {
+function findThreadView(cid:string, repliesArray:AppBskyFeedDefs.ThreadViewPost):AppBskyFeedDefs.ThreadViewPost|undefined {
     var result;
     //Check if current ThreadViewPost is the one we're looking for
     if(repliesArray.post.cid === cid) result = repliesArray;
@@ -348,7 +348,7 @@ function findThreadView(cid:string, repliesArray:ThreadViewPost):ThreadViewPost|
  * @param parentCID The unique cid value of the "Parent" ThreadViewPost object we're trying to find.
  * @param currentPostThread The ThreadViewPost object representing the Post "thread" who's parent we are looking for.
  */
-function discoverBreadcrumbs(parentCID:string, currentPostThread:ThreadViewPost){
+function discoverBreadcrumbs(parentCID:string, currentPostThread:AppBskyFeedDefs.ThreadViewPost){
     var result;
     //get the parent element
     var parentThread = findThreadView(parentCID, postDetails.postThread);
@@ -366,12 +366,12 @@ function discoverBreadcrumbs(parentCID:string, currentPostThread:ThreadViewPost)
  * in a Feed View (`FeedColumn`).
  * @param postToShow The Post you want to see the Thread View for.
  */
-export async function showDetailModal(postToShow:FeedViewPost){
+export async function showDetailModal(postToShow:AppBskyFeedDefs.FeedViewPost){
     postDetails.isVisible = true;
     await getPostThread(postToShow.post.uri)
     .then(res => {
-        postDetails.postThread = res.data.thread as ThreadViewPost
-        postDetails.currentThreadView = res.data.thread as ThreadViewPost;
+        postDetails.postThread = res.data.thread as AppBskyFeedDefs.ThreadViewPost
+        postDetails.currentThreadView = res.data.thread as AppBskyFeedDefs.ThreadViewPost;
     })
     .catch(err => toast.add(HandleAPIError(err, 'Error getting Post details for modal')));
 }

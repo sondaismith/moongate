@@ -157,8 +157,8 @@
                 class="flex flex-col gap-2">
                     <div v-for="n in feedData?.data" data-testid="feedColumn-post" :key="generateUniqueIdForPost(n)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">
-                        <FocusFeedPost tabindex="-1" class="border-0" :post-data="({$type:'app.bsky.feed.defs#postView',...(n as FeedViewPost).post} as PostView)"
-                        :post-reason="(n as FeedViewPost).reason" :reply-ref="(n as FeedViewPost).reply"
+                        <FocusFeedPost tabindex="-1" class="border-0" :post-data="({$type:'app.bsky.feed.defs#postView',...(n as AppBskyFeedDefs.FeedViewPost).post} as AppBskyFeedDefs.PostView)"
+                        :post-reason="(n as AppBskyFeedDefs.FeedViewPost).reason" :reply-ref="(n as AppBskyFeedDefs.FeedViewPost).reply"
                         :is-feed-post-style="true"/>
                     </div>
                 </div>
@@ -173,7 +173,7 @@
                 class="flex flex-col gap-2">
                     <div v-for="(tt, index) in feedData.data" :key="generateUniqueIdForPost(tt)" class="rounded bg-feedColumnBG border border-outline w-full
                     drop-shadow-md justify-between text-sm">
-                        <TrendingTopic :trend="tt as TrendView" :position="index+1"/>
+                        <TrendingTopic :trend="tt as AppBskyUnspeccedDefs.TrendView" :position="index+1"/>
                     </div>
                 </div>
                 <div v-if="(feedData?.description.feedType == FeedEnums.Types.User ||
@@ -236,14 +236,14 @@ import { ClearFeed, FeedState, LoadMoreFeedPosts, RefreshFeed, RemoveFeed, SaveF
 import { FeedEnums } from '../../enums/FeedEnums';
 import ToContainerTop from '../Utilities/ToContainerTop.vue';
 import { debounce } from '../../helpers/debouncer';
-import { FeedViewPost, isReasonPin, isReasonRepost, PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs';
+import { AppBskyFeedDefs } from '@atproto/api';
 import FocusFeedPost from './FocusFeedPost.vue';
 import FeedPost from './FeedPost.vue';
-import { Notification } from '@atproto/api/dist/client/types/app/bsky/notification/listNotifications';
+import { AppBskyNotificationListNotifications } from '@atproto/api';
 import { convertToShortTimestamp } from '../../helpers/converters';
 import NotificationRecord from './NotificationRecord.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { TrendView } from '@atproto/api/dist/client/types/app/bsky/unspecced/defs';
+import { AppBskyUnspeccedDefs } from '@atproto/api';
 import TrendingTopic from './TrendingTopic.vue';
 import { isOnMobileTouchscreen } from '../../helpers/states';
 import SquareButton from '../Utilities/SquareButton.vue';
@@ -278,7 +278,7 @@ export default defineComponent({
             /**Determines if the refresh command is currently "on cooldown". */
             isAwaitingRefreshTimeout:false,
             /**Holds a collection of new Posts that are available but not shown in the Feed list. */
-            newPostsWaiting: [] as FeedViewPost[],
+            newPostsWaiting: [] as AppBskyFeedDefs.FeedViewPost[],
             /**
              * Indicates if the application is still waiting for a response from the API returning
              * older Feed posts.
@@ -488,23 +488,23 @@ export default defineComponent({
          * TransitionGroup layout.
          * @param feedPost The Post that needs a key generated.
          */
-        generateUniqueIdForPost(feedPost:FeedViewPost|Notification|TrendView):string{
+        generateUniqueIdForPost(feedPost:AppBskyFeedDefs.FeedViewPost|AppBskyNotificationListNotifications.Notification|AppBskyUnspeccedDefs.TrendView):string{
             let id = 'if_you_see_me_something_broke';
             if(this.feedData?.description.feedType != FeedEnums.Types.Notifications &&
                 this.feedData?.description.feedType != FeedEnums.Types.Trending
             ){
-                let feedPostFV = (feedPost as FeedViewPost);
+                let feedPostFV = (feedPost as AppBskyFeedDefs.FeedViewPost);
                 id = feedPostFV.post.cid;
                 if(feedPostFV.reason){
-                    if(isReasonPin(feedPostFV.reason)) id+='_pinned'
-                    if(isReasonRepost(feedPostFV.reason)) id+='_reposted'
+                    if(AppBskyFeedDefs.isReasonPin(feedPostFV.reason)) id+='_pinned'
+                    if(AppBskyFeedDefs.isReasonRepost(feedPostFV.reason)) id+='_reposted'
                 }
             }
             else if(this.feedData?.description.feedType == FeedEnums.Types.Notifications){
-                id = (feedPost as Notification).cid;
+                id = (feedPost as AppBskyNotificationListNotifications.Notification).cid;
             }
             else if(this.feedData?.description.feedType == FeedEnums.Types.Trending){
-                id = (feedPost as TrendView).topic.replace(' ','_');
+                id = (feedPost as AppBskyUnspeccedDefs.TrendView).topic.replace(' ','_');
             }
             return id;
         },
@@ -615,9 +615,9 @@ export default defineComponent({
             }
         },
         isFeedOwnerBlocked(){
-            let authorPost:FeedViewPost|undefined;
+            let authorPost:AppBskyFeedDefs.FeedViewPost|undefined;
             if(typeof this.feedData != 'undefined' && this.feedData.description.feedType == FeedEnums.Types.User){
-                authorPost = this.feedData.data.find(x => (x as FeedViewPost).post.author.did == this.feedData?.description.feedSourceDID) as FeedViewPost;
+                authorPost = this.feedData.data.find(x => (x as AppBskyFeedDefs.FeedViewPost).post.author.did == this.feedData?.description.feedSourceDID) as AppBskyFeedDefs.FeedViewPost;
             }
             return typeof authorPost != 'undefined' && typeof authorPost.post.author.viewer != 'undefined' && typeof authorPost.post.author.viewer.blocking != 'undefined';
         }

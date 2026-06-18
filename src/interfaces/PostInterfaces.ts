@@ -1,7 +1,6 @@
 import { FunctionalComponent } from "vue";
 import * as PostEnums from "../enums/PostEnums";
-import { FeedViewPost, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs";
-import { AspectRatio } from "@atproto/api/dist/client/types/app/bsky/embed/defs";
+import { AppBskyFeedDefs, AppBskyEmbedDefs } from "@atproto/api";
 
 interface IPostDetails{
     userName: String,
@@ -22,14 +21,14 @@ interface IPostDetailsList{
     clickedMediaIndex: number,
     getClickedMediaIndex():number,
     setClickedMediaIndex(newVal:number):void,
-    postData : FeedViewPost,
-    postThread: ThreadViewPost,
-    currentThreadView: ThreadViewPost,
+    postData : AppBskyFeedDefs.FeedViewPost,
+    postThread: AppBskyFeedDefs.ThreadViewPost,
+    currentThreadView: AppBskyFeedDefs.ThreadViewPost,
     setCurrentThreadView(cid:string):void,
     returnToThreadOrigin():void,
     currentBreadcrumb: [ReplyBreadcrumb],
     updateCurrentBreadcrumbs():void,
-    createPostData(data:ThreadViewPost):void,
+    createPostData(data:AppBskyFeedDefs.ThreadViewPost):void,
     showModal(): void,
     hideModal(): void,
     showFocusModalIndex(mediaIndex:number): void,
@@ -78,7 +77,7 @@ interface IUploadedFile{
     blobURI:string,
     fileName:string,
     alt:string,
-    aspectRatio:AspectRatio,
+    aspectRatio:AppBskyEmbedDefs.AspectRatio,
     type:string,
     uploaded:boolean,
     uploadInProgress:boolean
