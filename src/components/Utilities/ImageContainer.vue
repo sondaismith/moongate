@@ -70,8 +70,8 @@
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
             <div data-testid="imageContainer-externalGIF" v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)"
             class="flex flex-col max-w-full max-h-full cursor-pointer" @click="isGIFPaused = !isGIFPaused" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
-                <div data-testid="imageContainer-file-extension" class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">WebM</div>
-                <ExternalGIF :url="webmURL" :is-paused="isGIFPaused"/>
+                <div data-testid="imageContainer-file-extension" class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ gifExt }}</div>
+                <ExternalGIF :url="webmURL" :thumbnail="mediaEmbed.external.thumb" :is-paused="isGIFPaused"/>
             </div>
         </div>
     </div>
@@ -305,6 +305,10 @@ export default defineComponent({
         /**Returns a WEBM URL converted from the original GIF URL. */
         webmURL(){
             return (typeof this.mediaEmbed != 'undefined' && 'external' in this.mediaEmbed) ? AppState.getExternalWebmUrlFromGifUri(this.mediaEmbed.external.uri) : '';
+        },
+        /**Returns file extension to display for "GIF" images. Returned value depends on the image URL. */
+        gifExt(){
+            return this.webmURL != '' && this.webmURL.includes('giphy.com') ? 'WebP' : 'WebM';
         }
     },
     watch:{

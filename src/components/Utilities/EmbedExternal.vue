@@ -151,7 +151,7 @@ export default defineComponent({
          */
         isExternalGIF(){
             let isExternalGif = false;
-            const supportedExt = ['.gif','.webm','.mp4'];
+            const supportedExt = ['.gif','giphy.com/gifs/','.webm','.mp4'];
             for (let i = 0; i < supportedExt.length; i++) {
                 if(this.embed.external.uri.includes(supportedExt[i])){
                     isExternalGif = true;
