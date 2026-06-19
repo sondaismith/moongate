@@ -50,15 +50,17 @@
                             <div>Download</div>
                             <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
                         </SquareButton>
-                        <button v-if="isTauri()" :disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading" @click="saveImage(undefined,true)"
-                        class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
-                        disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
-                        title="Save as .GIF (File size may be large)">Save as GIF</button>
-                        <button v-else :disabled="isDownloading"
-                        @click="downloadGIFFromExternalCDN((AppState.saveMedia as AppBskyEmbedExternal.View).external.uri,AppState.fileSaveDetails.originalFilename)"
-                        class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
-                        disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
-                        title="Save as .GIF (File size may be large)">Save as GIF</button>
+                        <template v-if="'external' in saveMediaData && !saveMediaData.external.uri.includes('giphy.com')">
+                            <button v-if="isTauri()" :disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading" @click="saveImage(undefined,true)"
+                            class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
+                            disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
+                            title="Save as .GIF (File size may be large)">Save as GIF</button>
+                            <button v-else :disabled="isDownloading"
+                            @click="downloadGIFFromExternalCDN((AppState.saveMedia as AppBskyEmbedExternal.View).external.uri,AppState.fileSaveDetails.originalFilename)"
+                            class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
+                            disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
+                            title="Save as .GIF (File size may be large)">Save as GIF</button>
+                        </template>
                     </div>
                 </template>
                 <template v-else class="flex flex-col gap-2 overflow-hidden">
@@ -402,7 +404,7 @@ export default defineComponent({
                 await fetch(url,{
                     headers:{
                         Accept:
-                        "video/webm, video/mp4, image/gif",
+                        "video/webm, video/mp4, image/gif, image/webp",
                     },
                 })
                 .then(async res => {

@@ -135,7 +135,7 @@ async function saveImageWithAuthor(image:AppBskyEmbedImages.ViewImage|AppBskyEmb
         fileName = fileName ? fileName.split('.gif')[0] : '';
         AppState.fileSaveDetails.full = `${fileName}`;
         AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
-        AppState.fileSaveDetails.extension = '.webm';
+        AppState.fileSaveDetails.extension = (image as AppBskyEmbedExternal.View).external.uri.includes('giphy.com') ? '.webp' : '.webm';
         AppState.fileSaveDetails.handle = '';
         AppState.fileSaveDetails.postText = postText ? postText : '';
     }
