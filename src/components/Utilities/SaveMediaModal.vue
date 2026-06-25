@@ -7,7 +7,7 @@
             <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
                 <img v-if="'fullsize' in saveMediaData" data-testid="saveMediaModal-media-preview" @contextmenu.prevent :src="saveMediaData.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
                 :style="(typeof saveMediaData.aspectRatio != 'undefined') ? `aspect-ratio:${saveMediaData.aspectRatio?.width}/${saveMediaData.aspectRatio?.height}` : ''" />
-                <div v-else data-testid="saveMediaModal-media-preview" class="relative self-start rounded max-h-32 bg-slate-500 overflow-hidden" @contextmenu.prevent>
+                <div v-else data-testid="saveMediaModal-media-preview" class="relative self-start rounded h-32 bg-slate-500 overflow-hidden" @contextmenu.prevent>
                     <ExternalGIF @click="isWebmPaused = !isWebmPaused" :url="webmURL" :thumbnail="saveMediaData.external.thumb" :is-paused="isWebmPaused" class="cursor-pointer" video-styles="max-h-32"/>
                 </div>
                 <div class="flex text-primary">

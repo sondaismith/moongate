@@ -5,9 +5,9 @@
             transition-colors"></div>
             <i-mingcute:pause-circle-fill class="absolute z-[2] left-1 top-1 size-8 text-white drop-shadow group-hover:scale-125 transition-transform"/>
         </div>
-        <img v-if="isWEBP && !isPaused" class="absolute max-h-full self-center" :src="url"/>
-        <video v-else-if="!isWEBP" ref="webmPlayer" tabindex="-1" :class="videoStyles"  :src="url" autoplay loop preload="auto"/>
-        <img v-if="isWEBP" class="max-h-[480px]" :src="thumbnail"/>
+        <img v-if="isWEBP && !isPaused" data-testid="externalGIF-animWebp" class="absolute max-h-full self-center select-none" :src="url"/>
+        <video v-else-if="!isWEBP" ref="webmPlayer" tabindex="-1" class="select-none" :class="videoStyles"  :src="url" autoplay loop preload="auto"/>
+        <img v-if="isWEBP" data-testid="externalGIF-animWebp-thumb" class="max-h-[480px] select-none" :src="thumbnail"/>
     </div>
     <div v-else>
         Error: An empty string or a URI that does not point to a .webm or .mp4 file has been provided to this component somehow...

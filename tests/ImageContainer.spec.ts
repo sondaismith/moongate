@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { waitFor } from '@testing-library/vue';
-import { CreateThreadViewPost, CreateUserProfile } from '../src/fake-data/DataFactory'
+import { CreateRouteFromThreadViewPost, CreateThreadViewPost, CreateUserProfile } from '../src/fake-data/DataFactory'
 import { $Typed, AppBskyFeedDefs, AppBskyFeedGetPostThread } from '@atproto/api';
 
 let handle1:string = 'tester.da.playwright';
@@ -10,19 +10,45 @@ let displayName2:string = `tester don't play that`;
 let profile1 = await CreateUserProfile(handle1,displayName2);
 let profile2 = await CreateUserProfile(handle2);
 let post1:AppBskyFeedGetPostThread.OutputSchema;
+let post2:AppBskyFeedGetPostThread.OutputSchema;
 let postText1 = "Lorem ipsum dipsum, dimsum, mmm I'm hungry";
 await CreateThreadViewPost(handle1,postText1,{activate:true,type:'img'},false,{activate:true,images:true,type:'ext_gif'},'I AM A TESTER').then(res =>{
     post1 = {thread:res as $Typed<AppBskyFeedDefs.ThreadViewPost>}
+})
+await CreateThreadViewPost(handle1,postText1,{activate:true,type:'ext_gif_webp'},false,undefined,'I AM A TESTER - GIPHY').then(res =>{
+    post2 = {thread:res as $Typed<AppBskyFeedDefs.ThreadViewPost>}
 })
 
 test.beforeEach(async ({ context }) => {
     // Block any image requests for each test in this file.
     // await context.route(/(png|jpeg)$/, route => route.abort());
     await context.route(/app.bsky.feed.getPostThread/, route => {
+        //Parses route to grab "PostID" in order to choose what PostThread to display
+        const postUrl = new URL(route.request().url());
+        const postUri = postUrl.searchParams.get('uri');
+        let postId = '';
+        if(postUrl != null && postUri != null){
+            let urlSections = postUri.split('/');
+            if(urlSections.length>1) postId = urlSections[urlSections.length-1];
+        }
+        let result:AppBskyFeedGetPostThread.OutputSchema = {thread:{$type:"app.bsky.feed.defs#notFoundPost",uri:'at://not.found.post/sorry',notFound:true} as $Typed<AppBskyFeedDefs.NotFoundPost>};
+        let postsArray = [post1,post2];
+        //search for post
+        for (let i = 0; i < postsArray.length; i++) {
+            let thread = postsArray[i].thread;
+            if(AppBskyFeedDefs.isThreadViewPost(thread)){
+                let uriSections = thread.post.uri.split('/');
+                let currentPostId = uriSections[uriSections.length-1];
+                if(currentPostId == postId){
+                    result = postsArray[i];
+                    i = postsArray.length;
+                }
+            }
+        }
         route.fulfill({
             status: 200,
             headers: { 'Content-Type': 'application/json' },
-            body:JSON.stringify(post1)
+            body:JSON.stringify(result)
         });
     });
     await context.route(/app.bsky.feed.getAuthorFeed/, route => {
@@ -35,7 +61,8 @@ test.beforeEach(async ({ context }) => {
 })
 
 test('ensure SaveMediaModal displays image in `<img>` element when passed a static image (jpeg)', async ({page}, testInfo) => {
-    await page.goto(`/profile/${handle1}/post/3lzrqulh7ic2l`,{waitUntil:'networkidle'});
+    let shape = post1.thread as AppBskyFeedDefs.ThreadViewPost;
+    await page.goto(CreateRouteFromThreadViewPost(shape),{waitUntil:'networkidle'});
     await expect(page.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
     await expect(page.getByText(handle1)).toBeVisible();
     await expect(page.getByTestId('postFocusModal-media-container').getByRole('img')).toBeVisible();
@@ -50,7 +77,8 @@ test('ensure SaveMediaModal displays image in `<img>` element when passed a stat
 })
 
 test('ensure SaveMediaModal displays image in `<video>` element when passed a "GIF" (webm), and clicking on it will pause and then unpause the "GIF"', async ({page}, testInfo) => {
-    await page.goto(`/profile/${handle1}/post/3lzrqulh7ic2l`,{waitUntil:'networkidle'});
+    let shape = post1.thread as AppBskyFeedDefs.ThreadViewPost;
+    await page.goto(CreateRouteFromThreadViewPost(shape),{waitUntil:'networkidle'});
     await expect(page.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
     await expect(page.getByText(handle1)).toBeVisible();
     await expect(page.getByTestId('postThreadView').locator('video')).toBeVisible();
@@ -78,4 +106,37 @@ test('ensure SaveMediaModal displays image in `<video>` element when passed a "G
     //pause "GIF" held in replies
     await page.getByTestId('postThreadView').getByTestId('imageContainer-externalGIF').click();
     await expect(page.getByTestId('postThreadView').locator('video')).toHaveJSProperty('paused', true);
+})
+
+test('ensure SaveMediaModal displays image in an `<img>` element when passed a "GIF" (animated webp), and clicking on it will pause and then unpause the "GIF"', async ({page}, testInfo) => {
+    let shape = post2.thread as AppBskyFeedDefs.ThreadViewPost;
+    await page.goto(CreateRouteFromThreadViewPost(shape),{waitUntil:'networkidle'});
+    await expect(page.getByTestId('postFocusModal-focus-post-loaded')).toBeVisible();
+    await expect(page.getByText(handle1)).toBeVisible();
+    await expect(page.getByTestId('externalGIF-animWebp')).toBeVisible();
+    //interact with image to attempt to save it
+    page.getByTestId('externalGIF-animWebp').click({button:'right'});
+    await expect(page.getByRole('menu')).toBeVisible();
+    page.getByRole('menu').getByText(/Save/).click();
+    await expect(page.getByTestId('saveMediaModal')).toBeVisible();
+    await expect(page.getByTestId('saveMediaModal').getByTestId('externalGIF-animWebp')).toBeVisible();
+    await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).toBeVisible();
+    //just checking that filename text is displaying, even though normally the extension would not be included
+    //the reason it isn't is because the test url IS a .webp, when on Bluesky we get a link pointing to a .gif
+    //that we modify and remove the .gif file extension
+    await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).toHaveText(/.webp/);
+    await expect(page.getByTestId('saveMediaModal-filename-input').getByRole('button')).not.toHaveText(/.gif/);
+    //pause and unpause "GIF"
+    await page.getByTestId('saveMediaModal').getByTestId('externalGIF-container').click();
+    await expect(page.getByTestId('saveMediaModal').getByTestId('externalGIF-animWebp')).toBeHidden();
+    await expect(page.getByTestId('saveMediaModal').getByTestId('externalGIF-animWebp-thumb')).toBeVisible();
+    await page.getByTestId('saveMediaModal').getByTestId('externalGIF-container').click();
+    await expect(page.getByTestId('saveMediaModal').getByTestId('externalGIF-animWebp')).toBeVisible();
+    //close SaveMediaModal
+    await expect(page.getByTestId('saveMediaModal-close')).toBeVisible();
+    await page.getByTestId('saveMediaModal-close').click({position:{x:1,y:1}});
+    await expect(page.getByTestId('saveMediaModal-close')).toBeHidden();
+    //pause "GIF" held in main view
+    await page.getByTestId('imageContainer-externalGIF').click();
+    await expect(page.getByTestId('externalGIF-animWebp')).toBeHidden();
 })

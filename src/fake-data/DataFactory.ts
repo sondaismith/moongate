@@ -277,8 +277,8 @@ export function FindAuthorFeedResponse(authorFeedArray:IAuthorFeedStoreItem[],re
  * @param postTime The time this Post was created.
  * @returns The created `ThreadViewPost` object.
  */
-export async function CreateThreadViewPost(handle:string, postText:string='', includeImage:{activate:boolean,type:'img'|'ext_gif'}={activate:false,type:"img"},
-    includeEmbedLink:boolean=false, includeReply:{activate:boolean,images:boolean,type:'img'|'ext_gif'}={activate:false,images:false,type:"img"},
+export async function CreateThreadViewPost(handle:string, postText:string='', includeImage:{activate:boolean,type:'img'|'ext_gif'|'ext_gif_webp'}={activate:false,type:"img"},
+    includeEmbedLink:boolean=false, includeReply:{activate:boolean,images:boolean,type:'img'|'ext_gif'|'ext_gif_webp'}={activate:false,images:false,type:"img"},
     displayName:string='', postTime:Date=new Date()):Promise<AppBskyFeedDefs.ThreadViewPost>{
     let cid = `author_${handle}_${1}`;
     await GenerateCID(`author_${handle}_${1}`).then(res => {
@@ -330,6 +330,10 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
         else if(includeImage.type == "ext_gif"){
             let extGif:$Typed<AppBskyEmbedExternal.View> = CreateEmbedGIF();
             // (post.post.record as AppBskyFeedPost.Record).embed = extGif;
+            post.post.embed = extGif;
+        }
+        else if(includeImage.type == "ext_gif_webp"){
+            let extGif:$Typed<AppBskyEmbedExternal.View> = CreateEmbedGIF("webp");
             post.post.embed = extGif;
         }
     }
@@ -863,7 +867,7 @@ export function CreateEmbed():$Typed<AppBskyEmbedExternal.View>{
  * an "external GIF" embed object to a Post.
  * @returns A `$Typed<View>` External Embed GIF object.
  */
-export function CreateEmbedGIF():$Typed<AppBskyEmbedExternal.View>{
+export function CreateEmbedGIF(gifType:'webm'|'gif'|'webp'|undefined=undefined):$Typed<AppBskyEmbedExternal.View>{
     let emb:$Typed<AppBskyEmbedExternal.View> = {
         $type: "app.bsky.embed.external#view",
         external:{
@@ -877,6 +881,17 @@ export function CreateEmbedGIF():$Typed<AppBskyEmbedExternal.View>{
             //above URI works with Playwright
             //'https://cdn.bsky.app/img/avatar/plain/did:plc:6unmjnerkpiy3yh6x4auqpy3/bafkreidaesr327h5xfnc4zthmx2hbazbxhxzfd763mfaw7czjrdi3jtpyy@jpeg'
         }
+    }
+    switch (gifType) {
+        case "webm":
+            emb.external.uri = `http://localhost:1420/src/assets/test-media/posts/gif0${Math.floor((Math.random()*2)+1)}.webm`;
+            break;
+        case "webp":
+            emb.external.uri = `http://localhost:1420/src/assets/test-media/posts/giphy.com/gifs/anim.webp`;
+            emb.external.thumb = `http://localhost:1420/src/assets/test-media/posts/anim.jpg`;
+            break;
+        default:
+            emb.external.uri = `http://localhost:1420/src/assets/test-media/posts/gif0${Math.floor((Math.random()*2)+1)}.webm`;
     }
     return emb;
 }
@@ -1020,4 +1035,17 @@ export async function CreateGetPopularFeedGeneratorsResponse(numReturnedGenerato
         })
     }
     return {feeds:results};
+}
+
+/**
+ * Method that returns a Route URL that can be used to view a Post based on the {@link AppBskyFeedDefs.ThreadViewPost ThreadViewPost}
+ * object passed to it. Intended to be used during testing to view a specific Post in the `PostFocusModal` component.
+ * @param threadViewPost The {@link AppBskyFeedDefs.ThreadViewPost ThreadViewPost} object to use to generate the URL.
+ * @returns The Route URL for the Post in the format `/profile/{handle}/post/{postId}`.
+ */
+export function CreateRouteFromThreadViewPost(threadViewPost:AppBskyFeedDefs.ThreadViewPost) {
+    let handle = threadViewPost.post.author.handle;
+    let uriParts = threadViewPost.post.uri.split('/')
+    let postId = uriParts[uriParts.length-1];
+    return `/profile/${handle}/post/${postId}`;
 }
