@@ -85,7 +85,7 @@ export function TrapFocus(el:HTMLElement, e: KeyboardEvent){
 }
 
 /**List of the accepted external GIF sources. */
-export const externalGIFSources:string[] = ['https://media.tenor.com','https://static.klipy.com','localhost:1420/'];
+export const externalGIFSources:string[] = ['https://media.tenor.com','https://static.klipy.com','https://giphy.com/gifs/','localhost:1420/'];
 //Might be better to make an enum of the supported sources, and then make an array from that enum
 
 export default{
@@ -524,6 +524,12 @@ export const AppState = reactive({
             const webmRegex = new RegExp(`${/(?<=webm=).*/.source}`,'g');
             let webmId = urlToTranslate.match(webmRegex);
             return `https://k.gifs.bsky.app/${webmLink}${webmId}.webm`;
+        }
+        else if(urlToTranslate.includes('https://giphy.com/gifs')){
+            let webmLink = urlToTranslate;
+            webmLink = webmLink.slice('https://giphy.com/gifs'.length+1);
+            return `https://i.giphy.com/${webmLink}.webp`;
+            return `https://i.giphy.com/media/${webmLink}/200.webp`;//lower res, what Bluesky Official uses
         }
         else if(urlToTranslate.includes('localhost:1420/')) return urlToTranslate;
         else return 'invalid link';

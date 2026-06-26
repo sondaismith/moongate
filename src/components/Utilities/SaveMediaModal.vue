@@ -7,8 +7,8 @@
             <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
                 <img v-if="'fullsize' in saveMediaData" data-testid="saveMediaModal-media-preview" @contextmenu.prevent :src="saveMediaData.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
                 :style="(typeof saveMediaData.aspectRatio != 'undefined') ? `aspect-ratio:${saveMediaData.aspectRatio?.width}/${saveMediaData.aspectRatio?.height}` : ''" />
-                <div v-else data-testid="saveMediaModal-media-preview" class="relative self-start rounded bg-slate-500 overflow-hidden" @contextmenu.prevent>
-                    <ExternalGIF @click="isWebmPaused = !isWebmPaused" :url="webmURL" :is-paused="isWebmPaused" class="cursor-pointer" video-styles="max-h-32"/>
+                <div v-else data-testid="saveMediaModal-media-preview" class="relative self-start rounded h-32 bg-slate-500 overflow-hidden" @contextmenu.prevent>
+                    <ExternalGIF @click="isWebmPaused = !isWebmPaused" :url="webmURL" :thumbnail="saveMediaData.external.thumb" :is-paused="isWebmPaused" class="cursor-pointer" video-styles="max-h-32"/>
                 </div>
                 <div class="flex text-primary">
                     <InLaInput v-if="isTauri()" data-testid="saveMediaModal-filename-input" class="h-full text-[12px] rounded-r-none grow"
@@ -50,15 +50,17 @@
                             <div>Download</div>
                             <!-- <i-mingcute:loading-fill v-if="isDownloading" class="spinner"/> -->
                         </SquareButton>
-                        <button v-if="isTauri()" :disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading" @click="saveImage(undefined,true)"
-                        class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
-                        disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
-                        title="Save as .GIF (File size may be large)">Save as GIF</button>
-                        <button v-else :disabled="isDownloading"
-                        @click="downloadGIFFromExternalCDN((AppState.saveMedia as AppBskyEmbedExternal.View).external.uri,AppState.fileSaveDetails.originalFilename)"
-                        class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
-                        disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
-                        title="Save as .GIF (File size may be large)">Save as GIF</button>
+                        <template v-if="'external' in saveMediaData && !saveMediaData.external.uri.includes('giphy.com')">
+                            <button v-if="isTauri()" :disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading" @click="saveImage(undefined,true)"
+                            class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
+                            disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
+                            title="Save as .GIF (File size may be large)">Save as GIF</button>
+                            <button v-else :disabled="isDownloading"
+                            @click="downloadGIFFromExternalCDN((AppState.saveMedia as AppBskyEmbedExternal.View).external.uri,AppState.fileSaveDetails.originalFilename)"
+                            class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
+                            disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
+                            title="Save as .GIF (File size may be large)">Save as GIF</button>
+                        </template>
                     </div>
                 </template>
                 <template v-else class="flex flex-col gap-2 overflow-hidden">
@@ -402,7 +404,7 @@ export default defineComponent({
                 await fetch(url,{
                     headers:{
                         Accept:
-                        "video/webm, video/mp4, image/gif",
+                        "video/webm, video/mp4, image/gif, image/webp",
                     },
                 })
                 .then(async res => {
