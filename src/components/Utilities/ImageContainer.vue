@@ -152,9 +152,8 @@ async function saveImageWithAuthor(image:AppBskyEmbedImages.ViewImage|AppBskyEmb
  * @param imageToShow Object representing the Image to open in the new tab.
  */
 function OpenImageInNewTab(imageToShow:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View){
-    // if(!imageToShow.uri){//not Tenor GIF
-    if(AppBskyEmbedExternal.isView(imageToShow)){//Tenor GIF
-        open(imageToShow.external.uri);
+    if(AppBskyEmbedExternal.isView(imageToShow)){//Tenor/Klipy/GIPHY GIF
+        open(AppState.getExternalWebmUrlFromGifUri(imageToShow.external.uri));
     }
     else if(AppBskyEmbedImages.isViewImage(imageToShow)){
         open(imageToShow.fullsize);
@@ -302,7 +301,7 @@ export default defineComponent({
                 return 'self-center';
             }
         },
-        /**Returns a WEBM URL converted from the original GIF URL. */
+        /**Returns a WEBM/WEBP URL converted from the original GIF URL. */
         webmURL(){
             return (typeof this.mediaEmbed != 'undefined' && 'external' in this.mediaEmbed) ? AppState.getExternalWebmUrlFromGifUri(this.mediaEmbed.external.uri) : '';
         },
