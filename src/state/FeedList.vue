@@ -338,14 +338,15 @@ latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
         case FeedEnums.Types.User:
             desc = {...desc,
                 feedName:'[Fetching Displayname...]',
-                feedSourceDID:sourceDID
+                feedSourceDID:sourceDID,
+                feedIcon:FeedEnums.Icons.User
             }
             //Get profile name
             await GetBrowsingAgent().getProfile({actor:sourceDID})
             .then(res => {
                 //Update required values of `IFeedDescription` template
                 desc = {...desc,
-                    feedName:res.data.displayName ? res.data.displayName : '',
+                    feedName:res.data.displayName ? res.data.displayName : '[Empty Displayname]',
                     feedHandle:res.data.handle,
                     feedAvatar:res.data.avatar ? res.data.avatar : '',
                 }
