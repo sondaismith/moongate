@@ -7,7 +7,7 @@
             bg-contain bg-center bg-no-repeat z-30"
             :style="{'background-image': 'url('+(fullscreenImage)+'s)'}">
                 <div v-if="!(fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri" @click="(e)=>{e.stopPropagation()}" class="absolute text-black bottom-0 left-0 px-2 bg-white/50 z-10">
-                    {{`${(fullscreenImage as AppBskyEmbedImages.ViewImage).aspectRatio?.width}x${(fullscreenImage as AppBskyEmbedImages.ViewImage).aspectRatio?.height}px`}}
+                    {{embedImageDimensions}}
                 </div>
                 <img @contextmenu="(e) => {e.preventDefault()}" :src="(fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri ? (fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri : (fullscreenImage as AppBskyEmbedImages.ViewImage).fullsize" class="max-h-full max-w-full"/>
             </div>
@@ -811,6 +811,15 @@ export default defineComponent({
             postDetails.currentThreadView.post.embed.external &&
             AppBskyEmbedExternal.isView(postDetails.currentThreadView.post.embed)))
                 return postDetails.currentThreadView.post.embed;
+        },
+        /**
+         * Returns string detailing the embeded image's dimensions, if available.
+         */
+        embedImageDimensions(){
+            let text = 'Image Dimensions N/A';
+            if("aspectRatio" in this.fullscreenImage && typeof this.fullscreenImage.aspectRatio != 'undefined')
+                text = `${this.fullscreenImage.aspectRatio.width}x${this.fullscreenImage.aspectRatio.height}px`;
+            return text;
         },
         /**Returns the last bit of ID information held at the end of the URI that points to
          * the currently displayed Post. */
