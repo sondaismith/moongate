@@ -93,10 +93,21 @@ export default defineComponent({
             else{
                 return cleanedPartial;//We hope this shortened link works...
             }
+        },
+        /**
+         * Method used to sanitize the text content of the associated Post before
+         * passing it on to {@link GenerateTagLinkText}.
+         * @param text Post text to sanitize.
+         */
+        cleanText(text:string){
+            let clean = text;
+            clean = clean.replace('<','&lt;');
+            clean = clean.replace('>','&gt;');
+            return clean;
         }
     },
     mounted() {
-        if(this.postText) this.rt = new RichText({text:this.postText});
+        if(this.postText) this.rt = new RichText({text:this.cleanText(this.postText)});
         this.GenerateTagLinkText(this.rt);
     },
     computed:{
