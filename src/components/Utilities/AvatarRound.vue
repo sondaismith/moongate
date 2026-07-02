@@ -1,11 +1,14 @@
 <template>
-    <div data-testid="avatar-round" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,did?did:'',handle?handle:'')"
-    @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
-    @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
-    border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
-    transition-[border-color] ease-linear duration-200 cursor-pointer overflow-hidden">
-        <ImageLoader v-if="typeof avatar != 'undefined'" :img-url="avatar" :fill-container="true" :loader-type="'spinner'"/>
-        <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
+    <div class="relative">
+        <div data-testid="avatar-round" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,authorDetails.did,authorDetails.handle)"
+        @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
+        @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
+        border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
+        transition-[border-color] ease-linear duration-200 cursor-pointer overflow-hidden" :class="{'border-2 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
+            <ImageLoader v-if="typeof authorDetails.avatar != 'undefined'" :img-url="authorDetails.avatar" :fill-container="true" :loader-type="'spinner'"/>
+            <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
+        </div>
+        <div v-if="userIsLive" @click="displaySelectedUserAccount" class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded bg-accountLiveAvatarBorder cursor-pointer text-white text-[10px] font-bold leading-[14px]">LIVE</div>
     </div>
 </template>
 
@@ -17,13 +20,14 @@ import MingcuteExternalLinkLine from '~icons/mingcute/external-link-line';
 import { defineComponent } from 'vue'
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { AppState, toast } from '../../state/AppState.vue';
-import { isDid } from '@atproto/api';
+import { isDid, AppBskyActorDefs } from '@atproto/api';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { AddFeedToList, PrepareFeedData } from '../../state/FeedList.vue';
 import { FeedEnums } from '../../enums/FeedEnums';
 import ImageLoader from './ImageLoader.vue';
 import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
+import { PropType } from 'vue';
 
 /**
  * Method that adds a new User feed to the displayed list of Feeds based on
@@ -60,9 +64,10 @@ export default defineComponent({
         }
     },
     props:{
-        avatar:String,
-        did:String,
-        handle:String,
+        authorDetails:{
+            type: Object as PropType<AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic>,
+            required: true
+        }
     },
     components:{
         Image,
@@ -75,6 +80,16 @@ export default defineComponent({
             else return false;
         }
     },
+    computed:{
+        /**Is the currently displayed account livestreaming? */
+        userIsLive(){
+            let result = false;
+            if(typeof this.authorDetails.status != 'undefined')
+                result = this.authorDetails.status.status == 'app.bsky.actor.status#live' &&
+                typeof this.authorDetails.status.isActive != 'undefined' && this.authorDetails.status.isActive;
+            return result;
+        }
+    },
     methods:{
         /**
          * Opens the `UserFocusModal` component to the currently selected
@@ -84,8 +99,8 @@ export default defineComponent({
             //Cancel displaying `AccountPeek`
             AccountPeekState.cancelUserPeek(true);
             if(typeof UserFocusModalState.currentUserPageDetails.ProfileData != 'undefined' &&
-            UserFocusModalState.currentUserPageDetails.ProfileData.handle == this.handle) return; //do nothing if already on destination User page
-            else this.$router.push(`/profile/${this.handle}`);
+            UserFocusModalState.currentUserPageDetails.ProfileData.handle == this.authorDetails.handle) return; //do nothing if already on destination User page
+            else this.$router.push(`/profile/${this.authorDetails.handle}`);
             e.stopPropagation();//Prevent click "bubbling"
         },
         /**

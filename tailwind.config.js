@@ -114,6 +114,8 @@ export default {
         noResultsInsetText: "oklch(from var(--color-inset-label-text) l c h / <alpha-value>)",
         noResultsInsetInnerShadowColor: "var(--color-inset-label-inner-shadow-color)",
         tagEntryTagBG: "var(--color-tag-entry-tag-bg)",
+        accountLiveAvatarBorder: "oklch(from var(--color-account-live-avatar-border) l c h / <alpha-value>)",
+        accountLiveAvatarBorderHover: "oklch(from var(--color-account-live-avatar-border-hover) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

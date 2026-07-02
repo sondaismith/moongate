@@ -127,9 +127,7 @@
             <div data-testid="postFocusModal-focus-post-loaded" v-else class="p-4 pb-1 top-10 sm:top-0 z-10s bg-postFocusBG border-b border-outline shadow-lg sm:shadow-none shadow-postFocusModalDetailsShadow/10">
                 {{ void "User Info/Actions" }}
                 <div class="flex gap-1">
-                    <AvatarRound :avatar="postDetails.currentThreadView.post.author.avatar"
-                    :did="postDetails.currentThreadView.post.author.did"
-                    :handle="postDetails.currentThreadView.post.author.handle"/>
+                    <AvatarRound :author-details="postDetails.currentThreadView.post.author"/>
                     <div class="self-center overflow-hidden text-primary ml-1">
                         <div class="flex items-center gap-1">
                             <div data-testid="PostFocusModal-displayName"

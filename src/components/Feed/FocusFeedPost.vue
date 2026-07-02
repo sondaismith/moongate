@@ -108,14 +108,14 @@
         </button>
         <div data-testid="focusFeedPost" class="flex w-full">
             <div>
-                <AvatarRound v-if="isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"/>
+                <AvatarRound v-if="isReplyStyle" :author-details="postToShow.author"/>
                 <div v-if="replyIndex !=undefined && totalReplies!=undefined && replyIndex<totalReplies" class="h-full bg-slate-700 w-0.5 m-auto"></div>
             </div>
             <div class="flex flex-col w-full overflow-hidden"
             :class="[isReplyStyle ? 'pl-2' : '']">
                 {{ void "Post Profile Header" }}
                 <div class="flex items-center gap-2">
-                    <AvatarRound v-if="!isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"
+                    <AvatarRound v-if="!isReplyStyle" :author-details="postToShow.author"
                     @avatar-clicked="callFocusPostAvatarClicked(postToShow.author.did)"/>
                     <div class="flex overflow-hidden self-starts" :class="[isReplyStyle ? 'gap-1 items-center' : 'flex-col']">
                         <div class="flex items-center gap-1 overflow-hidden">

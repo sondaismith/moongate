@@ -21,7 +21,7 @@
                 <div v-for="post in [postDetails.currentPostData]"
                 class="flex gap-2">
                     <div class="p-1">
-                        <AvatarRound :avatar="post.author.avatar"/>
+                        <AvatarRound :author-details="post.author"/>
                     </div>
                     <div class="flex flex-col overflow-hidden shrink">
                         <div class="flex gap-1 text-nowrap">

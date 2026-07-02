@@ -57,11 +57,14 @@
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
                             :style="`mask: url(${getPlaceholderImageSrc})`">
                             </div>
-                            <div v-if="hasProfileAvatar" @click="showPFPFullscreen" class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
-                            items-center justify-center shrink-0 border-2 border-slate-800 bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover user-pfp
-                            cursor-pointer transition-colors hover:border-hover overflow-hidden">
-                                <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.avatar!" loader-type="spinner"
-                                :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked}"/>
+                            <div v-if="hasProfileAvatar" class="absolute left-4 size-24 user-pfp">
+                                <div v-if="userIsLive" @click="showPFPFullscreen" class="peer absolute z-[4] bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded cursor-pointer bg-accountLiveAvatarBorder text-white text-[10px] font-bold leading-[14px]">LIVE</div>
+                                <div @click="showPFPFullscreen" class="absolute z-[3] flex rounded-full aspect-square size-24
+                                items-center justify-center shrink-0 border-2 border-slate-800 bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover
+                                cursor-pointer transition-colors hover:border-hover overflow-hidden" :class="{'border-4 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover peer-hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
+                                    <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.avatar!" loader-type="spinner"
+                                    :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked}"/>
+                                </div>
                             </div>
                             <div v-else class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
                             items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
@@ -1086,6 +1089,14 @@ export default defineComponent({
                 let profile = data.ProfileData;
                 result = (typeof profile != 'undefined' && typeof profile.viewer != 'undefined' && typeof profile.viewer.blocking != 'undefined');
             }
+            return result;
+        },
+        /**Is the currently displayed account livestreaming? */
+        userIsLive(){
+            let result = false;
+            if(typeof UserFocusModalState.currentUserPageDetails.ProfileData.status != 'undefined')
+                result = (UserFocusModalState.currentUserPageDetails.ProfileData.status.status == 'app.bsky.actor.status#live' &&
+                typeof UserFocusModalState.currentUserPageDetails.ProfileData.status.isActive != 'undefined' && UserFocusModalState.currentUserPageDetails.ProfileData.status.isActive);
             return result;
         },
         /**
