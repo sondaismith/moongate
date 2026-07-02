@@ -114,28 +114,34 @@ export function getCompactNumberValue(num:number|undefined){
  * @param handle Optional: The handle of the User associated with the link. Used to make the link more readable.
  * @returns URL string to URI content.
  */
-export function CreateBskyWeblink(postUri:string, handle:string=""):string|undefined{
+export function CreateBskyWeblink(postUri:string, handle:string="", returnMoongateLink:boolean=false):string|undefined{
     //Should be moved somewhere else
     type AtUri = { repo: string; collection: string; rkey: string };
     type TemplateFn = (uri: AtUri) => { label: string; link: string };
     type TemplateMap = Record<string, TemplateFn>;
 
+    let host = `https://bsky.app/`;
+    if(returnMoongateLink){
+        let inDev = import.meta.env.DEV;
+        host = inDev ? 'http://localhost:1420/' : 'https://fourfour.one/moon/'
+    }
+
     const uriTemplates: TemplateMap = {
         "app.bsky.actor.profile": (uri) => ({
         label: "Bluesky",
-        link: `https://bsky.app/profile/${uri.repo}`,
+        link: `${host}profile/${uri.repo}`,
         }),
         "app.bsky.feed.post": (uri) => ({
         label: "Bluesky",
-        link: `https://bsky.app/profile/${handle.trim()!='' ? handle : uri.repo}/post/${uri.rkey}`,
+        link: `${host}profile/${handle.trim()!='' ? handle : uri.repo}/post/${uri.rkey}`,
         }),
         "app.bsky.graph.list": (uri) => ({
         label: "Bluesky",
-        link: `https://bsky.app/profile/${uri.repo}/lists/${uri.rkey}`,
+        link: `${host}profile/${uri.repo}/lists/${uri.rkey}`,
         }),
         "app.bsky.feed.generator": (uri) => ({
         label: "Bluesky",
-        link: `https://bsky.app/profile/${uri.repo}/feed/${uri.rkey}`,
+        link: `${host}profile/${uri.repo}/feed/${uri.rkey}`,
         }),
     };
     const uriParts = postUri.split('\/'); //expecting: ["at:", "", "repo", "collection", "rkey"]

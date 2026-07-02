@@ -57,6 +57,7 @@ import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
 import MingcuteBookmarkLine from '~icons/mingcute/bookmark-line';
 import MingcuteBookmarkFill from '~icons/mingcute/bookmark-fill';
 import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
+import BlueskySocialFillIcon from '~icons/mingcute/bluesky-social-fill';
 import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
 import MdiUserCheck from '~icons/mdi/user-check';
@@ -75,8 +76,8 @@ import { AppBskyFeedThreadgate } from '@atproto/api';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 
-function CopyPostLink(postUri:string, handle:string=""){
-    let link = CreateBskyWeblink(postUri, handle);
+function CopyPostLink(postUri:string, handle:string="", returnMoongateLink:boolean=false){
+    let link = CreateBskyWeblink(postUri, handle, returnMoongateLink);
     if(typeof link != 'undefined')
         CopyTextToClipboard(link, 'link');
     else
@@ -156,7 +157,8 @@ export default defineComponent({
         showOptionsMenu(e:MouseEvent, postURI:string, handle:string=""){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteLinkLine,Label:'Copy link to Post',Action:function(){CopyPostLink(postURI, handle)},Type:ItemType.Option},
+                {Icon:BlueskySocialFillIcon,Label:'Copy link to Post (Bluesky)',Action:function(){CopyPostLink(postURI, handle)},Type:ItemType.Option},
+                {Icon:'moongate',Label:'Copy link to Post (Moongate)',Action:function(){CopyPostLink(postURI, handle, true)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             OptionsMenuState.currentMenuItems.push({Icon:MingcuteBookmarkFill,Label:'',Action:()=>{},Type:ItemType.Splitter});
             if(this.isPostBookmarked)

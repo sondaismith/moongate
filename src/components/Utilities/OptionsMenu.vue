@@ -9,7 +9,8 @@
                 focus-visible:border-searchbarFocusHightlight disabled:text-disabled disabled:hover:bg-transparent
                 disabled:hover:border-transparent disabled:cursor-default"
                 :disabled="mi.disabled">
-                    <div class="pr-1 text-base" :class="mi.IconStyle"><component :is="mi.Icon"/></div>
+                    <div v-if="mi.Icon == 'moongate'" class="pr-1 text-base"><AppLogo :is-button="false" class="size-[1.2rem]" :icon-styling="'text-white scale-[120%]'"/></div>
+                    <div v-else class="pr-1 text-base" :class="mi.IconStyle"><component :is="mi.Icon"/></div>
                     <div class="pl-2" :class="mi.LabelStyle">{{ mi.Label }}</div>
                 </button>
                 <RouterLink v-if="mi.Type == ItemType.RouterLink" :to="typeof mi.route != 'undefined' && mi.route.trim() != '' ? mi.route : ''"
@@ -35,9 +36,10 @@
 import { defineComponent, FunctionalComponent } from 'vue'
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { TrapFocus } from '../../state/AppState.vue';
+import AppLogo from '../SVG/AppLogo.vue';
 
 export interface IOptionMenuItem{
-    Icon: FunctionalComponent,
+    Icon: FunctionalComponent|"moongate",
     Label: string,
     Action: Function,
     Type:ItemType,
@@ -54,6 +56,9 @@ export enum ItemType{
 }
 
 export default defineComponent({
+    components:{
+        AppLogo,
+    },
     data(){
         return{
             OptionsMenuState,

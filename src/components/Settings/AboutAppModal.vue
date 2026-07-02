@@ -6,7 +6,7 @@
         :class="[hideBackdrop ? 'max-h-full' : 'max-h-[80%]']">
             <div class="flex flex-col bg-aboutPageBanner">
                 <div class="flex items-center text-white md:h-24">
-                    <AppLogo :is-button="false" class="h-28 text-white scale-100"/>
+                    <AppLogo :is-button="false" class="h-full px-2" :icon-styling="'text-white scale-125'"/>
                     <div>
                         <div class="text-4xl" style="font-family: 'Cal Sans';"><span>Moongate</span></div>
                         <div class="text-sm sm:text-base font-light">Version: {{ versionDetails.version }}-{{ versionDetails.commitHash }}<span class="align-super text-xs">{{isTauri() ? 'Tauri' : 'Web'}}</span></div>
