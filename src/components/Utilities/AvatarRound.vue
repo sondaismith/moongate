@@ -5,7 +5,7 @@
         @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
         border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
         transition-[border-color] ease-linear duration-200 cursor-pointer overflow-hidden" :class="{'border-2 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
-            <ImageLoader v-if="typeof authorDetails.avatar != 'undefined'" :img-url="authorDetails.avatar" :fill-container="true" :loader-type="'spinner'"/>
+            <ImageLoader v-if="typeof authorDetails.avatar != 'undefined'" :img-url="authorDetails.avatar" :fill-container="true" :loader-type="'spinner'" :class="{'blur-sm' : accountContainsSensitiveContent}"/>
             <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
         </div>
         <div v-if="userIsLive" @click="displaySelectedUserAccount" class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded bg-accountLiveAvatarBorder cursor-pointer text-white text-[10px] font-bold leading-[14px]">LIVE</div>
@@ -88,6 +88,10 @@ export default defineComponent({
                 result = this.authorDetails.status.status == 'app.bsky.actor.status#live' &&
                 typeof this.authorDetails.status.isActive != 'undefined' && this.authorDetails.status.isActive;
             return result;
+        },
+        /**Does the currently displayed account's avatar/account contain sensitive content? */
+        accountContainsSensitiveContent(){
+            return AppState.getIfUserAccountContainsSensitiveContent(this.authorDetails);
         }
     },
     methods:{

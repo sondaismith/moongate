@@ -478,6 +478,22 @@ export const AppState = reactive({
     },
     //#endregion
     /**
+     * Returns value indicating if the currently displayed account's avatar/account contains sensitive content.
+     * @param accountInfo The account `ProfileView` to check.
+     */
+    getIfUserAccountContainsSensitiveContent(accountInfo:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic):boolean{
+        let result = false;
+        if(typeof accountInfo.labels != 'undefined'){
+            for (let i = 0; i < accountInfo.labels.length; i++) {
+                if(accountInfo.labels[i].val == 'porn'){
+                    result = true;
+                    i = accountInfo.labels.length+1;
+                }
+            }
+        }
+        return result;
+    },
+    /**
      * Value used to determine if modal for saving Post media
      * is currently visible.
      */

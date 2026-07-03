@@ -52,7 +52,7 @@
                             <div v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
                             bg-no-repeat bg-center bg-cover overflow-hidden"
                             :class="{'cursor-pointer' : hasProfileBanner}">
-                                <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.banner!" :fill-container="true" :class="{'blur-lg':isAccountBlocked}"/>
+                                <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.banner!" :fill-container="true" :class="{'blur-lg':isAccountBlocked||accountContainsSensitiveContent}"/>
                             </div>
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
                             :style="`mask: url(${getPlaceholderImageSrc})`">
@@ -63,7 +63,7 @@
                                 items-center justify-center shrink-0 border-2 border-slate-800 bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover
                                 cursor-pointer transition-colors hover:border-hover overflow-hidden" :class="{'border-4 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover peer-hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
                                     <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.avatar!" loader-type="spinner"
-                                    :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked}"/>
+                                    :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked||accountContainsSensitiveContent}"/>
                                 </div>
                             </div>
                             <div v-else class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
@@ -1116,6 +1116,10 @@ export default defineComponent({
         getPlaceholderImageSrc(){
             if(import.meta.env.DEV) return '../../assets/placeholder/no_banner_pattern.svg';
             else return './assets/placeholder/no_banner_pattern.svg'
+        },
+        /**Does the currently displayed account's avatar/account contain sensitive content? */
+        accountContainsSensitiveContent(){
+            return AppState.getIfUserAccountContainsSensitiveContent(UserFocusModalState.currentUserPageDetails.ProfileData);
         }
     },
     watch:{
