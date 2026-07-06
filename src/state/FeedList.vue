@@ -159,6 +159,7 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,feedData:IFeedSta
         feedHandle:'loading_handle',
         feedName:'',
         feedAvatar:'',
+        containsSensitiveContent:false,
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
         newPosts:0,totalPosts:0,
@@ -270,6 +271,7 @@ export function OLDcreateFeedDescription(userId:number,handle:string,name:string
         feedHandle: handle,
         feedName: name,
         feedAvatar:'',
+        containsSensitiveContent:false,
         feedType: type,
         feedIcon: icon,
         newPosts: newPosts,
@@ -323,6 +325,7 @@ latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
         feedHandle:'loading_handle',
         feedName:tags.replace(' ',','),
         feedAvatar:'',
+        containsSensitiveContent:false,
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
         newPosts:0,totalPosts:30,
@@ -349,6 +352,7 @@ latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
                     feedName:res.data.displayName ? res.data.displayName : '[Empty Displayname]',
                     feedHandle:res.data.handle,
                     feedAvatar:res.data.avatar ? res.data.avatar : '',
+                    containsSensitiveContent: AppState.getIfUserAccountContainsSensitiveContent(res.data),
                 }
             });
             break;
@@ -509,6 +513,7 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
         feedHandle:'loading_handle',
         feedName:savedFeed.tags,
         feedAvatar:'',
+        containsSensitiveContent:false,
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
         newPosts:0,totalPosts:30,
@@ -546,7 +551,7 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
     if(feed){
         //If User Feed we need to get User Profile data
         if(feedDesc.feedType == FeedEnums.Types.User){
-            let profile:AppBskyActorDefs.ProfileView = {did:'',handle:''};
+            let profile:AppBskyActorDefs.ProfileViewDetailed = {did:'',handle:''};
             await getUserProfile(feedDesc.feedSourceDID)
             .then(res => profile = res.data)
             .catch((err) => {

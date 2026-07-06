@@ -6,7 +6,7 @@
     <div v-show="imageError" class="flex" title="Error Loading Image">
         <i-mingcute:warning-fill class="text-2xl"/>
     </div>
-    <div v-show="imageLoaded" class="flex max-h-full max-w-full mx-auto" :class="[imageContainerClass, fillContainer && imageLoaded ? 'h-full w-full' : '']">
+    <div v-show="imageLoaded" class="flex max-h-full max-w-full mx-auto overflow-hidden" :class="[imageContainerClass, roundedImage, fillContainer && imageLoaded ? 'h-full w-full' : '']">
         <img :src="imgUrl" v-bind="$attrs" @load="loadComplete" @error="errorOccured"/>
     </div>
 </template>
@@ -36,6 +36,11 @@ export default defineComponent({
         fillContainer:{
             type:Boolean,
             default:false
+        },
+        /**What style should be used to round the edges of the image container. Default is '' (container will not be rounded). */
+        roundedImage:{
+            type:String as PropType<'rounded-sm'|'rounded'|'rounded-lg'|''>,
+            default:''
         },
         /**Determines what loading animation is used. */
         loaderType:{

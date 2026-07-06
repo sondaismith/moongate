@@ -485,7 +485,7 @@ export const AppState = reactive({
         let result = false;
         if(typeof accountInfo.labels != 'undefined'){
             for (let i = 0; i < accountInfo.labels.length; i++) {
-                if(accountInfo.labels[i].val == 'porn'){
+                if(accountInfo.labels[i].val == 'porn' || accountInfo.labels[i].val == 'sexual'){
                     result = true;
                     i = accountInfo.labels.length+1;
                 }

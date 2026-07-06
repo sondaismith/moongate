@@ -47,6 +47,8 @@ interface IFeedDescription{
     feedIcon: FeedEnums.Icons,
     /**URL string pointing to the avatar used by this Feed. */
     feedAvatar: string,
+    /**Has the account (if there is one) associated with the Feed been classified as containing "sensitive content"? */
+    containsSensitiveContent:boolean,
     /**Number of unread posts. */
     newPosts: number,
     /**

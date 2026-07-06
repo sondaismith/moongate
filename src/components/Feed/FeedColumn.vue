@@ -7,7 +7,8 @@
         <div class="flex w-full shrink-0 border-b-2 border-outline bg-banner pl-2 pr-1 pt-2 pb-1 text-primary">
             <div class="flex w-full items-center">
                 <div class="p-1 pr-3 shrink-0">
-                    <ImageLoader v-if="typeof feedData != 'undefined' && feedData.description.feedAvatar.trim() != ''" :img-url="typeof feedData != 'undefined' ? feedData.description.feedAvatar : ''" class="rounded size-7"/>
+                    <ImageLoader v-if="typeof feedData != 'undefined' && feedData.description.feedAvatar.trim() != ''" :img-url="typeof feedData != 'undefined' ? feedData.description.feedAvatar : ''"
+                    class="rounded size-7" :rounded-image="'rounded'" :class="{'blur scale-150' : feedData.description.containsSensitiveContent}"/>
                     <FeedIcon v-else :icon="feedData?.description.feedIcon"/>
                 </div>
                 <div class="flex overflow-hidden flex-col">

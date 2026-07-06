@@ -9,7 +9,7 @@
             <FeedIcon v-if="!hasAvatar" :icon="feedDescription.feedIcon"
             class="absolute h-full text-2xl text-primary select-none pointer-events-none"/>
             <div v-else class="absolute flex bg-blueskyBlue w-full h-full items-centers justify-centers">
-                <img v-if="feedDescription.feedAvatar.trim() != ''" :src="feedDescription.feedAvatar" class="h-full w-full object-contain"/>
+                <img v-if="feedDescription.feedAvatar.trim() != ''" :src="feedDescription.feedAvatar" class="h-full w-full object-contain" :class="{'blur scale-150' : feedDescription.containsSensitiveContent}"/>
                 <i-mingcute:radar-2-fill v-else class="text-white h-full w-full p-1"/>
             </div>
             <i-mingcute:loading-fill v-show="awaitingPFPRequest"
