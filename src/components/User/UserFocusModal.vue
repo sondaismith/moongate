@@ -116,7 +116,7 @@
                                             <FollowUser v-if="!awaitingProfileData && !isAccountBlocked" class="px-4" :is-user-followed="isUserFollowed"
                                             :user-did="UserFocusModalState.currentUserPageDetails.ProfileData.did" :is-disabled="!AppState.isAuthBrowsing || isAccountBlocked"/>
                                         <!-- </Transition> -->
-                                        <PillButton @click="showUserOptionsMenu($event,UserFocusModalState.currentUserPageDetails.ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
+                                        <PillButton @click="showUserOptionsMenu($event, profileAtUri, UserFocusModalState.currentUserPageDetails.ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
                                         focus-visible:bg-btnHover shadow-none">...</PillButton>
                                     </div>
                                 </div>
@@ -434,10 +434,11 @@ import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
 import MdiUserCheck from '~icons/mdi/user-check';
+import BlueskySocialFillIcon from '~icons/mingcute/bluesky-social-fill';
 
 import { defineComponent } from 'vue'
 import PillButton from '../Utilities/PillButton.vue';
-import { AppState, toast } from '../../state/AppState.vue';
+import { AppState, CopyTextToClipboard, toast } from '../../state/AppState.vue';
 import { AppBskyFeedDefs, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyUnspeccedDefs } from '@atproto/api';
 import { GenerateTagLinkText } from '../../helpers/parsers';
 import Hashtag from '../Utilities/Hashtag.vue';
@@ -445,7 +446,7 @@ import RichPostText from '../Utilities/RichPostText.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
-import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
+import { convertToLongTimestamp, convertToShortTimestamp, CreateBskyWeblink } from '../../helpers/converters';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
@@ -473,9 +474,12 @@ import ImageLoader from '../Utilities/ImageLoader.vue';
  * Used to create a HTTP URL link To the currently view User's profile.
  * @param handle The handle of the User associated with the link.
  */
-function CopyPostLink(handle:string){
-    if(handle.trim()!='') navigator.clipboard.writeText(`https://bsky.app/profile/${handle}`);
-    toast.add({summary:'Link to User Profile copied',severity:'success', group:'bc', life:1000});
+function CopyPostLink(postUri:string, handle:string="", returnMoongateLink:boolean=false){
+    let link = CreateBskyWeblink(postUri, handle, returnMoongateLink);
+    if(typeof link != 'undefined')
+        CopyTextToClipboard(link, 'link');
+    else
+        toast.add({summary:'Error creating Link',severity:'error', group:'bc', life:1000});
 }
 
 export default defineComponent({
@@ -967,10 +971,11 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to the selected User Profile being viewed.
          */
-        showUserOptionsMenu(e:MouseEvent, handle:string=""){
+        showUserOptionsMenu(e:MouseEvent, postURI:string, handle:string=""){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteLinkLine,Label:'Copy link to Profile Page',Action:function(){CopyPostLink(handle)},Type:ItemType.Option},
+                {Icon:BlueskySocialFillIcon,Label:'Copy link to Profile Page (Bluesky)',Action:function(){CopyPostLink(postURI, handle)},Type:ItemType.Option},
+                {Icon:'moongate',Label:'Copy link to Profile Page (Moongate)',Action:function(){CopyPostLink(postURI, handle, true)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did != UserFocusModalState.currentUserPageDetails.ProfileData.did){
                     OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'',Action:()=>{},Type:ItemType.Splitter});
@@ -1120,6 +1125,13 @@ export default defineComponent({
         /**Does the currently displayed account's avatar/account contain sensitive content? */
         accountContainsSensitiveContent(){
             return AppState.getIfUserAccountContainsSensitiveContent(UserFocusModalState.currentUserPageDetails.ProfileData);
+        },
+        /**
+         * Computed "AT URI" that points to the currently viewed User's account profile page.
+         * Used by the "Copy link to Profile..." menu options/methods.
+         */
+        profileAtUri(){
+            return `at://${UserFocusModalState.currentUserPageDetails.ProfileData.handle}/app.bsky.actor.profile/${UserFocusModalState.currentUserPageDetails.ProfileData.did}`;
         }
     },
     watch:{
