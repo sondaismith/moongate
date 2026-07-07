@@ -8,7 +8,7 @@
         overflow-hidden text-xs cursor-pointer">
             <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
                 <ImageLoader :img-url="typeof embed != 'undefined' && typeof embed.external != 'undefined' && typeof embed.external.thumb != 'undefined' ? embed.external.thumb : ''"
-                class="absolute w-full h-full object-center object-cover" :fill-container="true"/>
+                class="w-full h-full object-center object-cover" :fill-container="true"/>
             </div>
             <div class="p-2 font-normal">
                 <div class="text-sm font-semibold">{{ embed.external.title}}</div>
@@ -30,7 +30,7 @@
         overflow-hidden text-xs cursor-pointer">
             <div class="relative border-b-[1px] border-outline">
                 <ImageLoader :img-url="typeof embed != 'undefined' && typeof embed.external != 'undefined' && typeof embed.external.thumb != 'undefined' ? embed.external.thumb : ''"
-                class="absolute w-full h-full object-center object-cover" :fill-container="true"/>
+                class="w-full h-full object-center object-cover" :fill-container="true"/>
             </div>
             <div class="p-2 font-normal">
                 <div class="text-sm font-semibold">{{ embed.external.title}}</div>
