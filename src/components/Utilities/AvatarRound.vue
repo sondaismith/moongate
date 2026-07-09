@@ -28,6 +28,7 @@ import { FeedEnums } from '../../enums/FeedEnums';
 import ImageLoader from './ImageLoader.vue';
 import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
 import { PropType } from 'vue';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 /**
  * Method that adds a new User feed to the displayed list of Feeds based on
@@ -60,6 +61,7 @@ export default defineComponent({
     data(){
         return{
             AppState,
+            AppSettingsState,
             AccountPeekState,
         }
     },
@@ -91,7 +93,7 @@ export default defineComponent({
         },
         /**Does the currently displayed account's avatar/account contain sensitive content? */
         accountContainsSensitiveContent(){
-            return AppState.getIfUserAccountContainsSensitiveContent(this.authorDetails);
+            return AppState.getIfUserAccountContainsSensitiveContent(this.authorDetails) && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent;
         }
     },
     methods:{

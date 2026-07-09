@@ -8,7 +8,7 @@
             <div class="flex w-full items-center">
                 <div class="p-1 pr-3 shrink-0">
                     <ImageLoader v-if="typeof feedData != 'undefined' && feedData.description.feedAvatar.trim() != ''" :img-url="typeof feedData != 'undefined' ? feedData.description.feedAvatar : ''"
-                    class="rounded size-7" :rounded-image="'rounded'" :class="{'blur scale-150' : feedData.description.containsSensitiveContent}"/>
+                    class="rounded size-7" :rounded-image="'rounded'" :class="{'blur scale-150' : feedData.description.containsSensitiveContent && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent}"/>
                     <FeedIcon v-else :icon="feedData?.description.feedIcon"/>
                 </div>
                 <div class="flex overflow-hidden flex-col">
@@ -253,6 +253,7 @@ import { HandleAPIError } from '../../helpers/errors';
 import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes';
 import ImageLoader from '../Utilities/ImageLoader.vue';
 import FeedIcon from './FeedIcon.vue';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 var colElement;
 
@@ -274,6 +275,7 @@ export default defineComponent({
     data(){
         return{
             AppState,
+            AppSettingsState,
             /**
              * Indicates if the component been mounded. Used to prevent the column
              * width setting from being updated when value is loaded during

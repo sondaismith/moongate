@@ -41,6 +41,7 @@ declare module 'vue' {
     FocusFeedPost: typeof import('./src/components/Feed/FocusFeedPost.vue')['default']
     FollowUser: typeof import('./src/components/Utilities/FollowUser.vue')['default']
     Hashtag: typeof import('./src/components/Utilities/Hashtag.vue')['default']
+    HorizontalSelector: typeof import('./src/components/Utilities/HorizontalSelector.vue')['default']
     Hyperlink: typeof import('./src/components/Utilities/Hyperlink.vue')['default']
     'ILogos:bluesky': typeof import('~icons/logos/bluesky')['default']
     ImageContainer: typeof import('./src/components/Utilities/ImageContainer.vue')['default']

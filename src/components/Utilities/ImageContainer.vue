@@ -41,7 +41,7 @@
                 // (imagesToDisplay?.length === 1 && imagesToDisplay[0].aspectRatio ? `height: ${imagesToDisplay[0].aspectRatio?.height}px; width: ${imagesToDisplay[0].aspectRatio?.width}px;`:''),
                 (mediaEmbed.images.length && mediaEmbed.images.length > 1 ? 'aspect-ratio: 16 / 9':'')
             ]">
-            <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Image"/>
+            <SpoilerOverlay :labels="labels" :has-sensitive-content="AppSettingsState.Settings.spoilerImagesContainingSensitiveContent && typeof labels != 'undefined' && labels.length>0" :media-type="MediaType.Image"/>
             <div v-for="(image, index) in mediaEmbed.images" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...image}, index, author, postId, postText)" class="overflow-hidden max-h-full max-w-full"
                 :class="[
                             (mediaEmbed.images.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
@@ -96,6 +96,7 @@ import { createPostRoute } from '../../lib/api/Post.vue';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia, ComAtprotoLabelDefs } from '@atproto/api';
 import ImageLoader from './ImageLoader.vue';
 import ExternalGIF from './ExternalGIF.vue';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
@@ -193,6 +194,7 @@ export default defineComponent({
     },
     data(){
         return{
+            AppSettingsState,
             MediaType,
             postDetails,
             doesImageHeightSurpassContainer: false,

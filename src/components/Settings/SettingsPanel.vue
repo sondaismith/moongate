@@ -57,6 +57,17 @@
                                                 Hide Followers
                                             </CheckBox>
                                         </div>
+                                        <div class="flex justify-between items-center py-2">
+                                            <div class="flex flex-col">
+                                                <div class="font-bold text-sm">Warn about and spoiler media with "sensitive content"?</div>
+                                                <div class="text-xs">Relevant images/video will be hidden by solid color overlay that displays the associated content warnings. The content can be viewed if the "Show" button is clicked.</div>
+                                            </div>
+                                            <div class="flex gap-1 items-center">
+                                                <div class="text-sm">{{ AppSettingsState.Settings.spoilerImagesContainingSensitiveContent ? 'Yes' : 'No' }}</div>
+                                                <ModernToggleButton :value-to-toggle="AppSettingsState.Settings.spoilerImagesContainingSensitiveContent"
+                                                @value-toggled="newValue => AppSettingsState.Settings.spoilerImagesContainingSensitiveContent = newValue"/>
+                                            </div>
+                                        </div>
                                         <SquareButton :is-disabled="AppSettingsState.Settings.isShowingIntroMessage"
                                         class="self-start bg-btn hover:bg-btnHover mt-1"
                                         title="Display Introductory Tutorial/Instructions"
@@ -117,17 +128,9 @@
                                     </div>
                                     <!-- <InLaInput text-label="Tag Blacklist" :model-value="SetttingData.Options.PostFilters.data.tagBlacklist"/> -->
                                 </div>
-                                <div v-if="AppState.isAuthBrowsing && selectedCategoryIndex == Object.keys(SettingData.Options)[2]"
-                                class="relative flex flex-col w-full h-full overflow-y-autos pr-2">
+                                <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[2]"
+                                class="relative flex flex-col w-full h-full overflow-y-autos pr-2s">
                                     <AccountSettingsPanel></AccountSettingsPanel>
-                                </div>
-                                <div v-else-if="selectedCategoryIndex == Object.keys(SettingData.Options)[2]" class="flex items-center gap-1">
-                                    <div>You must</div>
-                                    <button @click="AppState.showLoginAccountSelect" class="cursor-pointer text-blueskyBlue rounded-none hover:bg-primary/10
-                                    hover:border-transparent focus-visible:underline shadow-none">
-                                        Login
-                                    </button>
-                                    <div>to view these options.</div>
                                 </div>
                                 <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SettingData.Options)[3]"
                                 class="relative flex flex-col w-full h-full overflow-y-auto pr-2">

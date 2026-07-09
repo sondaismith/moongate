@@ -116,6 +116,11 @@ export default {
         tagEntryTagBG: "var(--color-tag-entry-tag-bg)",
         accountLiveAvatarBorder: "oklch(from var(--color-account-live-avatar-border) l c h / <alpha-value>)",
         accountLiveAvatarBorderHover: "oklch(from var(--color-account-live-avatar-border-hover) l c h / <alpha-value>)",
+        horizontalSelectorBG: "oklch(from var(--color-horizontal-selector-bg) l c h / <alpha-value>)",
+        horizontalSelectorBGHover: "oklch(from var(--color-horizontal-selector-bg-hover) l c h / <alpha-value>)",
+        horizontalSelectorBGActive: "oklch(from var(--color-horizontal-selector-bg-active) l c h / <alpha-value>)",
+        horizontalSelectorBGSelected: "oklch(from var(--color-horizontal-selector-bg-selected) l c h / <alpha-value>)",
+        horizontalSelectorBGSelectedHover: "oklch(from var(--color-horizontal-selector-bg-selected-hover) l c h / <alpha-value>)",
       },
       fontSize:{
         feedPostName: '0.75rem',

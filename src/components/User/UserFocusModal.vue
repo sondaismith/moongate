@@ -52,7 +52,7 @@
                             <div v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
                             bg-no-repeat bg-center bg-cover overflow-hidden"
                             :class="{'cursor-pointer' : hasProfileBanner}">
-                                <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.banner!" :fill-container="true" :class="{'blur-lg':isAccountBlocked||accountContainsSensitiveContent}"/>
+                                <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.banner!" :fill-container="true" :class="{'blur-lg':isAccountBlocked||(accountContainsSensitiveContent && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent)}"/>
                             </div>
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
                             :style="`mask: url(${getPlaceholderImageSrc})`">
@@ -63,7 +63,7 @@
                                 items-center justify-center shrink-0 border-2 border-slate-800 bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover
                                 cursor-pointer transition-colors hover:border-hover overflow-hidden" :class="{'border-4 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover peer-hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
                                     <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.avatar!" loader-type="spinner"
-                                    :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked||accountContainsSensitiveContent}"/>
+                                    :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked||(accountContainsSensitiveContent && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent)}"/>
                                 </div>
                             </div>
                             <div v-else class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
@@ -378,7 +378,7 @@
                                         </div>
                                         <div v-if="AppBskyEmbedImages.isView(n.post.embed) && typeof n.post.embed.images != 'undefined'" class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs text-white bg-black/70 select-none">Photo</div>
                                         <div v-else class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs text-white bg-black/70 select-none">Video</div>
-                                        <SpoilerOverlay class="z-[1]" :labels="n.post.labels" :has-sensitive-content="hasSensitiveContent(n)"
+                                        <SpoilerOverlay class="z-[1]" :labels="n.post.labels" :has-sensitive-content="AppSettingsState.Settings.spoilerImagesContainingSensitiveContent && hasSensitiveContent(n)"
                                         :media-type="AppBskyEmbedImages.isView(n.post.embed) && typeof n.post.embed.images != 'undefined' ? MediaType.Image : MediaType.Video"/>
                                         <div @click="showMediaContent(n)" @contextmenu.prevent class="relative flex bg-violet-500 hover:bg-violet-300
                                         cursor-pointer w-full h-full bg-no-repeat bg-center bg-cover
@@ -775,7 +775,7 @@ export default defineComponent({
          * Sensitive Content.
          * */
         hasSensitiveContent(n:AppBskyFeedDefs.FeedViewPost){
-            if(n.post.labels && n.post.labels.length>0) return true;
+            if(typeof n.post.labels != 'undefined' && n.post.labels.length>0) return true;
             return false;
         },
         /**

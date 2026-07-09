@@ -9,7 +9,7 @@
             <FeedIcon v-if="!hasAvatar" :icon="feedDescription.feedIcon"
             class="absolute h-full text-2xl text-primary select-none pointer-events-none"/>
             <div v-else class="absolute flex bg-blueskyBlue w-full h-full items-centers justify-centers">
-                <img v-if="feedDescription.feedAvatar.trim() != ''" :src="feedDescription.feedAvatar" class="h-full w-full object-contain" :class="{'blur scale-150' : feedDescription.containsSensitiveContent}"/>
+                <img v-if="feedDescription.feedAvatar.trim() != ''" :src="feedDescription.feedAvatar" class="h-full w-full object-contain" :class="{'blur scale-150' : feedDescription.containsSensitiveContent && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent}"/>
                 <i-mingcute:radar-2-fill v-else class="text-white h-full w-full p-1"/>
             </div>
             <i-mingcute:loading-fill v-show="awaitingPFPRequest"
@@ -35,6 +35,7 @@ import { IFeedDescription } from '../../interfaces/FeedInterfaces';
 import { FeedEnums } from '../../enums/FeedEnums';
 import { router } from '../../main';
 import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to
@@ -80,6 +81,7 @@ function ShowUserProfile(userHandle:string){
 export default defineComponent({
     data(){
         return{
+            AppSettingsState,
             isScrolling: false,
             userPfp:'',
             awaitingPFPRequest:false,

@@ -7,8 +7,16 @@
             </button>
             <div data-testid="accountSettingsPanel-current-menu-label">{{ currentMenuLabel }}</div>
         </div>
+        <div v-if="!AppState.isAuthBrowsing" class="flex items-center gap-1">
+            <div>You must</div>
+            <button @click="AppState.showLoginAccountSelect" class="cursor-pointer text-blueskyBlue rounded-none hover:bg-primary/10
+            hover:border-transparent focus-visible:underline shadow-none">
+                Login
+            </button>
+            <div>to view all Account options.</div>
+        </div>
         <div class="flex flex-col gap-1">
-            <RadioBarButton v-for="(o,index) in getMenuViaBreadcrumbs" :hide-radio-button="true"
+            <RadioBarButton v-for="(o,index) in (AppState.isAuthBrowsing ? getMenuViaBreadcrumbs : getMenuViaBreadcrumbs.filter(x=>x.requiresLogin == false))" :hide-radio-button="true"
             @click="o.action(breadcrumbs)" :data-testid="'accountSettingsPanel-'+o.testId">
                 <component :is="o.icon"></component>
                 <div class="place-self-center">{{ o.label }}</div>
@@ -41,7 +49,7 @@
                 </div>
             </div>
         </div>
-        <div v-if="isViewingBlockedAccounts" class="flex flex-col gap-2 h-full overflow-hidden">
+        <div v-if="isViewingBlockedAccounts" class="flex flex-col gap-2 h-full overflow-hidden pr-2">
             <FilterBar :filter-vmodel="blockedAccountFilter" :show-clear-button="blockedAccountFilter.trim().length>0" @clear-filter-clicked="clearFilterText"
             @update:filter-vmodel="newValue => blockedAccountFilter = newValue" :disabled="isAwaitingBlockedAccountData"/>
             <div v-if="!isAwaitingMutedAccountData && blockedAccountFilter.trim() == ''" class="text-sm text-secondary">{{ filteredBlockedAccounts.length }} blocked account(s) loaded</div>
@@ -67,6 +75,49 @@
                 </div>
             </div>
         </div>
+        <div v-if="isViewingContentFilters" class="flex flex-col gap-2 overflow-y-auto pr-3">
+            <div class="flex justify-between items-center">
+                <div class="flex flex-col">
+                    <div class="font-bold text-sm">Warn about and spoiler media with "sensitive content"?</div>
+                    <div class="text-xs">Relevant images/video will be hidden by solid color overlay that displays the associated content warnings. The content can be viewed if the "Show" button is clicked.</div>
+                </div>
+                <div class="flex gap-1 items-center">
+                    <div class="text-sm">{{ AppSettingsState.Settings.spoilerImagesContainingSensitiveContent ? 'Yes' : 'No' }}</div>
+                    <ModernToggleButton :value-to-toggle="AppSettingsState.Settings.spoilerImagesContainingSensitiveContent"
+                    @value-toggled="newValue => AppSettingsState.Settings.spoilerImagesContainingSensitiveContent = newValue"/>
+                </div>
+            </div>
+            <!-- <div class="flex justify-between">
+                <div class="font-bold">Enable Adult Content</div>
+                <div class="flex gap-1 items-center">
+                    <div class="text-sm">{{ AppSettingsState.Settings.enableAdultContent ? 'Enabled' : 'Disabled' }}</div>
+                    <ModernToggleButton :value-to-toggle="AppSettingsState.Settings.enableAdultContent"
+                    @value-toggled="newValue => AppSettingsState.Settings.enableAdultContent = newValue"/>
+                </div>
+            </div>
+            <div class="flex flex-col gap-1 flex-wrap rounded text-sm divide-y-2 border border-outline px-2">
+                <div class="flex flex-col py-2">
+                    <div class="font-bold">Adult Content</div>
+                    <div class="text-secondary">Explicit Sexual Images</div>
+                    <HorizontalSelector class="font-semibold" @selection-changed="updateAdultContentVisibilitySetting" :options="adultContentDisplaySettings"/>
+                </div>
+                <div class="flex flex-col py-2">
+                    <div class="font-bold">Sexually Suggestive</div>
+                    <div class="text-secondary">Does not include nudity</div>
+                    <HorizontalSelector class="font-semibold" @selection-changed="updateSexuallySuggestiveVisibilitySetting" :options="sexuallySuggestiveDisplaySettings"/>
+                </div>
+                <div class="flex flex-col py-2">
+                    <div class="font-bold">Graphic Media</div>
+                    <div class="text-secondary">Explicit or potentially distubing media</div>
+                    <HorizontalSelector class="font-semibold" @selection-changed="updateGraphicMediaVisibilitySetting" :options="graphicMediaDisplaySettings"/>
+                </div>
+                <div class="flex flex-col py-2">
+                    <div class="font-bold">Non-sexual Nudity</div>
+                    <div class="text-secondary">E.g. artistic nudes</div>
+                    <HorizontalSelector class="font-semibold" @selection-changed="updateNonSexualNudityVisibilitySetting" :options="nonSexualNudityDisplaySettings"/>
+                </div>
+            </div> -->
+        </div>
     </div>
 </template>
 
@@ -76,6 +127,7 @@ import MdiHandFrontRight from '~icons/mdi/hand-front-right';
 import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
 import MingcuteProfileFill from '~icons/mingcute/profile-fill';
+import SafetyCertificateLineIcon from '~icons/mingcute/safety-certificate-line';
 
 import { defineComponent } from 'vue'
 import { IAccountSettingsMenuItem, IAccountModerationItem } from '../../interfaces/SettingsInterfaces'
@@ -90,6 +142,9 @@ import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
 import AccountListing from '../Utilities/AccountListing.vue';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
+import ModernToggleButton from '../Utilities/ModernToggleButton.vue';
+import HorizontalSelector from '../Utilities/HorizontalSelector.vue';
 
 /**Displays specified User's profile in the `UserFocusModal` component. */
 function ShowUserProfile(userDid:string){
@@ -106,9 +161,13 @@ export default defineComponent({
         FilterBar,
         AccountModerationLabel,
         AccountListing,
+        ModernToggleButton,
+        HorizontalSelector,
     },
     data(){
         return{
+            AppState,
+            AppSettingsState,
             /**Collection of all menu options available. */
             MainMenu:[
                 {
@@ -123,18 +182,30 @@ export default defineComponent({
                             testId:'view-muted-accounts',
                             submenu:[],
                             selected:false,
-                            action:(bc:number[])=>{bc.push(0);}
+                            action:(bc:number[])=>{bc.push(0);},
+                            requiresLogin:true
                         },
                         {
                             label:'View Blocked Accounts',
                             icon:MdiPersonBlock,
                             testId:'view-blocked-accounts',
                             selected:false,
-                            action:(bc:number[])=>{bc.push(1)}
+                            action:(bc:number[])=>{bc.push(1)},
+                            requiresLogin:true
                         },
                     ],
-                    action:(bc:number[])=>{bc.push(0)}
+                    action:(bc:number[])=>{bc.push(0)},
+                    requiresLogin:true
                 },
+                {
+                    label:'Content Filters',
+                    icon:SafetyCertificateLineIcon,
+                    testId:'content-filters',
+                    selected:false,
+                    submenu:[],
+                    action:(bc:number[])=>{bc.push(1);},
+                    requiresLogin:false
+                }
                 // {
                 //     label:'Privacy and Security',
                 //     testId:'privacy-and-security',
@@ -212,6 +283,16 @@ export default defineComponent({
             blockedAccountDataCursor:'' as string|undefined,
             /**Search term used to filter displayed "blocked account" results. */
             blockedAccountFilter:'',
+            /**Is the User currently changing Content Filter settings? */
+            isViewingContentFilters:false,
+            /**Content filter display settings for 'Adult Content'. */
+            adultContentDisplaySettings:[{label:'Show',value:'show',selected:false},{label:'Warn',value:'warn',selected:true},{label:'Hide',value:'hide',selected:false}],
+            /**Content filter display settings for 'Sexually Suggestive'. */
+            sexuallySuggestiveDisplaySettings:[{label:'Show',value:'show',selected:false},{label:'Warn',value:'warn',selected:true},{label:'Hide',value:'hide',selected:false}],
+            /**Content filter display settings for 'Graphic Media'. */
+            graphicMediaDisplaySettings:[{label:'Show',value:'show',selected:false},{label:'Warn',value:'warn',selected:true},{label:'Hide',value:'hide',selected:false}],
+            /**Content filter display settings for 'Non-sexual Nudity'. */
+            nonSexualNudityDisplaySettings:[{label:'Show',value:'show',selected:true},{label:'Warn',value:'warn',selected:false},{label:'Hide',value:'hide',selected:false}],
         }
     },
     methods:{
@@ -235,6 +316,8 @@ export default defineComponent({
             this.blockedAccountData = [];
             this.mutedAccountDataCursor = '';
             this.blockedAccountFilter = '';
+            //Content Filters
+            this.isViewingContentFilters = false;
         },
         /**
          * Get initial list of muted accounts for currently logged in User. If User
@@ -380,6 +463,26 @@ export default defineComponent({
             ] as IOptionMenuItem[];
             OptionsMenuState.showOptionMenu(e);;
         },
+        /**Method that updates the selected visibility setting for the 'Adult Content' content filter. */
+        updateAdultContentVisibilitySetting(i:number){
+            this.adultContentDisplaySettings.forEach(e => {e.selected = false});
+            this.adultContentDisplaySettings[i].selected = true;
+        },
+        /**Method that updates the selected visibility setting for the 'Sexually Suggestive' content filter. */
+        updateSexuallySuggestiveVisibilitySetting(i:number){
+            this.sexuallySuggestiveDisplaySettings.forEach(e => {e.selected = false});
+            this.sexuallySuggestiveDisplaySettings[i].selected = true;
+        },
+        /**Method that updates the selected visibility setting for the 'Graphic Media' content filter. */
+        updateGraphicMediaVisibilitySetting(i:number){
+            this.graphicMediaDisplaySettings.forEach(e => {e.selected = false});
+            this.graphicMediaDisplaySettings[i].selected = true;
+        },
+        /**Method that updates the selected visibility setting for the 'Non-sexual Nudity' content filter. */
+        updateNonSexualNudityVisibilitySetting(i:number){
+            this.nonSexualNudityDisplaySettings.forEach(e => {e.selected = false});
+            this.nonSexualNudityDisplaySettings[i].selected = true;
+        }
     },
     computed:{
         noSubMenusSelected(){
@@ -456,6 +559,9 @@ export default defineComponent({
                     case '0,1': //View Blocked Accounts
                         this.isViewingBlockedAccounts = true;
                         this.getBlockedUsers();
+                        break;
+                    case '1': //Changing Content Filter settings
+                        this.isViewingContentFilters = true;
                         break;
                     default:
                         break;

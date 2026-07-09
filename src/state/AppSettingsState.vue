@@ -38,6 +38,8 @@ export const AppSettingsState = reactive({
         isHidingLikes: false,
         isHidingFollowers: false,
         isHidingFollowing: false,
+        enableAdultContent: false,
+        spoilerImagesContainingSensitiveContent: true,
         savedAccountState: {
             state: LoginState.Unset,
             currentAccount: -1,
@@ -180,6 +182,8 @@ export const AppSettingsState = reactive({
                 appSettings.isHidingLikes = loadedSettings.isHidingLikes;
                 appSettings.isHidingFollowers = loadedSettings.isHidingFollowers;
                 appSettings.isHidingFollowing = loadedSettings.isHidingFollowing;
+                appSettings.enableAdultContent = loadedSettings.enableAdultContent;
+                appSettings.spoilerImagesContainingSensitiveContent = loadedSettings.spoilerImagesContainingSensitiveContent;
                 appSettings.savedAccountState = JSON.parse(loadedSettings.savedAccountState);
             })
             .catch(err => {
@@ -237,6 +241,8 @@ export const AppSettingsState = reactive({
                 isHidingFollowers: cs.isHidingFollowers,
                 isHidingFollowing: cs.isHidingFollowing,
                 savedAccountState:JSON.stringify(cs.savedAccountState),
+                enableAdultContent: cs.enableAdultContent,
+                spoilerImagesContainingSensitiveContent: cs.spoilerImagesContainingSensitiveContent,
             })
             .then(res => {
                 console.log(res);

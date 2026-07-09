@@ -115,6 +115,11 @@
         --color-tag-entry-tag-bg:theme(colors.slate.700);
         --color-account-live-avatar-border:theme(colors.red.600);
         --color-account-live-avatar-border-hover:theme(colors.red.500);
+        --color-horizontal-selector-bg:oklch(24.332% 0.03986 260.922);
+        --color-horizontal-selector-bg-hover:theme(colors.slate.900);
+        --color-horizontal-selector-bg-active:theme(colors.slate.500);
+        --color-horizontal-selector-bg-selected:theme(colors.slate.300);
+        --color-horizontal-selector-bg-selected-hover:theme(colors.slate.400);
     }
 }
 
@@ -230,4 +235,9 @@
     --color-tag-entry-tag-bg:theme(colors.slate.300);
     --color-account-live-avatar-border:theme(colors.red.600);
     --color-account-live-avatar-border-hover:theme(colors.red.500);
+    --color-horizontal-selector-bg:theme(colors.slate.100);
+    --color-horizontal-selector-bg-hover:theme(colors.slate.200);
+    --color-horizontal-selector-bg-active:theme(colors.slate.300);
+    --color-horizontal-selector-bg-selected:theme(colors.slate.500);
+    --color-horizontal-selector-bg-selected-hover:theme(colors.slate.400);
 }
