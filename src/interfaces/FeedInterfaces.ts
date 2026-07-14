@@ -49,6 +49,8 @@ interface IFeedDescription{
     feedAvatar: string,
     /**Has the account (if there is one) associated with the Feed been classified as containing "sensitive content"? */
     containsSensitiveContent:boolean,
+    /**Is the User Account associated with this Feed currently livestreaming? */
+    isFeedAccountLive:boolean,
     /**Number of unread posts. */
     newPosts: number,
     /**

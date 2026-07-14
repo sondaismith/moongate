@@ -494,6 +494,17 @@ export const AppState = reactive({
         return result;
     },
     /**
+     * Returns value indicating if the provided User Account is currently livestreaming.
+     * @param userAccount The account `ProfileView` to check.
+     */
+    getIsUserAccountLive(userAccount:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic){
+        let result = false;
+        if(typeof userAccount.status != 'undefined')
+            result = userAccount.status.status == 'app.bsky.actor.status#live' &&
+            typeof userAccount.status.isActive != 'undefined' && userAccount.status.isActive;
+        return result;
+    },
+    /**
      * Value used to determine if modal for saving Post media
      * is currently visible.
      */

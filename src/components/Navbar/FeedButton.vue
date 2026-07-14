@@ -3,9 +3,10 @@
     @click="highlightFeed" @contextmenu="(e) => showFeedOptionsMenu(e,getFeedSourceHandle)">
         <button class="group relative flex justify-center items-center
             rounded-xl drop-shadow-md bg-feedBtn border border-outline outline-none transition-[border]
-            hover:border-secondary aspect-square !w-full p-0.5 overflow-hidden">
+            hover:border-secondary aspect-square !w-full p-0.5 overflow-hidden" :class="{'border-[3px] !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover' : feedDescription.isFeedAccountLive}">
             <div class="w-full h-full z-[1] group-focus-visible:bg-black/60 border-2 rounded-lg transition-[border] border-transparent
             group-focus-visible:border-feedtypeBtnFocusHighlight"></div>
+            <div v-if="feedDescription.isFeedAccountLive" class="absolute z-[2] bottom-0 mx-auto rounded-t px-1 text-[10px] leading-[12px] transition-colors bg-accountLiveAvatarBorder group-hover:bg-accountLiveAvatarBorderHover text-white">Live</div>
             <FeedIcon v-if="!hasAvatar" :icon="feedDescription.feedIcon"
             class="absolute h-full text-2xl text-primary select-none pointer-events-none"/>
             <div v-else class="absolute flex bg-blueskyBlue w-full h-full items-centers justify-centers">
