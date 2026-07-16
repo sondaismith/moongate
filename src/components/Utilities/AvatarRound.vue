@@ -8,7 +8,7 @@
             <ImageLoader v-if="typeof authorDetails.avatar != 'undefined'" :img-url="authorDetails.avatar" :fill-container="true" :loader-type="'spinner'" :class="{'blur-sm' : accountContainsSensitiveContent}"/>
             <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
         </div>
-        <div v-if="userIsLive" @click="displaySelectedUserAccount" class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded bg-accountLiveAvatarBorder
+        <div v-if="userIsLive" data-testid="avatar-round-live-label" @click="displaySelectedUserAccount" class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded bg-accountLiveAvatarBorder
         cursor-pointer text-white text-[10px] font-bold leading-[14px]">LIVE</div>
     </div>
 </template>

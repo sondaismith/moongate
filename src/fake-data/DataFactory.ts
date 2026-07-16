@@ -97,11 +97,14 @@ export function CreateNotFoundPost():$Typed<AppBskyFeedDefs.NotFoundPost>{
  * @param isPinned Should the created Post be a pinned post?
  * @param parentState The "state" of the Parent post of the Post being created. Options are No Parent,
  * Standard Parent Post (value currently hardcoded), `NotFoundPost` Parent or `BlockedPost` Parent.
+ * @param existingProfileObject Existing `ProfileView` object that will be used to to define the `author` data.
+ * Overrides the `handle`, `displayName` and `avatar` variables if provided.
  * @returns The created `FeedViewPost` object.
  */
 export async function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
     displayName:string='',postTime:Date=new Date(),isPinned:boolean=false,parentState:ParentState='None',
-    facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined,did:string|undefined=undefined,avatar:string|undefined=undefined):Promise<AppBskyFeedDefs.FeedViewPost>{
+    facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined,did:string|undefined=undefined,avatar:string|undefined=undefined,
+    existingProfileObject:AppBskyActorDefs.ProfileViewBasic|AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|undefined=undefined):Promise<AppBskyFeedDefs.FeedViewPost>{
     // let currentTime = new Date();
     // currentTime.setTime(currentTime.getTime()-(1*60*1000));
     // postTime.setTime(postTime.getTime()-(1*60*1000));
@@ -145,6 +148,17 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
     if(typeof avatar != 'undefined' && avatar.trim() != ''){
         post.post.author = {...post.post.author,
             avatar: avatar
+        }
+    }
+    //Use existing `ProfileView` object
+    if(typeof existingProfileObject != 'undefined'){
+        post.post.author = {...post.post.author,
+            did:existingProfileObject.did,
+            handle:existingProfileObject.handle,
+            displayName:(typeof existingProfileObject.displayName != 'undefined' && existingProfileObject.displayName.trim() != '') ? existingProfileObject.displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' '),
+            avatar:existingProfileObject.avatar,
+            status:existingProfileObject.status,
+            createdAt:existingProfileObject.createdAt,
         }
     }
     //Adding facets
@@ -453,12 +467,17 @@ $Typed<AppBskyFeedDefs.ThreadViewPost>|$Typed<AppBskyFeedDefs.NotFoundPost>|$Typ
  * Method used to create a dummy `ProfileViewDetailed` object for testing purposes.
  * @param handle The handle of the User.
  * @param displayName The display name of the User. (Optional)
+ * @param accountStatus The current `status` the created Profile will have. Currently status is only used to indicate
+ * the User is livestreaming.
  * @returns The created `ProfileViewDetailed` object.
  */
-export function CreateUserProfile(handle:string,displayName:string|undefined=undefined,didToUse='did:plc:6unmjnerkpiy3yh6x4auqpy3',avatar:string|undefined=undefined):AppBskyActorDefs.ProfileViewDetailed{
+export function CreateUserProfile(handle:string,displayName:string|undefined=undefined,didToUse='did:plc:6unmjnerkpiy3yh6x4auqpy3',avatar:string|undefined=undefined,accountStatus:{statuses:('live'|'something-else')[],isActive:boolean}|undefined=undefined):AppBskyActorDefs.ProfileViewDetailed{
     let i = Math.floor(Math.random()*7);
     let j = Math.floor(Math.random()*7);
-    let indexDate = new Date().toISOString();
+    let baseDate = new Date();
+    let indexDate = baseDate.toISOString();
+    let liveDurationMinutes = 120;
+    let liveExpireTime = new Date(new Date().setMinutes(baseDate.getMinutes()+liveDurationMinutes)).toISOString();
     let profile:AppBskyActorDefs.ProfileViewDetailed = {
         did:didToUse,
         handle:handle,
@@ -473,6 +492,41 @@ export function CreateUserProfile(handle:string,displayName:string|undefined=und
     if(typeof avatar != 'undefined' && avatar.trim() != '') profile = {...profile, avatar:avatar,banner:avatar};
     profile.description = `Hello! I am a User Profile created for testing this app.\nDID:${profile.did}\nHandle:${profile.handle}`
     if(typeof displayName != 'undefined') profile.displayName = displayName;
+    if(typeof accountStatus != 'undefined'){//additional statuses might be added down the line - this is where accountStatus.statuses would be used
+        profile = {...profile,
+            status:{
+                record:{
+                    $type: "app.bsky.actor.status",
+                    createdAt:indexDate,
+                    durationMinutes:liveDurationMinutes,
+                    embed:{
+                        $type:"app.bsky.embed.external",
+                        external:{
+                            $type:"app.bsky.embed.external#external",
+                            uri:"https://en.wikipedia.org/wiki/Main_Page",
+                            title:"Main Page - English Wikipedia",
+                            description:"This is acting as a dummy external link to a livestream url for testing.",
+                            thumb:`http://localhost:1420/src/assets/test-media/posts/image0${i+1}.png`//this should be blob data but I can't do that ATM
+                        }
+                    },
+                    status:"app.bsky.actor.status#live"
+                },
+                embed:{
+                    external:{
+                        uri:"https://en.wikipedia.org/wiki/Main_Page",
+                        title:"Main Page - English Wikipedia",
+                        description:"This is acting as a dummy external link to a livestream url for testing.",
+                        thumb:`http://localhost:1420/src/assets/test-media/posts/image0${i+1}.png`
+                    },
+                    $type:"app.bsky.embed.external#view"
+                },
+                labels:[],
+                expiresAt:liveExpireTime,
+                status:"app.bsky.actor.status#live",
+                isActive:accountStatus.isActive
+            }
+        }
+    }
     return profile;
 }
 
