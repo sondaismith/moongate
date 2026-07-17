@@ -296,8 +296,7 @@ export default defineComponent({
         browseAsGuest(){
             AppState.browseAsGuest();
             AppSettingsState.saveSettingsToStore();
-            // AppState.ToggleLoginModal();
-            this.$router.go(-1);
+            this.closeModal();
         },
         /**Method called when User chooses to browse as guest. */
         asGuestClicked(){
@@ -399,6 +398,10 @@ export default defineComponent({
             // AppState.ToggleLoginModal();
             console.log(window.history.state);
             if(window.history.state.back != null && (window.history.state.back.includes('/profile') || window.history.state.back.includes('/settings'))) this.$router.go(-1);
+            else if(AppState.routeEntryURL.trim() != ''){
+                this.$router.replace(AppState.routeEntryURL);
+                AppState.routeEntryURL = '';
+            }
             else if(window.history.state.back == null) this.$router.push(`/`);
             else this.$router.push(`/`);
         },

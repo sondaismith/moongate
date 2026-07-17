@@ -1101,7 +1101,10 @@ export default defineComponent({
         }
     },
     beforeRouteEnter(to, from, next){
-        if(!AppState.canBrowse) next({path:'/login'});
+        if(!AppState.canBrowse){
+            AppState.routeEntryURL = to.path;
+            next({path:'/login'});
+        }
         else{
             if(to.path == '/create/feed'){
                 next(vm =>{

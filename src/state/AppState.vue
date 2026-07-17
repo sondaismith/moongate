@@ -219,8 +219,7 @@ export const AppState = reactive({
         if(!this.isAuthBrowsing){
             toast.add({summary:"Requires login", detail:`In order to ${action} you must be logged in.`, severity:'info', group:'tr', life:3000});
             this.loginModalStartPage = 1;
-            // this.isLoggingIntoAccount = true;
-            router.push(`/login`);
+            this.showLoginAccountSelect(router.currentRoute.value.path);
             return this.isAuthBrowsing;
         }
         return this.isAuthBrowsing;
@@ -229,8 +228,9 @@ export const AppState = reactive({
      * Method that displays the `LoginModal` on the "select account" or "enter credentials"
      * page.
      */
-    showLoginAccountSelect(){
+    showLoginAccountSelect(entryUrl:string){
         this.loginModalStartPage = 1;
+        this.routeEntryURL = entryUrl;
         router.push(`/login`);
     },
     /**
@@ -629,6 +629,11 @@ export const AppState = reactive({
      * be added by `PostFocusModal` only once.
      */
     hasRouteNavigationListenerBeenAdded:false,
+    /**
+     * Value holding the path/URL of a route request that was attempted before a route guard redirected the request.
+     * Should be cleared between uses.
+     */
+    routeEntryURL:'',
     /**Records the current window width of the browser. */
     windowWidth:0,
     /**Variable that holds the value of the `timeoutID` used to limit the rate at which `windowWidth` will be updated. */

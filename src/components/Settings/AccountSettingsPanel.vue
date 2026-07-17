@@ -9,7 +9,7 @@
         </div>
         <div v-if="!AppState.isAuthBrowsing" class="flex items-center gap-1">
             <div>You must</div>
-            <button @click="AppState.showLoginAccountSelect" class="cursor-pointer text-blueskyBlue rounded-none hover:bg-primary/10
+            <button @click="AppState.showLoginAccountSelect($route.path)" class="cursor-pointer text-blueskyBlue rounded-none hover:bg-primary/10
             hover:border-transparent focus-visible:underline shadow-none">
                 Login
             </button>
