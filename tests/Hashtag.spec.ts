@@ -83,7 +83,6 @@ test('Ensure "Tag" feed is created successfully when clicking on a hashtag eleme
     await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('browse-as-guest-button').click();
     //add new User Feed to Feed Stack
-    await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').fill('username');
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('button').click();

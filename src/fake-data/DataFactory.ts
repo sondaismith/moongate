@@ -449,6 +449,7 @@ $Typed<AppBskyFeedDefs.ThreadViewPost>|$Typed<AppBskyFeedDefs.NotFoundPost>|$Typ
         let urlSections = post.post.uri.split('/');
         if(urlSections.length>1) postId = urlSections[urlSections.length-1];
         let replyCount = typeof post.replies != 'undefined' ? post.replies.length : 0;
+        // console.log(`Debug for FindThreadViewPostReply() postId: ${postId}`);
 
         if(postId == replyPostTid) return post;//Passed post is match - return post
         else{

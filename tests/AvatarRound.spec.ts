@@ -81,7 +81,6 @@ test('Ensure "User" feed is successfully created when selecting "Create New User
     await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('browse-as-guest-button').click();
     //add new User Feed to Feed Stack
-    await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').fill('username');
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('button').click();

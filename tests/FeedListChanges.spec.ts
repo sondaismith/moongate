@@ -105,7 +105,6 @@ test('Ensure "livestream state" for User account associated with User Feed is co
     await instance1.getByTestId('login-password-input').getByRole('textbox').fill('password');
     await instance1.getByTestId('login-button').click();
     //add new User Feed
-    await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').fill('username');
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('button').click();
