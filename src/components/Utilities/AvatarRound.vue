@@ -1,6 +1,6 @@
 <template>
-    <div class="relative">
-        <div data-testid="avatar-round" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,authorDetails.did,authorDetails.handle)"
+    <div class="relative" :class="[{'mb-[4px]' : userIsLive}]">
+        <div data-testid="avatar-round" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,authorDetails)"
         @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
         @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
         border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
@@ -8,8 +8,9 @@
             <ImageLoader v-if="typeof authorDetails.avatar != 'undefined'" :img-url="authorDetails.avatar" :fill-container="true" :loader-type="'spinner'" :class="{'blur-sm' : accountContainsSensitiveContent}"/>
             <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
         </div>
-        <div v-if="userIsLive" data-testid="avatar-round-live-label" @click="displaySelectedUserAccount" class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded bg-accountLiveAvatarBorder
-        cursor-pointer text-white text-[10px] font-bold leading-[14px]">LIVE</div>
+        <div v-if="userIsLive" data-testid="avatar-round-live-label" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,authorDetails)"
+        class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded bg-accountLiveAvatarBorder
+        cursor-pointer text-white text-[10px] font-bold leading-[14px] select-none">LIVE</div>
     </div>
 </template>
 
@@ -17,6 +18,7 @@
 //Option Menu Icons
 import MingcuteAddCircleLine from '~icons/mingcute/add-circle-line';
 import MingcuteExternalLinkLine from '~icons/mingcute/external-link-line';
+import CamcorderBoxIcon from '~icons/mdi/camcorder-box';
 
 import { defineComponent } from 'vue'
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
@@ -56,6 +58,15 @@ function CreateUserFeed(userDid:string,userHandle:string){
     .catch(err => {
         toast.add({summary:'Error', detail:`${err}`, severity:'error', group:'tr', life:3000});
     });
+}
+
+/**
+ * Method that displays the details of a specific User's active livestream in the
+ * `UserLivestreamDetails` modal.
+ * @param userProfile The User Profile to view the Livestream info of.
+ */
+function DisplayUserLivestreamInfo(userProfile:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic){
+    AppState.showUserLivestreamInfo(userProfile);
 }
 
 export default defineComponent({
@@ -114,12 +125,16 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to the selected User.
          */
-        showOptionsMenu(e:MouseEvent, userDid:string, userHandle:string){
+        showOptionsMenu(e:MouseEvent,userProfile:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteAddCircleLine,Label:'Create new User Feed',Action:function(){CreateUserFeed(userDid,userHandle)},Type:ItemType.Option},
-                {Icon:MingcuteExternalLinkLine,Label:'Open Profile in New Tab',Action:function(){},Type:ItemType.RouterLink,route:`/profile/${userHandle}`},
+                {Icon:MingcuteAddCircleLine,Label:'Create new User Feed',Action:function(){CreateUserFeed(userProfile.did,userProfile.handle)},Type:ItemType.Option},
+                {Icon:MingcuteExternalLinkLine,Label:'Open Profile in New Tab',Action:function(){},Type:ItemType.RouterLink,route:`/profile/${userProfile.handle}`},
             ] as IOptionMenuItem[]
+            if(this.userIsLive){
+                OptionsMenuState.currentMenuItems.push({Icon:CamcorderBoxIcon,Label:'',Action:()=>{},Type:ItemType.Splitter});
+                OptionsMenuState.currentMenuItems.push({Icon:CamcorderBoxIcon,Label:'View Stream Info',Action:()=>{DisplayUserLivestreamInfo(userProfile)},Type:ItemType.Option});
+            }
             OptionsMenuState.showOptionMenu(e);
         }
     }

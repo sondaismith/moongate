@@ -604,6 +604,23 @@ export const AppState = reactive({
     showFeedOrderModal(){ this.isUpdatingFeedPosition = true; },
     /**Method that causes the "Feed Order Change" modal to be hidden. */
     hideFeedOrderModal(){ this.isUpdatingFeedPosition = false; },
+    /**Value used to indicate if the "User Livestream Info" modal is currently visible. */
+    isViewingUserLivestreamInfo:false,
+    /**The User Profile that the livestream info is pulled from. Should be `undefined` when the "User Livestream Info" modal is closed. */
+    livestreamInfoUserProfile: undefined as AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic|undefined,
+    /**
+     * Method that causes the "User Livestream Info" modal to be displayed.
+     * @param userProfile The User Profile that the livestream info will be pulled from.
+     */
+    showUserLivestreamInfo(userProfile:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic){
+        this.isViewingUserLivestreamInfo = true;
+        this.livestreamInfoUserProfile = userProfile;
+    },
+    /**Method that causes the "User Livestream Info" modal to be hidden. */
+    hideUserLivestreamInfo(){
+        this.isViewingUserLivestreamInfo = false;
+        this.livestreamInfoUserProfile = undefined;
+    },
     /**Value used to indicate if App is currently running on a device with touchscreen support. */
     isAppOnMobileTouchscreenDevice:false,
     /**Variable that indicates if the "About App" modal is visible or not. */

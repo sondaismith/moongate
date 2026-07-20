@@ -111,6 +111,9 @@
         <Transition name="modal">
             <FeedOrderModal v-if="AppState.isUpdatingFeedPosition" :feed-id-to-update="FeedState.selectedFeed"/>
         </Transition>
+        <Transition name="modal">
+            <UserLivestreamDetails v-if="AppState.isViewingUserLivestreamInfo" :user-profile="AppState.livestreamInfoUserProfile"/>
+        </Transition>
         <Transition name="peek">
             <AccountPeek v-show="AccountPeekState.isUserPeeking"/>
         </Transition>
@@ -167,6 +170,7 @@ import { isBroadcastObject } from "./types/BroadcastChannelTypes";
 import { BroadcastChannelTarget } from "./types/BroadcastChannelTypes";
 import { LoginState } from "./interfaces/AccountInterfaces";
 import { router } from "./main";
+import UserLivestreamDetails from "./components/User/UserLivestreamDetails.vue";
 
 
     export default defineComponent({
@@ -185,6 +189,7 @@ import { router } from "./main";
             IntroMessage,
             AppLogo,
             AboutAppModal,
+            UserLivestreamDetails,
         },
         data(){
             return{
