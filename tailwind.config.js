@@ -18,6 +18,7 @@ export default {
         btnSubtle: "oklch(from var(--color-btn-subtle) l c h / <alpha-value>)",
         btnText: "oklch(from var(--color-btn-text) l c h / <alpha-value>)",
         btnHover: "oklch(from var(--color-btn-hover) l c h / <alpha-value>)",
+        btnActive: "oklch(from var(--color-btn-active) l c h / <alpha-value>)",
         sidebar: "oklch(from var(--color-sidebar) l c h / <alpha-value>)",
         feedBtn: "oklch(from var(--color-feed-btn) l c h / <alpha-value>)",
         feedTypeBtnHover: "oklch(from var(--color-feedtype-btn-hover) l c h / <alpha-value>)",

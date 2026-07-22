@@ -112,7 +112,7 @@
             <FeedOrderModal v-if="AppState.isUpdatingFeedPosition" :feed-id-to-update="FeedState.selectedFeed"/>
         </Transition>
         <Transition name="modal">
-            <UserLivestreamDetails v-if="AppState.isViewingUserLivestreamInfo" :user-profile="AppState.livestreamInfoUserProfile"/>
+            <UserLivestreamDetails v-if="AppState.isViewingUserLivestreamInfo && typeof AppState.livestreamInfoUserProfile != 'undefined'" :user-profile="AppState.livestreamInfoUserProfile"/>
         </Transition>
         <Transition name="peek">
             <AccountPeek v-show="AccountPeekState.isUserPeeking"/>

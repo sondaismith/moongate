@@ -608,6 +608,7 @@ export const AppState = reactive({
     isViewingUserLivestreamInfo:false,
     /**The User Profile that the livestream info is pulled from. Should be `undefined` when the "User Livestream Info" modal is closed. */
     livestreamInfoUserProfile: undefined as AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic|undefined,
+    // livestreamInfoUserProfile: {did:'did:plc:uududud',handle:'test.handle.com'} as AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic|undefined,//debug
     /**
      * Method that causes the "User Livestream Info" modal to be displayed.
      * @param userProfile The User Profile that the livestream info will be pulled from.

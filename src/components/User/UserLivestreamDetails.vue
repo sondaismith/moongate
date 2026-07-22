@@ -20,7 +20,7 @@
                                     <div title="Stream Start Time"><i-mdi:stopwatch-start-outline class="text-sm size-3 shrink-0"/></div>
                                     <div>{{ convertToLongTimestamp((profileStatus.record as unknown as ILiveStatusRecord).createdAt) }}</div>
                                     <div v-if="typeof profileStatus != 'undefined' && 'durationMinutes' in profileStatus.record"
-                                    class="flex rounded bg-slate-300 px-1 text-xs select-none" title="Expected Length">
+                                    class="flex rounded bg-btn px-1 text-primary text-xs select-none" title="Expected Length">
                                         {{ convertToHourMinuteTimestamp((profileStatus.record as unknown as ILiveStatusRecord).durationMinutes) }}
                                     </div>
                                 </div>
@@ -46,7 +46,8 @@
                                 <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="userProfile.handle">@{{ userProfile.handle }}</div>
                             </div>
                         </div>
-                        <SquareButton :prevent-shrink="true">Open Profile</SquareButton>
+                        <SquareButton @click="openUserProfile" class="bg-btn hover:bg-btnHover active:bg-btnActive text-sm shadow-none" button-padding-x="1" button-padding-y="0"
+                        :prevent-shrink="true">Open Profile</SquareButton>
                     </div>
                 </div>
                 <div class="flex absolute top-2 right-2 rounded-full p-[1px] bg-btn size-8 items-center justify-center">
@@ -124,11 +125,16 @@ export default defineComponent({
         },
     },
     methods:{
-        /**Open the link  */
+        /**Open link to livestream in new tab. */
         openStreamLink(){
             if(typeof this.profileEmbedExternal != 'undefined'){
                 window.open(this.profileEmbedExternal.uri,'_blank');
             }
+        },
+        /**Open associated User's profile page if not already viewing. */
+        openUserProfile(){
+            AppState.hideUserLivestreamInfo();
+            if(this.userProfile.handle.trim() != '' && this.$route.path != `/profile/${this.userProfile.handle}`) this.$router.push(`/profile/${this.userProfile.handle}`);
         },
         /**Close the "User Livestream Info" modal. */
         closeModal(){
