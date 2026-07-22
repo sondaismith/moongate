@@ -1,5 +1,5 @@
 <template>
-    <div class="relative" :class="[{'mb-[4px]' : userIsLive}]">
+    <div v-if="!displayOnly" class="relative" :class="[{'mb-[4px]' : userIsLive}]">
         <div data-testid="avatar-round" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,authorDetails)"
         @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
         @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
@@ -11,6 +11,18 @@
         <div v-if="userIsLive" data-testid="avatar-round-live-label" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,authorDetails)"
         class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded bg-accountLiveAvatarBorder
         cursor-pointer text-white text-[10px] font-bold leading-[14px] select-none">LIVE</div>
+    </div>
+    <div v-else class="relative" :class="[{'mb-[4px]' : userIsLive}]">
+        <div data-testid="avatar-round" @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
+        @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
+        border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
+        transition-[border-color] ease-linear duration-200 overflow-hidden" :class="{'border-2 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
+            <ImageLoader v-if="typeof authorDetails.avatar != 'undefined'" :img-url="authorDetails.avatar" :fill-container="true" :loader-type="'spinner'" :class="{'blur-sm' : accountContainsSensitiveContent}"/>
+            <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
+        </div>
+        <div v-if="userIsLive" data-testid="avatar-round-live-label"
+        class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded bg-accountLiveAvatarBorder
+        text-white text-[10px] font-bold leading-[14px] select-none">LIVE</div>
     </div>
 </template>
 
@@ -78,9 +90,15 @@ export default defineComponent({
         }
     },
     props:{
+        /**ProfileView object used to display avatar. Required. */
         authorDetails:{
             type: Object as PropType<AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic>,
             required: true
+        },
+        /**Should the control only display the avatar and have all interactions (e.g. context menu) disabled? */
+        displayOnly:{
+            type:Boolean,
+            default:false
         }
     },
     components:{

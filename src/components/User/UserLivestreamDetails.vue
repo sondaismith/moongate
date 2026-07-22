@@ -1,44 +1,46 @@
 <template>
     <div class="absolute z-20 flex w-full h-full" tabindex="-1" @keydown.tab="(e) => TrapFocus($el,e)">
         <div data-testid="userLivestreamDetails-close" @click="closeModal" :class="$attrs.class" class="absolute z-20 w-full h-full bg-slate-800/60 cursor-pointer"></div>
-        <div class="relative z-30 flex flex-col max-w-[420px] mx-5 sm:mx-auto mb-auto mt-[10vh] pb-4 rounded-lg border border-outline bg-feedColumnBG text-primary">
-            <div class="flex aspect-[1.90476/1] bg-slate-800 rounded-t-lg overflow-hidden">
-                <img class="w-full object-cover" :src="typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.thumb : '../../assets/placeholder/no_banner_pattern.png'"/>
-            </div>
-            <div class="flex flex-col px-4 pt-2">
-                <div class="flex flex-col gap-2">
-                    <div class="flex flex-col">
-                        <div class="font-bold">{{typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.title : "{Title} Username - Platform"}}</div>
-                        <div class="flex gap-1 text-sm items-center">
-                            <i-solar:earth-outline class="size-3 shrink-0"/>
-                            <div class="text-xs">{{typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.uri : "website-url.com"}}</div>
-                        </div>
-                        <div v-if="typeof profileEmbedExternal != 'undefined'" class="mt-2 text-xs text-secondary">{{ profileEmbedExternal.description }}</div>
-                    </div>
-                    <SquareButton @click="openStreamLink">
-                        <div class="mr-1">Watch Now</div>
-                        <i-mingcute:external-link-line/>
-                    </SquareButton>
+        <div class="w-full px-5">
+            <div class="relative z-30 flex flex-col max-w-[420px] mx-auto mb-auto mt-[10vh] pb-4 rounded-lg border border-outline bg-feedColumnBG text-primary">
+                <div class="flex aspect-[1.90476/1] bg-slate-800 rounded-t-lg overflow-hidden">
+                    <img class="w-full object-cover" :src="typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.thumb : '../../assets/placeholder/no_banner_pattern.png'"/>
                 </div>
-                <div class="h-[1px] bg-outline my-3"></div>
-                <div class="flex items-center gap-2 justify-between">
-                    <div class="flex items-center gap-2 overflow-hidden">
-                        <AvatarRound :author-details="userProfile"/>
-                        <div class="flex overflow-hidden flex-col shrink">
-                            <div class="flex items-center gap-1 overflow-hidden">
-                                <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
-                                    {{ userProfile.displayName }}
-                                </div>
-                                <VerifiedBadge v-if="isUserVerified" class="size-4"/>
+                <div class="flex flex-col px-4 pt-2">
+                    <div class="flex flex-col gap-2">
+                        <div class="flex flex-col">
+                            <div class="font-bold">{{typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.title : "{Title} Username - Platform"}}</div>
+                            <div class="flex gap-1 text-sm items-center">
+                                <i-solar:earth-outline class="size-3 shrink-0"/>
+                                <div class="text-xs">{{typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.uri : "website-url.com"}}</div>
                             </div>
-                            <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis">@{{ userProfile.handle }}</div>
+                            <div v-if="typeof profileEmbedExternal != 'undefined'" class="mt-2 text-xs text-secondary">{{ profileEmbedExternal.description }}</div>
                         </div>
+                        <SquareButton @click="openStreamLink">
+                            <div class="mr-1">Watch Now</div>
+                            <i-mingcute:external-link-line/>
+                        </SquareButton>
                     </div>
-                    <SquareButton :prevent-shrink="true">Open Profile</SquareButton>
+                    <div class="h-[1px] bg-outline my-3"></div>
+                    <div class="flex items-center gap-2 justify-between">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                            <AvatarRound :author-details="userProfile" :display-only="true"/>
+                            <div class="flex overflow-hidden flex-col shrink">
+                                <div class="flex items-center gap-1 overflow-hidden">
+                                    <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="userProfile.displayName">
+                                        {{ userProfile.displayName }}
+                                    </div>
+                                    <VerifiedBadge v-if="isUserVerified" class="size-4"/>
+                                </div>
+                                <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="userProfile.handle">@{{ userProfile.handle }}</div>
+                            </div>
+                        </div>
+                        <SquareButton :prevent-shrink="true">Open Profile</SquareButton>
+                    </div>
                 </div>
-            </div>
-            <div class="flex absolute top-2 right-2 rounded-full p-[1px] bg-btn size-8 items-center justify-center">
-                <button @click="closeModal" class="h-full w-full rounded-full shadow-none"><i-mingcute:close-fill class="text-lg mx-auto"/></button>
+                <div class="flex absolute top-2 right-2 rounded-full p-[1px] bg-btn size-8 items-center justify-center">
+                    <button @click="closeModal" class="h-full w-full rounded-full shadow-none"><i-mingcute:close-fill class="text-lg mx-auto"/></button>
+                </div>
             </div>
         </div>
     </div>
