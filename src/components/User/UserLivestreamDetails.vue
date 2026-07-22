@@ -9,10 +9,21 @@
                 <div class="flex flex-col px-4 pt-2">
                     <div class="flex flex-col gap-2">
                         <div class="flex flex-col">
-                            <div class="font-bold">{{typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.title : "{Title} Username - Platform"}}</div>
-                            <div class="flex gap-1 text-sm items-center">
-                                <i-solar:earth-outline class="size-3 shrink-0"/>
+                            <div class="font-bold leading-4 pb-1">{{typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.title : "{Title} Username - Platform"}}</div>
+                            <div class="flex gap-1 text-sm items-center" title="Stream Link">
+                                <i-mdi:earth class="size-3 shrink-0"/>
                                 <div class="text-xs">{{typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.uri : "website-url.com"}}</div>
+                            </div>
+                            <div class="flex gap-1">
+                                <div v-if="typeof profileStatus != 'undefined' && 'createdAt' in profileStatus.record"
+                                class="flex gap-1 items-center text-xs text-secondary">
+                                    <div title="Stream Start Time"><i-mdi:stopwatch-start-outline class="text-sm size-3 shrink-0"/></div>
+                                    <div>{{ convertToLongTimestamp((profileStatus.record as unknown as ILiveStatusRecord).createdAt) }}</div>
+                                    <div v-if="typeof profileStatus != 'undefined' && 'durationMinutes' in profileStatus.record"
+                                    class="flex rounded bg-slate-300 px-1 text-xs select-none" title="Expected Length">
+                                        {{ convertToHourMinuteTimestamp((profileStatus.record as unknown as ILiveStatusRecord).durationMinutes) }}
+                                    </div>
+                                </div>
                             </div>
                             <div v-if="typeof profileEmbedExternal != 'undefined'" class="mt-2 text-xs text-secondary">{{ profileEmbedExternal.description }}</div>
                         </div>
@@ -53,6 +64,21 @@ import SquareButton from '../Utilities/SquareButton.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
 import { AppState, TrapFocus } from '../../state/AppState.vue';
+import { convertToLongTimestamp, convertToHourMinuteTimestamp } from '../../helpers/converters';
+
+/**
+ * Interface created to remove TS warnings created when
+ * trying to work with the `record` object held in
+ * `userProfile.status` that is typed as an `unknown`
+ * object.
+ */
+interface ILiveStatusRecord{
+    $type:string,
+    createdAt:string,
+    durationMinutes:number,
+    // embed:{}, //might be EmbedExternal, but I don't need this much detail right now
+    status:string
+}
 
 export default defineComponent({
     components:{
@@ -63,6 +89,8 @@ export default defineComponent({
     data(){
         return{
             TrapFocus,
+            convertToLongTimestamp,
+            convertToHourMinuteTimestamp
         }
     },
     props:{
@@ -72,8 +100,19 @@ export default defineComponent({
         }
     },
     computed:{
+        /**
+         * Computed value. Checks to see if the [ProfileView].status.embed.external
+         * object exists - if it does it returns it, otherwise it returns `undefined`.
+         */
         profileEmbedExternal():AppBskyEmbedExternal.ViewExternal|undefined{
             return (typeof this.userProfile.status != 'undefined' && typeof this.userProfile.status.embed != 'undefined' && 'external' in this.userProfile.status.embed) ? this.userProfile.status.embed.external : undefined;
+        },
+        /**
+         * Computed value. Checks to see if the [ProfileView].status object exists - if
+         * it does it returns it, otherwise it returns `undefined`.
+         */
+        profileStatus():AppBskyActorDefs.StatusView|undefined{
+            return typeof this.userProfile.status != 'undefined' ? this.userProfile.status : undefined;
         },
         /**
          * Method used to see if the viewed User is verified.

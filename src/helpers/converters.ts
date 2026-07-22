@@ -76,6 +76,18 @@ export function convertToLongTimestamp(ts:string = ""){
     }
 }
 
+/**
+ * Method that converts minutes (number value) into a
+ * "hours-minutes" timestamp.
+ * @param minutes The minutes number value to format.
+ * @returns The minutes value in the format [x]hr[y]min.
+ */
+export function convertToHourMinuteTimestamp(minutes:number):string{
+    let hours = Math.floor(minutes/60);
+    let mins = minutes % 60;
+    return `${hours>0 ? hours+'hr' : ''}${mins>0 ? mins+'min' : ''}`;
+}
+
 function getDayName(dateObj:Date, locale:string){
     return dateObj.toLocaleDateString(locale, { weekday: 'long' });
 }
