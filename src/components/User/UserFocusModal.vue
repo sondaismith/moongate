@@ -58,10 +58,12 @@
                             :style="`mask: url(${getPlaceholderImageSrc})`">
                             </div>
                             <div v-if="hasProfileAvatar" class="absolute left-4 size-24 user-pfp">
-                                <div v-if="userIsLive" @click="showPFPFullscreen" class="peer absolute z-[4] bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded cursor-pointer bg-accountLiveAvatarBorder text-white text-[10px] font-bold leading-[14px]">LIVE</div>
-                                <div @click="showPFPFullscreen" class="absolute z-[3] flex rounded-full aspect-square size-24
-                                items-center justify-center shrink-0 border-2 border-slate-800 bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover
-                                cursor-pointer transition-colors hover:border-hover overflow-hidden" :class="{'border-4 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover peer-hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
+                                <div v-if="userIsLive" @click="showPFPFullscreen" @contextmenu="showAvatarOptionsMenu($event, UserFocusModalState.currentUserPageDetails.ProfileData)"
+                                class="peer absolute z-[4] bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded cursor-pointer bg-accountLiveAvatarBorder text-white text-[10px] font-bold leading-[14px]">LIVE</div>
+                                <div @click="showPFPFullscreen" @contextmenu="showAvatarOptionsMenu($event, UserFocusModalState.currentUserPageDetails.ProfileData)"
+                                class="absolute z-[3] flex rounded-full aspect-square size-24 items-center justify-center shrink-0 border-2 border-slate-800
+                                bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover cursor-pointer transition-colors hover:border-hover overflow-hidden"
+                                :class="{'border-4 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover peer-hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
                                     <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.avatar!" loader-type="spinner"
                                     :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked||(accountContainsSensitiveContent && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent)}"/>
                                 </div>
@@ -435,11 +437,12 @@ import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
 import MdiUserCheck from '~icons/mdi/user-check';
 import BlueskySocialFillIcon from '~icons/mingcute/bluesky-social-fill';
+import CamcorderBoxIcon from '~icons/mdi/camcorder-box';
 
 import { defineComponent } from 'vue'
 import PillButton from '../Utilities/PillButton.vue';
 import { AppState, CopyTextToClipboard, toast } from '../../state/AppState.vue';
-import { AppBskyFeedDefs, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyUnspeccedDefs } from '@atproto/api';
+import { AppBskyFeedDefs, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyUnspeccedDefs, AppBskyActorDefs } from '@atproto/api';
 import { GenerateTagLinkText } from '../../helpers/parsers';
 import Hashtag from '../Utilities/Hashtag.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
@@ -480,6 +483,15 @@ function CopyPostLink(postUri:string, handle:string="", returnMoongateLink:boole
         CopyTextToClipboard(link, 'link');
     else
         toast.add({summary:'Error creating Link',severity:'error', group:'bc', life:1000});
+}
+
+/**
+ * Method that displays the details of a specific User's active livestream in the
+ * `UserLivestreamDetails` modal.
+ * @param userProfile The User Profile to view the Livestream info of.
+ */
+function DisplayUserLivestreamInfo(userProfile:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic){
+    AppState.showUserLivestreamInfo(userProfile);
 }
 
 export default defineComponent({
@@ -989,6 +1001,17 @@ export default defineComponent({
                     OptionsMenuState.currentMenuItems.push({Icon:MdiUserCheck,Label:'Unblock Account',Action:this.requestToggleBlock,Type:ItemType.Option});
             }
             OptionsMenuState.showOptionMenu(e);
+        },
+/**
+         * Shows Options Menu for viewing a livestreaming User's
+         * stream details.
+         */
+        showAvatarOptionsMenu(e:MouseEvent, userProfile:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic){
+            if(this.userIsLive){
+                e.preventDefault();
+                OptionsMenuState.currentMenuItems.push({Icon:CamcorderBoxIcon,Label:'View Stream Info',Action:()=>{DisplayUserLivestreamInfo(userProfile)},Type:ItemType.Option});
+                OptionsMenuState.showOptionMenu(e);
+            }
         },
         /**
          * Method used to attempt to mute/unmute the account associated with the
