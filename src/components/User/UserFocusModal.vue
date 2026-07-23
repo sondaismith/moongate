@@ -22,7 +22,7 @@
                 button-padding-x="0" button-padding-y="0">
                     <i-mingcute:refresh-3-fill class="text-2xl"/>
                 </SquareButton>
-                <SquareButton @click="closeModal" title="Close User Feed Modal"
+                <SquareButton data-testid="userFocusModal-close-button" @click="closeModal" title="Close User Feed Modal"
                 class="ml-auto bg-btn hover:bg-red-600 focus-visible:bg-red-600 border border-outline" button-padding-x="0" button-padding-y="0">
                     <i-mingcute:close-fill class="text-2xl"/>
                 </SquareButton>
@@ -57,7 +57,7 @@
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
                             :style="`mask: url(${getPlaceholderImageSrc})`">
                             </div>
-                            <div v-if="hasProfileAvatar" class="absolute left-4 size-24 user-pfp">
+                            <div v-if="hasProfileAvatar" data-testid="userFocusModal-avatar" class="absolute left-4 size-24 user-pfp">
                                 <div v-if="userIsLive" @click="showPFPFullscreen" @contextmenu="showAvatarOptionsMenu($event, UserFocusModalState.currentUserPageDetails.ProfileData)"
                                 class="peer absolute z-[4] bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded cursor-pointer bg-accountLiveAvatarBorder text-white text-[10px] font-bold leading-[14px]">LIVE</div>
                                 <div @click="showPFPFullscreen" @contextmenu="showAvatarOptionsMenu($event, UserFocusModalState.currentUserPageDetails.ProfileData)"
@@ -106,12 +106,12 @@
                                 <div class="flex justify-between overflow-hiddens">
                                     <div class="overflow-hidden">
                                         <div class="flex flex-wrap items-center gap-1 *:leading-6s">
-                                            <div class="flex text-2xl font-semibold overflow-hidden text-ellipsis">
+                                            <div data-testid="userFocusModal-displayName" class="flex text-2xl font-semibold overflow-hidden text-ellipsis">
                                                 {{UserFocusModalState.currentUserPageDetails.ProfileData ? UserFocusModalState.currentUserPageDetails.ProfileData.displayName : "Username Title"}}
                                             </div>
                                             <VerifiedBadge v-if="isUserVerified"/>
                                         </div>
-                                        <div class="text-xs">{{UserFocusModalState.currentUserPageDetails.ProfileData ? '@'+UserFocusModalState.currentUserPageDetails.ProfileData.handle : '@handle'}}</div>
+                                        <div data-testid="userFocusModal-handle" class="text-xs">{{UserFocusModalState.currentUserPageDetails.ProfileData ? '@'+UserFocusModalState.currentUserPageDetails.ProfileData.handle : '@handle'}}</div>
                                     </div>
                                     <div class="relative flex items-center mt-1 gap-2 h-9">
                                         <!-- <Transition name="smooth"> -->

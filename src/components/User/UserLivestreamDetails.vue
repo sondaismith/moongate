@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute z-20 flex w-full h-full" tabindex="-1" @keydown.tab="(e) => TrapFocus($el,e)">
+    <div data-testid="userLivestreamDetails" class="absolute z-20 flex w-full h-full" tabindex="-1" @keydown.tab="(e) => TrapFocus($el,e)">
         <div data-testid="userLivestreamDetails-close" @click="closeModal" :class="$attrs.class" class="absolute z-20 w-full h-full bg-slate-800/60 cursor-pointer"></div>
         <div class="w-full px-5">
             <div class="relative z-30 flex flex-col max-w-[420px] mx-auto mb-auto mt-[10vh] pb-4 rounded-lg border border-outline bg-feedColumnBG text-primary">
@@ -9,7 +9,7 @@
                 <div class="flex flex-col px-4 pt-2">
                     <div class="flex flex-col gap-2">
                         <div class="flex flex-col">
-                            <div class="font-bold leading-4 pb-1">{{typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.title : "{Title} Username - Platform"}}</div>
+                            <div data-testid="userLivestreamDetails-stream-title" class="font-bold leading-4 pb-1">{{typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.title : "{Title} Username - Platform"}}</div>
                             <div class="flex gap-1 text-sm items-center" title="Stream Link">
                                 <i-mdi:earth class="size-3 shrink-0"/>
                                 <div class="text-xs">{{typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.uri : "website-url.com"}}</div>
@@ -20,6 +20,7 @@
                                     <div title="Stream Start Time"><i-mdi:stopwatch-start-outline class="text-sm size-3 shrink-0"/></div>
                                     <div>{{ convertToLongTimestamp((profileStatus.record as unknown as ILiveStatusRecord).createdAt) }}</div>
                                     <div v-if="typeof profileStatus != 'undefined' && 'durationMinutes' in profileStatus.record"
+                                    data-testid="userLivestreamDetails-stream-duration"
                                     class="flex rounded bg-btn px-1 text-primary text-xs select-none" title="Expected Length">
                                         {{ convertToHourMinuteTimestamp((profileStatus.record as unknown as ILiveStatusRecord).durationMinutes) }}
                                     </div>
@@ -38,15 +39,15 @@
                             <AvatarRound :author-details="userProfile" :display-only="true"/>
                             <div class="flex overflow-hidden flex-col shrink">
                                 <div class="flex items-center gap-1 overflow-hidden">
-                                    <div class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="userProfile.displayName">
+                                    <div data-testid="userLivestreamDetails-displayName" class="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis" :title="userProfile.displayName">
                                         {{ userProfile.displayName }}
                                     </div>
                                     <VerifiedBadge v-if="isUserVerified" class="size-4"/>
                                 </div>
-                                <div class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="userProfile.handle">@{{ userProfile.handle }}</div>
+                                <div data-testid="userLivestreamDetails-handle" class="text-xs text-secondary whitespace-nowrap overflow-hidden text-ellipsis" :title="userProfile.handle">@{{ userProfile.handle }}</div>
                             </div>
                         </div>
-                        <SquareButton @click="openUserProfile" class="bg-btn hover:bg-btnHover active:bg-btnActive text-sm shadow-none" button-padding-x="1" button-padding-y="0"
+                        <SquareButton data-testid="userLivestreamDetails-open-profile-button" @click="openUserProfile" class="bg-btn hover:bg-btnHover active:bg-btnActive text-sm shadow-none" button-padding-x="1" button-padding-y="0"
                         :prevent-shrink="true">Open Profile</SquareButton>
                     </div>
                 </div>
