@@ -14,9 +14,14 @@ onBeforeMount(async () => {
       await AppSettingsState.loadSettingsFromStore();
       AppState.updateAppStateLoginValues();
     }
+    if(AppState.isViewingUserLivestreamInfo){
+        AppState.hideUserLivestreamInfo();
+        return false;
+    }
   })
-  router.afterEach(async (to, from) => {
-    document.title = to.meta.title as string || 'Loading... | moongate - A Desktop App for Bluesky';
+  router.afterEach(async (to, from, failure) => {
+    if(!failure)
+      document.title = to.meta.title as string || 'Loading... | moongate - A Desktop App for Bluesky';
   })
 })
 </script>
