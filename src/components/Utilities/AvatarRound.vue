@@ -4,7 +4,9 @@
         @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
         @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
         border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
-        transition-[border-color] ease-linear duration-200 cursor-pointer overflow-hidden" :class="{'border-2 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
+        transition-[border-color] ease-linear duration-200 cursor-pointer overflow-hidden" :class="[{'border-2 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover' : userIsLive},
+            componentStyles
+        ]">
             <ImageLoader v-if="typeof authorDetails.avatar != 'undefined'" :img-url="authorDetails.avatar" :fill-container="true" :loader-type="'spinner'" :class="{'blur-sm' : accountContainsSensitiveContent}"/>
             <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
         </div>
@@ -16,7 +18,9 @@
         <div data-testid="avatar-round" @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
         @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
         border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
-        transition-[border-color] ease-linear duration-200 overflow-hidden" :class="{'border-2 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
+        transition-[border-color] ease-linear duration-200 overflow-hidden" :class="[{'border-2 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover' : userIsLive},
+            componentStyles
+        ]">
             <ImageLoader v-if="typeof authorDetails.avatar != 'undefined'" :img-url="authorDetails.avatar" :fill-container="true" :loader-type="'spinner'" :class="{'blur-sm' : accountContainsSensitiveContent}"/>
             <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
         </div>
@@ -99,6 +103,11 @@ export default defineComponent({
         displayOnly:{
             type:Boolean,
             default:false
+        },
+        /**CSS styles the should be applied to the component. Will be applied in addition to the other default styles. */
+        componentStyles:{
+            type:String,
+            default:''
         }
     },
     components:{
