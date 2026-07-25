@@ -48,6 +48,7 @@ import ImageLoader from './ImageLoader.vue';
 import { UserFocusModalState } from '../../state/UserFocusModalState.vue';
 import { PropType } from 'vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
+import { isTauri } from '@tauri-apps/api/core';
 
 /**
  * Method that adds a new User feed to the displayed list of Feeds based on
@@ -156,8 +157,10 @@ export default defineComponent({
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteAddCircleLine,Label:'Create new User Feed',Action:function(){CreateUserFeed(userProfile.did,userProfile.handle)},Type:ItemType.Option},
-                {Icon:MingcuteExternalLinkLine,Label:'Open Profile in New Tab',Action:function(){},Type:ItemType.RouterLink,route:`/profile/${userProfile.handle}`},
             ] as IOptionMenuItem[]
+            if(!isTauri()){
+                OptionsMenuState.currentMenuItems.push({Icon:MingcuteExternalLinkLine,Label:'Open Profile in New Tab',Action:function(){},Type:ItemType.RouterLink,route:`/profile/${userProfile.handle}`});
+            }
             if(this.userIsLive){
                 OptionsMenuState.currentMenuItems.push({Icon:CamcorderBoxIcon,Label:'',Action:()=>{},Type:ItemType.Splitter});
                 OptionsMenuState.currentMenuItems.push({Icon:CamcorderBoxIcon,Label:'View Stream Info',Action:()=>{DisplayUserLivestreamInfo(userProfile)},Type:ItemType.Option});
