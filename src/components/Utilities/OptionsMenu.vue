@@ -21,7 +21,7 @@
                     disabled:hover:border-transparent disabled:cursor-default"
                     :disabled="mi.disabled">
                         <div class="pr-1 text-base" :class="mi.IconStyle"><component :is="mi.Icon"/></div>
-                        <div class="pl-2" :class="mi.LabelStyle">{{ mi.Label }}</div>
+                        <div class="pl-2 font-normal" :class="mi.LabelStyle">{{ mi.Label }}</div>
                     </button>
                 </RouterLink>
                 <div v-if="mi.Type ==ItemType.Splitter" class="bg-outline h-[1px]">

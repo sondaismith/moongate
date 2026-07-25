@@ -141,7 +141,8 @@ loadSavedFeedsRecords,
 stringifyFeedListData,
 stringToJSON} from "./lib/db/local_db";
 import { invoke, isTauri } from "@tauri-apps/api/core";
-import { Window } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { getUserHomeFeed } from "./lib/api/Feed.vue";
 import { FeedEnums } from "./enums/FeedEnums";
 import FeedEditModal from "./components/Feed/FeedEditModal.vue";
@@ -338,10 +339,9 @@ import UserLivestreamDetails from "./components/User/UserLivestreamDetails.vue";
              */
             async setUpListeners(){
                 if(isTauri()){
-                    var window = Window.getCurrent();
                     //Listen to any attempt to close the app window.
-                    const unlisten = await window.onCloseRequested(async (event) => {
-                        const confirmed = await confirm('Are you sure?');
+                    const unlisten = await getCurrentWindow().onCloseRequested(async (event) => {
+                        const confirmed = await confirm('Are you sure you want to close the app?', {title:'Close Moongate?',okLabel:'Yes',cancelLabel:'No'});
                         if (!confirmed) {
                             // user did not confirm closing the window; let's prevent it
                             event.preventDefault();
