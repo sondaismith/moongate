@@ -3,7 +3,7 @@
         {{ void "External link in Web App and Desktop App" }}
         <a v-if="!isExternalGIF && !isTauri()" tabindex="0"
         :href="embed.external.uri" target="_blank"
-        class="flex flex-col rounded-lg border text-primary transition-colors
+        class="flex flex-col w-full rounded-lg border text-primary transition-colors
         border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
         overflow-hidden text-xs cursor-pointer">
             <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
@@ -25,7 +25,7 @@
         <button v-else-if="!isExternalGIF && isTauri()" @contextmenu.prevent
         @click="(e) => showOptionsMenu(e, embed.external.uri)"
         @keyup.enter="showOptionsMenu(mouseEventFromKeyboardEvent, embed.external.uri)" tabindex="0"
-        class="flex flex-col w-fulls rounded-lg border text-primary transition-colors
+        class="flex flex-col rounded-lg border text-primary transition-colors
         border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
         active:bg-embedHoverBG overflow-hidden text-xs cursor-pointer shadow-none text-left outline outline-2 outline-transparent focus-visible:outline-blue-500 mx-[2px]">
             <div class="relative border-b-[1px] border-outline">
