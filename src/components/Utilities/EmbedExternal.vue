@@ -1,5 +1,5 @@
 <template>
-    <div data-testid="embed-external" class="max-w-full" :class="{'self-start' : isExternalGIF}">
+    <div data-testid="embed-external" class="flex max-w-full" :class="{'self-start' : isExternalGIF}">
         {{ void "External link in Web App and Desktop App" }}
         <a v-if="!isExternalGIF && !isTauri()" tabindex="0"
         :href="embed.external.uri" target="_blank"
@@ -22,12 +22,12 @@
                 </div>
             </div>
         </a>
-        <div v-else-if="!isExternalGIF && isTauri()" @contextmenu.prevent
+        <button v-else-if="!isExternalGIF && isTauri()" @contextmenu.prevent
         @click="(e) => showOptionsMenu(e, embed.external.uri)"
         @keyup.enter="showOptionsMenu(mouseEventFromKeyboardEvent, embed.external.uri)" tabindex="0"
-        class="flex flex-col rounded-lg border text-primary transition-colors
+        class="flex flex-col w-fulls rounded-lg border text-primary transition-colors
         border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
-        overflow-hidden text-xs cursor-pointer">
+        active:bg-embedHoverBG overflow-hidden text-xs cursor-pointer shadow-none text-left outline outline-2 outline-transparent focus-visible:outline-blue-500 mx-[2px]">
             <div class="relative border-b-[1px] border-outline">
                 <ImageLoader :img-url="typeof embed != 'undefined' && typeof embed.external != 'undefined' && typeof embed.external.thumb != 'undefined' ? embed.external.thumb : ''"
                 class="w-full h-full object-center object-cover" :fill-container="true"/>
@@ -43,7 +43,7 @@
                     <div class="overflow-hidden text-ellipsis" :title="embed.external.uri">{{ embed.external.uri }}</div>
                 </div>
             </div>
-        </div>
+        </button>
         <div v-else @keyup.enter="showEmbedImageInModal" tabindex="0"
         :href="embed.external.uri" target="_blank"
         class="flex flex-col rounded-lg border text-primary transition-colors
