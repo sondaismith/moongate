@@ -1,8 +1,8 @@
 <template>
-    <div data-testid="userLivestreamDetails" class="absolute z-20 flex w-full h-full" tabindex="-1" @keydown.tab="(e) => TrapFocus($el,e)">
-        <div data-testid="userLivestreamDetails-close" @click="closeModal" :class="$attrs.class" class="absolute z-20 w-full h-full bg-slate-800/60 cursor-pointer"></div>
+    <div data-testid="userLivestreamDetails" class="absolute z-30 flex w-full h-full" tabindex="-1" @keydown.tab="(e) => TrapFocus($el,e)">
+        <div data-testid="userLivestreamDetails-close" @click="closeModal" :class="$attrs.class" class="absolute z-30 w-full h-full bg-slate-800/60 cursor-pointer"></div>
         <div class="w-full px-5">
-            <div class="relative z-30 flex flex-col max-w-[420px] mx-auto mb-auto mt-[10vh] pb-4 rounded-lg border border-outline bg-feedColumnBG text-primary">
+            <div class="relative z-40 flex flex-col max-w-[420px] mx-auto mb-auto mt-[10vh] pb-4 rounded-lg border border-outline bg-feedColumnBG text-primary">
                 <div class="flex aspect-[1.90476/1] bg-slate-800 rounded-t-lg overflow-hidden">
                     <img class="w-full object-cover" :src="typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.thumb : '../../assets/placeholder/no_banner_pattern.png'"/>
                 </div>
