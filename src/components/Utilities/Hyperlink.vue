@@ -1,9 +1,11 @@
 <template>
-    <button ref="linkBtn" v-if="isTauri()" @click="(e) => showOptionsMenu(e, URL)"
-    class="underline font-light cursor-pointer transition-colors text-blue-500 hover:text-blue-400 border-none outline outline-2
+    <a ref="linkBtn" v-if="isTauri()" tabindex="0" @click="(e) => showOptionsMenu(e, URL)"
+    @keydown.enter="e => showOptionsMenu(e,URL)" @keydown.space="e => showOptionsMenu(e,URL)"
+    @contextmenu="e => showOptionsMenu(e,URL)" title="Display Link Options"
+    class="underline font-light cursor-pointer text-left transition-colors text-blue-500 hover:text-blue-400 border-none outline outline-2
     outline-transparent active:bg-transparent focus-visible:!outline-blue-500 shadow-none rounded-none">
         <slot></slot>
-    </button>
+    </a>
     <a v-else :title="`Open link in new tab`"
     class="underline font-light cursor-pointer transition-colors text-blue-500 hover:text-blue-400 border-2 border-transparent
     focus-visible:!border-blue-500 focus-visible:!outline-none"
@@ -51,9 +53,9 @@ export default defineComponent({
         },
         /**
          * Shows Options Menu allowing user to perform different actions
-         * relating to the selected embeded content.
+         * relating to the clicked link.
          */
-        showOptionsMenu(e:MouseEvent, linkURL:string){
+        showOptionsMenu(e:MouseEvent|KeyboardEvent, linkURL:string){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
                 {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)},Type:ItemType.Option},
