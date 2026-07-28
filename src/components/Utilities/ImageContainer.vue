@@ -1,6 +1,7 @@
 <template>
     <div ref="imageContainer" class="h-full w-full content-center">
-        <div data-testid="imageContainer-focusFeedPost" v-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && !isLargeContainerView" class="@container relative grid border
+        <div data-testid="imageContainer-focusFeedPost" v-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) &&
+        Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && !isLargeContainerView" class="@container relative grid border
             border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 h-full w-full" :class="showFullsize ? 'min-w-0' : 'grid-cols-2 grid-flow-row grid-rows-2 gap-0.5'"
             :style="[
                 (mediaEmbed.images.length === 1 && !mediaEmbed.images[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),
@@ -42,8 +43,9 @@
         </div>
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
-            <div data-testid="imageContainer-externalGIF" v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)"
-            class="flex flex-col max-w-full max-h-full cursor-pointer" @click="isGIFPaused = !isGIFPaused" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
+            <div data-testid="imageContainer-externalGIF" tabindex="0" v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)"
+            class="flex flex-col max-w-full max-h-full cursor-pointer outline outline-2 -outline-offset-[6px] outline-transparent focus-visible:!outline-focusBorder"
+            @click="isGIFPaused = !isGIFPaused" @keydown.space="toggleGIFPlayback" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
                 <div data-testid="imageContainer-file-extension" class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xss text-[10px] leading-3 text-white bg-black/70 select-none">{{ gifExt }}</div>
                 <ExternalGIF :url="webmURL" :thumbnail="mediaEmbed.external.thumb" :is-paused="isGIFPaused"/>
             </div>
@@ -219,6 +221,11 @@ export default defineComponent({
                 }
                 OptionsMenuState.showOptionMenu(e);
             // }
+        },
+        /**Method that allows for pausing WEBM "GIFs" using keyboard input. */
+        toggleGIFPlayback(e:KeyboardEvent,){
+            e.preventDefault();
+            this.isGIFPaused = !this.isGIFPaused;
         },
         /**
          * Method used to determine what should be done when clicking on an `ExternalEmbed`

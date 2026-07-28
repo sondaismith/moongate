@@ -44,7 +44,7 @@
                 </div>
             </div>
         </button>
-        <div v-else @keyup.enter="showEmbedImageInModal" tabindex="0"
+        <div v-else @keyup.enter="showEmbedImageInModal" tabindex="-1"
         :href="embed.external.uri" target="_blank"
         class="flex flex-col rounded-lg border text-primary transition-colors
         border-outline hover:bg-embedHoverBG bg-postBG

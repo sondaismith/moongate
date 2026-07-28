@@ -67,7 +67,7 @@ export function CopyTextToClipboard(textToCopy:string, copyAction:'text'|'link' 
  * @param e The Keydown KeyboardEvent that the method is called with.
  */
 export function TrapFocus(el:HTMLElement, e: KeyboardEvent){
-    let tabbable = el.querySelectorAll("button:not([disabled]), input, select, textarea, [href], [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
+    let tabbable = el.querySelectorAll("button:not([disabled]), input, select, textarea, [href]:not([tabindex='-1']), [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
     let target = e.target;
     if(e.key.toLowerCase() !== 'tab') return; //cancel further actions
     if(e.shiftKey){

@@ -137,8 +137,12 @@
                     </div>
                     <!-- <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
                     <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div> -->
-                    <RouterLink v-if="!AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</RouterLink>
-                    <RouterLink v-else-if="AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</RouterLink>
+                    <RouterLink v-if="!AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" @keydown.space="openPostInPostFocusModal"
+                    data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs
+                    text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</RouterLink>
+                    <RouterLink v-else-if="AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" @keydown.space="openPostInPostFocusModal"
+                    data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs
+                    text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</RouterLink>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
@@ -353,6 +357,11 @@ export default defineComponent({
                     this.$router.push(`/profile/${handle}/post/${postDid}`);
                 }
             }
+        },
+        /**Method used to open the related Post in the `PostFocusModal` component when using keyboard input. */
+        openPostInPostFocusModal(e:KeyboardEvent){
+            e.preventDefault();
+            this.$router.push(this.getGeneratedPostUri());
         },
         /**
          * Updates the Posts/Replies displayed in the PostFocusModal component.
