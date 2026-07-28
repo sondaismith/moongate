@@ -1,10 +1,11 @@
 <template>
-    <div data-testid="post-focus-modal-main" id="post-focus-modal-main" tabindex="0" @scroll.passive="toggleScrollToTop"
+    <div data-testid="post-focus-modal-main" id="post-focus-modal-main" tabindex="0" @keydown.tab="(e) => TrapFocus($el,e)" @scroll.passive="toggleScrollToTop"
     class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
         {{ void "Fullscreen Image" }}
         <Transition>
-            <div v-if="isImageFullscreen" @click="hideImageFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto bg-black/95
-            bg-contain bg-center bg-no-repeat z-30"
+            <div v-if="isImageFullscreen" tabindex="0" @click="hideImageFullscreen" @keydown.space="hideImageFullscreen" @keydown.enter="hideImageFullscreen"
+            class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto bg-black/95
+            bg-contain bg-center bg-no-repeat z-30 outline outline-2 -outline-offset-2 outline-transparent focus-visible:!outline-focusBorder"
             :style="{'background-image': 'url('+(fullscreenImage)+'s)'}">
                 <div v-if="!(fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri" @click="(e)=>{e.stopPropagation()}" class="absolute text-black bottom-0 left-0 px-2 bg-white/50 z-10">
                     {{embedImageDimensions}}
@@ -215,7 +216,7 @@ import ReplyBreadcrumb from './ReplyBreadcrumb.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import { AppBskyEmbedVideo } from '@atproto/api';
 import VideoContainer from '../Utilities/VideoContainer.vue';
-import { AppState, toast } from '../../state/AppState.vue';
+import { AppState, toast, TrapFocus } from '../../state/AppState.vue';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyFeedPost } from '@atproto/api';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
@@ -292,6 +293,7 @@ export default defineComponent({
             AppBskyEmbedRecord,
             AppBskyEmbedImages,
             AppBskyEmbedVideo,
+            TrapFocus,
             swiper: {} as SwiperClass,
             modules:[Navigation, Keyboard, Pagination],
             imageCollection: [],
@@ -363,6 +365,7 @@ export default defineComponent({
         showImageFullscreen(image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.ViewExternal){
             this.fullscreenImage = image;
             this.isImageFullscreen = true;
+            this.$el.focus();//allows next tab to select the fullscreen image, allowing for a quick close
             this.swiper.keyboard.disable();
         },
         hideImageFullscreen(){

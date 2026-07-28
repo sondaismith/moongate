@@ -1,38 +1,5 @@
 <template>
     <div ref="imageContainer" class="h-full w-full content-center">
-        <!-- <div v-if="Array.isArray(imagesToDisplay) && imagesToDisplay.length>0 && !isLargeContainerView" class="@container relative grid border
-            border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 h-full w-full" :class="showFullsize ? 'min-w-0' : 'grid-cols-2 grid-flow-row grid-rows-2 gap-0.5'"
-            :style="[
-                (imagesToDisplay?.length === 1 && !imagesToDisplay[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),
-                (imagesToDisplay?.length === 1 && imagesToDisplay[0].aspectRatio && !showFullsize ? `aspect-ratio: ${imagesToDisplay[0].aspectRatio?.width} / ${imagesToDisplay[0].aspectRatio?.height}`:''),
-                // (imagesToDisplay?.length === 1 && imagesToDisplay[0].aspectRatio ? `height: ${imagesToDisplay[0].aspectRatio?.height}px; width: ${imagesToDisplay[0].aspectRatio?.width}px;`:''),
-                (imagesToDisplay?.length && imagesToDisplay.length > 1 ? 'aspect-ratio: 16 / 9':'')
-            ]">
-            <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Image"/>
-            <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, index, author, postId, postText)" class="overflow-hidden max-h-full max-w-full"
-                :class="[
-                            (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
-                            (imagesToDisplay?.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
-                            (imagesToDisplay?.length === 2 && index === 1 ? 'col-start-2 row-span-2':''),
-                            (imagesToDisplay?.length === 3 && index === 0 ? 'col-start-1 row-span-2':''),
-                            showFullsize ? 'w-full' : 'cursor-pointer'
-                        ]"> -->
-                <!-- Hide image extension when in "fullsize/fullscreen" mode -->
-                <!-- <div v-if="!showFullsize" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
-                <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
-                :title="image.alt"
-                :class="(imagesToDisplay?.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
-                    :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div>
-                <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
-            </div>
-        </div>
-        <div v-else-if="Array.isArray(imagesToDisplay) && imagesToDisplay.length>0 && typeof imagesToDisplay[0] != 'undefined' && isLargeContainerView"
-        @contextmenu="showOptionsMenu($event, imagesToDisplay[0], 0, author, postId, postText)" class="flex h-full w-full overflow-hidden">
-            <div class="flex max-h-full max-w-full mx-auto" :class=imageContainerClasses>
-                <img @click="$emit('imageClicked', imagesToDisplay[0])"  :src="showFullsize ? imagesToDisplay[0].fullsize : imagesToDisplay[0].thumb"
-                class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
-            </div>
-        </div> -->
         <div data-testid="imageContainer-focusFeedPost" v-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && !isLargeContainerView" class="@container relative grid border
             border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 h-full w-full" :class="showFullsize ? 'min-w-0' : 'grid-cols-2 grid-flow-row grid-rows-2 gap-0.5'"
             :style="[
@@ -61,10 +28,16 @@
                 <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
             </div>
         </div>
-        <div data-testid="imageContainer-postFocusModal" v-else-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && typeof mediaEmbed.images[0] != 'undefined' && isLargeContainerView"
-        @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...mediaEmbed.images[0]}, mediaIndex, author, postId, postText)" class="flex h-full w-full overflow-hidden">
-                <ImageLoader @click="$emit('imageClicked', mediaEmbed.images[0])" :img-url="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
-                :image-container-class="imageContainerClasses" class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
+        <div data-testid="imageContainer-postFocusModal"
+        v-else-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) &&
+        mediaEmbed.images.length>0 && typeof mediaEmbed.images[0] != 'undefined' && isLargeContainerView"
+        class="flex h-full w-full overflow-hidden">
+            <ImageLoader tabindex="0" @click="$emit('imageClicked', mediaEmbed.images[0])"
+            @keydown.space="$emit('imageClicked', mediaEmbed.images[0])" @keydown.enter="$emit('imageClicked', mediaEmbed.images[0])"
+            @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...mediaEmbed.images[0]}, mediaIndex, author, postId, postText)"
+            :img-url="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
+            :image-container-class="imageContainerClasses" class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden outline outline-2
+            -outline-offset-2 outline-transparent focus-visible:!outline-focusBorder"/>
         </div>
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">

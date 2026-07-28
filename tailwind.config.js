@@ -6,6 +6,7 @@ export default {
       colors:{
         // primary: s"var(--color-primary-text) / <alpha-value>",
         blueskyBlue: "oklch(from var(--color-bluesky-blue) l c h / <alpha-value>)",
+        focusBorder: "oklch(from var(--color-focus-border) l c h / <alpha-value>)",
         deleteBtnBG: "oklch(from var(--color-delete-btn-bg) l c h / <alpha-value>)",
         deleteBtnBGHover: "oklch(from var(--color-delete-btn-bg-hover) l c h / <alpha-value>)",
         deleteBtnBGActive: "oklch(from var(--color-delete-btn-bg-active) l c h / <alpha-value>)",

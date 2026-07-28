@@ -255,6 +255,15 @@ button {
   src: local("Cal Sans"), url(/fonts/CalSans-Regular.ttf);
 }
 
+/* To prevent tabbing to previous or next Swiper slide when they are not active. */
+.swiper-slide {
+  visibility: hidden;
+}
+
+.swiper-slide.swiper-slide-active {
+  visibility: visible;
+}
+
 .modal-move,
 .modal-enter-active,
 .modal-leave-active {

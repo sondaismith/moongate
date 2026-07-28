@@ -1,13 +1,13 @@
 <template>
-    <div v-show="!imageLoaded && !imageError" class="flex m-auto object-contain animate-pulse rounded-lg overflow-hidden" :class="fillContainer ? 'h-full w-full' : 'h-1/2 w-full'">
+    <div v-show="imageLoaded" class="flex max-h-full max-w-full mx-auto" :class="[imageContainerClass, roundedImage, fillContainer && imageLoaded ? 'h-full w-full' : '']">
+        <img v-show="imageLoaded" :src="imgUrl" v-bind="$attrs" @load="loadComplete" @error="errorOccured"/>
+    </div>
+    <div v-if="!imageLoaded && !imageError" class="flex m-auto object-contain animate-pulse rounded-lg overflow-hidden" :class="fillContainer ? 'h-full w-full' : 'h-1/2 w-full'">
         <div v-if="loaderType == 'blocks'" class="m-auto"><div class="loader"></div></div>
         <div v-if="loaderType == 'spinner'" class="m-auto"><i-mingcute:loading-fill class="spinner text-black" :class="`text-[${spinnerWidth}px]`"/></div>
     </div>
-    <div v-show="imageError" class="flex" title="Error Loading Image">
+    <div v-if="imageError" class="flex" title="Error Loading Image">
         <i-mingcute:warning-fill class="text-2xl"/>
-    </div>
-    <div v-show="imageLoaded" class="flex max-h-full max-w-full mx-auto overflow-hidden" :class="[imageContainerClass, roundedImage, fillContainer && imageLoaded ? 'h-full w-full' : '']">
-        <img :src="imgUrl" v-bind="$attrs" @load="loadComplete" @error="errorOccured"/>
     </div>
 </template>
 
