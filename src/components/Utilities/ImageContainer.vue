@@ -9,7 +9,8 @@
                 (mediaEmbed.images.length && mediaEmbed.images.length > 1 ? 'aspect-ratio: 16 / 9':'')
             ]">
             <SpoilerOverlay :labels="labels" :has-sensitive-content="AppSettingsState.Settings.spoilerImagesContainingSensitiveContent && typeof labels != 'undefined' && labels.length>0" :media-type="MediaType.Image"/>
-            <div v-for="(image, index) in mediaEmbed.images" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...image}, index, author, postId, postText)" class="overflow-hidden max-h-full max-w-full"
+            <div v-for="(image, index) in mediaEmbed.images"
+            class="overflow-hidden max-h-full max-w-full"
                 :class="[
                             (mediaEmbed.images.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
                             (mediaEmbed.images.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
@@ -18,12 +19,12 @@
                             showFullsize ? 'w-full' : 'cursor-pointer'
                         ]">
                 <!-- Hide image extension when in "fullsize/fullscreen" mode -->
-                <div v-if="!showFullsize" data-testid="imageContainer-file-extension" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 pt-0.5 text-xss text-[10px] leading-3 text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
-                <!-- <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
-                :title="image.alt"
-                :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
-                    :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div> -->
-                <ImageLoader v-if="!showFullsize" :img-url="showFullsize ? image.fullsize : image.thumb" :title="image.alt" class="h-full w-full bg-center bg-no-repeat"
+                <div v-if="!showFullsize" data-testid="imageContainer-file-extension" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 pt-0.5
+                text-[10px] leading-3 text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
+                <ImageLoader v-if="!showFullsize" :img-url="showFullsize ? image.fullsize : image.thumb" :title="image.alt" tabindex="0"
+                @click="showMediaFocusModal(index)" @keydown.space="showMediaFocusModal(index)" @keydown.enter="showMediaFocusModal(index)"
+                @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...image}, index, author, postId, postText)"
+                class="h-full w-full bg-center bg-no-repeat outline outline-2 -outline-offset-[6px] outline-transparent focus-visible:!outline-focusBorder"
                 :fill-container="true" :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'object-contain' : 'object-cover')"/>
                 <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
             </div>
@@ -37,7 +38,7 @@
             @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...mediaEmbed.images[0]}, mediaIndex, author, postId, postText)"
             :img-url="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
             :image-container-class="imageContainerClasses" class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden outline outline-2
-            -outline-offset-2 outline-transparent focus-visible:!outline-focusBorder"/>
+            -outline-offset-4 outline-transparent focus-visible:!outline-focusBorder"/>
         </div>
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
