@@ -7,11 +7,13 @@
             <div v-if="!isAwaitingPostData" class="flex flex-col gap-2 p-3 overflow-hidden">
                 <img v-if="'fullsize' in saveMediaData" data-testid="saveMediaModal-media-preview" @contextmenu.prevent :src="saveMediaData.thumb" class="self-start rounded max-h-32 max-w-full bg-slate-500 overflow-hidden"
                 :style="(typeof saveMediaData.aspectRatio != 'undefined') ? `aspect-ratio:${saveMediaData.aspectRatio?.width}/${saveMediaData.aspectRatio?.height}` : ''" />
-                <div v-else data-testid="saveMediaModal-media-preview" class="relative self-start rounded h-32 bg-slate-500 overflow-hidden" @contextmenu.prevent>
-                    <ExternalGIF @click="isWebmPaused = !isWebmPaused" :url="webmURL" :thumbnail="saveMediaData.external.thumb" :is-paused="isWebmPaused" class="cursor-pointer" video-styles="max-h-32"/>
+                <div v-else data-testid="saveMediaModal-media-preview" tabindex="0" class="relative self-start rounded h-32 bg-slate-500 z-[2] overflow-hidden outline outline-2 -outline-offset-[6px] outline-transparent
+                focus-visible:!outline-focusBorder" @click="isWebmPaused = !isWebmPaused" @keydown.space="isWebmPaused = !isWebmPaused"
+                @keydown.enter="isWebmPaused = !isWebmPaused" @contextmenu.prevent>
+                    <ExternalGIF :url="webmURL" :thumbnail="saveMediaData.external.thumb" :is-paused="isWebmPaused" class="cursor-pointer" video-styles="max-h-32"/>
                 </div>
                 <div class="flex text-primary">
-                    <InLaInput v-if="isTauri()" data-testid="saveMediaModal-filename-input" class="h-full text-[12px] rounded-r-none grow"
+                    <InLaInput v-if="isTauri()" data-testid="saveMediaModal-filename-input" class="text-[12px] rounded-r-none grow"
                     text-label="Filename" :model-value="AppState.fileSaveDetails.full"
                     @update:model-value="updateFileName" title="Edit filename"/>
                     <InLaInput v-else data-testid="saveMediaModal-filename-input" class="h-full text-[12px] rounded-r-none grow" text-label="Click to Copy Filename"
@@ -24,9 +26,10 @@
                     </div>
                 </div>
                 <div v-if="isTauri()" class="relative">
-                    <div @click="selectFolder" title="Select/Change folder" class="absolute z-[1] w-full h-full
+                    <div @click="selectFolder" @keydown.space="selectFolder" @keydown.enter="selectFolder"
+                    title="Select/Change folder" class="absolute z-[1] w-full h-full
                     rounded transition-colors border border-gray-500 hover:border-blue-400
-                    cursor-pointer"></div>
+                    cursor-pointer outline outline-2 outline-transparent focus-visible:!outline-focusBorder" tabindex="0"></div>
                     <InLaInput :is-disabled="true" text-label="Save Folder" :model-value="AppState.lastMediaSaveDirectory.trim() != '' ? AppState.lastMediaSaveDirectory : 'Please select save folder'"/>
                 </div>
                 <div v-show="!isFileNameValid" class="text-xs text-red-500">Invalid file name</div>
@@ -53,7 +56,7 @@
                         <template v-if="'external' in saveMediaData && !saveMediaData.external.uri.includes('giphy.com')">
                             <button v-if="isTauri()" :disabled="!isFileNameValid || !isFolderSyntaxValid || isDownloading" @click="saveImage(undefined,true)"
                             class="self-end rounded-none shadow-none border-none active:bg-transparent transition-colors hover:not-disabled:bg-transparent disabled:bg-disabledBG text-secondary
-                            disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed"
+                            disabled:text-disabled hover:not-disabled:text-secondaryHover text-xs underline cursor-pointer disabled:cursor-not-allowed outline outline-2 outline-transparent focus-visible:outline-focusBorder"
                             title="Save as .GIF (File size may be large)">Save as GIF</button>
                             <button v-else :disabled="isDownloading"
                             @click="downloadGIFFromExternalCDN((AppState.saveMedia as AppBskyEmbedExternal.View).external.uri,AppState.fileSaveDetails.originalFilename)"
