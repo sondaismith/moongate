@@ -48,8 +48,8 @@
                 class="text-primary h-full w-full">
                     <SwiperSlide v-for="(image, index) in getEmbededImageObjects.images">
                         <ImageContainer
-                        @image-clicked="showImageFullscreen" :show-fullsize="true" :media-embed="{$type:'app.bsky.embed.images#view', images: [getEmbededImageObjects.images[index]]} as AppBskyEmbedImages.View" :is-large-container-view="true"
-                        :images-to-display="image" :author="postDetails.currentThreadView.post.author.handle"
+                        @image-clicked="showImageFullscreen" :show-fullsize="true" :media-embed="{$type:'app.bsky.embed.images#view', images: [getEmbededImageObjects.images[index]]} as AppBskyEmbedImages.View"
+                        :is-large-container-view="true" :images-to-display="image" :author="postDetails.currentThreadView.post.author.handle"
                         :post-id="getEndOfPostUri" :media-index="currentMediaIndex"/>
                     </SwiperSlide>
                 </Swiper>
@@ -58,7 +58,7 @@
                 :style="{'aspect-ratio':`${postDetails.currentThreadView.post.embed.aspectRatio?.width}/${postDetails.currentThreadView.post.embed.aspectRatio?.height}`}"
                 :video-view="postDetails.currentThreadView.post.embed">
                 </video-container>
-                <EmbedExternal v-else-if="hasEmbedGIFMedia" class="m-auto" @image-clicked="showImageFullscreen" :embed="getEmbedGIFMedia" :show-fullsize="true"
+                <EmbedExternal v-else-if="hasEmbedGIFMedia" class="m-auto" :embed="getEmbedGIFMedia" :show-fullsize="true"
                 :author="postDetails.currentThreadView.post.author.handle" :post-id="getEndOfPostUri"/>
             </div>
             <div v-if="postDetails.isAwaitingFocusData" class="flex rounded-lg mx-8 mb-8 p-2 h-16 animate-pulse text-sm bg-slate-500/30"></div>
