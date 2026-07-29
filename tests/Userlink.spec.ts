@@ -97,6 +97,8 @@ test('Ensure "User" feed is created successfully when clicking on a Userlink ele
     //Click on userlink displayed in User Feed
     await expect(instance1.getByTestId('userlink')).toHaveCount(1);
     await instance1.getByTestId('userlink').click();
+    await expect(instance1.getByRole('menu')).toBeVisible();
+    await instance1.getByRole('menu').getByText("Create new User Feed").click();
     // //check to see if tag feed was created
     await expect(instance1.getByTestId('feed-column')).toHaveCount(2);
     await expect(instance1.getByTestId('feed-column').getByTestId('feedColumn-handle').nth(1)).toHaveText(userlinkText);
