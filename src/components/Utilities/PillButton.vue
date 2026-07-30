@@ -6,11 +6,9 @@
     </div> -->
     <button :disabled="disabled"
     class="group flex justify-center cursor-pointer !border-transparent rounded-full transition-colors
-    bg-btn select-none p-[1px] overflow-hidden disabled:!bg-gray-400 disabled:text-gray-500 disabled:!cursor-default">
-        <div class="border-2 border-transparent rounded-full w-full px-3s py-1s
-        group-focus-visible:border-feedtypeBtnFocusHighlight">
-            <slot>[Set Slot Value Please!]</slot>
-        </div>
+    bg-btn select-none p-[1px] overflow-hidden disabled:!bg-gray-400 disabled:text-gray-500 disabled:!cursor-default
+    outline outline-2 outline-transparent focus-visible:outline-focusBorder outline-offset-2">
+        <slot>[Set Slot Value Please!]</slot>
     </button>
 </template>
 

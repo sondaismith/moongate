@@ -1,28 +1,28 @@
 <template>
     <div class="flex relative h-full ml-auto">
         <Transition :name="isFollowing ? 'slide-left' : 'slide-right'">
-            <div v-if="!isFollowing" @[!awaitingFollowRequest&&'click']="toggleAccountFollow" class="flex rounded-full px-2 py-1 text-nowrap
-                cursor-pointer select-none transition-colors bg-blue-500 hover:bg-blue-400"
-                :class="[$attrs.class,
-                isDisabled ? 'bg-gray-500 text-gray-400 pointer-events-none' : '',
+            <button v-if="!isFollowing" @[!awaitingFollowRequest&&'click']="toggleAccountFollow" class="flex rounded-full px-2 py-1 text-nowrap
+                cursor-pointer select-none transition-colors bg-blue-500 hover:bg-blue-400 shadow-none border-none outline outline-2 outline-transparent
+                focus-visible:outline-focusBorder outline-offset-2" :disabled="isDisabled"
+                :class="[$attrs.class, isDisabled ? 'bg-gray-500 text-gray-400 pointer-events-none' : '',
                 awaitingFollowRequest ? '!cursor-not-allowed bg-blue-600 hover:bg-blue-600' : '']">
                     <div class="flex items-center gap-1">
                         <i-mingcute:plus-fill v-show="!awaitingFollowRequest"/>
                         <i-mingcute:loading-fill v-show="awaitingFollowRequest" class="spinner self-center"/>
                         <div>Follow</div>
                     </div>
-            </div>
-            <div v-else-if="isFollowing" @[!awaitingFollowRequest&&'click']="toggleAccountFollow" class="flex rounded-full px-2 py-1 text-nowrap
-                cursor-pointer select-none transition-colors bg-slate-500 hover:bg-slate-400"
-                :class="[$attrs.class,
-                isDisabled ? 'bg-gray-500 text-gray-400 pointer-events-none' : '',
+            </button>
+            <button v-else-if="isFollowing" @[!awaitingFollowRequest&&'click']="toggleAccountFollow" class="flex rounded-full px-2 py-1 text-nowrap
+                cursor-pointer select-none transition-colors bg-slate-500 hover:bg-slate-400 shadow-none border-none outline outline-2 outline-transparent
+                focus-visible:outline-focusBorder outline-offset-2" :disabled="isDisabled"
+                :class="[$attrs.class, isDisabled ? 'bg-gray-500 text-gray-400 pointer-events-none' : '',
                 awaitingFollowRequest ? '!cursor-not-allowed bg-blue-600 hover:bg-blue-600' : '']">
                     <div class="flex items-center gap-1">
                         <i-mingcute:check-fill v-show="!awaitingFollowRequest"/>
                         <i-mingcute:loading-fill v-show="awaitingFollowRequest" class="spinner self-center"/>
                         <div>Following</div>
                     </div>
-            </div>
+            </button>
         </Transition>
         <div v-if="isDisabled" class="absolute rounded-full w-full h-full" :title="isDisabled ? 'You must login to follow a User.' : ''"/>
     </div>

@@ -52,7 +52,7 @@
             </div>
             <div class="flex gap-2">
                 <div class="p-1">
-                    <AvatarRound class=""/>
+                    <AvatarRound class="" :author-details="{did:'empty',handle:'not-real.com',avatar:AppState.currentPFP}" :display-only="true"/>
                 </div>
                 <textarea id="post-textarea" role="text" placeholder="What do you want to say?" contenteditable
                 @input="limitChars" v-model="postText"
@@ -111,7 +111,7 @@
                 <div v-for="post in [postDetails.currentPostData]"
                 class="flex flex-col rounded-md p-2 gap-1 border border-outline">
                     <div class="flex gap-1 items-center">
-                        <AvatarRound :avatar="post.author.avatar" class="size-6"/>
+                        <AvatarRound :author-details="post.author" class="size-6"/>
                         <div class="flex gap-1 text-nowrap overflow-hidden">
                             <div class="text-sm overflow-hidden text-ellipsis font-bold"
                             :title="post.author.displayName">{{ post.author.displayName }}</div>

@@ -1,17 +1,26 @@
 <template>
-    <div data-testid="user-focus-modal" class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
+    <div data-testid="user-focus-modal" class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none"
+    @keydown.tab="(e) => TrapFocus(this.$el,e)" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{ void "Fullscreen Image" }}
-        <TransitionGroup>
-            <div v-if="isPFPFullscreen" @click="hidePFPFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
-            bg-black/90 sm:bg-black/70 bg-contain bg-center bg-no-repeat z-30">
-                <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.avatar" class="max-h-full max-w-full"/>
-            </div>
-            <div v-else-if="isBannerFullscreen" @click="hideBannerFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
-            bg-black/90 sm:bg-black/70 bg-contain bg-center bg-no-repeat z-30">
-                <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.banner" class="max-h-full max-w-full"/>
-            </div>
-        </TransitionGroup>
+        <div ref="avatarbannerfullscreen" @keydown.tab="(e) => TrapFocus(this.$refs.avatarbannerfullscreen,e)" tabindex="-1">
+            <TransitionGroup>
+                <button v-if="isPFPFullscreen" @click="hidePFPFullscreen"
+                class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
+                bg-black/90 sm:bg-black/70 active:bg-black/90 sm:active:bg-black/70 bg-contain
+                bg-center bg-no-repeat z-30 shadow-none border-none outline outline-2 outline-transparent
+                focus-visible:outline-focusBorder outline-offset-[-6px]">
+                    <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.avatar" class="max-h-full max-w-full"/>
+                </button>
+                <button v-else-if="isBannerFullscreen" @click="hideBannerFullscreen"
+                class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
+                bg-black/90 sm:bg-black/70 active:bg-black/90 sm:active:bg-black/70 bg-contain
+                bg-center bg-no-repeat z-30 shadow-none border-none outline outline-2 outline-transparent
+                focus-visible:outline-focusBorder outline-offset-[-6px]">
+                    <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.banner" class="max-h-full max-w-full"/>
+                </button>
+            </TransitionGroup>
+        </div>
         <div class="relative z-20 flex flex-col max-w-[40rem] w-full h-full sm:mx-auto my-auto bg-focusBG text-primary drop-shadow-lg overflow-hidden">
             {{ void "Control Bar" }}
             <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8s px-2 py-1 items-center shrink-0 w-full self-start
@@ -38,7 +47,7 @@
                 border border-outlineLighter shadow-none mr-1"
                 @click="updateDisplayedData">Try Again?</button>
             </div>
-            <div data-testid="userFocusModal-user-focus-container" v-else id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="0">
+            <div data-testid="userFocusModal-user-focus-container" v-else id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="-1">
                 <div class="flex flex-col h-full">
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0s grow items-center">
@@ -49,24 +58,26 @@
                             shrink-0 border-2 border-slate-800 user-pfp"></div>
                         </div>
                         <div v-else class="relative w-full user-banner">
-                            <div v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
-                            bg-no-repeat bg-center bg-cover overflow-hidden"
+                            <button v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
+                            bg-no-repeat bg-center bg-cover overflow-hidden shadow-none rounded-none border-none outline outline-2 outline-transparent
+                            focus-visible:outline-focusBorder outline-offset-[-6px]"
                             :class="{'cursor-pointer' : hasProfileBanner}">
                                 <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.banner!" :fill-container="true" :class="{'blur-lg':isAccountBlocked||(accountContainsSensitiveContent && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent)}"/>
-                            </div>
+                            </button>
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
                             :style="`mask: url(${getPlaceholderImageSrc})`">
                             </div>
                             <div v-if="hasProfileAvatar" data-testid="userFocusModal-avatar" class="absolute left-4 size-24 user-pfp">
                                 <div v-if="userIsLive" @click="showPFPFullscreen" @contextmenu="showAvatarOptionsMenu($event, UserFocusModalState.currentUserPageDetails.ProfileData)"
                                 class="peer absolute z-[4] bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded cursor-pointer bg-accountLiveAvatarBorder text-white text-[10px] font-bold leading-[14px]">LIVE</div>
-                                <div @click="showPFPFullscreen" @contextmenu="showAvatarOptionsMenu($event, UserFocusModalState.currentUserPageDetails.ProfileData)"
+                                <button @click="showPFPFullscreen" @contextmenu="showAvatarOptionsMenu($event, UserFocusModalState.currentUserPageDetails.ProfileData)"
                                 class="absolute z-[3] flex rounded-full aspect-square size-24 items-center justify-center shrink-0 border-2 border-slate-800
-                                bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover cursor-pointer transition-colors hover:border-hover overflow-hidden"
+                                bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover cursor-pointer transition-colors hover:border-hover overflow-hidden
+                                shadow-none outline outline-2 outline-transparent focus-visible:outline-focusBorder outline-offset-2"
                                 :class="{'border-4 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover peer-hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
                                     <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.avatar!" loader-type="spinner"
                                     :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked||(accountContainsSensitiveContent && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent)}"/>
-                                </div>
+                                </button>
                             </div>
                             <div v-else class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
                             items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
@@ -151,36 +162,36 @@
                         </div>
                         <div v-if="!isAccountBlocked" id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG shadow-scroll-underline"
                         :style="{'top':userSummaryBottomPos+'px'}">
-                            <div @click="viewFeed" class="w-full hover:bg-btnHover cursor-pointer"
+                            <button @click="viewFeed" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
                             title="View User's Feed (Posts, Retweets)">
                                 <div class="pt-2 pb-1">Feed</div>
                                 <div v-if="isViewingFeed" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
-                            <div @click="viewPosts" class="w-full hover:bg-btnHover cursor-pointer"
+                            </button>
+                            <button @click="viewPosts" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
                             title="View Posts only by current User">
                                 <div class="pt-2 pb-1">Posts</div>
                                 <div v-if="isViewingPosts" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
-                            <div @click="viewReplies" class="w-full hover:bg-btnHover cursor-pointer"
+                            </button>
+                            <button @click="viewReplies" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
                             title="View User's Replies">
                                 <div class="pt-2 pb-1">Replies</div>
                                 <div v-if="isViewingReplies" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
-                            <div @click="viewMedia" class="w-full hover:bg-btnHover cursor-pointer"
+                            </button>
+                            <button @click="viewMedia" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
                             title="View Posts User has made containing Images/Video">
                                 <div class="pt-2 pb-1">Media</div>
                                 <div v-if="isViewingMedia" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
-                            <div v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewLikes" class="w-full hover:bg-btnHover cursor-pointer"
+                            </button>
+                            <button v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewLikes" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
                             title="View Your Liked Posts">
                                 <div class="pt-2 pb-1">Likes</div>
                                 <div v-if="isViewingLikes" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
-                            <div v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewBookmarks" class="w-full hover:bg-btnHover cursor-pointer"
+                            </button>
+                            <button v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewBookmarks" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
                             title="View Your Saved Posts">
                                 <div class="pt-2 pb-1">Saved</div>
                                 <div v-if="isViewingBookmarks" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
+                            </button>
                         </div>
                         {{ void "General Posts" }}
                         <div v-if="(isViewingFeed || isViewingPosts || isViewingReplies || isViewingLikes) && !isAccountBlocked"
@@ -382,16 +393,15 @@
                                         <div v-else class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs text-white bg-black/70 select-none">Video</div>
                                         <SpoilerOverlay class="z-[1]" :labels="n.post.labels" :has-sensitive-content="AppSettingsState.Settings.spoilerImagesContainingSensitiveContent && hasSensitiveContent(n)"
                                         :media-type="AppBskyEmbedImages.isView(n.post.embed) && typeof n.post.embed.images != 'undefined' ? MediaType.Image : MediaType.Video"/>
-                                        <div @click="showMediaContent(n)" @contextmenu.prevent class="relative flex bg-violet-500 hover:bg-violet-300
-                                        cursor-pointer w-full h-full bg-no-repeat bg-center bg-cover
-                                        overflow-hidden backdrop-blur-0">
+                                        <button @click="showMediaContent(n)" @contextmenu.prevent class="relative flex bg-violet-500 hover:bg-violet-300
+                                        cursor-pointer w-full h-full bg-no-repeat bg-center bg-cover overflow-hidden backdrop-blur-0 rounded-none shadow-none border-none outline-none outline-2 outline-offset-[-6px] outline-transparent focus-visible:outline-focusBorder">
                                             <ImageLoader v-if="isFeedViewPostCust(n) && AppBskyEmbedImages.isView(n.post.embed)"
                                             :img-url="typeof n.post.embed.images != 'undefined' ? n.post.embed.images[0].thumb : ''" :fill-container="true" :class="'w-full object-cover'"
                                             :title="n.post.embed.images[0].alt" />
                                             <ImageLoader v-if="isFeedViewPostCust(n) && AppBskyEmbedVideo.isView(n.post.embed)"
                                             :img-url="typeof n.post.embed.thumbnail != 'undefined' ? n.post.embed.thumbnail : ''" :fill-container="true" :class="'w-full object-cover'"
                                             :title="n.post.embed.alt" />
-                                        </div>
+                                        </button>
                                     </div>
                                     <!-- Started on using `ImageContainer` for the thumbnails displayed on the media tab
                                     but realized that it doesn't really make sense when you can just download the image after
@@ -441,7 +451,7 @@ import CamcorderBoxIcon from '~icons/mdi/camcorder-box';
 
 import { defineComponent } from 'vue'
 import PillButton from '../Utilities/PillButton.vue';
-import { AppState, CopyTextToClipboard, toast } from '../../state/AppState.vue';
+import { AppState, CopyTextToClipboard, toast, TrapFocus } from '../../state/AppState.vue';
 import { AppBskyFeedDefs, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyUnspeccedDefs, AppBskyActorDefs } from '@atproto/api';
 import { GenerateTagLinkText } from '../../helpers/parsers';
 import Hashtag from '../Utilities/Hashtag.vue';
@@ -509,6 +519,7 @@ export default defineComponent({
             GenerateTagLinkText,
             convertToShortTimestamp,
             convertToLongTimestamp,
+            TrapFocus,
             AppBskyFeedDefs,
             AppBskyEmbedImages,
             AppBskyEmbedVideo,
@@ -1043,12 +1054,14 @@ export default defineComponent({
         },
         showPFPFullscreen(){
             this.isPFPFullscreen = true;
+            this.$el.focus();
         },
         hidePFPFullscreen(){
             this.isPFPFullscreen = false;
         },
         showBannerFullscreen(){
             this.isBannerFullscreen = true;
+            this.$el.focus();
         },
         hideBannerFullscreen(){
             this.isBannerFullscreen = false;
