@@ -629,8 +629,8 @@ export default defineComponent({
         // console.log(this.postData); //DEBUG - missing object/variable catching
         // console.log('Has this post been deleted?');
         // console.log(isViewNotFound(this.postData));
-        if(this.threadData) this.postToShow = this.threadData.post;
-        else if(this.postData) this.postToShow = this.postData;
+        if(typeof this.threadData != 'undefined' && typeof this.postData == 'undefined') this.postToShow = this.threadData.post;
+        else if(typeof this.postData != 'undefined') this.postToShow = this.postData;
     }
 })
 </script>

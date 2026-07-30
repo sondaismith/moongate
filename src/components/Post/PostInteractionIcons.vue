@@ -1,7 +1,7 @@
 <template>
     <div :class="textColorClass" class="flex flex-wrap -mt-1 text-secondary gap-1 justify-around justify-betweens
      *:p-1 *:bg-red-600s">
-        <button data-test="postInteraction-reply-button" class="flex gap-0.5 rounded-full items-center border-none shadow-none
+        <button :disabled="!canUserReply" data-test="postInteraction-reply-button" class="flex gap-0.5 rounded-full items-center border-none shadow-none
         outline outline-2 outline-transparent focus-visible:outline-focusBorder"
         :class="canUserReply ? 'group cursor-pointer hover:bg-btnSubtle' : 'text-disabled select-none'"
         @click="canUserReply && replyToPost()" :title="postDetails.whoCanReply(postData)">

@@ -8,11 +8,12 @@
                 <TransitionGroup>
                     <div v-for="replies in currentThreadView.replies" :key="(replies as AppBskyFeedDefs.ThreadViewPost).post.cid" class="py-2 pr-3 flex flex-col gap-2">
                         <FocusFeedPost v-if="AppBskyFeedDefs.isThreadViewPost(replies)" @thread-reply-clicked="changeThreadFromPost"
-                        :post-data="({$type:'app.bsky.feed.defs#postView',...replies.post} as AppBskyFeedDefs.PostView)" :is-reply-style="true" :reply-index="0" :total-replies="replies.post.replyCount"/>
+                        :post-data="({$type:'app.bsky.feed.defs#postView',...replies.post} as AppBskyFeedDefs.PostView)" :thread-data="replies" :is-reply-style="true" :reply-index="0" :total-replies="replies.post.replyCount"/>
                         {{ void "displays replies to comment" }}
                         <TransitionGroup>
                             <div v-for="(reply, index) in (replies as AppBskyFeedDefs.ThreadViewPost).replies" :key="(reply as AppBskyFeedDefs.ThreadViewPost).post.cid">
-                                <FocusFeedPost v-if="AppBskyFeedDefs.isThreadViewPost(reply)" @thread-reply-clicked="changeThreadFromPost" :post-data="({$type:'app.bsky.feed.defs#postView',...reply.post} as AppBskyFeedDefs.PostView)" :is-reply-style="true"
+                                <FocusFeedPost v-if="AppBskyFeedDefs.isThreadViewPost(reply)" @thread-reply-clicked="changeThreadFromPost"
+                                :post-data="({$type:'app.bsky.feed.defs#postView',...reply.post} as AppBskyFeedDefs.PostView)" :thread-data="reply" :is-reply-style="true"
                                 :reply-index="index+1" :total-replies="replies.replies.length"/>
                             </div>
                         </TransitionGroup>
