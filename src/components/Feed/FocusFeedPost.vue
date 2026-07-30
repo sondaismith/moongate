@@ -111,7 +111,7 @@
                 <AvatarRound v-if="isReplyStyle" :author-details="postToShow.author"/>
                 <div v-if="replyIndex !=undefined && totalReplies!=undefined && replyIndex<totalReplies" class="h-full bg-slate-700 w-0.5 m-auto"></div>
             </div>
-            <div class="flex flex-col w-full overflow-hidden"
+            <div class="flex flex-col w-full"
             :class="[isReplyStyle ? 'pl-2' : '']">
                 {{ void "Post Profile Header" }}
                 <div class="flex items-center gap-2">
@@ -139,10 +139,10 @@
                     <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div> -->
                     <RouterLink v-if="!AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" @keydown.space="openPostInPostFocusModal"
                     data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs
-                    text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</RouterLink>
+                    text-nowrap self-start text-right outline outline-2 outline-transparent focus-visible:outline-focusBorder" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</RouterLink>
                     <RouterLink v-else-if="AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" @keydown.space="openPostInPostFocusModal"
                     data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs
-                    text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</RouterLink>
+                    text-nowrap self-start text-right outline outline-2 outline-transparent focus-visible:outline-focusBorder" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</RouterLink>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">

@@ -126,7 +126,6 @@ declare module 'vue' {
     'ISolar:chatDotsOutline': typeof import('~icons/solar/chat-dots-outline')['default']
     'ISolar:earthOutline': typeof import('~icons/solar/earth-outline')['default']
     'ISolar:playBold': typeof import('~icons/solar/play-bold')['default']
-    'ISolar:stopwatchPlayBold': typeof import('~icons/solar/stopwatch-play-bold')['default']
     'ISolar:trashBinTrashBold': typeof import('~icons/solar/trash-bin-trash-bold')['default']
     'ISolar:undoLeftRoundBold': typeof import('~icons/solar/undo-left-round-bold')['default']
     'ISolar:usersGroupRoundedBold': typeof import('~icons/solar/users-group-rounded-bold')['default']
