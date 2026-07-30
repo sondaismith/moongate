@@ -111,7 +111,7 @@
                 <AvatarRound v-if="isReplyStyle" :author-details="postToShow.author"/>
                 <div v-if="replyIndex !=undefined && totalReplies!=undefined && replyIndex<totalReplies" class="h-full bg-slate-700 w-0.5 m-auto"></div>
             </div>
-            <div class="flex flex-col w-full"
+            <div class="flex flex-col w-full min-w-0"
             :class="[isReplyStyle ? 'pl-2' : '']">
                 {{ void "Post Profile Header" }}
                 <div class="flex items-center gap-2">

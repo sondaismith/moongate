@@ -1,15 +1,17 @@
 <template>
     <div v-if="!displayOnly" class="relative" :class="[{'mb-[4px]' : userIsLive}]">
-        <div data-testid="avatar-round" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,authorDetails)"
+        <button data-testid="avatar-round" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,authorDetails)"
         @mouseover="AccountPeekState.waitBeforePeekingUser($event,did ? did : '')"
         @mouseleave="(_e) => AccountPeekState.cancelUserPeek()" class="flex rounded-full bg-slate-300 aspect-square
         border border-outline box-contents size-10 min-w-10 bg-contain hover:border-hover
-        transition-[border-color] ease-linear duration-200 cursor-pointer overflow-hidden" :class="[{'border-2 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover' : userIsLive},
+        transition-[border-color] ease-linear duration-200 cursor-pointer overflow-hidden shadow-none
+        outline outline-2 outline-offset-2 outline-transparent focus-visible:outline-focusBorder"
+        :class="[{'border-2 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover' : userIsLive},
             componentStyles
         ]">
             <ImageLoader v-if="typeof authorDetails.avatar != 'undefined'" :img-url="authorDetails.avatar" :fill-container="true" :loader-type="'spinner'" :class="{'blur-sm' : accountContainsSensitiveContent}"/>
             <i-mingcute:butterfly-2-fill v-else class="text-2xl h-full w-full p-1 text-blue-600"/>
-        </div>
+        </button>
         <div v-if="userIsLive" data-testid="avatar-round-live-label" @click="displaySelectedUserAccount" @contextmenu="showOptionsMenu($event,authorDetails)"
         class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded bg-accountLiveAvatarBorder
         cursor-pointer text-white text-[10px] font-bold leading-[14px] select-none">LIVE</div>
