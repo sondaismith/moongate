@@ -1,6 +1,6 @@
 <template>
     <div data-testid="user-focus-modal" class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none"
-    @keydown.tab="(e) => TrapFocus(this.$el,e)" tabindex="0">
+    @keydown.tab="(e) => TrapFocus(this.$el,e,(isPFPFullscreen||isBannerFullscreen))" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{ void "Fullscreen Image" }}
         <div ref="avatarbannerfullscreen" @keydown.tab="(e) => TrapFocus(this.$refs.avatarbannerfullscreen,e)" tabindex="-1">

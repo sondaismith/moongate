@@ -38,6 +38,7 @@ declare module 'vue' {
     FeedStackButton: typeof import('./src/components/Utilities/FeedStackButton.vue')['default']
     FilterBar: typeof import('./src/components/Utilities/FilterBar.vue')['default']
     FilterSelect: typeof import('./src/components/Utilities/FilterSelect.vue')['default']
+    FocusButton: typeof import('./src/components/Utilities/FocusButton.vue')['default']
     FocusFeedPost: typeof import('./src/components/Feed/FocusFeedPost.vue')['default']
     FollowUser: typeof import('./src/components/Utilities/FollowUser.vue')['default']
     Hashtag: typeof import('./src/components/Utilities/Hashtag.vue')['default']

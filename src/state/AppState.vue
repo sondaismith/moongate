@@ -65,8 +65,10 @@ export function CopyTextToClipboard(textToCopy:string, copyAction:'text'|'link' 
  * https://www.bennadel.com/blog/4096-trapping-focus-within-an-element-using-tab-key-navigation-in-javascript.htm.
  * @param el The element to trap focus in.
  * @param e The Keydown KeyboardEvent that the method is called with.
+ * @param disabled Should the functionality be disabled - e.g. situations where multiple layered elements use `TrapFocus()`.
  */
-export function TrapFocus(el:HTMLElement, e: KeyboardEvent){
+export function TrapFocus(el:HTMLElement, e: KeyboardEvent, disabled:boolean=false){
+    if(disabled) return;
     let tabbable = el.querySelectorAll("button:not([disabled]), input:not([disabled]), select, textarea, [href]:not([tabindex='-1']), [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
     let target = e.target;
     if(e.key.toLowerCase() !== 'tab') return; //cancel further actions

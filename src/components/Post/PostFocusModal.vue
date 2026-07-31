@@ -1,18 +1,20 @@
 <template>
-    <div data-testid="post-focus-modal-main" id="post-focus-modal-main" tabindex="0" @keydown.tab="(e) => TrapFocus($el,e)" @scroll.passive="toggleScrollToTop"
+    <div data-testid="post-focus-modal-main" id="post-focus-modal-main" tabindex="0" @keydown.tab="(e) => TrapFocus($el,e,isImageFullscreen)" @scroll.passive="toggleScrollToTop"
     class="absolute z-20 h-full w-full flex flex-col sm:flex-row bg-slate-900/90 outline-none overflow-y-auto">
         {{ void "Fullscreen Image" }}
-        <Transition>
-            <div v-if="isImageFullscreen" tabindex="0" @click="hideImageFullscreen" @keydown.space="hideImageFullscreen" @keydown.enter="hideImageFullscreen"
-            class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto bg-black/95
-            bg-contain bg-center bg-no-repeat z-30 outline outline-2 -outline-offset-2 outline-transparent focus-visible:!outline-focusBorder"
-            :style="{'background-image': 'url('+(fullscreenImage)+'s)'}">
-                <div v-if="!(fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri" @click="(e)=>{e.stopPropagation()}" class="absolute text-black bottom-0 left-0 px-2 bg-white/50 z-10">
-                    {{embedImageDimensions}}
-                </div>
-                <img @contextmenu="(e) => {e.preventDefault()}" :src="(fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri ? (fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri : (fullscreenImage as AppBskyEmbedImages.ViewImage).fullsize" class="max-h-full max-w-full"/>
-            </div>
-        </Transition>
+        <div ref="postfocusimagefullscreen" v-if="isImageFullscreen" @keydown.tab="(e) => TrapFocus(this.$refs.postfocusimagefullscreen,e)" tabindex="-1">
+            <Transition>
+                <FocusButton @click="hideImageFullscreen" @keydown.space="hideImageFullscreen" @keydown.enter="hideImageFullscreen"
+                class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto bg-black/95
+                bg-contain bg-center bg-no-repeat z-30 border-none rounded-none active:bg-black/95 outline-offset-[-6px]"
+                :style="{'background-image': 'url('+(fullscreenImage)+'s)'}">
+                    <div v-if="!(fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri" @click="(e)=>{e.stopPropagation()}" class="absolute text-black bottom-0 left-0 px-2 bg-white/50 z-10">
+                        {{embedImageDimensions}}
+                    </div>
+                    <img @contextmenu="(e) => {e.preventDefault()}" :src="(fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri ? (fullscreenImage as AppBskyEmbedExternal.ViewExternal).uri : (fullscreenImage as AppBskyEmbedImages.ViewImage).fullsize" class="max-h-full max-w-full"/>
+                </FocusButton>
+            </Transition>
+        </div>
         {{ void "Sticky Control bar - mobile version" }}
         <div v-if="AppState.usingMobileLayout" class="sticky top-0 z-10 bg-postFocusBG border-b border-outline shadow-scroll-underline shadow-postFocusModalDetailsShadow/10
         flex items-center gap-2 px-2 py-1 text-primary">
@@ -26,12 +28,12 @@
             </div>
             <div v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="animate-pulse h-4 w-full rounded-sm bg-slate-500/30"></div>
             <div v-else class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as AppBskyFeedPost.Record).text">{{ (postDetails.currentThreadView.post.record as AppBskyFeedPost.Record).text }}</div>
-            <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary transition-opacity h-full ml-auto"
-            :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top"><i-mingcute:arrow-to-up-fill/></div>
-            <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
-            class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary sm:hidden h-full" title="View Image"><i-mdi:insert-photo/></div>
-            <div data-testid="postFocusModal-control-bar-close-button" class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
-            title="Close Thread" @click="hideModal"><i-mingcute:exit-fill/></div>
+            <FocusButton @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary transition-opacity h-full ml-auto"
+            :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top" :disabled="!isScrollToTopVisible"><i-mingcute:arrow-to-up-fill/></FocusButton>
+            <FocusButton v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
+            class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary sm:hidden h-full" title="View Image"><i-mdi:insert-photo/></FocusButton>
+            <FocusButton data-testid="postFocusModal-control-bar-close-button" class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
+            title="Close Thread" @click="hideModal"><i-mingcute:exit-fill/></FocusButton>
         </div>
         {{ void "Media Section" }}
         <div v-if="hasImageMedia || hasEmbedGIFMedia || AppBskyEmbedVideo.isView(postDetails.currentThreadView.post.embed)"
@@ -78,7 +80,8 @@
         </div>
         <div v-else @click="hideModal" class="w-full h-full hidden sm:block"></div>
         {{ void "Comments Section" }}
-        <div data-testid="post-focus-modal-side" id="post-focus-modal-side" @scroll.passive="toggleScrollToTop" class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto sm:overflow-y-auto">
+        <div data-testid="post-focus-modal-side" id="post-focus-modal-side" @scroll.passive="toggleScrollToTop" tabindex="-1"
+        class="flex flex-col w-full sm:w-2/5 shrink-0 sm:max-w-96 bg-postFocusBG grow sm:ml-auto sm:overflow-y-auto">
             {{ void "Sticky Control bar" }}
             <div v-if="!AppState.usingMobileLayout" class="sticky top-0 z-10 bg-postFocusBG border-b border-outline shadow-scroll-underline shadow-postFocusModalDetailsShadow/10
             flex items-center gap-2 px-2 py-1 text-primary">
@@ -92,12 +95,12 @@
                 </div>
                 <div v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="animate-pulse h-4 w-full rounded-sm bg-slate-500/30"></div>
                 <div v-else class="max-w-20s text-nowrap overflow-hidden text-ellipsis text-secondary text-sm select-none" :title="(postDetails.currentThreadView.post.record as AppBskyFeedPost.Record).text">{{ (postDetails.currentThreadView.post.record as AppBskyFeedPost.Record).text }}</div>
-                <div @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary transition-opacity h-full ml-auto"
-                :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top"><i-mingcute:arrow-to-up-fill/></div>
-                <div v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
-                class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary sm:hidden h-full" title="View Image"><i-mdi:insert-photo/></div>
-                <div data-testid="postFocusModal-control-bar-close-button" class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
-                title="Close Thread" @click="hideModal"><i-mingcute:exit-fill/></div>
+                <FocusButton @click="isScrollToTopVisible && scrollToTopOfModal()" class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary transition-opacity h-full ml-auto"
+                :style="[isScrollToTopVisible ? {'opacity':'100%'} : {'opacity':'0%', 'cursor':'default'}]" title="Scroll to Top" :disabled="!isScrollToTopVisible"><i-mingcute:arrow-to-up-fill/></FocusButton>
+                <FocusButton v-if="hasImageMedia" @click="showImageFullscreen(getEmbededImageViewImageObjects[currentMediaIndex])"
+                class="flex rounded-lg cursor-pointer hover:bg-btnHover border border-outline items-center px-2 text-primary sm:hidden h-full" title="View Image"><i-mdi:insert-photo/></FocusButton>
+                <FocusButton data-testid="postFocusModal-control-bar-close-button" class="flex rounded-lg cursor-pointer bg-btn hover:bg-btnHover border border-outline items-center px-2 text-primary h-full"
+                title="Close Thread" @click="hideModal"><i-mingcute:exit-fill/></FocusButton>
             </div>
             {{ void "Focused Post Loading Placeholder/Skeleton" }}
             <div data-testid="postFocusModal-focus-post-loading" v-if="postDetails.isAwaitingFocusData || isChangingThreadContext" class="flex flex-col rounded bg-slate-400s p-4 pb-2 w-full">
@@ -241,6 +244,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/keyboard';
 import 'swiper/css/pagination'
+import FocusButton from '../Utilities/FocusButton.vue';
 
 export default defineComponent({
     components:{
@@ -257,7 +261,8 @@ export default defineComponent({
         SquareButton,
         FocusFeedPost,
         Swiper,
-        SwiperSlide
+        SwiperSlide,
+        FocusButton
     },
     props:{
         // /**
