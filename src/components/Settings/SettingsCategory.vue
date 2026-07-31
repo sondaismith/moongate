@@ -1,14 +1,18 @@
 <template>
-    <div class="border-b border-outline p-0.5 rounded-sm cursor-pointer transition-colors
-    hover:bg-btnHover" :class="{'bg-feedColumnBG' : selected}" @click="clickCategory">
+    <FocusButton class="border-0 border-b border-outline p-0.5 rounded-sm cursor-pointer transition-colors
+    hover:bg-btnHover text-left" :class="{'bg-feedColumnBG' : selected}" @click="clickCategory">
         <slot></slot>
-    </div>
+    </FocusButton>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import FocusButton from '../Utilities/FocusButton.vue';
 
 export default defineComponent({
+    components:{
+        FocusButton,
+    },
     props:{
         /**The String index of the category to display when clicked. */
         index:String,

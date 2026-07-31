@@ -1,11 +1,13 @@
 <template>
-    <div @click="onUserButtonClick" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
-        @contextmenu.prevent class="relative cursor-pointer" data-testid="userbutton">
-        <div class="absolute z-10 border-[3px] border-sidebar w-3 -left-1 box-content aspect-square rounded-full" :class="GetLoginStateColor"
-        :title="GetLoginStateText"></div>
-        <a class="group relative flex justify-center aspect-square
+    <FocusButton @click="onUserButtonClick" :onmouseenter="displayButtonTooltip" :onmouseleave="hideButtonTooltip"
+        @contextmenu.prevent class="group relative w-full border-none active:bg-transparent outline-offset-2"
+        data-testid="userbutton">
+        <div class="absolute z-10 border-[3px] border-sidebar w-3 -left-1 box-content aspect-square rounded-full"
+        :class="GetLoginStateColor" :title="GetLoginStateText"></div>
+        <div class="group relative flex justify-center aspect-square
             rounded-full bg-gray-00 border-[3px]
-            border-outline transition-[border] hover:border-loginHighlight overflow-hidden">
+            border-outline transition-[border] hover:border-loginHighlight overflow-hidden
+            group-active:bg-gray-600/50">
             <Transition>
                 <i-mingcute:key-2-line v-if="!AppState.canBrowse || !isVisible" data-testid="userbutton-browse-mode-unset" class="absolute h-full text-2xl transition-colors text-primary group-hover:text-loginHighlight"/>
                 <div v-else-if="AppState.canBrowse || isVisible" class="absolute flex h-full w-full justify-center">
@@ -20,8 +22,8 @@
                     <i-mingcute:user-question-fill v-if="AppState.isGuestBrowsing" data-testid="userbutton-browse-mode-guest" class="absolute h-full text-2xl transition-colors text-primary group-hover:text-loginHighlight z-[1]"/>
                 </div>
             </Transition>
-        </a>
-    </div>
+        </div>
+    </FocusButton>
 </template>
 
 <script lang="ts">
@@ -38,6 +40,7 @@ import MdiUserSwitch from '~icons/mdi/user-switch';
 import MingcuteExitDoorLine from '~icons/mingcute/exit-door-line';
 import { AccountPeekState } from '../../state/AccountPeekState.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
+import FocusButton from '../Utilities/FocusButton.vue';
 
 let optionsMenu:IOptionMenuItem[] = [
     {Icon:MingcuteProfileFill,Label:'View Profile',Action:displayCurrentUsersAccount,Type:ItemType.Option},
@@ -99,6 +102,9 @@ async function logoutOfAccount(){
 }
 
 export default defineComponent({
+    components:{
+        FocusButton,
+    },
     props: {
         tooltip: String
     },

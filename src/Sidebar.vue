@@ -46,7 +46,7 @@
             </div>
             {{ void "Navbar Footer" }}
             <div class="w-full flex-none !mt-auto">
-                <div class="p-2 space-y-2">
+                <div class="flex flex-col p-2 space-y-2">
                     <SidebarButton data-testid="app-settings-button" :icon="FeedEnums.Icons.Settings" tooltip="App Settings" @click="showSettingsPanel"/>
                     <UserButton :tooltip="AppState.currentUsername"/>
                 </div>

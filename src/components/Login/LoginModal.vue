@@ -467,7 +467,11 @@ export default defineComponent({
             default:
                 break;
         }
+        AppState.isLoggingIntoAccount = true;
         (this.$el as HTMLElement).focus();
+    },
+    beforeUnmount(){
+        AppState.isLoggingIntoAccount = false;
     }
 })
 </script>

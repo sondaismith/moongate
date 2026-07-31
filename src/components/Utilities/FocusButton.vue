@@ -1,5 +1,6 @@
 <template>
-    <button class="outline outline-2 outline-transparent focus-visible:outline-focusBorder shadow-none" :disabled="disabled" :class="$attrs">
+    <button class="outline outline-2 outline-transparent focus-visible:outline-focusBorder shadow-none"
+    :disabled="disabled" :class="$attrs.class">
         <slot></slot>
     </button>
 </template>

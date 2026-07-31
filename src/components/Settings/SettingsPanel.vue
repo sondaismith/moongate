@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
+    <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" @keydown.tab="(e) => TrapFocus($el,e,AppState.isLoggingIntoAccount)" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         <div class="relative z-20 flex flex-col max-w-[40rem] w-full md:w-2/3s h-4/5 sm:max-h-[34rem]
         m-4 my-auto sm:m-auto rounded bg-focusBG text-primary border border-sidebar drop-shadow-lg
@@ -206,7 +206,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { AppState, toast } from '../../state/AppState.vue'
+import { AppState, toast, TrapFocus } from '../../state/AppState.vue'
 import SettingsCategory from './SettingsCategory.vue';
 import InLaInput from '../Utilities/InLaInput.vue';
 import { LocalesObject } from '../../enums/Locales';
@@ -242,6 +242,7 @@ export default defineComponent({
             LocalesObject,
             stringToJSON,
             isTauri,
+            TrapFocus,
             SettingData: {
                 Options:{
                     General:{
@@ -460,7 +461,16 @@ export default defineComponent({
                 toast.add({summary:'Error',detail:`Invalid Index: ${err}`,severity:'error', group:'bc', life:3000});
             }
             this.SettingData.Options.Developer.data.indexToDelete = 100000;//"unset" index
-        }
+        },
+        /**
+         * Method used to close the `SettingsPanel` if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape'){
+                this.closeModal();
+            }
+        },
     },
     computed:{
         langControlsDisabled(){
@@ -485,6 +495,7 @@ export default defineComponent({
         //Finds out if the application is currently running in a dev environment.
         this.isInDevEnvironment = import.meta.env.DEV;
         this.originalSettingsState = AppSettingsState.getCurrentSettingsState();
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
     },
     async beforeUnmount(){
         //Save application settings if changes have been made
@@ -494,6 +505,15 @@ export default defineComponent({
             .then(res => toast.add({summary:'Settings Saved', severity:'success', group:'bc', life:3000}))
             .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
         }
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
+    },
+    beforeRouteEnter(to,from,next){
+        if(to.path == '/settings'){
+            next(vm=>{
+                vm.$el.focus();//focus element when opened and after modal at higher layer (i.e. LoginModal) is closed
+            })
+        }
+        else next();
     }
 })
 </script>
