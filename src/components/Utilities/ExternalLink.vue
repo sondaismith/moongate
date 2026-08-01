@@ -14,18 +14,9 @@ import MingcuteWorld2Line from '~icons/mingcute/world-2-line';
 import { defineComponent } from 'vue';
 import { isTauri } from '@tauri-apps/api/core';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { CopyTextToClipboard } from '../../state/AppState.vue';
+import { CopyTextToClipboard, OpenLink } from '../../state/AppState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
-import { openUrl } from '@tauri-apps/plugin-opener';
 import FocusButton from './FocusButton.vue';
-
-/**
- * Method used to open link in the system's default browser.
- * @param url The URL to open in the default browser.
- */
-async function OpenLink(url:string){
-    await openUrl(url);
-}
 
 /**Default text label that will be used if content is not provided. */
 let defaultText = '[Please Set Link Text]';

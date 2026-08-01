@@ -28,7 +28,11 @@
                             </div>
                             <div v-if="typeof profileEmbedExternal != 'undefined'" class="mt-2 text-xs text-secondary">{{ profileEmbedExternal.description }}</div>
                         </div>
-                        <SquareButton @click="openStreamLink">
+                        <SquareButton v-if="!isTauri()" @click="openStreamLink">
+                            <div class="mr-1">Watch Now</div>
+                            <i-mingcute:external-link-line/>
+                        </SquareButton>
+                        <SquareButton v-else @click="tryToShowOptionsMenu">
                             <div class="mr-1">Watch Now</div>
                             <i-mingcute:external-link-line/>
                         </SquareButton>
@@ -52,7 +56,7 @@
                     </div>
                 </div>
                 <div class="flex absolute top-2 right-2 rounded-full p-[1px] bg-btn size-8 items-center justify-center">
-                    <button @click="closeModal" class="h-full w-full rounded-full shadow-none"><i-mingcute:close-fill class="text-lg mx-auto"/></button>
+                    <FocusButton @click="closeModal" class="h-full w-full rounded-full outline-offset-[-3px]"><i-mingcute:close-fill class="text-lg mx-auto"/></FocusButton>
                 </div>
             </div>
         </div>
@@ -60,13 +64,20 @@
 </template>
 
 <script lang="ts">
+import MingcuteCopyLine from '~icons/mingcute/copy-line';
+import MingcuteWorld2Line from '~icons/mingcute/world-2-line';
+
 import { AppBskyActorDefs, AppBskyEmbedExternal } from '@atproto/api';
 import { defineComponent, PropType } from 'vue'
 import SquareButton from '../Utilities/SquareButton.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
 import VerifiedBadge from '../Utilities/VerifiedBadge.vue';
-import { AppState, TrapFocus } from '../../state/AppState.vue';
+import { AppState, CopyTextToClipboard, OpenLink, TrapFocus } from '../../state/AppState.vue';
 import { convertToLongTimestamp, convertToHourMinuteTimestamp } from '../../helpers/converters';
+import FocusButton from '../Utilities/FocusButton.vue';
+import { isTauri } from '@tauri-apps/api/core';
+import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
+import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
 
 /**
  * Interface created to remove TS warnings created when
@@ -86,13 +97,15 @@ export default defineComponent({
     components:{
         AvatarRound,
         SquareButton,
+        FocusButton,
         // VerifiedBadge
     },
     data(){
         return{
             TrapFocus,
             convertToLongTimestamp,
-            convertToHourMinuteTimestamp
+            convertToHourMinuteTimestamp,
+            isTauri,
         }
     },
     props:{
@@ -136,6 +149,27 @@ export default defineComponent({
         openUserProfile(){
             AppState.hideUserLivestreamInfo();
             if(this.userProfile.handle.trim() != '' && this.$route.path != `/profile/${this.userProfile.handle}`) this.$router.push(`/profile/${this.userProfile.handle}`);
+        },
+        /**
+         * Attempt to show options menu for stream link. Will only show menu
+         * if "live status" data is available.
+         */
+        tryToShowOptionsMenu(e:MouseEvent|KeyboardEvent){
+            if(typeof this.profileEmbedExternal !='undefined'){
+                this.showOptionsMenu(e,this.profileEmbedExternal.uri);
+            }
+        },
+        /**
+         * Shows Options Menu allowing user to perform different actions
+         * relating to the selected link.
+         */
+        showOptionsMenu(e:MouseEvent|KeyboardEvent, linkURL:string){
+            e.preventDefault();
+            OptionsMenuState.currentMenuItems = [
+                {Icon:MingcuteWorld2Line,Label:'Open in Default Browser',Action:function(){OpenLink(linkURL)},Type:ItemType.Option},
+                {Icon:MingcuteCopyLine,Label:'Copy link to clipboard',Action:function(){CopyTextToClipboard(linkURL,'link')},Type:ItemType.Option},
+            ] as IOptionMenuItem[]
+            OptionsMenuState.showOptionMenu(e);
         },
         /**Close the "User Livestream Info" modal. */
         closeModal(){

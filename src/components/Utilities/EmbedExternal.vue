@@ -96,17 +96,8 @@ import ImageContainer from './ImageContainer.vue';
 import { isTauri } from '@tauri-apps/api/core';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
-import { CopyTextToClipboard, externalGIFSources } from '../../state/AppState.vue';
-import { openUrl } from '@tauri-apps/plugin-opener';
+import { CopyTextToClipboard, externalGIFSources, OpenLink } from '../../state/AppState.vue';
 import ImageLoader from './ImageLoader.vue';
-
-/**
- * Method used to open link in the system's default browser.
- * @param url The URL to open in the default browser.
- */
-async function OpenLink(url:string){
-    await openUrl(url);
-}
 
 export default defineComponent({
     components:{

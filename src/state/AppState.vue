@@ -13,12 +13,21 @@ import { FeedEnums } from '../enums/FeedEnums';
 import { router } from '../main';
 import { BroadcastChannelTarget, BroadcastObject } from '../types/BroadcastChannelTypes';
 import { AccountPeekState } from './AccountPeekState.vue';
+import { openUrl } from '@tauri-apps/plugin-opener';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
     removeGroup: (group) => ToastEventBus.emit('remove-group', group),
     removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
 };
+
+/**
+ * Method used to open link in the system's default browser.
+ * @param url The URL to open in the default browser.
+ */
+export async function OpenLink(url:string){
+    await openUrl(url);
+}
 
 /**
  * Copies the passed in text value to the User's clipboard.

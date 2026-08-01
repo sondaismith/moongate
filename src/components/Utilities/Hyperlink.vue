@@ -21,18 +21,9 @@ import MingcuteWorld2Line from '~icons/mingcute/world-2-line';
 
 import { defineComponent } from 'vue'
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { openUrl } from '@tauri-apps/plugin-opener';
-import { CopyTextToClipboard } from '../../state/AppState.vue';
+import { CopyTextToClipboard, OpenLink } from '../../state/AppState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { isTauri } from '@tauri-apps/api/core';
-
-/**
- * Method used to open link in the system's default browser.
- * @param url The URL to open in the default browser.
- */
-async function OpenLink(url:string){
-    await openUrl(url);
-}
 
 export default defineComponent({
     props:{
@@ -45,12 +36,6 @@ export default defineComponent({
         }
     },
     methods:{
-        /**
-         * Used to allow button to open link in new tab.
-         */
-        openLink(){
-            window.open(this.URL, '_blank')
-        },
         /**
          * Shows Options Menu allowing user to perform different actions
          * relating to the clicked link.
