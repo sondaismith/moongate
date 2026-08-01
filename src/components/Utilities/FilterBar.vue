@@ -5,26 +5,30 @@
         @input="$emit('update:filterVmodel',$event.target.value)"
         class="h-full w-full px-2 py-1 bg-transparent rounded-sm outline-none shadow-none"
         :class="{'cursor-not-allowed':disabled}">
-        <button v-if="showClearButton" :disabled="disabled" @click="$emit('clearFilterClicked')"
+        <FocusButton v-if="showClearButton" :disabled="disabled" @click="$emit('clearFilterClicked')"
         class="flex gap-1 items-center shadow-none px-2 rounded hover:border-transparent
         active:border-transparent bg-gray-400 hover:bg-gray-500 active:bg-gray-600
         disabled:bg-disabledBG disabled:cursor-not-allowed text-white">
             <div class="text-nowrap">{{ clearButtonText }}</div>
             <i-mingcute:close-circle-line/>
-        </button>
-        <button v-if="showSubmitButton" :disabled="disabled" @click="$emit('submitClicked')"
+        </FocusButton>
+        <FocusButton v-if="showSubmitButton" :disabled="disabled" @click="$emit('submitClicked')"
         class="flex gap-1 items-center shadow-none px-2 rounded hover:border-transparent
         active:border-transparent bg-blue-400 hover:bg-blue-500 active:bg-blue-600
         disabled:bg-disabledBG disabled:cursor-not-allowed text-white">
             <div class="text-nowrap">{{ submitButtonText }}</div>
-        </button>
+        </FocusButton>
     </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import FocusButton from './FocusButton.vue';
 
 export default defineComponent({
+    components:{
+        FocusButton,
+    },
     props:{
         /**Placeholder text displayed in the FilterBar when it is empty. */
         placeholderText:{

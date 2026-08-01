@@ -1,18 +1,18 @@
 <template>
-    <div class="relative flex flex-col gap-2 overflow-hidden">
+    <div class="relative flex flex-col gap-2 overflow-hidden p-2">
         <div class="flex gap-2 items-center h-10 border-b border-outline pb-2 text-lg">
-            <button v-if="!noSubMenusSelected || breadcrumbs.length>0" @click="backUpMenuTree"
-            class="h-full p-1 shadow-none bg-btn" data-testid="accountSettingsPanel-menu-back-button">
+            <FocusButton v-if="!noSubMenusSelected || breadcrumbs.length>0" @click="backUpMenuTree"
+            class="h-full p-1 bg-btn" data-testid="accountSettingsPanel-menu-back-button">
                 <i-mingcute:arrow-left-line/>
-            </button>
+            </FocusButton>
             <div data-testid="accountSettingsPanel-current-menu-label">{{ currentMenuLabel }}</div>
         </div>
         <div v-if="!AppState.isAuthBrowsing" class="flex items-center gap-1">
             <div>You must</div>
-            <button @click="AppState.showLoginAccountSelect($route.path)" class="cursor-pointer text-blueskyBlue rounded-none hover:bg-primary/10
-            hover:border-transparent focus-visible:underline shadow-none">
+            <FocusButton @click="AppState.showLoginAccountSelect($route.path)" class="text-blueskyBlue rounded-none hover:bg-primary/10
+            hover:border-transparent focus-visible:underline">
                 Login
-            </button>
+            </FocusButton>
             <div>to view all Account options.</div>
         </div>
         <div class="flex flex-col gap-1">
@@ -145,6 +145,7 @@ import AccountListing from '../Utilities/AccountListing.vue';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import ModernToggleButton from '../Utilities/ModernToggleButton.vue';
 import HorizontalSelector from '../Utilities/HorizontalSelector.vue';
+import FocusButton from '../Utilities/FocusButton.vue';
 
 /**Displays specified User's profile in the `UserFocusModal` component. */
 function ShowUserProfile(userDid:string){
@@ -156,6 +157,7 @@ function ShowUserProfile(userDid:string){
 
 export default defineComponent({
     components:{
+        FocusButton,
         RadioBarButton,
         CustomFeedButtonPlaceholder,
         FilterBar,

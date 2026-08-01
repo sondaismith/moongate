@@ -23,11 +23,11 @@
                 </template>
                 </div>
                 <div class="relative grow p-2 w-full h-full overflow-hidden">
-                    <div class="relative p-2 rounded border border-outline w-full h-full overflow-hidden">
+                    <div class="relative p-2s rounded border border-outline w-full h-full overflow-hidden">
                         <div class="relative w-full h-full overflow-hiddens">
                             <TransitionGroup>
                                 <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[0]" class="h-full">
-                                    <div class="flex flex-col gap-1 h-full">
+                                    <div class="flex flex-col gap-1 h-full p-2">
                                         <div class="text-xl font-medium">Appearance</div>
                                         <CheckBox :model-value="AppSettingsState.Settings.isDarkMode" @value-toggled="toggleTheme">
                                             Dark Mode?
@@ -62,7 +62,7 @@
                                                 <div class="font-bold text-sm">Warn about and spoiler media with "sensitive content"?</div>
                                                 <div class="text-xs">Relevant images/video will be hidden by solid color overlay that displays the associated content warnings. The content can be viewed if the "Show" button is clicked.</div>
                                             </div>
-                                            <div class="flex gap-1 items-center">
+                                            <div class="flex gap-2 items-center">
                                                 <div class="text-sm">{{ AppSettingsState.Settings.spoilerImagesContainingSensitiveContent ? 'Yes' : 'No' }}</div>
                                                 <ModernToggleButton :value-to-toggle="AppSettingsState.Settings.spoilerImagesContainingSensitiveContent"
                                                 @value-toggled="newValue => AppSettingsState.Settings.spoilerImagesContainingSensitiveContent = newValue"/>
@@ -82,7 +82,7 @@
                                     </div>
                                 </div>
                                 <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[1]"
-                                class="relative flex flex-col gap-2 w-full h-full overflow-auto">
+                                class="relative flex flex-col gap-2 w-full h-full overflow-auto p-2">
                                     <div class="font-thin text-2xl">Language Selection</div>
                                     <CheckBox :model-value="AppSettingsState.Settings.isAcceptingAllLanguages" @value-toggled="toggleAcceptAllLanguages">
                                         Accept Posts in All Languages
@@ -129,11 +129,11 @@
                                     <!-- <InLaInput text-label="Tag Blacklist" :model-value="SetttingData.Options.PostFilters.data.tagBlacklist"/> -->
                                 </div>
                                 <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[2]"
-                                class="relative flex flex-col w-full h-full overflow-y-autos pr-2s">
+                                class="relative flex flex-col w-full h-full">
                                     <AccountSettingsPanel></AccountSettingsPanel>
                                 </div>
                                 <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SettingData.Options)[3]"
-                                class="relative flex flex-col w-full h-full overflow-y-auto pr-2">
+                                class="relative flex flex-col w-full h-full overflow-y-auto p-2">
                                     <div class="italic">Devloper testing commands - Be careful!</div>
                                     <div v-if="!isTauri()" class="flex flex-col gap-1 border border-outline rounded p-2">
                                         <div class="font-thin text-2xl">IndexedDB Options</div>
@@ -192,8 +192,8 @@
                                     </div>
                                 </div>
                                 <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[4]"
-                                class="relative p-1 w-full h-full">
-                                    <AboutAppModal :hide-backdrop="true"/>
+                                class="relative p-2 w-full h-full">
+                                    <AboutAppModal :hide-backdrop="true" :embeded-mode="true"/>
                                 </div>
                             </TransitionGroup>
                         </div>

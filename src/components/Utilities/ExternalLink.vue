@@ -2,9 +2,9 @@
     <a v-if="!isTauri()" target="_blank"
     :href="linkUrl"
     class="text-blue-500 hover:text-blue-300 cursor-pointer"><slot>{{ defaultText }}</slot></a>
-    <a v-else
+    <FocusButton v-else
     @click="(e) => showOptionsMenu(e,linkUrl)" @keydown.enter="(e) => showOptionsMenu(e,linkUrl)" tabindex="0"
-    class="text-blue-500 hover:text-blue-300 cursor-pointer"><slot>{{ defaultText }}</slot></a>
+    class="text-blue-500 hover:text-blue-300 rounded-none border-none active:bg-transparent"><slot>{{ defaultText }}</slot></FocusButton>
 </template>
 
 <script lang="ts">
@@ -17,6 +17,7 @@ import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { CopyTextToClipboard } from '../../state/AppState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import FocusButton from './FocusButton.vue';
 
 /**
  * Method used to open link in the system's default browser.
@@ -42,6 +43,9 @@ export default defineComponent({
             type:String,
             required:true
         },
+    },
+    components:{
+        FocusButton,
     },
     data(){
         return{

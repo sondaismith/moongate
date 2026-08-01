@@ -10,16 +10,16 @@
                     <div class="text-base leading-4 text-nowrap overflow-hidden text-ellipsis">{{ modItem.account.displayName ? modItem.account.displayName : '\n' }}</div>
                     <div class="text-xs text-secondary text-nowrap overflow-hidden text-ellipsis">@{{ modItem.account.handle ? modItem.account.handle : 'PROP MISSING' }}</div>
                 </div>
-                <button @click="$emit('actionClicked')" :title="actionText+' &quot;'+modItem.account.displayName+'&quot;'"
+                <FocusButton @click="$emit('actionClicked')" :title="actionText+' &quot;'+modItem.account.displayName+'&quot;'"
                 class=" flex items-center gap-1 self-center ml-auto mr-0.5 rounded p-1 border bg-deleteBtnBG active:bg-deleteBtnBGActive
                 text-xs text-white hover:border-primary disabled:bg-disabledBG disabled:text-disabled disabled:border-transparent shadow-none"
                 :disabled="modItem.isAwaitingAction">
                     <i-mingcute:loading-fill v-if="modItem.isAwaitingAction" class="spinner"/>
                     <div>{{ actionText }}</div>
-                </button>
-                <button title="Account Options" class="px-1 rounded bg-checkedButtonBG hover:bg-checkedButtonBGHover
+                </FocusButton>
+                <FocusButton title="Account Options" class="px-1 rounded bg-checkedButtonBG hover:bg-checkedButtonBGHover
                 border border-outlineLighter shadow-none mr-1"
-                @click="e => $emit('optionsClicked',e)">...</button>
+                @click="e => $emit('optionsClicked',e)">...</FocusButton>
             </div>
             <AccountModerationLabel :is-muted="isAccountMuted" :is-blocked="isAccountBlocked"/>
             <div class="text-sm">{{ modItem ? modItem.account.description : 'Please supply the `:feed-generator-view` prop' }}</div>
@@ -32,6 +32,7 @@ import { defineComponent, PropType } from 'vue'
 import AccountModerationLabel from './AccountModerationLabel.vue';
 import { IAccountModerationItem } from '../../interfaces/SettingsInterfaces';
 import ImageLoader from './ImageLoader.vue';
+import FocusButton from './FocusButton.vue';
 
 export default defineComponent({
     props:{
@@ -49,6 +50,7 @@ export default defineComponent({
     components:{
         AccountModerationLabel,
         ImageLoader,
+        FocusButton,
     },
     emits:{
         actionClicked:null,
