@@ -1,9 +1,8 @@
 <template>
-    <button v-if="isButton" class="group relative flex h-full items-center shadow-none border-none
-    outline-none active:bg-btnHover/40 disabled:bg-transparent" :disabled="!isButton"
+    <FocusButton v-if="isButton" class="border-none active:bg-btnHover/40 disabled:bg-transparent" :disabled="!isButton"
     title="Moongate Logo">
-        <div class="absolute select-none w-full h-full z-[1] border-2 rounded-lg transition-[border] border-transparent
-        group-focus-visible:border-feedtypeBtnFocusHighlight"></div>
+        <!-- <div class="absolute select-none w-full h-full z-[1] border-2 rounded-lg transition-[border] border-transparent
+        group-focus-visible:border-feedtypeBtnFocusHighlight"></div> -->
         <svg width="100%" height="100%" class="text-logoFill transition-transform scale-110 logo-shadow" :class="[$attrs.class, isButton ? 'cursor-pointer group-focus:scale-125 group-hover:scale-125' : '']"
         viewBox="0 0 1232 1232" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/"
         style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
@@ -19,7 +18,7 @@
             0 -13.915,69.989 -55,129c0,0 -51.183,50.496 421,316c0,0 -418.611,-240.44 -480.023,-224.991c-0,-0 -78.654,95.669 -119.977,122.991c0,0 -47.499,201.506 -112,241c0,
             0 -21.814,-256.107 34,-305c0,0 117.177,-97.035 86,-136c-31.177,-38.965 -60.901,-74.579 -100,-83Z" style="fill:currentColor;"/>
         </svg>
-    </button>
+    </FocusButton>
     <div v-else>
         <svg width="100%" height="100%" class="text-logoFill transition-transform logo-shadow" :class="[iconStyling]"
         viewBox="0 0 1232 1232" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/"
@@ -41,8 +40,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import FocusButton from '../Utilities/FocusButton.vue';
 
 export default defineComponent({
+    component:{
+        FocusButton,
+    },
     props:{
         /**Indicates if component should have "button" styling applied. */
         isButton:{

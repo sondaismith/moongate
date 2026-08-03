@@ -8,7 +8,7 @@
     ]"
     :disabled="isDisabled || isAwaitingResponse">
         <div v-if="!isAwaitingResponse" class="flex items-center justify-center w-full h-full rounded border-2 border-transparent
-        group-focus-visible:border-feedtypeBtnFocusHighlight"
+        group-focus-visible:border-focusBorder"
         :class="[`px-${buttonPaddingX} py-${buttonPaddingY}`]">
             <slot></slot>
         </div>

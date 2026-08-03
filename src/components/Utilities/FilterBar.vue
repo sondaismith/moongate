@@ -8,14 +8,16 @@
         <FocusButton v-if="showClearButton" :disabled="disabled" @click="$emit('clearFilterClicked')"
         class="flex gap-1 items-center shadow-none px-2 rounded hover:border-transparent
         active:border-transparent bg-gray-400 hover:bg-gray-500 active:bg-gray-600
-        disabled:bg-disabledBG disabled:cursor-not-allowed text-white">
+        disabled:bg-disabledBG disabled:cursor-not-allowed text-white"
+        data-testid="filterbar-clear-button">
             <div class="text-nowrap">{{ clearButtonText }}</div>
             <i-mingcute:close-circle-line/>
         </FocusButton>
         <FocusButton v-if="showSubmitButton" :disabled="disabled" @click="$emit('submitClicked')"
         class="flex gap-1 items-center shadow-none px-2 rounded hover:border-transparent
         active:border-transparent bg-blue-400 hover:bg-blue-500 active:bg-blue-600
-        disabled:bg-disabledBG disabled:cursor-not-allowed text-white">
+        disabled:bg-disabledBG disabled:cursor-not-allowed text-white"
+        data-testid="filterbar-submit-button">
             <div class="text-nowrap">{{ submitButtonText }}</div>
         </FocusButton>
     </div>

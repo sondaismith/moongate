@@ -11,8 +11,8 @@
         <div v-if="lastResultsTerm != ''" class="border-x border-outline bg-searchbarShowingResultsBG p-2 pl-3 grow-0 shrink-0 text-sm text-searchbarShowingResultsText select-none">
             <div>Showing results for: "{{ lastResultsTerm }}"</div>
         </div>
-        <div v-if="searchTerm.trim() != '' || userResultsRef.length>0" class="flex border-t-0
-        border-inherit border-outline rounded-b bg-feedColumnBG overflow-auto"
+        <div v-if="searchTerm.trim() != '' || userResultsRef.length>0" class="flex border-t-0 border-inherit border-outline rounded-b
+        bg-feedColumnBG overflow-auto" tabindex="-1"
         :class="[userResultsRef.length<1 ? 'border-none' : 'border']">
             <div data-testid="userSearchBar-returned-users-container" class="relative flex flex-col w-full">
                 <button :disabled="disabled" @click="emitUserSelected(result.profileData,index)" data-testid="user-search-bar-result"

@@ -5,7 +5,7 @@
         <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar w-16 shrink-0 items-center">
             {{ void "App Logo" }}
             <div class="flex w-full border-b border-outline p-1">
-                <AppLogo @click="showAboutAppModal"/>
+                <AppLogo data-testid="app-logo" @click="showAboutAppModal"/>
             </div>
             <div class="w-full flex flex-col flex-shrink overflow-hidden">
                 {{ void "Feed List + Add btn" }}
