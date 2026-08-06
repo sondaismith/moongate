@@ -30,11 +30,15 @@ let getAuthorFeedResponse2:AppBskyFeedGetAuthorFeed.OutputSchema = {feed:[]};
 let profileStore = [profile1,profile2,profile3];
 let authorFeedStore:IAuthorFeedStoreItem[] = [{did:profile1.did,response:{} as AppBskyFeedGetAuthorFeed.OutputSchema},{did:profile2.did,response:{} as AppBskyFeedGetAuthorFeed.OutputSchema}];
 
+let nonFocusButtonFocusClasses = 'border-2 group-focus-visible:border-focusBorder';
+let focusButtonFocusClasses = 'outline-2 focus-visible:outline-focusBorder'
+
 test.beforeAll(async ({browser}) => {
-    await CreateFeedViewPost('bob.the.poster',`I love my car shop! Thanks ${userlinkText} !`,true,'Bob the Poster',undefined,undefined,undefined,
+    await CreateFeedViewPost('bob.the.poster',`I love my car shop! Thanks ${userlinkText} !`,{type:'link',numImage:1},'Bob the Poster',undefined,undefined,undefined,
         {did:profile1.did,type:'mention',value:userlinkText}).then(res => feedViewPost1 = res);
-    await CreateFeedViewPost('cargo.haul', 'Delivery delivery delivery delivery',false,'Cargo Haul').then(res => feedViewPost2 = res);
-    await CreateFeedViewPost('user.link', 'Mocking can get complicated',false,'Mock Test Result').then(res => feedViewPost3 = res);
+    await CreateFeedViewPost('cargo.haul', 'Delivery delivery delivery delivery amazong.com',{type:'image',numImage:3},'Cargo Haul',undefined,undefined,undefined,{type:'link',value:'amazong.com',did:undefined})
+    .then(res => feedViewPost2 = res);
+    await CreateFeedViewPost('user.link', 'Mocking can get complicated',undefined,'Mock Test Result').then(res => feedViewPost3 = res);
     getAuthorFeedResponse1 = {feed:[feedViewPost1,feedViewPost2]};
     getAuthorFeedResponse2 = {feed:[feedViewPost3,feedViewPost2]};
     authorFeedStore = [{did:profile1.did,response:getAuthorFeedResponse1},{did:profile2.did,response:getAuthorFeedResponse2}]
@@ -78,7 +82,7 @@ test('Ensure "User" feed is created successfully when clicking on a Userlink ele
     //hit tab key, the app logo should be the first item focused/selected
     await instance1.keyboard.press('Tab');
     await expect(instance1.getByTestId('app-logo')).toBeFocused();
-    await expect(instance1.getByTestId('app-logo')).toContainClass('outline-2 focus-visible:outline-focusBorder');
+    await expect(instance1.getByTestId('app-logo')).toContainClass(focusButtonFocusClasses);
     //tab to add new feed, select to browse as guest user
     await instance1.keyboard.press('Tab');
     await expect(instance1.getByTestId('add-feed-button')).toBeFocused();
@@ -117,7 +121,7 @@ test('Ensure "User" feed is created successfully when clicking on a Userlink ele
     await instance1.keyboard.press('Tab');
     await instance1.keyboard.press('Tab');
     await expect(instance1.getByTestId('feedEditModal-next-page-button')).toBeFocused();
-    await expect(instance1.getByTestId('feedEditModal-next-page-button').locator('div')).toContainClass('border-2 group-focus-visible:border-focusBorder');
+    await expect(instance1.getByTestId('feedEditModal-next-page-button').locator('div')).toContainClass(nonFocusButtonFocusClasses);
     //navigate to summary page
     await instance1.keyboard.press('Enter');
     await expect(instance1.getByTestId('feedEditModal-summary-page')).toBeVisible();
@@ -131,12 +135,63 @@ test('Ensure "User" feed is created successfully when clicking on a Userlink ele
     //Check that `FeedEditModal` has closed and 1 feed is displayed in the main view
     await expect(instance1.getByTestId('feed-edit-modal')).toBeHidden();
     await expect(instance1.getByTestId('feed-column')).toHaveCount(1);
-    // //Click on userlink displayed in User Feed
-    // await expect(instance1.getByTestId('userlink')).toHaveCount(1);
-    // await instance1.getByTestId('userlink').click();
-    // await expect(instance1.getByRole('menu')).toBeVisible();
-    // await instance1.getByRole('menu').getByText("Create new User Feed").click();
-    // // //check to see if tag feed was created
-    // await expect(instance1.getByTestId('feed-column')).toHaveCount(2);
-    // await expect(instance1.getByTestId('feed-column').getByTestId('feedColumn-handle').nth(1)).toHaveText(userlinkText);
+    //focus on userlink displayed in User Feed
+    await expect(instance1.getByTestId('userlink')).toHaveCount(1);
+    await instance1.getByTestId('userlink').focus();
+    await expect(instance1.getByTestId('userlink').locator('div')).toContainClass(nonFocusButtonFocusClasses);
+    //focus `EmbedExternal` in User Feed
+    await expect(instance1.getByTestId('embed-external')).toHaveCount(1);
+    await instance1.getByTestId('embed-external').focus();
+    await expect(instance1.getByTestId('embed-external').locator('a')).toContainClass(focusButtonFocusClasses);
+    //focus each `PostInteractionIcons` element
+    await expect(instance1.getByTestId('focusFeedPost').nth(0).getByTestId('postInteraction-reply-button')).toBeVisible();
+    await instance1.getByTestId('focusFeedPost').nth(0).getByTestId('postInteraction-reply-button').focus();
+    await expect(instance1.getByTestId('focusFeedPost').nth(0).getByTestId('postInteraction-reply-button')).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('focusFeedPost').nth(0).getByTestId('postInteraction-repost-button').focus();
+    await expect(instance1.getByTestId('focusFeedPost').nth(0).getByTestId('postInteraction-repost-button')).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('focusFeedPost').nth(0).getByTestId('postInteraction-like-button').focus();
+    await expect(instance1.getByTestId('focusFeedPost').nth(0).getByTestId('postInteraction-like-button')).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('focusFeedPost').nth(0).getByTestId('postInteraction-more-options-button').focus();
+    await expect(instance1.getByTestId('focusFeedPost').nth(0).getByTestId('postInteraction-more-options-button')).toContainClass(focusButtonFocusClasses);
+    //open `UserFocusModal`
+    await expect(instance1.getByTestId(/feedButton-/)).toHaveCount(1);
+    await instance1.getByTestId(/feedButton-/).click({button:"right"});
+    await expect(instance1.getByRole('menu')).toBeVisible();
+    instance1.getByRole('menu').getByText(/View Profile/).click();
+    await expect(instance1.getByTestId('user-focus-modal')).toBeVisible();
+    //Check various elements on `UserFocusModal`
+    await instance1.getByTestId('userFocusModal-refresh-button').focus();
+    await expect(instance1.getByTestId('userFocusModal-refresh-button').locator('div')).toContainClass(nonFocusButtonFocusClasses);
+    await instance1.getByTestId('userFocusModal-close-button').focus();
+    await expect(instance1.getByTestId('userFocusModal-close-button').locator('div')).toContainClass(nonFocusButtonFocusClasses);
+    await instance1.getByTestId('userFocusModal-banner').focus();
+    await expect(instance1.getByTestId('userFocusModal-banner')).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('userFocusModal-avatar').focus();
+    await expect(instance1.getByTestId('userFocusModal-avatar').locator('button')).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('userFocusModal-account-options').focus();
+    await expect(instance1.getByTestId('userFocusModal-account-options')).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('userFocusModal-post-tabs').locator('button').nth(0).focus();
+    await expect(instance1.getByTestId('userFocusModal-post-tabs').locator('button').nth(0)).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('userFocusModal-post-tabs').locator('button').nth(1).focus();
+    await expect(instance1.getByTestId('userFocusModal-post-tabs').locator('button').nth(1)).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('userFocusModal-post-tabs').locator('button').nth(2).focus();
+    await expect(instance1.getByTestId('userFocusModal-post-tabs').locator('button').nth(2)).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('userFocusModal-post-tabs').locator('button').nth(3).focus();
+    await expect(instance1.getByTestId('userFocusModal-post-tabs').locator('button').nth(3)).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('user-focus-modal').getByTestId('focusFeedPost-avatarRound').nth(0).focus();
+    await expect(instance1.getByTestId('user-focus-modal').getByTestId('focusFeedPost-avatarRound').nth(0).locator('button')).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('user-focus-modal').getByTestId('focusFeedPost-timestamp-button').nth(0).focus();
+    //REMOVE - Need to update author Feed to include post with image (and hyperlink facet if possible)
+    await expect(instance1.getByTestId('user-focus-modal').getByTestId('focusFeedPost-timestamp-button').nth(0)).toContainClass(focusButtonFocusClasses);
+    await expect(instance1.getByTestId('user-focus-modal').getByTestId('imageContainer-focusFeedPost')).toBeVisible();
+    await instance1.getByTestId('user-focus-modal').getByTestId('imageContainer-focusFeedPost').nth(0).getByTestId('imageContainer-focusFeedPost-image').nth(0).focus();
+    await expect(instance1.getByTestId('user-focus-modal').getByTestId('imageContainer-focusFeedPost').nth(0).getByTestId('imageContainer-focusFeedPost-image').nth(0)).toContainClass(focusButtonFocusClasses);
+    await instance1.keyboard.press('Tab');
+    await expect(instance1.getByTestId('user-focus-modal').getByTestId('imageContainer-focusFeedPost').nth(0).getByTestId('imageContainer-focusFeedPost-image').nth(1)).toBeFocused();
+    await expect(instance1.getByTestId('user-focus-modal').getByTestId('imageContainer-focusFeedPost').nth(0).getByTestId('imageContainer-focusFeedPost-image').nth(1)).toContainClass(focusButtonFocusClasses);
+    await instance1.keyboard.press('Tab');
+    await expect(instance1.getByTestId('user-focus-modal').getByTestId('imageContainer-focusFeedPost').nth(0).getByTestId('imageContainer-focusFeedPost-image').nth(2)).toBeFocused();
+    await expect(instance1.getByTestId('user-focus-modal').getByTestId('imageContainer-focusFeedPost').nth(0).getByTestId('imageContainer-focusFeedPost-image').nth(2)).toContainClass(focusButtonFocusClasses);
+    await instance1.getByTestId('user-focus-modal').getByTestId('focusFeedPost-text').nth(1).locator('a').nth(0).focus();
+    await expect(instance1.getByTestId('user-focus-modal').getByTestId('focusFeedPost-text').nth(1).locator('a')).toContainClass(focusButtonFocusClasses);
 })

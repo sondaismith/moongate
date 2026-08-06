@@ -20,7 +20,7 @@ let feedCID2 = 'testFeed2';
 // })
 let post1:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
 let post2:AppBskyFeedDefs.FeedViewPost = {post:emptyPostView};
-await CreateFeedViewPost('bob_the_poster','I love my car shop!',true).then(res => post1 = res);
+await CreateFeedViewPost('bob_the_poster','I love my car shop!',{type:'link',numImage:1}).then(res => post1 = res);
 await CreateFeedViewPost('cargo_haul', 'Delivery delivery delivery delivery').then(res => post2 = res);
 let feedDesc1 = CreateIFeedDescription('My First Feed',feedCID1,2,2,post1.post.cid,post1.post.indexedAt);
 let feedDesc2 = CreateIFeedDescription('Mr Repost',feedCID2,3,3,post2.post.cid,post2.post.indexedAt);

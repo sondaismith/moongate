@@ -23,9 +23,10 @@
                 <div v-if="!showFullsize" data-testid="imageContainer-file-extension" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 pt-0.5
                 text-[10px] leading-3 text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
                 <ImageLoader v-if="!showFullsize" :img-url="showFullsize ? image.fullsize : image.thumb" :title="image.alt" tabindex="0"
+                data-testid="imageContainer-focusFeedPost-image"
                 @click="showMediaFocusModal(index)" @keydown.space="showMediaFocusModal(index)" @keydown.enter="showMediaFocusModal(index)"
                 @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...image}, index, author, postId, postText)"
-                class="h-full w-full bg-center bg-no-repeat outline outline-2 -outline-offset-[6px] outline-transparent focus-visible:!outline-focusBorder"
+                class="h-full w-full bg-center bg-no-repeat outline outline-2 -outline-offset-[6px] outline-transparent focus-visible:outline-focusBorder"
                 :fill-container="true" :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'object-contain' : 'object-cover')"/>
                 <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
             </div>

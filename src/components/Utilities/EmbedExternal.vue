@@ -1,11 +1,12 @@
 <template>
     <div data-testid="embed-external" class="flex max-w-full" :class="{'self-start' : isExternalGIF}">
         {{ void "External link in Web App and Desktop App" }}
-        <a v-if="!isExternalGIF && !isTauri()" tabindex="0"
-        :href="embed.external.uri" target="_blank"
+        <a v-if="!isExternalGIF && !isTauri()" :href="embed.external.uri" target="_blank"
+        @keydown.space="(e)=>{e.preventDefault(); openEmbedLink()}"
         class="flex flex-col w-full rounded-lg border text-primary transition-colors
         border-outline hover:border-embedHoverBorder hover:bg-embedHoverBG bg-postBG
-        overflow-hidden text-xs cursor-pointer">
+        overflow-hidden text-xs cursor-pointer outline-2 focus-visible:outline-focusBorder
+        outline-offset-2">
             <div class="relative border-b-[1px] border-outline aspect-[1.91/1]">
                 <ImageLoader :img-url="typeof embed != 'undefined' && typeof embed.external != 'undefined' && typeof embed.external.thumb != 'undefined' ? embed.external.thumb : ''"
                 class="w-full h-full object-center object-cover" :fill-container="true"/>

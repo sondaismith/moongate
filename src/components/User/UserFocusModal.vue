@@ -26,7 +26,8 @@
             <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8s px-2 py-1 items-center shrink-0 w-full self-start
             border-b border-outlineLighter *:shadow-none">
                 <SquareButton
-                title="Refresh page" :is-disabled="awaitingProfileData || isAwaitingTabSwitchData || !isHandleValid" @click="refreshPage"
+                title="Refresh page" data-testid="userFocusModal-refresh-button"
+                :is-disabled="awaitingProfileData || isAwaitingTabSwitchData || !isHandleValid" @click="refreshPage"
                 class="transition-colors enabled:hover:bg-navbarBtnHover focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText"
                 button-padding-x="0" button-padding-y="0">
                     <i-mingcute:refresh-3-fill class="text-2xl"/>
@@ -58,7 +59,8 @@
                             shrink-0 border-2 border-slate-800 user-pfp"></div>
                         </div>
                         <div v-else class="relative w-full user-banner">
-                            <button v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
+                            <button v-if="hasProfileBanner" @click="showBannerFullscreen" data-testid="userFocusModal-banner"
+                            class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
                             bg-no-repeat bg-center bg-cover overflow-hidden shadow-none rounded-none border-none outline outline-2 outline-transparent
                             focus-visible:outline-focusBorder outline-offset-[-6px]"
                             :class="{'cursor-pointer' : hasProfileBanner}">
@@ -129,8 +131,9 @@
                                             <FollowUser v-if="!awaitingProfileData && !isAccountBlocked" class="px-4" :is-user-followed="isUserFollowed"
                                             :user-did="UserFocusModalState.currentUserPageDetails.ProfileData.did" :is-disabled="!AppState.isAuthBrowsing || isAccountBlocked"/>
                                         <!-- </Transition> -->
-                                        <PillButton @click="showUserOptionsMenu($event, profileAtUri, UserFocusModalState.currentUserPageDetails.ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
-                                        focus-visible:bg-btnHover shadow-none">...</PillButton>
+                                        <FocusButton data-testid="userFocusModal-account-options"
+                                        @click="showUserOptionsMenu($event, profileAtUri, UserFocusModalState.currentUserPageDetails.ProfileData.handle)"
+                                        class="aspect-square rounded-full h-full bg-btn hover:bg-btnHover focus-visible:bg-btnHover border-none outline-offset-2">...</FocusButton>
                                     </div>
                                 </div>
                                 <div v-if="!isAccountBlocked" class="flex mt-2">
@@ -160,38 +163,39 @@
                             <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory && !isAccountBlocked" :post-text="UserFocusModalState.currentUserPageDetails.ProfileData ? UserFocusModalState.currentUserPageDetails.ProfileData.description : 'No Description'"/>
                             <AccountModerationLabel :is-muted="isAccountMuted" :is-blocked="isAccountBlocked"/>
                         </div>
-                        <div v-if="!isAccountBlocked" id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG shadow-scroll-underline"
+                        <div v-if="!isAccountBlocked" id="user-post-tabs" data-testid="userFocusModal-post-tabs"
+                        class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG shadow-scroll-underline"
                         :style="{'top':userSummaryBottomPos+'px'}">
-                            <button @click="viewFeed" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
+                            <FocusButton @click="viewFeed" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View User's Feed (Posts, Retweets)">
                                 <div class="pt-2 pb-1">Feed</div>
                                 <div v-if="isViewingFeed" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </button>
-                            <button @click="viewPosts" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
+                            </FocusButton>
+                            <FocusButton @click="viewPosts" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View Posts only by current User">
                                 <div class="pt-2 pb-1">Posts</div>
                                 <div v-if="isViewingPosts" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </button>
-                            <button @click="viewReplies" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
+                            </FocusButton>
+                            <FocusButton @click="viewReplies" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View User's Replies">
                                 <div class="pt-2 pb-1">Replies</div>
                                 <div v-if="isViewingReplies" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </button>
-                            <button @click="viewMedia" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
+                            </FocusButton>
+                            <FocusButton @click="viewMedia" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View Posts User has made containing Images/Video">
                                 <div class="pt-2 pb-1">Media</div>
                                 <div v-if="isViewingMedia" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </button>
-                            <button v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewLikes" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
+                            </FocusButton>
+                            <FocusButton v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewLikes" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View Your Liked Posts">
                                 <div class="pt-2 pb-1">Likes</div>
                                 <div v-if="isViewingLikes" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </button>
-                            <button v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewBookmarks" class="w-full hover:bg-btnHover cursor-pointer rounded-none shadow-none border-none active:bg-btnHover outline outline-2 outline-offset-[-4px] outline-transparent focus-visible:outline-focusBorder"
+                            </FocusButton>
+                            <FocusButton v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewBookmarks" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View Your Saved Posts">
                                 <div class="pt-2 pb-1">Saved</div>
                                 <div v-if="isViewingBookmarks" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </button>
+                            </FocusButton>
                         </div>
                         {{ void "General Posts" }}
                         <div v-if="(isViewingFeed || isViewingPosts || isViewingReplies || isViewingLikes) && !isAccountBlocked"
@@ -482,6 +486,7 @@ import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
 import { INavigationHistory } from '../../interfaces/UserInterfaces';
 import ImageLoader from '../Utilities/ImageLoader.vue';
+import FocusButton from '../Utilities/FocusButton.vue';
 
 /**
  * Used to create a HTTP URL link To the currently view User's profile.
@@ -561,6 +566,7 @@ export default defineComponent({
     },
     components:{
         PillButton,
+        FocusButton,
         Hashtag,
         FocusFeedPost,
         RichPostText,

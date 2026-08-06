@@ -108,14 +108,14 @@
         </button>
         <div data-testid="focusFeedPost" class="flex w-full">
             <div>
-                <AvatarRound v-if="isReplyStyle" :author-details="postToShow.author"/>
+                <AvatarRound v-if="isReplyStyle" data-testid="focusFeedPost-avatarRound" :author-details="postToShow.author"/>
                 <div v-if="replyIndex !=undefined && totalReplies!=undefined && replyIndex<totalReplies" class="h-full bg-slate-700 w-0.5 m-auto"></div>
             </div>
             <div class="flex flex-col w-full min-w-0"
             :class="[isReplyStyle ? 'pl-2' : '']">
                 {{ void "Post Profile Header" }}
                 <div class="flex items-center gap-2">
-                    <AvatarRound v-if="!isReplyStyle" :author-details="postToShow.author"
+                    <AvatarRound v-if="!isReplyStyle" data-testid="focusFeedPost-avatarRound" :author-details="postToShow.author"
                     @avatar-clicked="callFocusPostAvatarClicked(postToShow.author.did)"/>
                     <div class="flex overflow-hidden self-starts" :class="[isReplyStyle ? 'gap-1 items-center' : 'flex-col']">
                         <div class="flex items-center gap-1 overflow-hidden">
@@ -147,9 +147,9 @@
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
                     {{ void "Post Text Content" }}
-                    <RichPostTextBsky data-test="focusFeedPost-text" v-if="!AppBskyEmbedRecord.isViewRecord(postToShow)" :post-text="(postToShow.record as AppBskyFeedPost.Record).text" :post-facets="(postToShow.record as AppBskyFeedPost.Record).facets"/>
+                    <RichPostTextBsky data-testid="focusFeedPost-text" v-if="!AppBskyEmbedRecord.isViewRecord(postToShow)" :post-text="(postToShow.record as AppBskyFeedPost.Record).text" :post-facets="(postToShow.record as AppBskyFeedPost.Record).facets"/>
                     <!-- Is Quoted Post -->
-                    <RichPostTextBsky data-test="focusFeedPost-text" v-else :post-text="((postToShow as AppBskyEmbedRecord.ViewRecord).value as AppBskyFeedPost.Record).text" :post-facets="((postToShow as AppBskyEmbedRecord.ViewRecord).value as Record).facets"/>
+                    <RichPostTextBsky data-testid="focusFeedPost-text" v-else :post-text="((postToShow as AppBskyEmbedRecord.ViewRecord).value as AppBskyFeedPost.Record).text" :post-facets="((postToShow as AppBskyEmbedRecord.ViewRecord).value as Record).facets"/>
                     {{ void "Post Media" }}
                     <!-- <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"

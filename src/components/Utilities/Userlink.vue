@@ -4,7 +4,7 @@
     class="group rounded bg-btn hover:bg-btnHover text-[12px] leading-3 shadow-none cursor-pointer
     border-none">
         <div class="w-full h-full rounded p-[3px] border-2 border-transparent
-        group-focus-visible:border-searchbarFocusHightlight">
+        group-focus-visible:border-focusBorder">
             <slot></slot>
         </div>
     </button>

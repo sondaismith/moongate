@@ -1,7 +1,7 @@
 <template>
     <div :class="textColorClass" class="flex flex-wrap -mt-1 text-secondary gap-1 justify-around justify-betweens
      *:p-1 *:bg-red-600s">
-        <button :disabled="!canUserReply" data-test="postInteraction-reply-button" class="flex gap-0.5 rounded-full items-center border-none shadow-none
+        <button :disabled="!canUserReply" data-testid="postInteraction-reply-button" class="flex gap-0.5 rounded-full items-center border-none shadow-none
         outline outline-2 outline-transparent focus-visible:outline-focusBorder"
         :class="canUserReply ? 'group cursor-pointer hover:bg-btnSubtle' : 'text-disabled select-none'"
         @click="canUserReply && replyToPost()" :title="postDetails.whoCanReply(postData)">
@@ -12,7 +12,7 @@
         </button>
         <button class="group flex rounded-full items-center cursor-pointer gap-0.5 hover:bg-btnSubtle border-none shadow-none
         outline outline-2 outline-transparent focus-visible:outline-focusBorder"
-        title="Repost"
+        title="Repost" data-testid="postInteraction-repost-button"
         @click="showRepostOptionsMenu($event, postData)">
             <i-mingcute:repeat-line class="group-active:text-blue-700"
             :class="[isPostRepostedByUser ? 'text-blue-500' : 'group-hover:text-blue-500']"/>
@@ -23,7 +23,7 @@
         </button>
         <button @click="toggleLike" class="group flex rounded-full items-center cursor-pointer gap-0.5 hover:bg-btnSubtle
         border-none shadow-none outline outline-2 outline-transparent focus-visible:outline-focusBorder"
-        title="Like Post">
+        title="Like Post" data-testid="postInteraction-like-button">
             <i-mingcute:heart-fill class="group-active:text-red-700"
             :class="[isPostLikedByUser ? 'text-red-500' : 'group-hover:text-red-500']"/>
             <div v-if="!isAwaitingLikeUpdate":title="postData.likeCount?.toString()" :class="[{'hidden' : AppSettingsState.Settings.isHidingLikes}]">
@@ -41,8 +41,9 @@
             </div> -->
             <button @click="showOptionsMenu($event, postData.uri, postData.author.handle)"
             :disabled="isAwaitingBookmarkUpdate || isAwaitingAccountBlockAction || isAwaitingAccountMuteAction"
-            title="More Actions" class="group flex px-1.5 min-w-[28px] rounded-full items-center border-0 hover:bg-btnSubtle disabled:bg-disabledBG disabled:text-disabled disabled:cursor-not-allowed shadow-none
-            outline outline-2 outline-transparent focus-visible:!outline-blue-500">
+            title="More Actions" data-testid="postInteraction-more-options-button"
+            class="group flex px-1.5 min-w-[28px] rounded-full items-center border-0 hover:bg-btnSubtle disabled:bg-disabledBG disabled:text-disabled disabled:cursor-not-allowed shadow-none
+            outline outline-2 outline-transparent focus-visible:outline-focusBorder">
                 <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate || isAwaitingAccountBlockAction || isAwaitingAccountMuteAction"
                 class="text-primary spinner self-center p-0.5"/>
                 <i-mdi:dots-horizontal v-else class="pointer-events-none group-hover:text-primary group-disabled:text-disabled"/>

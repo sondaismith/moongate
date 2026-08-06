@@ -91,7 +91,7 @@ export function CreateNotFoundPost():$Typed<AppBskyFeedDefs.NotFoundPost>{
  * MUST AWAIT IN ORDER FOR CID TO BE GENERATED.
  * @param handle The handle of the User who made the Post.
  * @param postText The text content of the Post.
- * @param includeEmbedLink Should this post contain an external link embed?
+ * @param includeEmbed Should this post contain an external link embed?
  * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
  * @param postTime The time that the Post was created.
  * @param isPinned Should the created Post be a pinned post?
@@ -101,9 +101,9 @@ export function CreateNotFoundPost():$Typed<AppBskyFeedDefs.NotFoundPost>{
  * Overrides the `handle`, `displayName` and `avatar` variables if provided.
  * @returns The created `FeedViewPost` object.
  */
-export async function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
+export async function CreateFeedViewPost(handle:string, postText:string='', includeEmbed:{type:'image'|'gif'|'link'|'none',numImage:number}={type:'none',numImage:1},
     displayName:string='',postTime:Date=new Date(),isPinned:boolean=false,parentState:ParentState='None',
-    facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined,did:string|undefined=undefined,avatar:string|undefined=undefined,
+    facet:{type:'mention'|'link',value:string,did:string|undefined}|undefined=undefined,did:string|undefined=undefined,avatar:string|undefined=undefined,
     existingProfileObject:AppBskyActorDefs.ProfileViewBasic|AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|undefined=undefined):Promise<AppBskyFeedDefs.FeedViewPost>{
     // let currentTime = new Date();
     // currentTime.setTime(currentTime.getTime()-(1*60*1000));
@@ -115,6 +115,17 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
         cid = res.toString();
     })
     let tid = GenerateFakeTID();
+    let embedObject:$Typed<AppBskyEmbedImages.View>|$Typed<AppBskyEmbedExternal.View>|undefined = undefined;
+    switch (includeEmbed.type) {
+        case 'link':
+            embedObject = CreateEmbedExternal();
+            break;
+        case 'image':
+            embedObject = CreateEmbedImage(includeEmbed.numImage);
+            break;
+        default:
+            break;
+    }
     let post:AppBskyFeedDefs.FeedViewPost = {
         post:{
             author:{
@@ -134,7 +145,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
             },
             // uri:'at://did:plc:nowhere',
             uri:`at://${handle}/app.bsky.feed.post/${tid}`,
-            embed:includeEmbedLink ? CreateEmbed() : undefined
+            embed:embedObject
         },
     }
     if(isPinned){
@@ -176,6 +187,25 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
                                 {
                                     $type:`app.bsky.richtext.facet#${facet.type}`,
                                     did:facet.did
+                                }
+                            ],
+                            index:{byteStart:start,byteEnd:end}
+                        }
+                    }
+                }
+                break;
+            case "link":
+                if(facet.value.length>0 && postText.trim().length>0){
+                    let start = postText.indexOf(facet.value)+1;//byte start
+                    let end = 0;
+                    if(start>0) end = start+facet.value.length;
+                    post.post.record = {...post.post.record,
+                        facets:{
+                            $type:"app.bsky.richtext.facet",
+                            features:[
+                                {
+                                    $type:`app.bsky.richtext.facet#${facet.type}`,
+                                    uri:facet.value
                                 }
                             ],
                             index:{byteStart:start,byteEnd:end}
@@ -320,7 +350,7 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
             },
             // uri:'at://did:plc:nowherezonefake/app.bsky.feed.post/eenymeannuim0',
             uri:`at://${handle}/app.bsky.feed.post/${tid}`,
-            embed:includeEmbedLink ? CreateEmbed() : undefined
+            embed:includeEmbedLink ? CreateEmbedExternal() : undefined
         },
     }
     if(includeImage.activate){
@@ -395,7 +425,7 @@ export function CreateThreadViewPostWithUnspeccedCID(handle:string, postText:str
                 text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
             },
             uri:`at://${handle}/app.bsky.feed.post/${tid}`,
-            embed:includeEmbedLink ? CreateEmbed() : undefined
+            embed:includeEmbedLink ? CreateEmbedExternal() : undefined
         },
     }
     if(includeImage.activate){
@@ -798,7 +828,7 @@ export function CreateFeedViewPostArray(numOfPosts:number, handle:string, includ
                     text: `Hello World! I am Post${i+1}`
                 },
                 uri:'nowhere',
-                embed:includeEmbedLink ? CreateEmbed() : undefined
+                embed:includeEmbedLink ? CreateEmbedExternal() : undefined
             },
         })
     }
@@ -889,11 +919,45 @@ export function CreateRandomFeedListCollection(numOfFeeds:number, numPostPerFeed
 
 /**
  * Method used to return a hard-coded object that can be used to attach
+ * an image embed object to a Post.
+ * @param numImages The number of images to be attached to the post. Default and lowest value is 1, max is 4 (larger numbers will be reduced to 4).
+ * @returns A `$Typed<View>` External Embed object.
+ * @note It seems like the BASE_URL.replace is for the Cypress-based tests...
+ */
+export function CreateEmbedImage(numImages:number=1):$Typed<AppBskyEmbedImages.View>{
+    let baseUrl = '/src/';
+    try {
+        (typeof import.meta.env.BASE_URL != undefined) ? import.meta.env.BASE_URL.replace('src','iframes/src') : '/src/';
+    } catch (error) {
+    }
+    let returnedImages:AppBskyEmbedImages.ViewImage[] = [];
+    let safenum = numImages;
+    if(numImages>4)safenum = 4;
+    else if(numImages<1) safenum = 1;
+
+    for (let i = 0; i < safenum; i++) {
+        let imgurl = `http://localhost:1420${baseUrl}assets/test-media/posts/image0${Math.floor((Math.random()*8)+1)}.png`;
+        returnedImages.push({
+            $type:'app.bsky.embed.images#viewImage',
+            alt:`Image0${i}`,
+            fullsize:imgurl,
+            thumb:imgurl
+        })
+    }
+    let emb:$Typed<AppBskyEmbedImages.View> = {
+        $type: "app.bsky.embed.images#view",
+        images:returnedImages
+    }
+    return emb;
+}
+
+/**
+ * Method used to return a hard-coded object that can be used to attach
  * an "external link" embed object to a Post.
  * @returns A `$Typed<View>` External Embed object.
  * @note It seems like the BASE_URL.replace is for the Cypress-based tests...
  */
-export function CreateEmbed():$Typed<AppBskyEmbedExternal.View>{
+export function CreateEmbedExternal():$Typed<AppBskyEmbedExternal.View>{
     let baseUrl = '/src/';
     try {
         (typeof import.meta.env.BASE_URL != undefined) ? import.meta.env.BASE_URL.replace('src','iframes/src') : '/src/';

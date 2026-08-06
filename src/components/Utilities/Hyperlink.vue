@@ -3,12 +3,12 @@
     @keydown.enter="e => showOptionsMenu(e,URL)" @keydown.space="e => showOptionsMenu(e,URL)"
     @contextmenu="e => showOptionsMenu(e,URL)" title="Display Link Options"
     class="underline font-light cursor-pointer text-left transition-colors text-blue-500 hover:text-blue-400 border-none outline outline-2
-    outline-transparent active:bg-transparent focus-visible:!outline-blue-500 shadow-none rounded-none">
+    outline-transparent active:bg-transparent focus-visible:outline-focusBorder shadow-none rounded-none">
         <slot></slot>
     </a>
     <a v-else :title="`Open link in new tab`"
-    class="underline font-light cursor-pointer transition-colors text-blue-500 hover:text-blue-400 border-2 border-transparent
-    focus-visible:!border-blue-500 focus-visible:!outline-none"
+    class="underline font-light cursor-pointer transition-colors text-blue-500 hover:text-blue-400 outline-2 border-transparent
+    focus-visible:outline-focusBorder"
     :href="URL" target="_blank">
         <slot></slot>
     </a>
