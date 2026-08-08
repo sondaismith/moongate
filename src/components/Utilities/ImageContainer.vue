@@ -25,7 +25,7 @@
                 <ImageLoader v-if="!showFullsize" :img-url="showFullsize ? image.fullsize : image.thumb" :title="image.alt" tabindex="0"
                 data-testid="imageContainer-focusFeedPost-image"
                 @click="showMediaFocusModal(index)" @keydown.space="showMediaFocusModal(index)" @keydown.enter="showMediaFocusModal(index)"
-                @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...image}, index, author, postId, postText)"
+                @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...image}, index, author, postId, postText,image.alt)"
                 class="h-full w-full bg-center bg-no-repeat outline outline-2 -outline-offset-[6px] outline-transparent focus-visible:outline-focusBorder"
                 :fill-container="true" :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'object-contain' : 'object-cover')"/>
                 <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
@@ -37,7 +37,7 @@
         class="flex h-full w-full overflow-hidden">
             <ImageLoader tabindex="0" @click="$emit('imageClicked', mediaEmbed.images[0])"
             @keydown.space="$emit('imageClicked', mediaEmbed.images[0])" @keydown.enter="$emit('imageClicked', mediaEmbed.images[0])"
-            @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...mediaEmbed.images[0]}, mediaIndex, author, postId, postText)"
+            @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...mediaEmbed.images[0]}, mediaIndex, author, postId, postText,mediaEmbed.images[0].alt)"
             :img-url="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
             :image-container-class="imageContainerClasses" class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden outline outline-2
             -outline-offset-4 outline-transparent focus-visible:!outline-focusBorder"/>
@@ -88,7 +88,8 @@ export function calculateImageContainerMinHeight(elWidth:number):number{
  * @param author Value used to reference the author (uploader) of this image.
  */
 // async function saveImageWithAuthor(image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
-async function saveImageWithAuthor(image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+async function saveImageWithAuthor(image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View, index:number, author:string|undefined=undefined, postId:string|undefined=undefined, postText:string|undefined=undefined,
+altText:string|undefined=undefined){
     let fileName = undefined;
     let safeHandle = undefined;
     // AppState.saveMedia = image;
@@ -104,6 +105,7 @@ async function saveImageWithAuthor(image:AppBskyEmbedImages.ViewImage|AppBskyEmb
         AppState.fileSaveDetails.extension = '.webp'; //Need to create method that parses image URL to determine extension (the @jpeg part)
         AppState.fileSaveDetails.handle = author ? author : '';
         AppState.fileSaveDetails.postText = postText ? postText : '';
+        AppState.fileSaveDetails.altText = typeof altText != 'undefined' ? altText : '';
 
     }
     else{
@@ -115,7 +117,7 @@ async function saveImageWithAuthor(image:AppBskyEmbedImages.ViewImage|AppBskyEmb
         AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
         AppState.fileSaveDetails.extension = (image as AppBskyEmbedExternal.View).external.uri.includes('giphy.com') ? '.webp' : '.webm';
         AppState.fileSaveDetails.handle = '';
-        AppState.fileSaveDetails.postText = postText ? postText : '';
+        AppState.fileSaveDetails.postText = typeof postText != 'undefined' ? postText : '';
     }
     // AppState.isSavingMediaModalVisible = true;
     if(typeof author != 'undefined' && typeof postId != 'undefined'){
@@ -210,11 +212,12 @@ export default defineComponent({
          * relating to Images.
          */
         // showOptionsMenu(e:MouseEvent, image:AppBskyEmbedImages.ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
-        showOptionsMenu(e:MouseEvent, image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+        showOptionsMenu(e:MouseEvent, image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined,
+        altText:string|undefined=undefined){
             // if(isTauri()){
                 e.preventDefault();
                 OptionsMenuState.currentMenuItems = [
-                    {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,index,author,postId,postText)},Type:ItemType.Option},
+                    {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,index,author,postId,postText,altText)},Type:ItemType.Option},
                 ] as IOptionMenuItem[];
                 if(!isTauri()){
                     OptionsMenuState.currentMenuItems.push({Icon:MdiOpenInNew,Label:'Splitter',Action:()=>{},Type:ItemType.Splitter});

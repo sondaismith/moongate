@@ -49,8 +49,9 @@
                 navigation :keyboard="{enabled:true}" @after-init="getSwiperRef" @active-index-change="updateCurrentMediaIndex"
                 class="text-primary h-full w-full">
                     <SwiperSlide v-for="(image, index) in getEmbededImageObjects.images">
-                        <ImageContainer
-                        @image-clicked="showImageFullscreen" :show-fullsize="true" :media-embed="{$type:'app.bsky.embed.images#view', images: [getEmbededImageObjects.images[index]]} as AppBskyEmbedImages.View"
+                        <ImageContainer @image-clicked="showImageFullscreen" :show-fullsize="true"
+                        :post-text="(postDetails.currentThreadView.post.record as AppBskyFeedPost.Record).text"
+                        :media-embed="{$type:'app.bsky.embed.images#view', images: [getEmbededImageObjects.images[index]]} as AppBskyEmbedImages.View"
                         :is-large-container-view="true" :images-to-display="image" :author="postDetails.currentThreadView.post.author.handle"
                         :post-id="getEndOfPostUri" :media-index="currentMediaIndex"/>
                     </SwiperSlide>

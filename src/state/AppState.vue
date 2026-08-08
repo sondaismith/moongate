@@ -536,7 +536,9 @@ export const AppState = reactive({
         /**The handle of the account that posted/shared the image. */
         handle:'',
         /**The text (if any) that was posted along with the image. */
-        postText:''
+        postText:'',
+        /**The alt text/descriptive text (if any) that was included with the image. */
+        altText:''
     },
     /**
      * Method used to transform a URL that points to a GIF on a supported external source to

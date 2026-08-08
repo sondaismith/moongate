@@ -222,11 +222,13 @@ export default defineComponent({
             )
             .then(_ => {
                 if(isTauri() && AppState.fileSaveDetails.extension == '.jpg'){
+                    let desc = AppState.fileSaveDetails.postText;
+                    if(AppState.fileSaveDetails.altText.trim() != '') desc += `\n\nALT text:\n${AppState.fileSaveDetails.altText}`;
                     //in Tauri webview, not browser
                     invoke('write_metadata_to_file', ({
                         imageFile:`${AppState.lastMediaSaveDirectory}\\${AppState.fileSaveDetails.full}${AppState.fileSaveDetails.extension}`,
                         userHandle:`@${AppState.fileSaveDetails.handle}`,//AppState.fileSaveDefaultFilename.split(' ').pop()?.split('.')[0],
-                        description:AppState.fileSaveDetails.postText
+                        description:desc
                     }));
                 }
             }).catch(err=>{
@@ -535,8 +537,8 @@ export default defineComponent({
                 AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
                 AppState.fileSaveDetails.extension = '.webp'; //Need to create method that parses image URL to determine extension (the @jpeg part)
                 AppState.fileSaveDetails.handle = typeof this.handle != 'undefined' ? this.handle : '';
-                // AppState.fileSaveDetails.postText = postText ? postText : '';
-
+                AppState.fileSaveDetails.postText = 'text' in this.postData.post.record ? (this.postData.post.record.text) as string : '';
+                AppState.fileSaveDetails.altText = image.alt;
             }
             else{
                 fileName = (image as AppBskyEmbedExternal.View).external.uri.split('\/').pop()?.split('@')[0];
