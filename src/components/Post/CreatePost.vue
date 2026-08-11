@@ -785,7 +785,16 @@ export default defineComponent({
                 default:
                     break;
             }
-        }
+        },
+        /**
+         * Method used to close the `CreatePost` modal if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape'){
+                this.close(this.previousURL);
+            }
+        },
     },
     computed:{
         charsRemaining(){
@@ -1086,11 +1095,13 @@ export default defineComponent({
         return canLeaveWithoutPrompt;
     },
     mounted() {
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
         this.$el.focus();
     },
     beforeUnmount() {
         postDetails.currentPostThreadData = {} as AppBskyFeedDefs.ThreadViewPost;
         postDetails.currentPostAction = PostActions.Post;
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
     },
 })
 

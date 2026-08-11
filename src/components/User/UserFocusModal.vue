@@ -1072,6 +1072,15 @@ export default defineComponent({
         hideBannerFullscreen(){
             this.isBannerFullscreen = false;
         },
+        /**
+         * Method used to close the `UserFocusModal` if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape'){
+                this.closeModal();
+            }
+        },
     },
     computed:{
         /**
@@ -1198,16 +1207,18 @@ export default defineComponent({
             return false;
         }
     },
-    beforeRouteLeave(){
+    beforeRouteLeave(to,from){
         if(this.isBannerFullscreen || this.isPFPFullscreen){
             this.hideBannerFullscreen();
             this.hidePFPFullscreen();
             return false;
         }
+        if(to.name == 'userfocusmodal') this.$el.focus();
     },
     mounted() {
         //Add keyboard shortcut listener
         let modal = document.getElementById('user-focus-container');
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
         // this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
         // this.$el.addEventListener('mouseup', this.onMouseShortcutEntered);
         if(modal) modal.focus(); //focus modal
@@ -1221,6 +1232,7 @@ export default defineComponent({
         // this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
         // this.$el.removeEventListener('mouseup', this.onMouseShortcutEntered);
         window.removeEventListener('popstate', this.onNavigateBack);
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
     },
 })
 

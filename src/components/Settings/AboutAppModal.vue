@@ -290,13 +290,26 @@ export default defineComponent({
         closeModal(){
             this.$router.push('/');
         },
+        /**
+         * Method used to close the `AboutAppModal` if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape'){
+                this.closeModal();
+            }
+        },
     },
     created() {
         this.versionDetails = GetVersion();
     },
     mounted() {
         this.$el.focus();
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
     },
+    beforeUnmount() {
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
+    }
 })
 </script>
 

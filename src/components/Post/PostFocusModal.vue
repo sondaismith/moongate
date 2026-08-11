@@ -937,11 +937,12 @@ export default defineComponent({
             return false;
         }
     },
-    beforeRouteLeave(){
+    beforeRouteLeave(to,from){
         if(this.isImageFullscreen){//if fullscreen view is open, do not navigate - just close the fullscreen view
             this.hideImageFullscreen();
             return false;
         }
+        if(to.name?.toString().includes('postfocusmodal')) this.$el.focus();
     },
     async created(){
         /**Defines actions for the `toggleScrollToTop` function */

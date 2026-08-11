@@ -411,7 +411,16 @@ export default defineComponent({
          */
         toggleAccountProvider(){
             this.isUsingDefaultHost = !this.isUsingDefaultHost;
-        }
+        },
+        /**
+         * Method used to close the `LoginModal` if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape' && AppState.canBrowse){
+                this.closeModal();
+            }
+        },
     },
     computed:{
         /**
@@ -468,9 +477,11 @@ export default defineComponent({
                 break;
         }
         AppState.isLoggingIntoAccount = true;
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
         (this.$el as HTMLElement).focus();
     },
     beforeUnmount(){
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
         AppState.isLoggingIntoAccount = false;
     }
 })
