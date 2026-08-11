@@ -40,6 +40,16 @@
             <div class="flex flex-col overflow-y-auto pt-2" tabindex="-1">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">Aug 11th 2026</div>
+                    <ul class="list-disc pl-4 py-1 text-sm">
+                        <li>Improved support for navigating the app using keyboard input (tabbing + enter/space key). Still room for improvement, but coverage is much better than before.</li>
+                        <li>Fixed issue with thumbnails for embeded external links not displaying correctly in the Desktop app.</li>
+                        <li>Added support for displaying "livestream status" of account around associated avatar display.</li>
+                        <li>Added option to toggle the warning/hiding of media that is marked as "sensitive content".</li>
+                        <li>See more details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/313">#313</ExternalLink>)</li>
+                    </ul>
+                </div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">June 26th 2026</div>
                     <ul class="list-disc pl-4 py-1 text-sm">
                         <li>Added support for displaying external "GIF" images from giphy.com.</li>

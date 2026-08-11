@@ -1,6 +1,6 @@
 [package]
 name = "moongate"
-version = "0.8.7"
+version = "0.8.8"
 description = "A Desktop Client App for Bluesky"
 authors = ["Sondai Smith"]
 edition = "2021"
