@@ -5,7 +5,7 @@
         <div class="flex flex-col h-full z-10 drop-shadow-md-harder bg-sidebar w-16 shrink-0 items-center">
             {{ void "App Logo" }}
             <div class="flex w-full border-b border-outline p-1">
-                <AppLogo @click="showAboutAppModal"/>
+                <AppLogo data-testid="app-logo" @click="showAboutAppModal"/>
             </div>
             <div class="w-full flex flex-col flex-shrink overflow-hidden">
                 {{ void "Feed List + Add btn" }}
@@ -46,7 +46,7 @@
             </div>
             {{ void "Navbar Footer" }}
             <div class="w-full flex-none !mt-auto">
-                <div class="p-2 space-y-2">
+                <div class="flex flex-col p-2 space-y-2">
                     <SidebarButton data-testid="app-settings-button" :icon="FeedEnums.Icons.Settings" tooltip="App Settings" @click="showSettingsPanel"/>
                     <UserButton :tooltip="AppState.currentUsername"/>
                 </div>
@@ -111,6 +111,9 @@
         <Transition name="modal">
             <FeedOrderModal v-if="AppState.isUpdatingFeedPosition" :feed-id-to-update="FeedState.selectedFeed"/>
         </Transition>
+        <Transition name="modal">
+            <UserLivestreamDetails v-if="AppState.isViewingUserLivestreamInfo && typeof AppState.livestreamInfoUserProfile != 'undefined'" :user-profile="AppState.livestreamInfoUserProfile"/>
+        </Transition>
         <Transition name="peek">
             <AccountPeek v-show="AccountPeekState.isUserPeeking"/>
         </Transition>
@@ -138,7 +141,8 @@ loadSavedFeedsRecords,
 stringifyFeedListData,
 stringToJSON} from "./lib/db/local_db";
 import { invoke, isTauri } from "@tauri-apps/api/core";
-import { Window } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { getUserHomeFeed } from "./lib/api/Feed.vue";
 import { FeedEnums } from "./enums/FeedEnums";
 import FeedEditModal from "./components/Feed/FeedEditModal.vue";
@@ -167,6 +171,7 @@ import { isBroadcastObject } from "./types/BroadcastChannelTypes";
 import { BroadcastChannelTarget } from "./types/BroadcastChannelTypes";
 import { LoginState } from "./interfaces/AccountInterfaces";
 import { router } from "./main";
+import UserLivestreamDetails from "./components/User/UserLivestreamDetails.vue";
 
 
     export default defineComponent({
@@ -185,6 +190,7 @@ import { router } from "./main";
             IntroMessage,
             AppLogo,
             AboutAppModal,
+            UserLivestreamDetails,
         },
         data(){
             return{
@@ -333,10 +339,9 @@ import { router } from "./main";
              */
             async setUpListeners(){
                 if(isTauri()){
-                    var window = Window.getCurrent();
                     //Listen to any attempt to close the app window.
-                    const unlisten = await window.onCloseRequested(async (event) => {
-                        const confirmed = await confirm('Are you sure?');
+                    const unlisten = await getCurrentWindow().onCloseRequested(async (event) => {
+                        const confirmed = await confirm('Are you sure you want to close the app?', {title:'Close Moongate?',okLabel:'Yes',cancelLabel:'No'});
                         if (!confirmed) {
                             // user did not confirm closing the window; let's prevent it
                             event.preventDefault();

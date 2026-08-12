@@ -79,7 +79,6 @@ test('Ensure "User" feed is created successfully when clicking on a Userlink ele
     await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('browse-as-guest-button').click();
     //add new User Feed to Feed Stack
-    await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').fill('username');
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('button').click();
@@ -98,6 +97,8 @@ test('Ensure "User" feed is created successfully when clicking on a Userlink ele
     //Click on userlink displayed in User Feed
     await expect(instance1.getByTestId('userlink')).toHaveCount(1);
     await instance1.getByTestId('userlink').click();
+    await expect(instance1.getByRole('menu')).toBeVisible();
+    await instance1.getByRole('menu').getByText("Create new User Feed").click();
     // //check to see if tag feed was created
     await expect(instance1.getByTestId('feed-column')).toHaveCount(2);
     await expect(instance1.getByTestId('feed-column').getByTestId('feedColumn-handle').nth(1)).toHaveText(userlinkText);

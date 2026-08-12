@@ -159,6 +159,8 @@ export async function PrepareFeedData(feedType:FeedEnums.Types,feedData:IFeedSta
         feedHandle:'loading_handle',
         feedName:'',
         feedAvatar:'',
+        containsSensitiveContent:false,
+        isFeedAccountLive:false,
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
         newPosts:0,totalPosts:0,
@@ -270,6 +272,8 @@ export function OLDcreateFeedDescription(userId:number,handle:string,name:string
         feedHandle: handle,
         feedName: name,
         feedAvatar:'',
+        containsSensitiveContent:false,
+        isFeedAccountLive:false,
         feedType: type,
         feedIcon: icon,
         newPosts: newPosts,
@@ -323,6 +327,8 @@ latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
         feedHandle:'loading_handle',
         feedName:tags.replace(' ',','),
         feedAvatar:'',
+        containsSensitiveContent:false,
+        isFeedAccountLive:false,
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
         newPosts:0,totalPosts:30,
@@ -338,16 +344,19 @@ latestPostDate:string='',latestPostCID:string=''):Promise<IFeedDescription>{
         case FeedEnums.Types.User:
             desc = {...desc,
                 feedName:'[Fetching Displayname...]',
-                feedSourceDID:sourceDID
+                feedSourceDID:sourceDID,
+                feedIcon:FeedEnums.Icons.User
             }
             //Get profile name
             await GetBrowsingAgent().getProfile({actor:sourceDID})
             .then(res => {
                 //Update required values of `IFeedDescription` template
                 desc = {...desc,
-                    feedName:res.data.displayName ? res.data.displayName : '',
+                    feedName:res.data.displayName ? res.data.displayName : '[Empty Displayname]',
                     feedHandle:res.data.handle,
                     feedAvatar:res.data.avatar ? res.data.avatar : '',
+                    containsSensitiveContent: AppState.getIfUserAccountContainsSensitiveContent(res.data),
+                    isFeedAccountLive: AppState.getIsUserAccountLive(res.data)
                 }
             });
             break;
@@ -508,6 +517,8 @@ export async function AddSavedFeed(savedFeed:IFeedDBData){
         feedHandle:'loading_handle',
         feedName:savedFeed.tags,
         feedAvatar:'',
+        containsSensitiveContent:false,
+        isFeedAccountLive:false,
         feedType:FeedEnums.Types.User,
         feedIcon:FeedEnums.Icons.Art,
         newPosts:0,totalPosts:30,
@@ -545,7 +556,7 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
     if(feed){
         //If User Feed we need to get User Profile data
         if(feedDesc.feedType == FeedEnums.Types.User){
-            let profile:AppBskyActorDefs.ProfileView = {did:'',handle:''};
+            let profile:AppBskyActorDefs.ProfileViewDetailed = {did:'',handle:''};
             await getUserProfile(feedDesc.feedSourceDID)
             .then(res => profile = res.data)
             .catch((err) => {
@@ -556,7 +567,9 @@ export async function LoadFeedPostsAsync(feedDesc:IFeedDescription){
             feed.description = {...feed.description,
                 feedHandle:profile.handle,
                 feedName:profile.displayName ? profile.displayName : '[Empty Displayname]',
-                feedSourceDID:profile.did
+                feedSourceDID:profile.did,
+                containsSensitiveContent: AppState.getIfUserAccountContainsSensitiveContent(profile),
+                isFeedAccountLive: AppState.getIsUserAccountLive(profile)
             }
         }
         //Get data for Feed
@@ -773,7 +786,7 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
         await new Promise(res => setTimeout(res,500));
         await GetFeedDataForFeedType(feed.description.feedType,feed.description.feedSourceDID,feed.description.feedTags,'',postsToGet)
         .then(res => {
-            if(feed && (feed.description.feedType == FeedEnums.Types.User ||
+            if(typeof feed != 'undefined' && (feed.description.feedType == FeedEnums.Types.User ||
                 feed.description.feedType == FeedEnums.Types.Tag ||
                 feed.description.feedType == FeedEnums.Types.FeedGenerator ||
                 feed.description.feedType == FeedEnums.Types.Following)){
@@ -817,9 +830,28 @@ export async function RefreshFeed(feedId:String, lastUpdate:Date, postsToGet:num
             }
         })
         .catch(err => {
-            toast.add(HandleAPIError(err, 'Error refreshing feed'));
+            toast.add(HandleAPIError(err, 'Error refreshing feed content'));
             if(feed) feed.isAwaitingFeedData = false;
         });
+        //Get latest User Account state for User-type Feeds
+        if(typeof feed != 'undefined' && feed.description.feedType == FeedEnums.Types.User){
+            await getUserProfile(feed.description.feedSourceDID)
+            .then(res => {
+                if(typeof feed != 'undefined'){
+                    feed.description = {...feed.description,
+                        feedName:res.data.displayName ? res.data.displayName : '[Empty Displayname]',
+                        feedHandle:res.data.handle,
+                        feedAvatar:res.data.avatar ? res.data.avatar : '',
+                        containsSensitiveContent: AppState.getIfUserAccountContainsSensitiveContent(res.data),
+                        isFeedAccountLive: AppState.getIsUserAccountLive(res.data)
+                    }
+                }
+            })
+            .catch(err => {
+                toast.add(HandleAPIError(err, 'Error refreshing Feed User profile data'));
+                if(feed) feed.isAwaitingFeedData = false;
+            });
+        }
     }
 }
 

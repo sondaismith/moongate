@@ -1,28 +1,38 @@
 <template>
-    <div data-testid="user-focus-modal" class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
+    <div data-testid="user-focus-modal" class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none"
+    @keydown.tab="(e) => TrapFocus(this.$el,e,(isPFPFullscreen||isBannerFullscreen))" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         {{ void "Fullscreen Image" }}
-        <TransitionGroup>
-            <div v-if="isPFPFullscreen" @click="hidePFPFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
-            bg-black/90 sm:bg-black/70 bg-contain bg-center bg-no-repeat z-30">
-                <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.avatar" class="max-h-full max-w-full"/>
-            </div>
-            <div v-else-if="isBannerFullscreen" @click="hideBannerFullscreen" class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
-            bg-black/90 sm:bg-black/70 bg-contain bg-center bg-no-repeat z-30">
-                <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.banner" class="max-h-full max-w-full"/>
-            </div>
-        </TransitionGroup>
+        <div ref="avatarbannerfullscreen" @keydown.tab="(e) => TrapFocus(this.$refs.avatarbannerfullscreen,e)" tabindex="-1">
+            <TransitionGroup>
+                <button v-if="isPFPFullscreen" @click="hidePFPFullscreen"
+                class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
+                bg-black/90 sm:bg-black/70 active:bg-black/90 sm:active:bg-black/70 bg-contain
+                bg-center bg-no-repeat z-30 shadow-none border-none outline outline-2 outline-transparent
+                focus-visible:outline-focusBorder outline-offset-[-6px]">
+                    <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.avatar" class="max-h-full max-w-full"/>
+                </button>
+                <button v-else-if="isBannerFullscreen" @click="hideBannerFullscreen"
+                class="fixed flex h-full w-full text-primary items-center justify-center scroll-auto
+                bg-black/90 sm:bg-black/70 active:bg-black/90 sm:active:bg-black/70 bg-contain
+                bg-center bg-no-repeat z-30 shadow-none border-none outline outline-2 outline-transparent
+                focus-visible:outline-focusBorder outline-offset-[-6px]">
+                    <img :src="UserFocusModalState.currentUserPageDetails.ProfileData.banner" class="max-h-full max-w-full"/>
+                </button>
+            </TransitionGroup>
+        </div>
         <div class="relative z-20 flex flex-col max-w-[40rem] w-full h-full sm:mx-auto my-auto bg-focusBG text-primary drop-shadow-lg overflow-hidden">
             {{ void "Control Bar" }}
             <div id="user-modal-navbar" class="flex z-[4] bg-banner sticky top-0 h-8s px-2 py-1 items-center shrink-0 w-full self-start
             border-b border-outlineLighter *:shadow-none">
                 <SquareButton
-                title="Refresh page" :is-disabled="awaitingProfileData || isAwaitingTabSwitchData || !isHandleValid" @click="refreshPage"
+                title="Refresh page" data-testid="userFocusModal-refresh-button"
+                :is-disabled="awaitingProfileData || isAwaitingTabSwitchData || !isHandleValid" @click="refreshPage"
                 class="transition-colors enabled:hover:bg-navbarBtnHover focus-visible:outline-none focus-visible:!bg-navbarBtnHover text-navbarBtnText"
                 button-padding-x="0" button-padding-y="0">
                     <i-mingcute:refresh-3-fill class="text-2xl"/>
                 </SquareButton>
-                <SquareButton @click="closeModal" title="Close User Feed Modal"
+                <SquareButton data-testid="userFocusModal-close-button" @click="closeModal" title="Close User Feed Modal"
                 class="ml-auto bg-btn hover:bg-red-600 focus-visible:bg-red-600 border border-outline" button-padding-x="0" button-padding-y="0">
                     <i-mingcute:close-fill class="text-2xl"/>
                 </SquareButton>
@@ -38,7 +48,7 @@
                 border border-outlineLighter shadow-none mr-1"
                 @click="updateDisplayedData">Try Again?</button>
             </div>
-            <div data-testid="userFocusModal-user-focus-container" v-else id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="0">
+            <div data-testid="userFocusModal-user-focus-container" v-else id="user-focus-container" class="h-full overflow-auto outline-none" style="clip-path: inset(0 0 0 0 round 0px);" tabindex="-1">
                 <div class="flex flex-col h-full">
                     {{ void "Posts + Post Type Filters" }}
                     <div class="flex flex-col min-h-0s grow items-center">
@@ -49,19 +59,27 @@
                             shrink-0 border-2 border-slate-800 user-pfp"></div>
                         </div>
                         <div v-else class="relative w-full user-banner">
-                            <div v-if="hasProfileBanner" @click="showBannerFullscreen" class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
-                            bg-no-repeat bg-center bg-cover overflow-hidden"
+                            <button v-if="hasProfileBanner" @click="showBannerFullscreen" data-testid="userFocusModal-banner"
+                            class="bg-userFocusModalBannerBG w-full aspect-[3/1] shrink-0
+                            bg-no-repeat bg-center bg-cover overflow-hidden shadow-none rounded-none border-none outline outline-2 outline-transparent
+                            focus-visible:outline-focusBorder outline-offset-[-6px]"
                             :class="{'cursor-pointer' : hasProfileBanner}">
-                                <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.banner!" :fill-container="true" :class="{'blur-lg':isAccountBlocked}"/>
-                            </div>
+                                <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.banner!" :fill-container="true" :class="{'blur-lg':isAccountBlocked||(accountContainsSensitiveContent && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent)}"/>
+                            </button>
                             <div v-else id="userFocusModal-placeholder-banner" class="bg-userFocusModalBannerBG w-full max-h-40s h-40s aspect-[3/1] shrink-0 bg-centers"
                             :style="`mask: url(${getPlaceholderImageSrc})`">
                             </div>
-                            <div v-if="hasProfileAvatar" @click="showPFPFullscreen" class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
-                            items-center justify-center shrink-0 border-2 border-slate-800 bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover user-pfp
-                            cursor-pointer transition-colors hover:border-hover overflow-hidden">
-                                <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.avatar!" loader-type="spinner"
-                                :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked}"/>
+                            <div v-if="hasProfileAvatar" data-testid="userFocusModal-avatar" class="absolute left-4 size-24 user-pfp">
+                                <div v-if="userIsLive" @click="showPFPFullscreen" @contextmenu="showAvatarOptionsMenu($event, UserFocusModalState.currentUserPageDetails.ProfileData)"
+                                class="peer absolute z-[4] bottom-[-4px] left-1/2 -translate-x-1/2 px-1 rounded cursor-pointer bg-accountLiveAvatarBorder text-white text-[10px] font-bold leading-[14px]">LIVE</div>
+                                <button @click="showPFPFullscreen" @contextmenu="showAvatarOptionsMenu($event, UserFocusModalState.currentUserPageDetails.ProfileData)"
+                                class="absolute z-[3] flex rounded-full aspect-square size-24 items-center justify-center shrink-0 border-2 border-slate-800
+                                bg-userFocusModalBannerBG bg-no-repeat bg-center bg-cover cursor-pointer transition-colors hover:border-hover overflow-hidden
+                                shadow-none outline outline-2 outline-transparent focus-visible:outline-focusBorder outline-offset-2"
+                                :class="{'border-4 !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover peer-hover:!border-accountLiveAvatarBorderHover' : userIsLive}">
+                                    <ImageLoader :img-url="UserFocusModalState.currentUserPageDetails.ProfileData.avatar!" loader-type="spinner"
+                                    :fill-container="true" :spinner-width="30" :class="{'blur scale-150':isAccountBlocked||(accountContainsSensitiveContent && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent)}"/>
+                                </button>
                             </div>
                             <div v-else class="absolute z-[3] flex rounded-full aspect-square size-24 left-4
                             items-center justify-center shrink-0 border-2 border-slate-800 bg-no-repeat bg-center bg-cover user-pfp
@@ -101,20 +119,21 @@
                                 <div class="flex justify-between overflow-hiddens">
                                     <div class="overflow-hidden">
                                         <div class="flex flex-wrap items-center gap-1 *:leading-6s">
-                                            <div class="flex text-2xl font-semibold overflow-hidden text-ellipsis">
+                                            <div data-testid="userFocusModal-displayName" class="flex text-2xl font-semibold overflow-hidden text-ellipsis">
                                                 {{UserFocusModalState.currentUserPageDetails.ProfileData ? UserFocusModalState.currentUserPageDetails.ProfileData.displayName : "Username Title"}}
                                             </div>
                                             <VerifiedBadge v-if="isUserVerified"/>
                                         </div>
-                                        <div class="text-xs">{{UserFocusModalState.currentUserPageDetails.ProfileData ? '@'+UserFocusModalState.currentUserPageDetails.ProfileData.handle : '@handle'}}</div>
+                                        <div data-testid="userFocusModal-handle" class="text-xs">{{UserFocusModalState.currentUserPageDetails.ProfileData ? '@'+UserFocusModalState.currentUserPageDetails.ProfileData.handle : '@handle'}}</div>
                                     </div>
                                     <div class="relative flex items-center mt-1 gap-2 h-9">
                                         <!-- <Transition name="smooth"> -->
                                             <FollowUser v-if="!awaitingProfileData && !isAccountBlocked" class="px-4" :is-user-followed="isUserFollowed"
                                             :user-did="UserFocusModalState.currentUserPageDetails.ProfileData.did" :is-disabled="!AppState.isAuthBrowsing || isAccountBlocked"/>
                                         <!-- </Transition> -->
-                                        <PillButton @click="showUserOptionsMenu($event,UserFocusModalState.currentUserPageDetails.ProfileData.handle)" class="aspect-square h-full bg-btn hover:bg-btnHover
-                                        focus-visible:bg-btnHover shadow-none">...</PillButton>
+                                        <FocusButton data-testid="userFocusModal-account-options"
+                                        @click="showUserOptionsMenu($event, profileAtUri, UserFocusModalState.currentUserPageDetails.ProfileData.handle)"
+                                        class="aspect-square rounded-full h-full bg-btn hover:bg-btnHover focus-visible:bg-btnHover border-none outline-offset-2">...</FocusButton>
                                     </div>
                                 </div>
                                 <div v-if="!isAccountBlocked" class="flex mt-2">
@@ -144,38 +163,39 @@
                             <RichPostTextBsky v-else-if="!awaitingProfileData && !isNavigatingHistory && !isAccountBlocked" :post-text="UserFocusModalState.currentUserPageDetails.ProfileData ? UserFocusModalState.currentUserPageDetails.ProfileData.description : 'No Description'"/>
                             <AccountModerationLabel :is-muted="isAccountMuted" :is-blocked="isAccountBlocked"/>
                         </div>
-                        <div v-if="!isAccountBlocked" id="user-post-tabs" class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG shadow-scroll-underline"
+                        <div v-if="!isAccountBlocked" id="user-post-tabs" data-testid="userFocusModal-post-tabs"
+                        class="flex z-[2] w-full sticky text-center justify-between border-b border-outlineLighter bg-focusBG shadow-scroll-underline"
                         :style="{'top':userSummaryBottomPos+'px'}">
-                            <div @click="viewFeed" class="w-full hover:bg-btnHover cursor-pointer"
+                            <FocusButton @click="viewFeed" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View User's Feed (Posts, Retweets)">
                                 <div class="pt-2 pb-1">Feed</div>
                                 <div v-if="isViewingFeed" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
-                            <div @click="viewPosts" class="w-full hover:bg-btnHover cursor-pointer"
+                            </FocusButton>
+                            <FocusButton @click="viewPosts" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View Posts only by current User">
                                 <div class="pt-2 pb-1">Posts</div>
                                 <div v-if="isViewingPosts" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
-                            <div @click="viewReplies" class="w-full hover:bg-btnHover cursor-pointer"
+                            </FocusButton>
+                            <FocusButton @click="viewReplies" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View User's Replies">
                                 <div class="pt-2 pb-1">Replies</div>
                                 <div v-if="isViewingReplies" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
-                            <div @click="viewMedia" class="w-full hover:bg-btnHover cursor-pointer"
+                            </FocusButton>
+                            <FocusButton @click="viewMedia" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View Posts User has made containing Images/Video">
                                 <div class="pt-2 pb-1">Media</div>
                                 <div v-if="isViewingMedia" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
-                            <div v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewLikes" class="w-full hover:bg-btnHover cursor-pointer"
+                            </FocusButton>
+                            <FocusButton v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewLikes" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View Your Liked Posts">
                                 <div class="pt-2 pb-1">Likes</div>
                                 <div v-if="isViewingLikes" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
-                            <div v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewBookmarks" class="w-full hover:bg-btnHover cursor-pointer"
+                            </FocusButton>
+                            <FocusButton v-if="!awaitingProfileData && isThisCurrentUserAccount" @click="viewBookmarks" class="w-full hover:bg-btnHover rounded-none border-none active:bg-btnHover outline-offset-[-4px]"
                             title="View Your Saved Posts">
                                 <div class="pt-2 pb-1">Saved</div>
                                 <div v-if="isViewingBookmarks" class="bg-blue-400 h-1 w-10 ml-auto mr-auto"></div>
-                            </div>
+                            </FocusButton>
                         </div>
                         {{ void "General Posts" }}
                         <div v-if="(isViewingFeed || isViewingPosts || isViewingReplies || isViewingLikes) && !isAccountBlocked"
@@ -375,18 +395,17 @@
                                         </div>
                                         <div v-if="AppBskyEmbedImages.isView(n.post.embed) && typeof n.post.embed.images != 'undefined'" class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs text-white bg-black/70 select-none">Photo</div>
                                         <div v-else class="absolute z-[2] rounded-md bottom-1 right-1 p-1 text-xs text-white bg-black/70 select-none">Video</div>
-                                        <SpoilerOverlay class="z-[1]" :labels="n.post.labels" :has-sensitive-content="hasSensitiveContent(n)"
+                                        <SpoilerOverlay class="z-[1]" :labels="n.post.labels" :has-sensitive-content="AppSettingsState.Settings.spoilerImagesContainingSensitiveContent && hasSensitiveContent(n)"
                                         :media-type="AppBskyEmbedImages.isView(n.post.embed) && typeof n.post.embed.images != 'undefined' ? MediaType.Image : MediaType.Video"/>
-                                        <div @click="showMediaContent(n)" @contextmenu.prevent class="relative flex bg-violet-500 hover:bg-violet-300
-                                        cursor-pointer w-full h-full bg-no-repeat bg-center bg-cover
-                                        overflow-hidden backdrop-blur-0">
+                                        <button @click="showMediaContent(n)" @contextmenu.prevent class="relative flex bg-violet-500 hover:bg-violet-300
+                                        cursor-pointer w-full h-full bg-no-repeat bg-center bg-cover overflow-hidden backdrop-blur-0 rounded-none shadow-none border-none outline-none outline-2 outline-offset-[-6px] outline-transparent focus-visible:outline-focusBorder">
                                             <ImageLoader v-if="isFeedViewPostCust(n) && AppBskyEmbedImages.isView(n.post.embed)"
                                             :img-url="typeof n.post.embed.images != 'undefined' ? n.post.embed.images[0].thumb : ''" :fill-container="true" :class="'w-full object-cover'"
                                             :title="n.post.embed.images[0].alt" />
                                             <ImageLoader v-if="isFeedViewPostCust(n) && AppBskyEmbedVideo.isView(n.post.embed)"
                                             :img-url="typeof n.post.embed.thumbnail != 'undefined' ? n.post.embed.thumbnail : ''" :fill-container="true" :class="'w-full object-cover'"
                                             :title="n.post.embed.alt" />
-                                        </div>
+                                        </button>
                                     </div>
                                     <!-- Started on using `ImageContainer` for the thumbnails displayed on the media tab
                                     but realized that it doesn't really make sense when you can just download the image after
@@ -431,18 +450,20 @@ import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
 import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
 import MdiUserCheck from '~icons/mdi/user-check';
+import BlueskySocialFillIcon from '~icons/mingcute/bluesky-social-fill';
+import CamcorderBoxIcon from '~icons/mdi/camcorder-box';
 
 import { defineComponent } from 'vue'
 import PillButton from '../Utilities/PillButton.vue';
-import { AppState, toast } from '../../state/AppState.vue';
-import { AppBskyFeedDefs, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyUnspeccedDefs } from '@atproto/api';
+import { AppState, CopyTextToClipboard, toast, TrapFocus } from '../../state/AppState.vue';
+import { AppBskyFeedDefs, AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyUnspeccedDefs, AppBskyActorDefs } from '@atproto/api';
 import { GenerateTagLinkText } from '../../helpers/parsers';
 import Hashtag from '../Utilities/Hashtag.vue';
 import RichPostText from '../Utilities/RichPostText.vue';
 import { GetBrowsingAgent } from '../../lib/api.vue';
 import ImageContainer from '../Utilities/ImageContainer.vue';
 import AvatarRound from '../Utilities/AvatarRound.vue';
-import { convertToLongTimestamp, convertToShortTimestamp } from '../../helpers/converters';
+import { convertToLongTimestamp, convertToShortTimestamp, CreateBskyWeblink } from '../../helpers/converters';
 import EmbedExternal from '../Utilities/EmbedExternal.vue';
 import VideoContainer from '../Utilities/VideoContainer.vue';
 import FocusFeedPost from '../Feed/FocusFeedPost.vue';
@@ -465,14 +486,27 @@ import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 import AccountModerationLabel from '../Utilities/AccountModerationLabel.vue';
 import { INavigationHistory } from '../../interfaces/UserInterfaces';
 import ImageLoader from '../Utilities/ImageLoader.vue';
+import FocusButton from '../Utilities/FocusButton.vue';
 
 /**
  * Used to create a HTTP URL link To the currently view User's profile.
  * @param handle The handle of the User associated with the link.
  */
-function CopyPostLink(handle:string){
-    if(handle.trim()!='') navigator.clipboard.writeText(`https://bsky.app/profile/${handle}`);
-    toast.add({summary:'Link to User Profile copied',severity:'success', group:'bc', life:1000});
+function CopyPostLink(postUri:string, handle:string="", returnMoongateLink:boolean=false){
+    let link = CreateBskyWeblink(postUri, handle, returnMoongateLink);
+    if(typeof link != 'undefined')
+        CopyTextToClipboard(link, 'link');
+    else
+        toast.add({summary:'Error creating Link',severity:'error', group:'bc', life:1000});
+}
+
+/**
+ * Method that displays the details of a specific User's active livestream in the
+ * `UserLivestreamDetails` modal.
+ * @param userProfile The User Profile to view the Livestream info of.
+ */
+function DisplayUserLivestreamInfo(userProfile:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic){
+    AppState.showUserLivestreamInfo(userProfile);
 }
 
 export default defineComponent({
@@ -490,6 +524,7 @@ export default defineComponent({
             GenerateTagLinkText,
             convertToShortTimestamp,
             convertToLongTimestamp,
+            TrapFocus,
             AppBskyFeedDefs,
             AppBskyEmbedImages,
             AppBskyEmbedVideo,
@@ -531,6 +566,7 @@ export default defineComponent({
     },
     components:{
         PillButton,
+        FocusButton,
         Hashtag,
         FocusFeedPost,
         RichPostText,
@@ -768,7 +804,7 @@ export default defineComponent({
          * Sensitive Content.
          * */
         hasSensitiveContent(n:AppBskyFeedDefs.FeedViewPost){
-            if(n.post.labels && n.post.labels.length>0) return true;
+            if(typeof n.post.labels != 'undefined' && n.post.labels.length>0) return true;
             return false;
         },
         /**
@@ -964,10 +1000,11 @@ export default defineComponent({
          * Shows Options Menu allowing user to perform different actions
          * relating to the selected User Profile being viewed.
          */
-        showUserOptionsMenu(e:MouseEvent, handle:string=""){
+        showUserOptionsMenu(e:MouseEvent, postURI:string, handle:string=""){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteLinkLine,Label:'Copy link to Profile Page',Action:function(){CopyPostLink(handle)},Type:ItemType.Option},
+                {Icon:BlueskySocialFillIcon,Label:'Copy link to Profile Page (Bluesky)',Action:function(){CopyPostLink(postURI, handle)},Type:ItemType.Option},
+                {Icon:'moongate',Label:'Copy link to Profile Page (Moongate)',Action:function(){CopyPostLink(postURI, handle, true)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             if(AppState.isAuthBrowsing && GetBrowsingAgent().did != UserFocusModalState.currentUserPageDetails.ProfileData.did){
                     OptionsMenuState.currentMenuItems.push({Icon:MingcuteVolumeMuteFill,Label:'',Action:()=>{},Type:ItemType.Splitter});
@@ -981,6 +1018,17 @@ export default defineComponent({
                     OptionsMenuState.currentMenuItems.push({Icon:MdiUserCheck,Label:'Unblock Account',Action:this.requestToggleBlock,Type:ItemType.Option});
             }
             OptionsMenuState.showOptionMenu(e);
+        },
+/**
+         * Shows Options Menu for viewing a livestreaming User's
+         * stream details.
+         */
+        showAvatarOptionsMenu(e:MouseEvent, userProfile:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic){
+            if(this.userIsLive){
+                e.preventDefault();
+                OptionsMenuState.currentMenuItems.push({Icon:CamcorderBoxIcon,Label:'View Stream Info',Action:()=>{DisplayUserLivestreamInfo(userProfile)},Type:ItemType.Option});
+                OptionsMenuState.showOptionMenu(e);
+            }
         },
         /**
          * Method used to attempt to mute/unmute the account associated with the
@@ -1012,15 +1060,26 @@ export default defineComponent({
         },
         showPFPFullscreen(){
             this.isPFPFullscreen = true;
+            this.$el.focus();
         },
         hidePFPFullscreen(){
             this.isPFPFullscreen = false;
         },
         showBannerFullscreen(){
             this.isBannerFullscreen = true;
+            this.$el.focus();
         },
         hideBannerFullscreen(){
             this.isBannerFullscreen = false;
+        },
+        /**
+         * Method used to close the `UserFocusModal` if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape'){
+                this.closeModal();
+            }
         },
     },
     computed:{
@@ -1088,6 +1147,14 @@ export default defineComponent({
             }
             return result;
         },
+        /**Is the currently displayed account livestreaming? */
+        userIsLive(){
+            let result = false;
+            if(typeof UserFocusModalState.currentUserPageDetails.ProfileData.status != 'undefined')
+                result = (UserFocusModalState.currentUserPageDetails.ProfileData.status.status == 'app.bsky.actor.status#live' &&
+                typeof UserFocusModalState.currentUserPageDetails.ProfileData.status.isActive != 'undefined' && UserFocusModalState.currentUserPageDetails.ProfileData.status.isActive);
+            return result;
+        },
         /**
          * Has end of Bookmarks "Feed" been reached. This is to be used for the Bookmarks content
          * only - currently when the end of the list is reached a cursor is still returned with an
@@ -1105,6 +1172,17 @@ export default defineComponent({
         getPlaceholderImageSrc(){
             if(import.meta.env.DEV) return '../../assets/placeholder/no_banner_pattern.svg';
             else return './assets/placeholder/no_banner_pattern.svg'
+        },
+        /**Does the currently displayed account's avatar/account contain sensitive content? */
+        accountContainsSensitiveContent(){
+            return AppState.getIfUserAccountContainsSensitiveContent(UserFocusModalState.currentUserPageDetails.ProfileData);
+        },
+        /**
+         * Computed "AT URI" that points to the currently viewed User's account profile page.
+         * Used by the "Copy link to Profile..." menu options/methods.
+         */
+        profileAtUri(){
+            return `at://${UserFocusModalState.currentUserPageDetails.ProfileData.handle}/app.bsky.actor.profile/${UserFocusModalState.currentUserPageDetails.ProfileData.did}`;
         }
     },
     watch:{
@@ -1129,16 +1207,18 @@ export default defineComponent({
             return false;
         }
     },
-    beforeRouteLeave(){
+    beforeRouteLeave(to,from){
         if(this.isBannerFullscreen || this.isPFPFullscreen){
             this.hideBannerFullscreen();
             this.hidePFPFullscreen();
             return false;
         }
+        if(to.name == 'userfocusmodal') this.$el.focus();
     },
     mounted() {
         //Add keyboard shortcut listener
         let modal = document.getElementById('user-focus-container');
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
         // this.$el.addEventListener('keydown', this.onKeyboardShorcutEntered);
         // this.$el.addEventListener('mouseup', this.onMouseShortcutEntered);
         if(modal) modal.focus(); //focus modal
@@ -1152,6 +1232,7 @@ export default defineComponent({
         // this.$el.removeEventListener('keydown', this.onKeyboardShorcutEntered);
         // this.$el.removeEventListener('mouseup', this.onMouseShortcutEntered);
         window.removeEventListener('popstate', this.onNavigateBack);
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
     },
 })
 

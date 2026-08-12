@@ -1,6 +1,6 @@
 <template>
     <button class="group flex rounded cursor-pointer transition-colors shadow-none hover:border-transparent
-    active:bg-transparent active:border-transparent"
+    active:bg-transparent active:border-transparent outline outline-2 outline-transparent focus-visible:outline-focusBorder"
     :style="`gap:${textGap}rem`"
     @click="toggleValue">
         <div class="flex shrink-0 my-auto rounded bg-btn border border-outline

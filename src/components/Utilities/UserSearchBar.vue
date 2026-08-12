@@ -11,8 +11,8 @@
         <div v-if="lastResultsTerm != ''" class="border-x border-outline bg-searchbarShowingResultsBG p-2 pl-3 grow-0 shrink-0 text-sm text-searchbarShowingResultsText select-none">
             <div>Showing results for: "{{ lastResultsTerm }}"</div>
         </div>
-        <div v-if="searchTerm.trim() != '' || userResultsRef.length>0" class="flex border-t-0
-        border-inherit border-outline rounded-b bg-feedColumnBG overflow-auto"
+        <div v-if="searchTerm.trim() != '' || userResultsRef.length>0" class="flex border-t-0 border-inherit border-outline rounded-b
+        bg-feedColumnBG overflow-auto" tabindex="-1"
         :class="[userResultsRef.length<1 ? 'border-none' : 'border']">
             <div data-testid="userSearchBar-returned-users-container" class="relative flex flex-col w-full">
                 <button :disabled="disabled" @click="emitUserSelected(result.profileData,index)" data-testid="user-search-bar-result"
@@ -26,11 +26,7 @@
                             <i-mingcute:check-fill v-if="result.selected" class="h-full w-full p-0.5 text-white"/>
                             <i-mingcute:loading-fill v-if="result.awaitingDetailedData" class="spinner mx-auto h-3 shrink-0 text-black"/>
                         </div>
-                        <div class="flex rounded-full size-10 min-w-10 aspect-square justify-center items-center bg-cover overflow-hidden"
-                        :class="[{'bg-searchbarHandle' : typeof result.profileData.avatar == 'undefined'}]">
-                            <ImageLoader v-if="typeof result.profileData.avatar != 'undefined'" :img-url="result.profileData.avatar" :fill-container="true" :loader-type="'spinner'"/>
-                            <i-mingcute:user-add-fill v-else/>
-                        </div>
+                        <AvatarRound :author-details="result.profileData" :display-only="true"/>
                         <div class="flex shrink-0 overflow-hidden flex-col items-start">
                             <div class="flex gap-1 items-center w-full overflow-hidden">
                                 <div v-if="typeof result.profileData.displayName != 'undefined' && result.profileData.displayName.trim() == ''" class="whitespace-nowrap overflow-hidden text-ellipsis opacity-20">[Whitespace]</div>
@@ -64,11 +60,14 @@ import FilterBar from './FilterBar.vue';
 import { IFeedStackItem } from '../../interfaces/FeedInterfaces';
 import { PropType } from 'vue';
 import { IUserSearchResult } from '../../interfaces/UserInterfaces';
+import { profile } from 'node:console';
+import AvatarRound from './AvatarRound.vue';
 
 export default defineComponent({
     name:'User Search Bar (Updated)',
     components:{
-        FilterBar
+        FilterBar,
+        AvatarRound
     },
     props:{
         /**Is the control currently disabled? */
@@ -139,6 +138,14 @@ export default defineComponent({
         clearUserAccountResults(){
             this.searchTerm = '';
             this.$emit('clearResultsClicked');
+        },
+        /**Is the returned User account livestreaming? */
+        userIsLive(user:AppBskyActorDefs.ProfileView){
+            let result = false;
+            if(typeof user.status != 'undefined')
+                result = user.status.status == 'app.bsky.actor.status#live' &&
+                typeof user.status.isActive != 'undefined' && user.status.isActive;
+            return result;
         }
     },
     computed:{

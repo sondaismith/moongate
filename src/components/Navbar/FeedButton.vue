@@ -3,13 +3,14 @@
     @click="highlightFeed" @contextmenu="(e) => showFeedOptionsMenu(e,getFeedSourceHandle)">
         <button class="group relative flex justify-center items-center
             rounded-xl drop-shadow-md bg-feedBtn border border-outline outline-none transition-[border]
-            hover:border-secondary aspect-square !w-full p-0.5 overflow-hidden">
+            hover:border-secondary aspect-square !w-full p-0.5 overflow-hidden" :class="{'border-[3px] !border-accountLiveAvatarBorder hover:!border-accountLiveAvatarBorderHover' : feedDescription.isFeedAccountLive}">
             <div class="w-full h-full z-[1] group-focus-visible:bg-black/60 border-2 rounded-lg transition-[border] border-transparent
             group-focus-visible:border-feedtypeBtnFocusHighlight"></div>
+            <div v-if="feedDescription.isFeedAccountLive" data-testid="feedButton-live-label" class="absolute z-[2] bottom-0 mx-auto rounded-t px-1 text-[10px] leading-[12px] transition-colors bg-accountLiveAvatarBorder group-hover:bg-accountLiveAvatarBorderHover text-white">Live</div>
             <FeedIcon v-if="!hasAvatar" :icon="feedDescription.feedIcon"
             class="absolute h-full text-2xl text-primary select-none pointer-events-none"/>
             <div v-else class="absolute flex bg-blueskyBlue w-full h-full items-centers justify-centers">
-                <img v-if="feedDescription.feedAvatar.trim() != ''" :src="feedDescription.feedAvatar" class="h-full w-full object-contain"/>
+                <img v-if="feedDescription.feedAvatar.trim() != ''" :src="feedDescription.feedAvatar" class="h-full w-full object-contain" :class="{'blur scale-150' : feedDescription.containsSensitiveContent && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent}"/>
                 <i-mingcute:radar-2-fill v-else class="text-white h-full w-full p-1"/>
             </div>
             <i-mingcute:loading-fill v-show="awaitingPFPRequest"
@@ -35,6 +36,7 @@ import { IFeedDescription } from '../../interfaces/FeedInterfaces';
 import { FeedEnums } from '../../enums/FeedEnums';
 import { router } from '../../main';
 import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 /**
  * Method that ensures that the target position the FeedColumn display wants to
@@ -80,6 +82,7 @@ function ShowUserProfile(userHandle:string){
 export default defineComponent({
     data(){
         return{
+            AppSettingsState,
             isScrolling: false,
             userPfp:'',
             awaitingPFPRequest:false,

@@ -54,7 +54,7 @@ test('Ensure changes to Feed (creating, re-ordering) in one app instance is refl
             headers: { 'Content-Type': 'application/json' },
             body:JSON.stringify({feed:f})
         });
-        feedIndex++;
+        // feedIndex++;
     });
 
     //make sure both tabs are on app page
@@ -65,7 +65,6 @@ test('Ensure changes to Feed (creating, re-ordering) in one app instance is refl
     await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('browse-as-guest-button').click();
     //add new feed
-    await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').fill('username');
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('button').click();

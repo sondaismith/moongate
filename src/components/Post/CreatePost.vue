@@ -21,7 +21,7 @@
                 <div v-for="post in [postDetails.currentPostData]"
                 class="flex gap-2">
                     <div class="p-1">
-                        <AvatarRound :avatar="post.author.avatar"/>
+                        <AvatarRound :author-details="post.author"/>
                     </div>
                     <div class="flex flex-col overflow-hidden shrink">
                         <div class="flex gap-1 text-nowrap">
@@ -52,7 +52,7 @@
             </div>
             <div class="flex gap-2">
                 <div class="p-1">
-                    <AvatarRound class=""/>
+                    <AvatarRound class="" :author-details="{did:'empty',handle:'not-real.com',avatar:AppState.currentPFP}" :display-only="true"/>
                 </div>
                 <textarea id="post-textarea" role="text" placeholder="What do you want to say?" contenteditable
                 @input="limitChars" v-model="postText"
@@ -111,7 +111,7 @@
                 <div v-for="post in [postDetails.currentPostData]"
                 class="flex flex-col rounded-md p-2 gap-1 border border-outline">
                     <div class="flex gap-1 items-center">
-                        <AvatarRound :avatar="post.author.avatar" class="size-6"/>
+                        <AvatarRound :author-details="post.author" class="size-6"/>
                         <div class="flex gap-1 text-nowrap overflow-hidden">
                             <div class="text-sm overflow-hidden text-ellipsis font-bold"
                             :title="post.author.displayName">{{ post.author.displayName }}</div>
@@ -785,7 +785,16 @@ export default defineComponent({
                 default:
                     break;
             }
-        }
+        },
+        /**
+         * Method used to close the `CreatePost` modal if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape'){
+                this.close(this.previousURL);
+            }
+        },
     },
     computed:{
         charsRemaining(){
@@ -1086,11 +1095,13 @@ export default defineComponent({
         return canLeaveWithoutPrompt;
     },
     mounted() {
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
         this.$el.focus();
     },
     beforeUnmount() {
         postDetails.currentPostThreadData = {} as AppBskyFeedDefs.ThreadViewPost;
         postDetails.currentPostAction = PostActions.Post;
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
     },
 })
 

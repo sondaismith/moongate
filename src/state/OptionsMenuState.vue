@@ -47,7 +47,7 @@ export const OptionsMenuState = reactive({
         var menuSafePos = {x:0,y:0};
         menuSafePos = {x:event.clientX, y:event.clientY};
         let clickTargetRect = (event.target as Element).getBoundingClientRect();
-        if(typeof event.pointerType == 'undefined') menuSafePos = {x:clickTargetRect.x,y:clickTargetRect.y};
+        if(typeof event.pointerType == 'undefined' || event.pointerType.trim() == '' || (event.pointerType == 'mouse' && event.button == 0 && event.type == 'contextmenu')) menuSafePos = {x:clickTargetRect.x+(clickTargetRect.width/2),y:clickTargetRect.y+(clickTargetRect.height/2)};
         var xTarget = menuSafePos.x;
         var yTarget = menuSafePos.y;
         var menuYClearence = viewportHeight - (menuHeight+yTarget);

@@ -14,9 +14,14 @@ onBeforeMount(async () => {
       await AppSettingsState.loadSettingsFromStore();
       AppState.updateAppStateLoginValues();
     }
+    if(AppState.isViewingUserLivestreamInfo){
+        AppState.hideUserLivestreamInfo();
+        return false;
+    }
   })
-  router.afterEach(async (to, from) => {
-    document.title = to.meta.title as string || 'Loading... | moongate - A Desktop App for Bluesky';
+  router.afterEach(async (to, from, failure) => {
+    if(!failure)
+      document.title = to.meta.title as string || 'Loading... | moongate - A Desktop App for Bluesky';
   })
 })
 </script>
@@ -248,6 +253,15 @@ button {
   font-family: 'Cal Sans';
   font-style: normal;
   src: local("Cal Sans"), url(/fonts/CalSans-Regular.ttf);
+}
+
+/* To prevent tabbing to previous or next Swiper slide when they are not active. */
+.swiper-slide {
+  visibility: hidden;
+}
+
+.swiper-slide.swiper-slide-active {
+  visibility: visible;
 }
 
 .modal-move,

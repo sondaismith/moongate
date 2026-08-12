@@ -1,16 +1,18 @@
 <template>
     <div :class="textColorClass" class="flex flex-wrap -mt-1 text-secondary gap-1 justify-around justify-betweens
      *:p-1 *:bg-red-600s">
-        <div data-test="postInteraction-reply-button" class="flex gap-0.5 rounded-full items-center"
+        <button :disabled="!canUserReply" data-testid="postInteraction-reply-button" class="flex gap-0.5 rounded-full items-center border-none shadow-none
+        outline outline-2 outline-transparent focus-visible:outline-focusBorder"
         :class="canUserReply ? 'group cursor-pointer hover:bg-btnSubtle' : 'text-disabled select-none'"
         @click="canUserReply && replyToPost()" :title="postDetails.whoCanReply(postData)">
             <i-solar:chat-dots-outline class="pointer-events-none group-hover:text-yellow-600 group-active:text-yellow-700"/>
             <div v-if="!AppSettingsState.Settings.isHidingComments" :title="postData.replyCount?.toString()">
                 {{ getCompactNumberValue(postData.replyCount ? postData.replyCount : 0) }}
             </div>
-        </div>
-        <div class="group flex rounded-full items-center cursor-pointer gap-0.5 hover:bg-btnSubtle"
-        title="Repost"
+        </button>
+        <button class="group flex rounded-full items-center cursor-pointer gap-0.5 hover:bg-btnSubtle border-none shadow-none
+        outline outline-2 outline-transparent focus-visible:outline-focusBorder"
+        title="Repost" data-testid="postInteraction-repost-button"
         @click="showRepostOptionsMenu($event, postData)">
             <i-mingcute:repeat-line class="group-active:text-blue-700"
             :class="[isPostRepostedByUser ? 'text-blue-500' : 'group-hover:text-blue-500']"/>
@@ -18,17 +20,17 @@
                 {{ getCompactNumberValue(postData.repostCount ? postData.repostCount : 0) }}
             </div>
             <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
-        </div>
-        <div @click="toggleLike" class="group flex rounded-full items-center cursor-pointer
-        gap-0.5 hover:bg-btnSubtle"
-        title="Like Post">
+        </button>
+        <button @click="toggleLike" class="group flex rounded-full items-center cursor-pointer gap-0.5 hover:bg-btnSubtle
+        border-none shadow-none outline outline-2 outline-transparent focus-visible:outline-focusBorder"
+        title="Like Post" data-testid="postInteraction-like-button">
             <i-mingcute:heart-fill class="group-active:text-red-700"
             :class="[isPostLikedByUser ? 'text-red-500' : 'group-hover:text-red-500']"/>
             <div v-if="!isAwaitingLikeUpdate":title="postData.likeCount?.toString()" :class="[{'hidden' : AppSettingsState.Settings.isHidingLikes}]">
                 {{ getCompactNumberValue(postData.likeCount ? postData.likeCount : 0) }}
             </div>
             <i-mingcute:loading-fill v-else class="text-primary spinner self-center size-3"/>
-        </div>
+        </button>
         <div class="flex !p-0 min-h-[28px]">
             <!-- <div @click="" class="group flex rounded-full items-center cursor-pointer
             gap-1 hover:bg-btnSubtle"
@@ -39,7 +41,9 @@
             </div> -->
             <button @click="showOptionsMenu($event, postData.uri, postData.author.handle)"
             :disabled="isAwaitingBookmarkUpdate || isAwaitingAccountBlockAction || isAwaitingAccountMuteAction"
-            title="More Actions" class="group flex px-1.5 min-w-[28px] rounded-full items-center border-0 hover:bg-btnSubtle disabled:bg-disabledBG disabled:text-disabled disabled:cursor-not-allowed shadow-none">
+            title="More Actions" data-testid="postInteraction-more-options-button"
+            class="group flex px-1.5 min-w-[28px] rounded-full items-center border-0 hover:bg-btnSubtle disabled:bg-disabledBG disabled:text-disabled disabled:cursor-not-allowed shadow-none
+            outline outline-2 outline-transparent focus-visible:outline-focusBorder">
                 <i-mingcute:loading-fill v-if="isAwaitingBookmarkUpdate || isAwaitingAccountBlockAction || isAwaitingAccountMuteAction"
                 class="text-primary spinner self-center p-0.5"/>
                 <i-mdi:dots-horizontal v-else class="pointer-events-none group-hover:text-primary group-disabled:text-disabled"/>
@@ -57,6 +61,7 @@ import MingcuteDelete2Line from '~icons/mingcute/delete-2-line';
 import MingcuteBookmarkLine from '~icons/mingcute/bookmark-line';
 import MingcuteBookmarkFill from '~icons/mingcute/bookmark-fill';
 import MingcuteVolumeMuteFill from '~icons/mingcute/volume-mute-fill';
+import BlueskySocialFillIcon from '~icons/mingcute/bluesky-social-fill';
 import MingcuteVolumeFill from '~icons/mingcute/volume-fill';
 import MdiPersonBlock from '~icons/mdi/person-block';
 import MdiUserCheck from '~icons/mdi/user-check';
@@ -75,8 +80,8 @@ import { AppBskyFeedThreadgate } from '@atproto/api';
 import { AppSettingsState } from '../../state/AppSettingsState.vue';
 import { toggleBlock, toggleMute } from '../../lib/api/User.vue';
 
-function CopyPostLink(postUri:string, handle:string=""){
-    let link = CreateBskyWeblink(postUri, handle);
+function CopyPostLink(postUri:string, handle:string="", returnMoongateLink:boolean=false){
+    let link = CreateBskyWeblink(postUri, handle, returnMoongateLink);
     if(typeof link != 'undefined')
         CopyTextToClipboard(link, 'link');
     else
@@ -156,7 +161,8 @@ export default defineComponent({
         showOptionsMenu(e:MouseEvent, postURI:string, handle:string=""){
             e.preventDefault();
             OptionsMenuState.currentMenuItems = [
-                {Icon:MingcuteLinkLine,Label:'Copy link to Post',Action:function(){CopyPostLink(postURI, handle)},Type:ItemType.Option},
+                {Icon:BlueskySocialFillIcon,Label:'Copy link to Post (Bluesky)',Action:function(){CopyPostLink(postURI, handle)},Type:ItemType.Option},
+                {Icon:'moongate',Label:'Copy link to Post (Moongate)',Action:function(){CopyPostLink(postURI, handle, true)},Type:ItemType.Option},
             ] as IOptionMenuItem[]
             OptionsMenuState.currentMenuItems.push({Icon:MingcuteBookmarkFill,Label:'',Action:()=>{},Type:ItemType.Splitter});
             if(this.isPostBookmarked)

@@ -1,6 +1,7 @@
 <template>
-    <span data-testid="hashtag" @click="createTagFeed" :title="`Create Feed for '#${tagValue}'`"
-    class="rounded cursor-pointer whitespace-normal text-blue-500 hover:text-blue-400">
+    <span data-testid="hashtag" tabindex="0" @click="(e) => createTagFeed(e)" @keydown.space="(e) => createTagFeed(e)"
+    @keydown.enter="(e) => createTagFeed(e)" :title="`Create Feed for '#${tagValue}'`"
+    class="rounded cursor-pointer whitespace-normal text-blue-500 hover:text-blue-400 outline-2 focus-visible:outline-focusBorder outline-offset-2">
         <slot></slot>
     </span>
 </template>
@@ -15,7 +16,8 @@ export default defineComponent({
         tagValue:String,
     },
     methods:{
-        createTagFeed(){
+        createTagFeed(e:PointerEvent|KeyboardEvent){
+            e.preventDefault();
             let tagText = typeof this.tagValue !='undefined' ? this.tagValue : '';
             this.$toast.add({summary:'Creating Feed...', detail:`Creating feed for #${this.tagValue}`, group:'tr', life:3000});
             PrepareFeedData(FeedEnums.Types.Tag,{did:'',handle:'',type:FeedEnums.Types.Tag,icon:FeedEnums.Icons.Tag,tags:[tagText],name:`#${tagText}`})

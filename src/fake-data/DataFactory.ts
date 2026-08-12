@@ -91,17 +91,20 @@ export function CreateNotFoundPost():$Typed<AppBskyFeedDefs.NotFoundPost>{
  * MUST AWAIT IN ORDER FOR CID TO BE GENERATED.
  * @param handle The handle of the User who made the Post.
  * @param postText The text content of the Post.
- * @param includeEmbedLink Should this post contain an external link embed?
+ * @param includeEmbed Should this post contain an external link embed?
  * @param displayName The display name of the User who made the Post. If none is provided, the handle will be used.
  * @param postTime The time that the Post was created.
  * @param isPinned Should the created Post be a pinned post?
  * @param parentState The "state" of the Parent post of the Post being created. Options are No Parent,
  * Standard Parent Post (value currently hardcoded), `NotFoundPost` Parent or `BlockedPost` Parent.
+ * @param existingProfileObject Existing `ProfileView` object that will be used to to define the `author` data.
+ * Overrides the `handle`, `displayName` and `avatar` variables if provided.
  * @returns The created `FeedViewPost` object.
  */
-export async function CreateFeedViewPost(handle:string, postText:string='', includeEmbedLink:boolean=false,
+export async function CreateFeedViewPost(handle:string, postText:string='', includeEmbed:{type:'image'|'gif'|'link'|'none',numImage:number}={type:'none',numImage:1},
     displayName:string='',postTime:Date=new Date(),isPinned:boolean=false,parentState:ParentState='None',
-    facet:{type:'mention',value:string,did:string|undefined}|undefined=undefined,did:string|undefined=undefined,avatar:string|undefined=undefined):Promise<AppBskyFeedDefs.FeedViewPost>{
+    facet:{type:'mention'|'link',value:string,did:string|undefined}|undefined=undefined,did:string|undefined=undefined,avatar:string|undefined=undefined,
+    existingProfileObject:AppBskyActorDefs.ProfileViewBasic|AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|undefined=undefined):Promise<AppBskyFeedDefs.FeedViewPost>{
     // let currentTime = new Date();
     // currentTime.setTime(currentTime.getTime()-(1*60*1000));
     // postTime.setTime(postTime.getTime()-(1*60*1000));
@@ -112,6 +115,17 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
         cid = res.toString();
     })
     let tid = GenerateFakeTID();
+    let embedObject:$Typed<AppBskyEmbedImages.View>|$Typed<AppBskyEmbedExternal.View>|undefined = undefined;
+    switch (includeEmbed.type) {
+        case 'link':
+            embedObject = CreateEmbedExternal();
+            break;
+        case 'image':
+            embedObject = CreateEmbedImage(includeEmbed.numImage);
+            break;
+        default:
+            break;
+    }
     let post:AppBskyFeedDefs.FeedViewPost = {
         post:{
             author:{
@@ -131,7 +145,7 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
             },
             // uri:'at://did:plc:nowhere',
             uri:`at://${handle}/app.bsky.feed.post/${tid}`,
-            embed:includeEmbedLink ? CreateEmbed() : undefined
+            embed:embedObject
         },
     }
     if(isPinned){
@@ -145,6 +159,17 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
     if(typeof avatar != 'undefined' && avatar.trim() != ''){
         post.post.author = {...post.post.author,
             avatar: avatar
+        }
+    }
+    //Use existing `ProfileView` object
+    if(typeof existingProfileObject != 'undefined'){
+        post.post.author = {...post.post.author,
+            did:existingProfileObject.did,
+            handle:existingProfileObject.handle,
+            displayName:(typeof existingProfileObject.displayName != 'undefined' && existingProfileObject.displayName.trim() != '') ? existingProfileObject.displayName : (handle[0].toUpperCase()+handle.slice(1)).replace(/_/g,' '),
+            avatar:existingProfileObject.avatar,
+            status:existingProfileObject.status,
+            createdAt:existingProfileObject.createdAt,
         }
     }
     //Adding facets
@@ -162,6 +187,25 @@ export async function CreateFeedViewPost(handle:string, postText:string='', incl
                                 {
                                     $type:`app.bsky.richtext.facet#${facet.type}`,
                                     did:facet.did
+                                }
+                            ],
+                            index:{byteStart:start,byteEnd:end}
+                        }
+                    }
+                }
+                break;
+            case "link":
+                if(facet.value.length>0 && postText.trim().length>0){
+                    let start = postText.indexOf(facet.value)+1;//byte start
+                    let end = 0;
+                    if(start>0) end = start+facet.value.length;
+                    post.post.record = {...post.post.record,
+                        facets:{
+                            $type:"app.bsky.richtext.facet",
+                            features:[
+                                {
+                                    $type:`app.bsky.richtext.facet#${facet.type}`,
+                                    uri:facet.value
                                 }
                             ],
                             index:{byteStart:start,byteEnd:end}
@@ -306,7 +350,7 @@ export async function CreateThreadViewPost(handle:string, postText:string='', in
             },
             // uri:'at://did:plc:nowherezonefake/app.bsky.feed.post/eenymeannuim0',
             uri:`at://${handle}/app.bsky.feed.post/${tid}`,
-            embed:includeEmbedLink ? CreateEmbed() : undefined
+            embed:includeEmbedLink ? CreateEmbedExternal() : undefined
         },
     }
     if(includeImage.activate){
@@ -381,7 +425,7 @@ export function CreateThreadViewPostWithUnspeccedCID(handle:string, postText:str
                 text: postText.trim() == '' ? `Hello World! My name ${handle}.` : postText
             },
             uri:`at://${handle}/app.bsky.feed.post/${tid}`,
-            embed:includeEmbedLink ? CreateEmbed() : undefined
+            embed:includeEmbedLink ? CreateEmbedExternal() : undefined
         },
     }
     if(includeImage.activate){
@@ -435,6 +479,7 @@ $Typed<AppBskyFeedDefs.ThreadViewPost>|$Typed<AppBskyFeedDefs.NotFoundPost>|$Typ
         let urlSections = post.post.uri.split('/');
         if(urlSections.length>1) postId = urlSections[urlSections.length-1];
         let replyCount = typeof post.replies != 'undefined' ? post.replies.length : 0;
+        // console.log(`Debug for FindThreadViewPostReply() postId: ${postId}`);
 
         if(postId == replyPostTid) return post;//Passed post is match - return post
         else{
@@ -453,12 +498,17 @@ $Typed<AppBskyFeedDefs.ThreadViewPost>|$Typed<AppBskyFeedDefs.NotFoundPost>|$Typ
  * Method used to create a dummy `ProfileViewDetailed` object for testing purposes.
  * @param handle The handle of the User.
  * @param displayName The display name of the User. (Optional)
+ * @param accountStatus The current `status` the created Profile will have. Currently status is only used to indicate
+ * the User is livestreaming.
  * @returns The created `ProfileViewDetailed` object.
  */
-export function CreateUserProfile(handle:string,displayName:string|undefined=undefined,didToUse='did:plc:6unmjnerkpiy3yh6x4auqpy3',avatar:string|undefined=undefined):AppBskyActorDefs.ProfileViewDetailed{
+export function CreateUserProfile(handle:string,displayName:string|undefined=undefined,didToUse='did:plc:6unmjnerkpiy3yh6x4auqpy3',avatar:string|undefined=undefined,accountStatus:{statuses:('live'|'something-else')[],isActive:boolean}|undefined=undefined):AppBskyActorDefs.ProfileViewDetailed{
     let i = Math.floor(Math.random()*7);
     let j = Math.floor(Math.random()*7);
-    let indexDate = new Date().toISOString();
+    let baseDate = new Date();
+    let indexDate = baseDate.toISOString();
+    let liveDurationMinutes = 120;
+    let liveExpireTime = new Date(new Date().setMinutes(baseDate.getMinutes()+liveDurationMinutes)).toISOString();
     let profile:AppBskyActorDefs.ProfileViewDetailed = {
         did:didToUse,
         handle:handle,
@@ -473,6 +523,41 @@ export function CreateUserProfile(handle:string,displayName:string|undefined=und
     if(typeof avatar != 'undefined' && avatar.trim() != '') profile = {...profile, avatar:avatar,banner:avatar};
     profile.description = `Hello! I am a User Profile created for testing this app.\nDID:${profile.did}\nHandle:${profile.handle}`
     if(typeof displayName != 'undefined') profile.displayName = displayName;
+    if(typeof accountStatus != 'undefined'){//additional statuses might be added down the line - this is where accountStatus.statuses would be used
+        profile = {...profile,
+            status:{
+                record:{
+                    $type: "app.bsky.actor.status",
+                    createdAt:indexDate,
+                    durationMinutes:liveDurationMinutes,
+                    embed:{
+                        $type:"app.bsky.embed.external",
+                        external:{
+                            $type:"app.bsky.embed.external#external",
+                            uri:"https://en.wikipedia.org/wiki/Main_Page",
+                            title:"Main Page - English Wikipedia",
+                            description:"This is acting as a dummy external link to a livestream url for testing.",
+                            thumb:`http://localhost:1420/src/assets/test-media/posts/image0${i+1}.png`//this should be blob data but I can't do that ATM
+                        }
+                    },
+                    status:"app.bsky.actor.status#live"
+                },
+                embed:{
+                    external:{
+                        uri:"https://en.wikipedia.org/wiki/Main_Page",
+                        title:"Main Page - English Wikipedia",
+                        description:"This is acting as a dummy external link to a livestream url for testing.",
+                        thumb:`http://localhost:1420/src/assets/test-media/posts/image0${i+1}.png`
+                    },
+                    $type:"app.bsky.embed.external#view"
+                },
+                labels:[],
+                expiresAt:liveExpireTime,
+                status:"app.bsky.actor.status#live",
+                isActive:accountStatus.isActive
+            }
+        }
+    }
     return profile;
 }
 
@@ -743,7 +828,7 @@ export function CreateFeedViewPostArray(numOfPosts:number, handle:string, includ
                     text: `Hello World! I am Post${i+1}`
                 },
                 uri:'nowhere',
-                embed:includeEmbedLink ? CreateEmbed() : undefined
+                embed:includeEmbedLink ? CreateEmbedExternal() : undefined
             },
         })
     }
@@ -834,11 +919,45 @@ export function CreateRandomFeedListCollection(numOfFeeds:number, numPostPerFeed
 
 /**
  * Method used to return a hard-coded object that can be used to attach
+ * an image embed object to a Post.
+ * @param numImages The number of images to be attached to the post. Default and lowest value is 1, max is 4 (larger numbers will be reduced to 4).
+ * @returns A `$Typed<View>` External Embed object.
+ * @note It seems like the BASE_URL.replace is for the Cypress-based tests...
+ */
+export function CreateEmbedImage(numImages:number=1):$Typed<AppBskyEmbedImages.View>{
+    let baseUrl = '/src/';
+    try {
+        (typeof import.meta.env.BASE_URL != undefined) ? import.meta.env.BASE_URL.replace('src','iframes/src') : '/src/';
+    } catch (error) {
+    }
+    let returnedImages:AppBskyEmbedImages.ViewImage[] = [];
+    let safenum = numImages;
+    if(numImages>4)safenum = 4;
+    else if(numImages<1) safenum = 1;
+
+    for (let i = 0; i < safenum; i++) {
+        let imgurl = `http://localhost:1420${baseUrl}assets/test-media/posts/image0${Math.floor((Math.random()*8)+1)}.png`;
+        returnedImages.push({
+            $type:'app.bsky.embed.images#viewImage',
+            alt:`Image0${i}`,
+            fullsize:imgurl,
+            thumb:imgurl
+        })
+    }
+    let emb:$Typed<AppBskyEmbedImages.View> = {
+        $type: "app.bsky.embed.images#view",
+        images:returnedImages
+    }
+    return emb;
+}
+
+/**
+ * Method used to return a hard-coded object that can be used to attach
  * an "external link" embed object to a Post.
  * @returns A `$Typed<View>` External Embed object.
  * @note It seems like the BASE_URL.replace is for the Cypress-based tests...
  */
-export function CreateEmbed():$Typed<AppBskyEmbedExternal.View>{
+export function CreateEmbedExternal():$Typed<AppBskyEmbedExternal.View>{
     let baseUrl = '/src/';
     try {
         (typeof import.meta.env.BASE_URL != undefined) ? import.meta.env.BASE_URL.replace('src','iframes/src') : '/src/';

@@ -6,8 +6,10 @@
         {{ void "feed title" }}
         <div class="flex w-full shrink-0 border-b-2 border-outline bg-banner pl-2 pr-1 pt-2 pb-1 text-primary">
             <div class="flex w-full items-center">
-                <div class="p-1 pr-3">
-                    <FeedIcon :icon="feedData?.description.feedIcon"/>
+                <div class="p-1 pr-3 shrink-0">
+                    <ImageLoader v-if="typeof feedData != 'undefined' && feedData.description.feedAvatar.trim() != ''" :img-url="typeof feedData != 'undefined' ? feedData.description.feedAvatar : ''"
+                    class="rounded size-7" :rounded-image="'rounded'" :class="{'blur scale-150' : feedData.description.containsSensitiveContent && AppSettingsState.Settings.spoilerImagesContainingSensitiveContent}"/>
+                    <FeedIcon v-else :icon="feedData?.description.feedIcon"/>
                 </div>
                 <div class="flex overflow-hidden flex-col">
                     <div class="flex flex-col text-nowrap"
@@ -249,6 +251,9 @@ import { isOnMobileTouchscreen } from '../../helpers/states';
 import SquareButton from '../Utilities/SquareButton.vue';
 import { HandleAPIError } from '../../helpers/errors';
 import { BroadcastChannelTarget, BroadcastObject, toRawDeep } from '../../types/BroadcastChannelTypes';
+import ImageLoader from '../Utilities/ImageLoader.vue';
+import FeedIcon from './FeedIcon.vue';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 var colElement;
 
@@ -264,10 +269,13 @@ export default defineComponent({
         NotificationRecord,
         TrendingTopic,
         SquareButton,
+        FeedIcon,
+        ImageLoader,
     },
     data(){
         return{
             AppState,
+            AppSettingsState,
             /**
              * Indicates if the component been mounded. Used to prevent the column
              * width setting from being updated when value is loaded during

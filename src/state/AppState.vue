@@ -13,12 +13,21 @@ import { FeedEnums } from '../enums/FeedEnums';
 import { router } from '../main';
 import { BroadcastChannelTarget, BroadcastObject } from '../types/BroadcastChannelTypes';
 import { AccountPeekState } from './AccountPeekState.vue';
+import { openUrl } from '@tauri-apps/plugin-opener';
 
 export const toast = {
     add: (message) => ToastEventBus.emit('add', message),
     removeGroup: (group) => ToastEventBus.emit('remove-group', group),
     removeAllGroups: () => ToastEventBus.emit('remove-all-groups'),
 };
+
+/**
+ * Method used to open link in the system's default browser.
+ * @param url The URL to open in the default browser.
+ */
+export async function OpenLink(url:string){
+    await openUrl(url);
+}
 
 /**
  * Copies the passed in text value to the User's clipboard.
@@ -65,9 +74,11 @@ export function CopyTextToClipboard(textToCopy:string, copyAction:'text'|'link' 
  * https://www.bennadel.com/blog/4096-trapping-focus-within-an-element-using-tab-key-navigation-in-javascript.htm.
  * @param el The element to trap focus in.
  * @param e The Keydown KeyboardEvent that the method is called with.
+ * @param disabled Should the functionality be disabled - e.g. situations where multiple layered elements use `TrapFocus()`.
  */
-export function TrapFocus(el:HTMLElement, e: KeyboardEvent){
-    let tabbable = el.querySelectorAll("button:not([disabled]), input, select, textarea, [href], [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
+export function TrapFocus(el:HTMLElement, e: KeyboardEvent, disabled:boolean=false){
+    if(disabled) return;
+    let tabbable = el.querySelectorAll("button:not([disabled]), input:not([disabled]), select, textarea, [href]:not([tabindex='-1']), [tabindex]:not([tabindex='-1'])") as NodeListOf<HTMLElement>;
     let target = e.target;
     if(e.key.toLowerCase() !== 'tab') return; //cancel further actions
     if(e.shiftKey){
@@ -219,8 +230,7 @@ export const AppState = reactive({
         if(!this.isAuthBrowsing){
             toast.add({summary:"Requires login", detail:`In order to ${action} you must be logged in.`, severity:'info', group:'tr', life:3000});
             this.loginModalStartPage = 1;
-            // this.isLoggingIntoAccount = true;
-            router.push(`/login`);
+            this.showLoginAccountSelect(router.currentRoute.value.path);
             return this.isAuthBrowsing;
         }
         return this.isAuthBrowsing;
@@ -229,8 +239,9 @@ export const AppState = reactive({
      * Method that displays the `LoginModal` on the "select account" or "enter credentials"
      * page.
      */
-    showLoginAccountSelect(){
+    showLoginAccountSelect(entryUrl:string){
         this.loginModalStartPage = 1;
+        this.routeEntryURL = entryUrl;
         router.push(`/login`);
     },
     /**
@@ -478,6 +489,33 @@ export const AppState = reactive({
     },
     //#endregion
     /**
+     * Returns value indicating if the currently displayed account's avatar/account contains sensitive content.
+     * @param accountInfo The account `ProfileView` to check.
+     */
+    getIfUserAccountContainsSensitiveContent(accountInfo:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic):boolean{
+        let result = false;
+        if(typeof accountInfo.labels != 'undefined'){
+            for (let i = 0; i < accountInfo.labels.length; i++) {
+                if(accountInfo.labels[i].val == 'porn' || accountInfo.labels[i].val == 'sexual'){
+                    result = true;
+                    i = accountInfo.labels.length+1;
+                }
+            }
+        }
+        return result;
+    },
+    /**
+     * Returns value indicating if the provided User Account is currently livestreaming.
+     * @param userAccount The account `ProfileView` to check.
+     */
+    getIsUserAccountLive(userAccount:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic){
+        let result = false;
+        if(typeof userAccount.status != 'undefined')
+            result = userAccount.status.status == 'app.bsky.actor.status#live' &&
+            typeof userAccount.status.isActive != 'undefined' && userAccount.status.isActive;
+        return result;
+    },
+    /**
      * Value used to determine if modal for saving Post media
      * is currently visible.
      */
@@ -498,7 +536,9 @@ export const AppState = reactive({
         /**The handle of the account that posted/shared the image. */
         handle:'',
         /**The text (if any) that was posted along with the image. */
-        postText:''
+        postText:'',
+        /**The alt text/descriptive text (if any) that was included with the image. */
+        altText:''
     },
     /**
      * Method used to transform a URL that points to a GIF on a supported external source to
@@ -577,6 +617,24 @@ export const AppState = reactive({
     showFeedOrderModal(){ this.isUpdatingFeedPosition = true; },
     /**Method that causes the "Feed Order Change" modal to be hidden. */
     hideFeedOrderModal(){ this.isUpdatingFeedPosition = false; },
+    /**Value used to indicate if the "User Livestream Info" modal is currently visible. */
+    isViewingUserLivestreamInfo:false,
+    /**The User Profile that the livestream info is pulled from. Should be `undefined` when the "User Livestream Info" modal is closed. */
+    livestreamInfoUserProfile: undefined as AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic|undefined,
+    // livestreamInfoUserProfile: {did:'did:plc:uududud',handle:'test.handle.com'} as AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic|undefined,//debug
+    /**
+     * Method that causes the "User Livestream Info" modal to be displayed.
+     * @param userProfile The User Profile that the livestream info will be pulled from.
+     */
+    showUserLivestreamInfo(userProfile:AppBskyActorDefs.ProfileView|AppBskyActorDefs.ProfileViewDetailed|AppBskyActorDefs.ProfileViewBasic){
+        this.isViewingUserLivestreamInfo = true;
+        this.livestreamInfoUserProfile = userProfile;
+    },
+    /**Method that causes the "User Livestream Info" modal to be hidden. */
+    hideUserLivestreamInfo(){
+        this.isViewingUserLivestreamInfo = false;
+        this.livestreamInfoUserProfile = undefined;
+    },
     /**Value used to indicate if App is currently running on a device with touchscreen support. */
     isAppOnMobileTouchscreenDevice:false,
     /**Variable that indicates if the "About App" modal is visible or not. */
@@ -602,6 +660,11 @@ export const AppState = reactive({
      * be added by `PostFocusModal` only once.
      */
     hasRouteNavigationListenerBeenAdded:false,
+    /**
+     * Value holding the path/URL of a route request that was attempted before a route guard redirected the request.
+     * Should be cleared between uses.
+     */
+    routeEntryURL:'',
     /**Records the current window width of the browser. */
     windowWidth:0,
     /**Variable that holds the value of the `timeoutID` used to limit the rate at which `windowWidth` will be updated. */

@@ -20,6 +20,8 @@ export interface IAccountSettingsMenuItem{
     submenu:IAccountSettingsMenuItem[]
     /**What action to perform when option is interacted with. Not required - if provided usually means this option is for displaying another menu. */
     action:Function|undefined
+    /**Does the User need to be logged in in order to interact with this menu item? */
+    requiresLogin:boolean
 }
 
 export interface IAccountModerationItem{
@@ -48,6 +50,8 @@ export class AppSettingsClass {
     isHidingLikes = false;
     isHidingFollowers = false;
     isHidingFollowing = false;
+    enableAdultContent = false;
+    spoilerImagesContainingSensitiveContent = true;
     savedAccountState:IAppAccountState = {
         state: LoginState.Unset,
         currentAccount: -1,

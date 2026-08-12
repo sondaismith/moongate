@@ -1,39 +1,7 @@
 <template>
     <div ref="imageContainer" class="h-full w-full content-center">
-        <!-- <div v-if="Array.isArray(imagesToDisplay) && imagesToDisplay.length>0 && !isLargeContainerView" class="@container relative grid border
-            border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 h-full w-full" :class="showFullsize ? 'min-w-0' : 'grid-cols-2 grid-flow-row grid-rows-2 gap-0.5'"
-            :style="[
-                (imagesToDisplay?.length === 1 && !imagesToDisplay[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),
-                (imagesToDisplay?.length === 1 && imagesToDisplay[0].aspectRatio && !showFullsize ? `aspect-ratio: ${imagesToDisplay[0].aspectRatio?.width} / ${imagesToDisplay[0].aspectRatio?.height}`:''),
-                // (imagesToDisplay?.length === 1 && imagesToDisplay[0].aspectRatio ? `height: ${imagesToDisplay[0].aspectRatio?.height}px; width: ${imagesToDisplay[0].aspectRatio?.width}px;`:''),
-                (imagesToDisplay?.length && imagesToDisplay.length > 1 ? 'aspect-ratio: 16 / 9':'')
-            ]">
-            <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Image"/>
-            <div v-for="(image, index) in imagesToDisplay" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, image, index, author, postId, postText)" class="overflow-hidden max-h-full max-w-full"
-                :class="[
-                            (imagesToDisplay?.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
-                            (imagesToDisplay?.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
-                            (imagesToDisplay?.length === 2 && index === 1 ? 'col-start-2 row-span-2':''),
-                            (imagesToDisplay?.length === 3 && index === 0 ? 'col-start-1 row-span-2':''),
-                            showFullsize ? 'w-full' : 'cursor-pointer'
-                        ]"> -->
-                <!-- Hide image extension when in "fullsize/fullscreen" mode -->
-                <!-- <div v-if="!showFullsize" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xs text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
-                <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
-                :title="image.alt"
-                :class="(imagesToDisplay?.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
-                    :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div>
-                <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
-            </div>
-        </div>
-        <div v-else-if="Array.isArray(imagesToDisplay) && imagesToDisplay.length>0 && typeof imagesToDisplay[0] != 'undefined' && isLargeContainerView"
-        @contextmenu="showOptionsMenu($event, imagesToDisplay[0], 0, author, postId, postText)" class="flex h-full w-full overflow-hidden">
-            <div class="flex max-h-full max-w-full mx-auto" :class=imageContainerClasses>
-                <img @click="$emit('imageClicked', imagesToDisplay[0])"  :src="showFullsize ? imagesToDisplay[0].fullsize : imagesToDisplay[0].thumb"
-                class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
-            </div>
-        </div> -->
-        <div data-testid="imageContainer-focusFeedPost" v-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && !isLargeContainerView" class="@container relative grid border
+        <div data-testid="imageContainer-focusFeedPost" v-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) &&
+        Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && !isLargeContainerView" class="@container relative grid border
             border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0 h-full w-full" :class="showFullsize ? 'min-w-0' : 'grid-cols-2 grid-flow-row grid-rows-2 gap-0.5'"
             :style="[
                 (mediaEmbed.images.length === 1 && !mediaEmbed.images[0].aspectRatio ? `aspect-ratio: 1 / 1`:''),
@@ -41,8 +9,9 @@
                 // (imagesToDisplay?.length === 1 && imagesToDisplay[0].aspectRatio ? `height: ${imagesToDisplay[0].aspectRatio?.height}px; width: ${imagesToDisplay[0].aspectRatio?.width}px;`:''),
                 (mediaEmbed.images.length && mediaEmbed.images.length > 1 ? 'aspect-ratio: 16 / 9':'')
             ]">
-            <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Image"/>
-            <div v-for="(image, index) in mediaEmbed.images" @click="showMediaFocusModal(index)" @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...image}, index, author, postId, postText)" class="overflow-hidden max-h-full max-w-full"
+            <SpoilerOverlay :labels="labels" :has-sensitive-content="AppSettingsState.Settings.spoilerImagesContainingSensitiveContent && typeof labels != 'undefined' && labels.length>0" :media-type="MediaType.Image"/>
+            <div v-for="(image, index) in mediaEmbed.images"
+            class="overflow-hidden max-h-full max-w-full"
                 :class="[
                             (mediaEmbed.images.length === 1 ? 'col-span-2 row-span-2 bg-white/10':''),
                             (mediaEmbed.images.length === 2 && index === 0 ? 'col-start-1 row-span-2':''),
@@ -51,25 +20,33 @@
                             showFullsize ? 'w-full' : 'cursor-pointer'
                         ]">
                 <!-- Hide image extension when in "fullsize/fullscreen" mode -->
-                <div v-if="!showFullsize" data-testid="imageContainer-file-extension" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 pt-0.5 text-xss text-[10px] leading-3 text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
-                <!-- <div v-if="!showFullsize" class="h-full w-full bg-center bg-no-repeat"
-                :title="image.alt"
-                :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'bg-contain' : 'bg-cover')"
-                    :style="{'background-image': 'url('+(showFullsize ? image.fullsize : image.thumb)+')'}"></div> -->
-                <ImageLoader v-if="!showFullsize" :img-url="showFullsize ? image.fullsize : image.thumb" :title="image.alt" class="h-full w-full bg-center bg-no-repeat"
+                <div v-if="!showFullsize" data-testid="imageContainer-file-extension" @click.stop class="absolute z-[2] rounded-md bottom-1 left-2 p-1 pt-0.5
+                text-[10px] leading-3 text-white bg-black/70 select-none">{{ getImageExtension(image.fullsize) }}</div>
+                <ImageLoader v-if="!showFullsize" :img-url="showFullsize ? image.fullsize : image.thumb" :title="image.alt" tabindex="0"
+                data-testid="imageContainer-focusFeedPost-image"
+                @click="showMediaFocusModal(index)" @keydown.space="showMediaFocusModal(index)" @keydown.enter="showMediaFocusModal(index)"
+                @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...image}, index, author, postId, postText,image.alt)"
+                class="h-full w-full bg-center bg-no-repeat outline outline-2 -outline-offset-[6px] outline-transparent focus-visible:outline-focusBorder"
                 :fill-container="true" :class="(mediaEmbed.images.length === 1 && !image.aspectRatio || showFullsize ? 'object-contain' : 'object-cover')"/>
                 <img v-else @click="$emit('imageClicked', image)"  :src="showFullsize ? image.fullsize : image.thumb" class="max-h-full max-w-full object-contain mx-auto"/>
             </div>
         </div>
-        <div data-testid="imageContainer-postFocusModal" v-else-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) && mediaEmbed.images.length>0 && typeof mediaEmbed.images[0] != 'undefined' && isLargeContainerView"
-        @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...mediaEmbed.images[0]}, mediaIndex, author, postId, postText)" class="flex h-full w-full overflow-hidden">
-                <ImageLoader @click="$emit('imageClicked', mediaEmbed.images[0])" :img-url="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
-                :image-container-class="imageContainerClasses" class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden"/>
+        <div data-testid="imageContainer-postFocusModal"
+        v-else-if="typeof mediaEmbed != 'undefined' && AppBskyEmbedImages.isView(mediaEmbed) && Array.isArray(mediaEmbed.images) &&
+        mediaEmbed.images.length>0 && typeof mediaEmbed.images[0] != 'undefined' && isLargeContainerView"
+        class="flex h-full w-full overflow-hidden">
+            <ImageLoader tabindex="0" @click="$emit('imageClicked', mediaEmbed.images[0])"
+            @keydown.space="$emit('imageClicked', mediaEmbed.images[0])" @keydown.enter="$emit('imageClicked', mediaEmbed.images[0])"
+            @contextmenu="showOptionsMenu($event, {$type:'app.bsky.embed.images#viewImage', ...mediaEmbed.images[0]}, mediaIndex, author, postId, postText,mediaEmbed.images[0].alt)"
+            :img-url="showFullsize ? mediaEmbed.images[0].fullsize : mediaEmbed.images[0].thumb"
+            :image-container-class="imageContainerClasses" class="max-h-full max-w-full object-contain border border-outline rounded-lg overflow-hidden outline outline-2
+            -outline-offset-4 outline-transparent focus-visible:!outline-focusBorder"/>
         </div>
         <div v-else class="@container relative h-full w-full gap-0.5 border
         border-outlineLighter rounded-lg overflow-hidden backdrop-blur-0" :class="showFullsize ? '' : 'cursor-pointer'">
-            <div data-testid="imageContainer-externalGIF" v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)"
-            class="flex flex-col max-w-full max-h-full cursor-pointer" @click="isGIFPaused = !isGIFPaused" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
+            <div data-testid="imageContainer-externalGIF" tabindex="0" v-if="typeof mediaEmbed != 'undefined' && !Array.isArray(mediaEmbed) && AppBskyEmbedExternal.isView(mediaEmbed)"
+            class="flex flex-col max-w-full max-h-full cursor-pointer outline outline-2 -outline-offset-[6px] outline-transparent focus-visible:!outline-focusBorder"
+            @click="isGIFPaused = !isGIFPaused" @keydown.space="toggleGIFPlayback" @contextmenu="showOptionsMenu($event, mediaEmbed, 0, author, postId, postText)">
                 <div data-testid="imageContainer-file-extension" class="absolute z-[2] rounded-md bottom-1 left-2 p-1 text-xss text-[10px] leading-3 text-white bg-black/70 select-none">{{ gifExt }}</div>
                 <ExternalGIF :url="webmURL" :thumbnail="mediaEmbed.external.thumb" :is-paused="isGIFPaused"/>
             </div>
@@ -96,6 +73,7 @@ import { createPostRoute } from '../../lib/api/Post.vue';
 import { AppBskyEmbedExternal, AppBskyEmbedImages, AppBskyEmbedRecordWithMedia, ComAtprotoLabelDefs } from '@atproto/api';
 import ImageLoader from './ImageLoader.vue';
 import ExternalGIF from './ExternalGIF.vue';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 export function calculateImageContainerMinHeight(elWidth:number):number{
     if(typeof elWidth !== 'number') throw new TypeError('Value must be a number');
@@ -110,7 +88,8 @@ export function calculateImageContainerMinHeight(elWidth:number):number{
  * @param author Value used to reference the author (uploader) of this image.
  */
 // async function saveImageWithAuthor(image:ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
-async function saveImageWithAuthor(image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+async function saveImageWithAuthor(image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View, index:number, author:string|undefined=undefined, postId:string|undefined=undefined, postText:string|undefined=undefined,
+altText:string|undefined=undefined){
     let fileName = undefined;
     let safeHandle = undefined;
     // AppState.saveMedia = image;
@@ -126,6 +105,7 @@ async function saveImageWithAuthor(image:AppBskyEmbedImages.ViewImage|AppBskyEmb
         AppState.fileSaveDetails.extension = '.webp'; //Need to create method that parses image URL to determine extension (the @jpeg part)
         AppState.fileSaveDetails.handle = author ? author : '';
         AppState.fileSaveDetails.postText = postText ? postText : '';
+        AppState.fileSaveDetails.altText = typeof altText != 'undefined' ? altText : '';
 
     }
     else{
@@ -137,7 +117,7 @@ async function saveImageWithAuthor(image:AppBskyEmbedImages.ViewImage|AppBskyEmb
         AppState.fileSaveDetails.originalFilename = fileName ? fileName : '';
         AppState.fileSaveDetails.extension = (image as AppBskyEmbedExternal.View).external.uri.includes('giphy.com') ? '.webp' : '.webm';
         AppState.fileSaveDetails.handle = '';
-        AppState.fileSaveDetails.postText = postText ? postText : '';
+        AppState.fileSaveDetails.postText = typeof postText != 'undefined' ? postText : '';
     }
     // AppState.isSavingMediaModalVisible = true;
     if(typeof author != 'undefined' && typeof postId != 'undefined'){
@@ -193,6 +173,7 @@ export default defineComponent({
     },
     data(){
         return{
+            AppSettingsState,
             MediaType,
             postDetails,
             doesImageHeightSurpassContainer: false,
@@ -231,11 +212,12 @@ export default defineComponent({
          * relating to Images.
          */
         // showOptionsMenu(e:MouseEvent, image:AppBskyEmbedImages.ViewImage|ViewExternal, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
-        showOptionsMenu(e:MouseEvent, image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined){
+        showOptionsMenu(e:MouseEvent, image:AppBskyEmbedImages.ViewImage|AppBskyEmbedExternal.View, index:number, author:string|undefined, postId:string|undefined, postText:string|undefined,
+        altText:string|undefined=undefined){
             // if(isTauri()){
                 e.preventDefault();
                 OptionsMenuState.currentMenuItems = [
-                    {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,index,author,postId,postText)},Type:ItemType.Option},
+                    {Icon:MdiImagePlusOutline,Label:'Save Image w/ Author Name',Action:function(){saveImageWithAuthor(image,index,author,postId,postText,altText)},Type:ItemType.Option},
                 ] as IOptionMenuItem[];
                 if(!isTauri()){
                     OptionsMenuState.currentMenuItems.push({Icon:MdiOpenInNew,Label:'Splitter',Action:()=>{},Type:ItemType.Splitter});
@@ -243,6 +225,11 @@ export default defineComponent({
                 }
                 OptionsMenuState.showOptionMenu(e);
             // }
+        },
+        /**Method that allows for pausing WEBM "GIFs" using keyboard input. */
+        toggleGIFPlayback(e:KeyboardEvent,){
+            e.preventDefault();
+            this.isGIFPaused = !this.isGIFPaused;
         },
         /**
          * Method used to determine what should be done when clicking on an `ExternalEmbed`

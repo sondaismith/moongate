@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" tabindex="0">
+    <div class="absolute z-10 flex w-full h-full bg-slate-800/60 backdrop-blur-sm outline-none" @keydown.tab="(e) => TrapFocus($el,e,AppState.isLoggingIntoAccount)" tabindex="0">
         <div @click="closeModal" :class="$attrs.class" class="absolute z-10 w-full h-full"></div>
         <div class="relative z-20 flex flex-col max-w-[40rem] w-full md:w-2/3s h-4/5 sm:max-h-[34rem]
         m-4 my-auto sm:m-auto rounded bg-focusBG text-primary border border-sidebar drop-shadow-lg
@@ -23,11 +23,11 @@
                 </template>
                 </div>
                 <div class="relative grow p-2 w-full h-full overflow-hidden">
-                    <div class="relative p-2 rounded border border-outline w-full h-full overflow-hidden">
+                    <div class="relative p-2s rounded border border-outline w-full h-full overflow-hidden">
                         <div class="relative w-full h-full overflow-hiddens">
                             <TransitionGroup>
                                 <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[0]" class="h-full">
-                                    <div class="flex flex-col gap-1 h-full">
+                                    <div class="flex flex-col gap-1 h-full p-2">
                                         <div class="text-xl font-medium">Appearance</div>
                                         <CheckBox :model-value="AppSettingsState.Settings.isDarkMode" @value-toggled="toggleTheme">
                                             Dark Mode?
@@ -57,6 +57,17 @@
                                                 Hide Followers
                                             </CheckBox>
                                         </div>
+                                        <div class="flex justify-between items-center py-2">
+                                            <div class="flex flex-col">
+                                                <div class="font-bold text-sm">Warn about and spoiler media with "sensitive content"?</div>
+                                                <div class="text-xs">Relevant images/video will be hidden by solid color overlay that displays the associated content warnings. The content can be viewed if the "Show" button is clicked.</div>
+                                            </div>
+                                            <div class="flex gap-2 items-center">
+                                                <div class="text-sm">{{ AppSettingsState.Settings.spoilerImagesContainingSensitiveContent ? 'Yes' : 'No' }}</div>
+                                                <ModernToggleButton :value-to-toggle="AppSettingsState.Settings.spoilerImagesContainingSensitiveContent"
+                                                @value-toggled="newValue => AppSettingsState.Settings.spoilerImagesContainingSensitiveContent = newValue"/>
+                                            </div>
+                                        </div>
                                         <SquareButton :is-disabled="AppSettingsState.Settings.isShowingIntroMessage"
                                         class="self-start bg-btn hover:bg-btnHover mt-1"
                                         title="Display Introductory Tutorial/Instructions"
@@ -71,7 +82,7 @@
                                     </div>
                                 </div>
                                 <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[1]"
-                                class="relative flex flex-col gap-2 w-full h-full overflow-auto">
+                                class="relative flex flex-col gap-2 w-full h-full overflow-auto p-2">
                                     <div class="font-thin text-2xl">Language Selection</div>
                                     <CheckBox :model-value="AppSettingsState.Settings.isAcceptingAllLanguages" @value-toggled="toggleAcceptAllLanguages">
                                         Accept Posts in All Languages
@@ -117,20 +128,12 @@
                                     </div>
                                     <!-- <InLaInput text-label="Tag Blacklist" :model-value="SetttingData.Options.PostFilters.data.tagBlacklist"/> -->
                                 </div>
-                                <div v-if="AppState.isAuthBrowsing && selectedCategoryIndex == Object.keys(SettingData.Options)[2]"
-                                class="relative flex flex-col w-full h-full overflow-y-autos pr-2">
+                                <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[2]"
+                                class="relative flex flex-col w-full h-full">
                                     <AccountSettingsPanel></AccountSettingsPanel>
                                 </div>
-                                <div v-else-if="selectedCategoryIndex == Object.keys(SettingData.Options)[2]" class="flex items-center gap-1">
-                                    <div>You must</div>
-                                    <button @click="AppState.showLoginAccountSelect" class="cursor-pointer text-blueskyBlue rounded-none hover:bg-primary/10
-                                    hover:border-transparent focus-visible:underline shadow-none">
-                                        Login
-                                    </button>
-                                    <div>to view these options.</div>
-                                </div>
                                 <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SettingData.Options)[3]"
-                                class="relative flex flex-col w-full h-full overflow-y-auto pr-2">
+                                class="relative flex flex-col w-full h-full overflow-y-auto p-2">
                                     <div class="italic">Devloper testing commands - Be careful!</div>
                                     <div v-if="!isTauri()" class="flex flex-col gap-1 border border-outline rounded p-2">
                                         <div class="font-thin text-2xl">IndexedDB Options</div>
@@ -189,8 +192,8 @@
                                     </div>
                                 </div>
                                 <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[4]"
-                                class="relative p-1 w-full h-full">
-                                    <AboutAppModal :hide-backdrop="true"/>
+                                class="relative p-2 w-full h-full">
+                                    <AboutAppModal :hide-backdrop="true" :embeded-mode="true"/>
                                 </div>
                             </TransitionGroup>
                         </div>
@@ -203,7 +206,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { AppState, toast } from '../../state/AppState.vue'
+import { AppState, toast, TrapFocus } from '../../state/AppState.vue'
 import SettingsCategory from './SettingsCategory.vue';
 import InLaInput from '../Utilities/InLaInput.vue';
 import { LocalesObject } from '../../enums/Locales';
@@ -239,6 +242,7 @@ export default defineComponent({
             LocalesObject,
             stringToJSON,
             isTauri,
+            TrapFocus,
             SettingData: {
                 Options:{
                     General:{
@@ -457,7 +461,16 @@ export default defineComponent({
                 toast.add({summary:'Error',detail:`Invalid Index: ${err}`,severity:'error', group:'bc', life:3000});
             }
             this.SettingData.Options.Developer.data.indexToDelete = 100000;//"unset" index
-        }
+        },
+        /**
+         * Method used to close the `SettingsPanel` if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape'){
+                this.closeModal();
+            }
+        },
     },
     computed:{
         langControlsDisabled(){
@@ -482,6 +495,7 @@ export default defineComponent({
         //Finds out if the application is currently running in a dev environment.
         this.isInDevEnvironment = import.meta.env.DEV;
         this.originalSettingsState = AppSettingsState.getCurrentSettingsState();
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
     },
     async beforeUnmount(){
         //Save application settings if changes have been made
@@ -491,6 +505,15 @@ export default defineComponent({
             .then(res => toast.add({summary:'Settings Saved', severity:'success', group:'bc', life:3000}))
             .catch(err => toast.add({summary:'Error',detail:err,severity:'error', group:'bc', life:3000}))
         }
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
+    },
+    beforeRouteEnter(to,from,next){
+        if(to.path == '/settings'){
+            next(vm=>{
+                vm.$el.focus();//focus element when opened and after modal at higher layer (i.e. LoginModal) is closed
+            })
+        }
+        else next();
     }
 })
 </script>

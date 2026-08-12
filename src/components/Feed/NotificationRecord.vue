@@ -6,11 +6,11 @@
         <div class="flex flex-col overflow-hidden w-full gap-1">
             <div class="flex items-center gap-2">
                 <component :is="getNotifIcon?.icon" class="size-7 shrink-0" :class="getNotifIcon?.color"/>
-                <AvatarRound :avatar="notifData?.author.avatar" :did="notifData?.author.did"/>
+                <AvatarRound :author-details="notifData.author"/>
                 <div class="flex flex-col overflow-hidden">
                     <div class="text-primary font-semibold whitespace-nowrap overflow-hidden text-ellipsis"
-                    :title="notifData?.author.displayName ? notifData?.author.displayName : notifData?.author.handle">
-                        {{ notifData?.author.displayName ? notifData?.author.displayName : notifData?.author.handle }}
+                    :title="notifData.author.displayName ? notifData.author.displayName : notifData.author.handle">
+                        {{ notifData.author.displayName ? notifData.author.displayName : notifData.author.handle }}
                     </div>
                     <div class="text-primary text-xs">{{ generateNotifMessage }}</div>
                 </div>
@@ -59,7 +59,10 @@ export default defineComponent({
         AvatarRound,
     },
     props:{
-        notifData:Object as PropType<AppBskyNotificationListNotifications.Notification>,
+        notifData:{
+            type: Object as PropType<AppBskyNotificationListNotifications.Notification>,
+            required: true
+        }
     },
     data(){
         return{
@@ -72,7 +75,7 @@ export default defineComponent({
     methods:{
         openRelatedContent(){
             // alert('You clicked the notification component.');
-            if(this.notifData){
+            if(typeof this.notifData != 'undefined'){
                 let post:AppBskyFeedDefs.PostView = {
                     author:{did:'',handle:''},
                     cid:this.notifData.record.subject.cid,

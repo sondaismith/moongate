@@ -3,11 +3,12 @@
     justify-center items-center gap-1 transition-colors"
     :class="[$attrs.class ? $attrs.class : 'bg-sky-500 hover:bg-sky-700 hover:border-sky-700 h-10',
         isDisabled || isAwaitingResponse ? '!bg-disabledBG !text-disabled pointer-events-nones select-none !cursor-not-allowed' : '',
-        `p-${focusPadding}`, buttonBorder ? `border ${borderColorClass}` : '!border-transparent'
+        `p-${focusPadding}`, buttonBorder ? `border ${borderColorClass}` : '!border-transparent',
+        preventShrink ? 'shrink-0' : ''
     ]"
     :disabled="isDisabled || isAwaitingResponse">
         <div v-if="!isAwaitingResponse" class="flex items-center justify-center w-full h-full rounded border-2 border-transparent
-        group-focus-visible:border-feedtypeBtnFocusHighlight"
+        group-focus-visible:border-focusBorder"
         :class="[`px-${buttonPaddingX} py-${buttonPaddingY}`]">
             <slot></slot>
         </div>
@@ -73,6 +74,11 @@ export default defineComponent({
         borderColorClass:{
             type:String,
             default:''
+        },
+        /**Should the component prevent itself from horizontally shrinking? */
+        preventShrink:{
+            type:Boolean,
+            default:false
         }
     },
 })

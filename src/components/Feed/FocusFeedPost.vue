@@ -108,14 +108,14 @@
         </button>
         <div data-testid="focusFeedPost" class="flex w-full">
             <div>
-                <AvatarRound v-if="isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"/>
+                <AvatarRound v-if="isReplyStyle" data-testid="focusFeedPost-avatarRound" :author-details="postToShow.author"/>
                 <div v-if="replyIndex !=undefined && totalReplies!=undefined && replyIndex<totalReplies" class="h-full bg-slate-700 w-0.5 m-auto"></div>
             </div>
-            <div class="flex flex-col w-full overflow-hidden"
+            <div class="flex flex-col w-full min-w-0"
             :class="[isReplyStyle ? 'pl-2' : '']">
                 {{ void "Post Profile Header" }}
                 <div class="flex items-center gap-2">
-                    <AvatarRound v-if="!isReplyStyle" :avatar="postToShow.author.avatar" :did="postToShow.author.did" :handle="postToShow.author.handle"
+                    <AvatarRound v-if="!isReplyStyle" data-testid="focusFeedPost-avatarRound" :author-details="postToShow.author"
                     @avatar-clicked="callFocusPostAvatarClicked(postToShow.author.did)"/>
                     <div class="flex overflow-hidden self-starts" :class="[isReplyStyle ? 'gap-1 items-center' : 'flex-col']">
                         <div class="flex items-center gap-1 overflow-hidden">
@@ -137,15 +137,19 @@
                     </div>
                     <!-- <div v-if="!isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</div>
                     <div v-else-if="isViewRecord(postToShow)" data-test="focusFeedPost-timestamp-button" @click="isReplyStyle ? emitThreadReplyClicked(threadData ? threadData : undefined) : openFocusDetails(0)" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</div> -->
-                    <RouterLink v-if="!AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</RouterLink>
-                    <RouterLink v-else-if="AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs text-nowrap self-start text-right" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</RouterLink>
+                    <RouterLink v-if="!AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" @keydown.space="openPostInPostFocusModal"
+                    data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs
+                    text-nowrap self-start text-right outline outline-2 outline-transparent focus-visible:outline-focusBorder" :title="convertToLongTimestamp(postToShow.record.createdAt)">{{ convertToShortTimestamp(postToShow.record.createdAt) }}</RouterLink>
+                    <RouterLink v-else-if="AppBskyEmbedRecord.isViewRecord(postToShow)" :to="getGeneratedPostUri()" @keydown.space="openPostInPostFocusModal"
+                    data-testid="focusFeedPost-timestamp-button" class="cursor-pointer text-secondary hover:text-secondaryHover transition-colors hover:underline text-xs
+                    text-nowrap self-start text-right outline outline-2 outline-transparent focus-visible:outline-focusBorder" :title="convertToLongTimestamp(postToShow.value.createdAt)">{{ convertToShortTimestamp(postToShow.value.createdAt) }}</RouterLink>
                 </div>
                 <div class="flex flex-col"
                 :class="[isFeedPostStyle ? 'pl-12 pr-3' : '', isReplyStyle ? 'gap-2' : 'pt-2 gap-2']">
                     {{ void "Post Text Content" }}
-                    <RichPostTextBsky data-test="focusFeedPost-text" v-if="!AppBskyEmbedRecord.isViewRecord(postToShow)" :post-text="(postToShow.record as AppBskyFeedPost.Record).text" :post-facets="(postToShow.record as AppBskyFeedPost.Record).facets"/>
+                    <RichPostTextBsky data-testid="focusFeedPost-text" v-if="!AppBskyEmbedRecord.isViewRecord(postToShow)" :post-text="(postToShow.record as AppBskyFeedPost.Record).text" :post-facets="(postToShow.record as AppBskyFeedPost.Record).facets"/>
                     <!-- Is Quoted Post -->
-                    <RichPostTextBsky data-test="focusFeedPost-text" v-else :post-text="((postToShow as AppBskyEmbedRecord.ViewRecord).value as AppBskyFeedPost.Record).text" :post-facets="((postToShow as AppBskyEmbedRecord.ViewRecord).value as Record).facets"/>
+                    <RichPostTextBsky data-testid="focusFeedPost-text" v-else :post-text="((postToShow as AppBskyEmbedRecord.ViewRecord).value as AppBskyFeedPost.Record).text" :post-facets="((postToShow as AppBskyEmbedRecord.ViewRecord).value as Record).facets"/>
                     {{ void "Post Media" }}
                     <!-- <ImageContainer v-if="postContainsImage" :images-to-display="getPostImages"
                     :labels="postToShow.labels" :author="postToShow.author.handle" :post-text="getPostText"
@@ -353,6 +357,11 @@ export default defineComponent({
                     this.$router.push(`/profile/${handle}/post/${postDid}`);
                 }
             }
+        },
+        /**Method used to open the related Post in the `PostFocusModal` component when using keyboard input. */
+        openPostInPostFocusModal(e:KeyboardEvent){
+            e.preventDefault();
+            this.$router.push(this.getGeneratedPostUri());
         },
         /**
          * Updates the Posts/Replies displayed in the PostFocusModal component.
@@ -620,8 +629,8 @@ export default defineComponent({
         // console.log(this.postData); //DEBUG - missing object/variable catching
         // console.log('Has this post been deleted?');
         // console.log(isViewNotFound(this.postData));
-        if(this.threadData) this.postToShow = this.threadData.post;
-        else if(this.postData) this.postToShow = this.postData;
+        if(typeof this.threadData != 'undefined' && typeof this.postData == 'undefined') this.postToShow = this.threadData.post;
+        else if(typeof this.postData != 'undefined') this.postToShow = this.postData;
     }
 })
 </script>

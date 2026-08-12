@@ -1,12 +1,13 @@
 <template>
-    <div tabindex="-1" @keydown.tab="(e) => TrapFocus($el,e)" class="z-30 flex w-full h-full" :class="[hideBackdrop ? '' : 'absolute']">
+    <div tabindex="-1" @keydown.tab="(e) => TrapFocus($el,e,embededMode)" class="flex w-full h-full outline-none"
+        :class="[hideBackdrop ? '' : 'absolute', embededMode ? '' : 'z-30']">
         <div v-if="!hideBackdrop" @click="closeModal" class="absolute bg-white/10 backdrop-blur-sm w-full h-full"></div>
-        <div class="relative flex flex-col bg-focusBG w-[94%] max-w-[50rem]
+        <div class="relative flex flex-col bg-focusBG max-w-[50rem]
         mx-auto my-auto rounded-lg overflow-hidden text-primary drop-shadow-md"
-        :class="[hideBackdrop ? 'max-h-full' : 'max-h-[80%]']">
+        :class="[hideBackdrop ? 'max-h-full' : 'max-h-[80%]',embededMode ? 'w-full' : 'w-[94%]']">
             <div class="flex flex-col bg-aboutPageBanner">
-                <div class="flex items-center text-white md:h-24">
-                    <AppLogo :is-button="false" class="h-28 text-white scale-100"/>
+                <div class="flex items-center text-white h-24">
+                    <AppLogo :is-button="false" class="h-full px-2" :icon-styling="'text-white scale-125'"/>
                     <div>
                         <div class="text-4xl" style="font-family: 'Cal Sans';"><span>Moongate</span></div>
                         <div class="text-sm sm:text-base font-light">Version: {{ versionDetails.version }}-{{ versionDetails.commitHash }}<span class="align-super text-xs">{{isTauri() ? 'Tauri' : 'Web'}}</span></div>
@@ -24,10 +25,10 @@
                 <div class="text-sm">Moongate is an alternative Client App for Bluesky, built using Tauri + Vue.
                     The goal is to create a lightweight, feature-filled app that is responsive and easy to use.</div>
             </div>
-            <div class="flex flex-col md:flex-row md:items-center gap-1 px-4 pb-2 text-sm select-none">
+            <div class="flex flex-col gap-1 px-4 pb-2 text-sm select-none">
                 <div class="font-bold">Like the app? Support development by buying me a coffee:</div>
-                <ExternalLink :link-url="donateURL" class="group flex self-start rounded p-1 text-primary
-                transition-colors bg-donationButtonBG cursor-pointer outline-none focus-visible:outline-feedtypeBtnFocusHighlight">
+                <ExternalLink :link-url="donateURL" class="group flex self-start !rounded p-1 text-primary
+                transition-colors bg-donationButtonBG">
                     <div class="flex gap-1 items-center">
                         <i-simple-icons:kofi class="transition-colors group-hover:text-donationButtonIconHover
                         group-focus-visible:text-donationButtonIconHover"/>
@@ -35,9 +36,19 @@
                     </div>
                 </ExternalLink>
             </div>
-            <div class="h-0.5 bg-outline"></div>
-            <div class="flex flex-col overflow-y-auto pt-2">
+            <div class="h-[1px] bg-outline shrink-0"></div>
+            <div class="flex flex-col overflow-y-auto pt-2" tabindex="-1">
                 <div class="px-4 text-xl font-semibold">Changelog:</div>
+                <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
+                    <div class="font-semibold">Aug 11th 2026</div>
+                    <ul class="list-disc pl-4 py-1 text-sm">
+                        <li>Improved support for navigating the app using keyboard input (tabbing + enter/space key). Still room for improvement, but coverage is much better than before.</li>
+                        <li>Fixed issue with thumbnails for embedded external links not displaying correctly in the Desktop app.</li>
+                        <li>Added support for displaying "livestream status" of account around associated avatar display.</li>
+                        <li>Added option to toggle the warning/hiding of media that is marked as "sensitive content".</li>
+                        <li>See more details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/313">#313</ExternalLink>)</li>
+                    </ul>
+                </div>
                 <div class="flex flex-col gap-1 h-full px-4 divide-outline divide-y">
                     <div class="font-semibold">June 26th 2026</div>
                     <ul class="list-disc pl-4 py-1 text-sm">
@@ -245,6 +256,11 @@ export default defineComponent({
         hideBackdrop:{
             type:Boolean,
             default:false
+        },
+        /**Is this control being displayed on another control, and not as a standalone modal? */
+        embededMode:{
+            type:Boolean,
+            default:false
         }
     },
     components:{
@@ -274,13 +290,26 @@ export default defineComponent({
         closeModal(){
             this.$router.push('/');
         },
+        /**
+         * Method used to close the `AboutAppModal` if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape'){
+                this.closeModal();
+            }
+        },
     },
     created() {
         this.versionDetails = GetVersion();
     },
     mounted() {
         this.$el.focus();
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
     },
+    beforeUnmount() {
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
+    }
 })
 </script>
 

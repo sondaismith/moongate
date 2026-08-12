@@ -38,10 +38,10 @@ let trend3 = CreateTrendView('Naps','Lifestyle',undefined,133200,new Date(2025,4
 let trend4 = CreateTrendView('F1','Sport',undefined,11766,new Date(2025,4,12,14,20));
 
 beforeAll(async () => {
-    await CreateFeedViewPost('bobtheposter.social','I love my car shop!',true,undefined,post1Timestamp).then(res => post1 = res);//.catch(err=>console.log(err));
-    await CreateFeedViewPost('cargo.haul', 'Delivery delivery delivery delivery',false,undefined,new Date(2025,8,16,13,21)).then(res => post2 = res);
+    await CreateFeedViewPost('bobtheposter.social','I love my car shop!',{type:'link',numImage:1},undefined,post1Timestamp).then(res => post1 = res);//.catch(err=>console.log(err));
+    await CreateFeedViewPost('cargo.haul', 'Delivery delivery delivery delivery',undefined,undefined,new Date(2025,8,16,13,21)).then(res => post2 = res);
     await CreateFeedViewPost('cargo.haul', 'the box is in place',undefined,undefined,new Date(2025,8,16,13,10)).then(res => post3 = res);
-    await CreateFeedViewPost('bobtheposter.social','Cars all day, every day!',true,undefined,new Date(2025,8,16,13,30),true).then(res => pinPost1 = res);
+    await CreateFeedViewPost('bobtheposter.social','Cars all day, every day!',{type:'link',numImage:1},undefined,new Date(2025,8,16,13,30),true).then(res => pinPost1 = res);
 })
 
 describe("Test suite for GetLatestNonPinnedPost()", () => {

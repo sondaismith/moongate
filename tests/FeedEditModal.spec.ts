@@ -144,7 +144,6 @@ test('Ensure Feeds of each type can be added and removed "out of order"', async(
     await instance1.getByTestId('login-password-input').getByRole('textbox').fill('password');
     await instance1.getByTestId('login-button').click();
     //add new User Feed
-    await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-feed-button').click();
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('textbox').fill('username');
     await instance1.getByTestId('feedEditModal-user-search-bar').getByRole('button').click();
@@ -274,7 +273,6 @@ test('Ensure Topic Feed is created when selected from Trending Topic List', asyn
     await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('browse-as-guest-button').click();
     //add new Trending Feed to Feed Stack
-    await instance1.getByTestId('add-feed-button').click();
     await instance1.getByTestId('feedEditModal-trending-feed-button').click();
     await instance1.getByTestId('feedEditModal-toggle-trending-feed-button').click();
     await expect(instance1.getByTestId('feedEditModal-next-page-button')).toBeVisible();

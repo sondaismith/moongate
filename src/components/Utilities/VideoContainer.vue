@@ -7,7 +7,7 @@
         :class="[{'rounded-lg' : !isVideoPlayerVisible}]"
         :style="{'background-image' : `url(${videoView?.thumbnail})`,
         'aspect-ratio' : `${videoView?.aspectRatio?.width} / ${videoView?.aspectRatio?.height}`}">
-            <SpoilerOverlay :labels="labels" :has-sensitive-content="labels && labels.length>0" :media-type="MediaType.Video"/>
+            <SpoilerOverlay :labels="labels" :has-sensitive-content="AppSettingsState.Settings.spoilerImagesContainingSensitiveContent && typeof labels != 'undefined' && labels.length>0" :media-type="MediaType.Video"/>
             <div v-if="!isVideoPlayerVisible" @click="showVideo" class="flex w-full h-full items-center justify-center">
                 <div class="bg-slate-400/0 w-full h-full group-hover:bg-slate-400/30
                 transition-colors"></div>
@@ -35,6 +35,7 @@ import 'video.js/dist/video-js.css';
 import VideoPlayer from './VideoPlayer.vue';
 import SpoilerOverlay from './SpoilerOverlay.vue';
 import { MediaType } from '../../enums/PostEnums';
+import { AppSettingsState } from '../../state/AppSettingsState.vue';
 
 export default defineComponent({
     components:{
@@ -48,6 +49,7 @@ export default defineComponent({
     },
     data(){
         return{
+            AppSettingsState,
             // player: {} as Player
             MediaType,
             videoOptions: {

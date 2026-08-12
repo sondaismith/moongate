@@ -1,7 +1,7 @@
 <template>
     <div class="flex">
         <div class="flex-col">
-            <AvatarRound :avatar="postData.author.avatar" :did="postData.author.did" :handle="postData.author.handle"/>
+            <AvatarRound :authorDetails="postData.author"/>
             {{ void "below is connector for replies" }}
             <div v-if="(replyThreadIndex!=undefined && totalThreadReplies && replyThreadIndex<totalThreadReplies)" class="h-full bg-slate-700 w-0.5 m-auto"></div>
         </div>

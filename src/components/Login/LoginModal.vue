@@ -296,8 +296,7 @@ export default defineComponent({
         browseAsGuest(){
             AppState.browseAsGuest();
             AppSettingsState.saveSettingsToStore();
-            // AppState.ToggleLoginModal();
-            this.$router.go(-1);
+            this.closeModal();
         },
         /**Method called when User chooses to browse as guest. */
         asGuestClicked(){
@@ -399,6 +398,10 @@ export default defineComponent({
             // AppState.ToggleLoginModal();
             console.log(window.history.state);
             if(window.history.state.back != null && (window.history.state.back.includes('/profile') || window.history.state.back.includes('/settings'))) this.$router.go(-1);
+            else if(AppState.routeEntryURL.trim() != ''){
+                this.$router.replace(AppState.routeEntryURL);
+                AppState.routeEntryURL = '';
+            }
             else if(window.history.state.back == null) this.$router.push(`/`);
             else this.$router.push(`/`);
         },
@@ -408,7 +411,16 @@ export default defineComponent({
          */
         toggleAccountProvider(){
             this.isUsingDefaultHost = !this.isUsingDefaultHost;
-        }
+        },
+        /**
+         * Method used to close the `LoginModal` if the Escape Key is pressed.
+         * @param e Key down event.
+         */
+        onEscapeKeyPressed(e:KeyboardEvent){
+            if(e.key == 'Escape' && AppState.canBrowse){
+                this.closeModal();
+            }
+        },
     },
     computed:{
         /**
@@ -464,7 +476,13 @@ export default defineComponent({
             default:
                 break;
         }
+        AppState.isLoggingIntoAccount = true;
+        this.$el.addEventListener('keydown', this.onEscapeKeyPressed);
         (this.$el as HTMLElement).focus();
+    },
+    beforeUnmount(){
+        this.$el.removeEventListener('keydown', this.onEscapeKeyPressed);
+        AppState.isLoggingIntoAccount = false;
     }
 })
 </script>

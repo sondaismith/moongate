@@ -23,6 +23,8 @@ interface AppSettings{ //extends IAppSettings{
   isHidingLikes: boolean;
   isHidingFollowers: boolean;
   isHidingFollowing: boolean;
+  enableAdultContent: boolean;
+  spoilerImagesContainingSensitiveContent: boolean;
   savedAccountState:string //have to convert from IAppAccountState to string;
 }
 

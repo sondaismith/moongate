@@ -2,9 +2,9 @@
     <a v-if="!isTauri()" target="_blank"
     :href="linkUrl"
     class="text-blue-500 hover:text-blue-300 cursor-pointer"><slot>{{ defaultText }}</slot></a>
-    <a v-else
+    <FocusButton v-else
     @click="(e) => showOptionsMenu(e,linkUrl)" @keydown.enter="(e) => showOptionsMenu(e,linkUrl)" tabindex="0"
-    class="text-blue-500 hover:text-blue-300 cursor-pointer"><slot>{{ defaultText }}</slot></a>
+    class="text-blue-500 hover:text-blue-300 rounded-none border-none active:bg-transparent"><slot>{{ defaultText }}</slot></FocusButton>
 </template>
 
 <script lang="ts">
@@ -14,17 +14,9 @@ import MingcuteWorld2Line from '~icons/mingcute/world-2-line';
 import { defineComponent } from 'vue';
 import { isTauri } from '@tauri-apps/api/core';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
-import { CopyTextToClipboard } from '../../state/AppState.vue';
+import { CopyTextToClipboard, OpenLink } from '../../state/AppState.vue';
 import { IOptionMenuItem, ItemType } from './OptionsMenu.vue';
-import { openUrl } from '@tauri-apps/plugin-opener';
-
-/**
- * Method used to open link in the system's default browser.
- * @param url The URL to open in the default browser.
- */
-async function OpenLink(url:string){
-    await openUrl(url);
-}
+import FocusButton from './FocusButton.vue';
 
 /**Default text label that will be used if content is not provided. */
 let defaultText = '[Please Set Link Text]';
@@ -42,6 +34,9 @@ export default defineComponent({
             type:String,
             required:true
         },
+    },
+    components:{
+        FocusButton,
     },
     data(){
         return{

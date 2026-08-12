@@ -83,7 +83,7 @@ test('ensure SaveMediaModal displays image in `<video>` element when passed a "G
     await expect(page.getByText(handle1)).toBeVisible();
     await expect(page.getByTestId('postThreadView').locator('video')).toBeVisible();
     //interact with image to attempt to save it
-    page.getByTestId('postThreadView').locator('video').click({button:'right'});
+    page.getByTestId('imageContainer-externalGIF').click({button:'right'});
     await expect(page.getByRole('menu')).toBeVisible();
     page.getByRole('menu').getByText(/Save/).click();
     await expect(page.getByTestId('saveMediaModal')).toBeVisible();
@@ -115,7 +115,7 @@ test('ensure SaveMediaModal displays image in an `<img>` element when passed a "
     await expect(page.getByText(handle1)).toBeVisible();
     await expect(page.getByTestId('externalGIF-animWebp')).toBeVisible();
     //interact with image to attempt to save it
-    page.getByTestId('externalGIF-animWebp').click({button:'right'});
+    page.getByTestId('imageContainer-externalGIF').click({button:'right'});
     await expect(page.getByRole('menu')).toBeVisible();
     page.getByRole('menu').getByText(/Save/).click();
     await expect(page.getByTestId('saveMediaModal')).toBeVisible();
