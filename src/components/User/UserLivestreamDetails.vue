@@ -4,7 +4,8 @@
         <div class="w-full px-5">
             <div class="relative z-40 flex flex-col max-w-[420px] mx-auto mb-auto mt-[10vh] pb-4 rounded-lg border border-outline bg-feedColumnBG text-primary">
                 <div class="flex aspect-[1.90476/1] bg-slate-800 rounded-t-lg overflow-hidden">
-                    <img class="w-full object-cover" :src="typeof profileEmbedExternal != 'undefined' ? profileEmbedExternal.thumb : '../../assets/placeholder/no_banner_pattern.png'"/>
+                    <ImageLoader v-if="typeof streamThumbnailSource != 'undefined'" :img-url="streamThumbnailSource" :fill-container="true" class="w-full object-cover"/>
+                    <div v-else class="w-full bg-white" :style="`mask: url(${getPlaceholderImageSrc})`"></div>
                 </div>
                 <div class="flex flex-col px-4 pt-2">
                     <div class="flex flex-col gap-2">
@@ -78,6 +79,7 @@ import FocusButton from '../Utilities/FocusButton.vue';
 import { isTauri } from '@tauri-apps/api/core';
 import { OptionsMenuState } from '../../state/OptionsMenuState.vue';
 import { IOptionMenuItem, ItemType } from '../Utilities/OptionsMenu.vue';
+import ImageLoader from '../Utilities/ImageLoader.vue';
 
 /**
  * Interface created to remove TS warnings created when
@@ -96,6 +98,7 @@ interface ILiveStatusRecord{
 export default defineComponent({
     components:{
         AvatarRound,
+        ImageLoader,
         SquareButton,
         FocusButton,
         // VerifiedBadge
@@ -121,6 +124,27 @@ export default defineComponent({
          */
         profileEmbedExternal():AppBskyEmbedExternal.ViewExternal|undefined{
             return (typeof this.userProfile.status != 'undefined' && typeof this.userProfile.status.embed != 'undefined' && 'external' in this.userProfile.status.embed) ? this.userProfile.status.embed.external : undefined;
+        },
+        /**
+         * Computed value. Tries to get the thumbnail associated with an account's
+         * live-stream. If one does not exist a default pattern image is shown
+         * instead.
+         */
+        streamThumbnailSource():string|undefined{
+            if(typeof this.profileEmbedExternal != 'undefined'){
+                if(typeof this.profileEmbedExternal.thumb != 'undefined')
+                    return this.profileEmbedExternal.thumb;
+                else return undefined;
+            }
+            else return undefined;
+        },
+        /**
+         * Computed value. Returns the URI needed to display the "banner image
+         * placeholder" pattern based on the current app environment.
+         */
+        getPlaceholderImageSrc():string{
+            if(import.meta.env.DEV) return '../../assets/placeholder/no_banner_pattern.svg';
+            else return './assets/placeholder/no_banner_pattern.svg'
         },
         /**
          * Computed value. Checks to see if the [ProfileView].status object exists - if

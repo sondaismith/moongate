@@ -43,7 +43,7 @@
                     <div class="font-semibold">Aug 11th 2026</div>
                     <ul class="list-disc pl-4 py-1 text-sm">
                         <li>Improved support for navigating the app using keyboard input (tabbing + enter/space key). Still room for improvement, but coverage is much better than before.</li>
-                        <li>Fixed issue with thumbnails for embeded external links not displaying correctly in the Desktop app.</li>
+                        <li>Fixed issue with thumbnails for embedded external links not displaying correctly in the Desktop app.</li>
                         <li>Added support for displaying "livestream status" of account around associated avatar display.</li>
                         <li>Added option to toggle the warning/hiding of media that is marked as "sensitive content".</li>
                         <li>See more details here: (<ExternalLink link-url="https://github.com/sondaismith/moongate/pull/313">#313</ExternalLink>)</li>
