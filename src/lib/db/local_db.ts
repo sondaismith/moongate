@@ -5,6 +5,8 @@ import { IFeedDBData, IFeedListing } from "../../interfaces/FeedInterfaces";
 import { isTauri } from "@tauri-apps/api/core";
 import { web_db } from "./web_db";
 
+export const APP_SETTINGS_FILENAME = 'moongate_settings.json';
+export const LOCAL_DB_FILENAME = 'moongate_app.db';
 const APPLICATION_DB = "sqlite:moongate_app.db";
 
 enum FeedSizeSetting{

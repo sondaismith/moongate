@@ -9,6 +9,13 @@
     "core:default",
     "opener:default",
     "opener:allow-open-url",
+    {
+      "identifier":"opener:allow-open-path",
+      "allow": [
+        {"path": "$APPDATA"},
+        {"path": "$APPDATA/*"}
+      ]
+    },
     "core:window:allow-close",
     "core:window:allow-destroy",
     {

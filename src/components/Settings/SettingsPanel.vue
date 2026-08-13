@@ -26,7 +26,7 @@
                     <div class="relative p-2s rounded border border-outline w-full h-full overflow-hidden">
                         <div class="relative w-full h-full overflow-hiddens">
                             <TransitionGroup>
-                                <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[0]" class="h-full">
+                                <div v-if="selectedCategoryIndex == 'General'" class="h-full">
                                     <div class="flex flex-col gap-1 h-full p-2">
                                         <div class="text-xl font-medium">Appearance</div>
                                         <CheckBox :model-value="AppSettingsState.Settings.isDarkMode" @value-toggled="toggleTheme">
@@ -81,7 +81,7 @@
                                         </SquareButton>
                                     </div>
                                 </div>
-                                <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[1]"
+                                <div v-if="selectedCategoryIndex == 'PostFilters'"
                                 class="relative flex flex-col gap-2 w-full h-full overflow-auto p-2">
                                     <div class="font-thin text-2xl">Language Selection</div>
                                     <CheckBox :model-value="AppSettingsState.Settings.isAcceptingAllLanguages" @value-toggled="toggleAcceptAllLanguages">
@@ -128,22 +128,37 @@
                                     </div>
                                     <!-- <InLaInput text-label="Tag Blacklist" :model-value="SetttingData.Options.PostFilters.data.tagBlacklist"/> -->
                                 </div>
-                                <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[2]"
+                                <div v-if="selectedCategoryIndex == 'Account'"
                                 class="relative flex flex-col w-full h-full">
                                     <AccountSettingsPanel></AccountSettingsPanel>
                                 </div>
-                                <div v-if="isInDevEnvironment && selectedCategoryIndex == Object.keys(SettingData.Options)[3]"
+                                <div v-if="isInDevEnvironment && selectedCategoryIndex == 'Developer'"
                                 class="relative flex flex-col w-full h-full overflow-y-auto p-2">
-                                    <div class="italic">Devloper testing commands - Be careful!</div>
-                                    <div v-if="!isTauri()" class="flex flex-col gap-1 border border-outline rounded p-2">
-                                        <div class="font-thin text-2xl">IndexedDB Options</div>
-                                        <hr class="border-outline pb-1"/>
-                                        <SquareButton @click="debugGetSavedFeedsWeb"
-                                            class="self-start text-xs !p-1 bg-btn hover:bg-btnHover"
+                                    <div class="text-lg border-b border-outline pb-1 mb-1">Advanced commands - <span class="italic text-secondary">Be careful!</span></div>
+                                    <div v-if="isTauri()" class="flex flex-col gap-1">
+                                        <div class="flex flex-col">
+                                            <div>Manage application files</div>
+                                            <hr/>
+                                            <div class="pt-1 text-xs text-secondary">Be careful making changes to these files manually - you can lose your saved feeds and application settings.</div>
+                                        </div>
+                                        <FocusButton @click="openAppDataFolder" class="rounded border-none p-1 px-2 bg-btn hover:bg-btnHover text-sm select-none">Open Application Data folder</FocusButton>
+                                        <div class="flex flex-col text-xs text-secondary">
+                                            <div><span class="font-bold">{{ LOCAL_DB_FILENAME }}</span> holds your saved Feeds</div>
+                                            <div><span class="font-bold">{{ APP_SETTINGS_FILENAME }}</span> holds the app settings (i.e. dark mode, etc.)</div>
+                                        </div>
+                                    </div>
+                                    <div v-else class="flex flex-col gap-1">
+                                        <div class="flex flex-col">
+                                            <div>Manage Saved Feeds</div>
+                                            <hr/>
+                                            <div class="pt-1 text-xs text-secondary">Click the button below to load Saved Feed data into a table.<br/>Individual Feed records can be deleted using the button at the end of the table.</div>
+                                        </div>
+                                        <FocusButton @click="debugGetSavedFeedsWeb"
+                                            class="self-start rounded border-none p-2 px-3 bg-btn hover:bg-btnHover text-sm select-none"
                                             title="Click to load 'savedFeeds' table data">
                                             Load Saved Feeds
-                                        </SquareButton>
-                                        <div v-if="isSavedFeedsLoaded" class="text-sm">
+                                        </FocusButton>
+                                        <div v-if="isSavedFeedsLoaded" class="text-xs">
                                             <div>
                                                 {{ `There is/are ${SettingData.Options.Developer.data.recordsFromDB.length}
                                                 SavedFeed record(s) stored via IndexedDB.` }}
@@ -171,27 +186,19 @@
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div v-else class="text-xs">
-                                            Click button above to load savedFeed table data
-                                        </div>
                                         <div v-if="noReturnedFeeds" class="rounded border border-outline p-1 text-sm">
                                             <span>There are no records in the </span>
                                             <span class="rounded-md bg-btn px-1 py-0.5 italic text-btnText">savedFeed</span>
                                             <span> table.</span>
                                         </div>
-                                        <SquareButton @click="confirmDebugClearIndexedDBSavedFeeds"
-                                            class="self-start text-xs text-white !p-1 bg-red-500 hover:bg-red-700"
+                                        <FocusButton @click="confirmDebugClearIndexedDBSavedFeeds"
+                                            class="self-start rounded border-none p-2 px-3 text-white bg-red-500 hover:bg-red-700 text-sm select-none"
                                             title="Clear 'Saved Feeds' from IndexedDB">
-                                            Clear Saved Feeds
-                                        </SquareButton>
-                                    </div>
-                                    <div v-else class="flex flex-col gap-1">
-                                        <div class="font-thin text-2xl">IndexedDB Options</div>
-                                        <hr class="pb-1"/>
-                                        <div class="text-sm">IndexedDB Options are not available in the Desktop version of the app.</div>
+                                            Clear All Saved Feeds
+                                        </FocusButton>
                                     </div>
                                 </div>
-                                <div v-if="selectedCategoryIndex == Object.keys(SettingData.Options)[4]"
+                                <div v-if="selectedCategoryIndex == 'About'"
                                 class="relative p-2 w-full h-full">
                                     <AboutAppModal :hide-backdrop="true" :embeded-mode="true"/>
                                 </div>
@@ -217,13 +224,16 @@ import SquareButton from '../Utilities/SquareButton.vue';
 import { getCurrentWindow, PhysicalSize } from '@tauri-apps/api/window';
 import { IAppSettings, LangCode } from '../../interfaces/SettingsInterfaces';
 import CheckBox from '../Utilities/CheckBox.vue';
-import { DeleteIndexedDBSavedFeeds, loadSavedFeedsRecords, SavedFeeds, stringToJSON } from '../../lib/db/local_db';
+import { APP_SETTINGS_FILENAME, DeleteIndexedDBSavedFeeds, loadSavedFeedsRecords, LOCAL_DB_FILENAME, SavedFeeds, stringToJSON } from '../../lib/db/local_db';
 import { IFeedDBData } from '../../interfaces/FeedInterfaces';
 import { isTauri } from '@tauri-apps/api/core';
 import { RemoveFeedByIndex } from '../../state/FeedList.vue';
 import AboutAppModal from './AboutAppModal.vue';
 import RadioBarButton from '../Utilities/RadioBarButton.vue';
 import AccountSettingsPanel from './AccountSettingsPanel.vue';
+import FocusButton from '../Utilities/FocusButton.vue';
+import { openPath, revealItemInDir } from '@tauri-apps/plugin-opener';
+import { path } from '@tauri-apps/api'
 
 /**
  * Asks the User if they're sure they would like to delete the selected
@@ -243,6 +253,8 @@ export default defineComponent({
             stringToJSON,
             isTauri,
             TrapFocus,
+            APP_SETTINGS_FILENAME,
+            LOCAL_DB_FILENAME,
             SettingData: {
                 Options:{
                     General:{
@@ -284,7 +296,7 @@ export default defineComponent({
                         devOnly:false,
                     },
                     Developer:{
-                        name:'Dev Options',
+                        name:'Advanced',
                         data:{
                             /**The Feeds that will currently be loaded in the application. */
                             savedFeeds:[] as IFeedDBData[],
@@ -329,15 +341,16 @@ export default defineComponent({
         }
     },
     components:{
-        SettingsCategory,
-        InLaInput,
-        FilterSelect,
-        CheckBox,
-        ToggleButton,
-        SquareButton,
         AboutAppModal,
-        RadioBarButton,
         AccountSettingsPanel,
+        CheckBox,
+        FilterSelect,
+        FocusButton,
+        InLaInput,
+        RadioBarButton,
+        SettingsCategory,
+        SquareButton,
+        ToggleButton,
     },
     methods:{
         closeModal(){
@@ -461,6 +474,15 @@ export default defineComponent({
                 toast.add({summary:'Error',detail:`Invalid Index: ${err}`,severity:'error', group:'bc', life:3000});
             }
             this.SettingData.Options.Developer.data.indexToDelete = 100000;//"unset" index
+        },
+        /**
+         * Method used to reveal the location of the "moongate App data" database file
+         * in the OS's default file explorer.
+         */
+        async openAppDataFolder(){
+            let appDataPath = await path.appDataDir();
+            await openPath(`${appDataPath}`);
+            // await revealItemInDir(`${appDataPath}/`);
         },
         /**
          * Method used to close the `SettingsPanel` if the Escape Key is pressed.
